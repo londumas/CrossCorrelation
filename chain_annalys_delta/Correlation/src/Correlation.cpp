@@ -87,10 +87,10 @@ std::string alQSO[18] = {"QSO_ALL_TESTS",
 /// Flags for Jean-Marc's simulations
 const bool mocks          = false;
 const bool mocksNoNoiseNoCont = false;
-const bool mockJMC__          = true;
+const bool mockJMC__          = false;
 const bool mockBox__          = false;
 const double randomPositionOfQSOInCell__ = false;
-const double randomPositionOfQSOInCellNotBeforeCorrelation__ = true;
+const double randomPositionOfQSOInCellNotBeforeCorrelation__ = false;
 
 const bool shuffleQSO     = false;
 const bool shuffleForest  = false;
@@ -127,7 +127,7 @@ Correlation::Correlation(int argc, char **argv) {
 	
 
 	/// Set the number of forest to work on
-	nbForest_   = 0;
+	nbForest_   = 10000;
 	nbForest2__ = 0;
 	nbQ1__      = 0;
 	nbQ2__      = 0;
@@ -244,7 +244,7 @@ void Correlation::xi_1D_delta_delta(void) {
 	*/
 
 	std::cout << "\n\n\n\n  ------ xi_1D_delta_delta ------" << std::endl;
-	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/Python/Correlation/xi_1D_delta_delta.py";
+	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_1D_delta_delta.py";
 	command += commandEnd__;
 	std::cout << command << "\n" << std::endl;
 	loadDataForest(pathForest__);
@@ -363,7 +363,7 @@ void Correlation::xi_1D_delta_delta(void) {
 void Correlation::xi_1DlRF_delta_delta(void) {
 
 	std::cout << "\n\n\n\n  ------ xi_1DlRF_delta_delta ------" << std::endl;
-	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/Python/Correlation/xi_1DlRF_delta_delta.py";
+	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_1DlRF_delta_delta.py";
 	command += commandEnd__;
 	std::cout << command << "\n" << std::endl;
 	loadDataForest(pathForest__);
@@ -479,7 +479,7 @@ void Correlation::xi_1DlRF_delta_delta(void) {
 void Correlation::xi_1DlRFDevide_delta_delta(void) {
 
 	std::cout << "\n\n\n\n  ------ xi_1DlRFDevide_delta_delta ------" << std::endl;
-	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/Python/Correlation/xi_1DlRFDevide_delta_delta.py";
+	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_1DlRFDevide_delta_delta.py";
 	command += commandEnd__;
 	std::cout << command << "\n" << std::endl;
 	loadDataForest(pathForest__);
@@ -601,7 +601,7 @@ if (idx>=nbBins) std::cout << idx << std::endl;
 void Correlation::xi_1D_delta_delta2(void) {
 
 	std::cout << "\n\n\n\n  ------ xi_1D_delta_delta2 ------" << std::endl;
-	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/Python/Correlation/xi_1D_delta_delta2.py";
+	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_1D_delta_delta2.py";
 	command += commandEnd__;
 	std::cout << command << "\n" << std::endl;
 	/// Forest 1
@@ -743,7 +743,7 @@ void Correlation::xi_1D_delta_delta2(void) {
 void Correlation::xi_1DlRF_delta_delta2(void) {
 
 	std::cout << "\n\n\n\n  ------ xi_1DlRF_delta_delta2 ------" << std::endl;
-	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/Python/Correlation/xi_1DlRF_delta_delta2.py";
+	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_1DlRF_delta_delta2.py";
 	command += commandEnd__;
 	std::cout << command << "\n" << std::endl;
 	/// Forest 1
@@ -890,7 +890,7 @@ void Correlation::xi_1DlRF_delta_delta2(void) {
 void Correlation::xi_A_delta_delta(void) {
 
 	std::cout << "\n\n\n\n  ------ xi_A_delta_delta ------" << std::endl;
-	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/Python/Correlation/xi_A_delta_delta.py";
+	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_A_delta_delta.py";
 	command += commandEnd__;
 	std::cout << command << "\n" << std::endl;
 
@@ -1142,7 +1142,7 @@ void Correlation::xi_A_delta_delta(void) {
 void Correlation::xi_A_delta_delta_lambda(void) {
 
 	std::cout << "\n\n\n\n  ------ xi_A_delta_delta_lambda ------" << std::endl;
-	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/Python/Correlation/xi_A_delta_delta_lambda.py";
+	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_A_delta_delta_lambda.py";
 	command += commandEnd__;
 	std::cout << command << "\n" << std::endl;
 
@@ -1276,7 +1276,7 @@ void Correlation::xi_A_delta_delta_lambda(void) {
 void Correlation::xi_A_delta_delta_MockJMc(void) {
 
 	std::cout << "\n\n\n\n  ------ xi_A_delta_delta_MockJMc ------" << std::endl;
-	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/Python/Correlation/xi_A_delta_delta.py";
+	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_A_delta_delta.py";
 	command += commandEnd__;
 	std::cout << command << "\n" << std::endl;
 
@@ -1560,7 +1560,7 @@ void Correlation::xi_A_delta_delta_MockJMc(void) {
 void Correlation::xi_delta_delta2(void) {
 
 	std::cout << "\n\n\n\n  ------ xi_delta_delta2 ------" << std::endl;
-	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/Python/Correlation/xi_A_delta_delta2.py";
+	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_A_delta_delta2.py";
 	command += commandEnd__;
 	std::cout << command << "\n" << std::endl;
 
@@ -1825,7 +1825,7 @@ void Correlation::xi_delta_delta2(void) {
 void Correlation::xi_A_delta_delta2_lambda(void) {
 
 	std::cout << "\n\n\n\n  ------ xi_A_delta_delta2_lambda ------" << std::endl;
-	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/Python/Correlation/xi_A_delta_delta2_lambda.py";
+	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_A_delta_delta2_lambda.py";
 	command += commandEnd__;
 	std::cout << command << "\n" << std::endl;
 
@@ -1967,7 +1967,7 @@ void Correlation::xi_A_delta_delta2_lambda(void) {
 void Correlation::xi_delta_QSO(bool doBootstraps/*=False*/, unsigned int bootIdx/*=0*/) {
 
 	std::cout << "\n\n\n\n  ------ xi_delta_QSO ------" << std::endl;
-	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/Python/Correlation/xi_delta_QSO.py";
+	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_delta_QSO.py";
 	command += commandEnd__;
 	std::cout << command << "\n" << std::endl;
 	if (doBootstraps)  std::cout << "  subsampling N° "     << bootIdx << std::endl;
@@ -2419,7 +2419,7 @@ void Correlation::xi_delta_QSO(bool doBootstraps/*=False*/, unsigned int bootIdx
 void Correlation::xi_delta_QSO_theta(bool doBootstraps/*=False*/, unsigned int bootIdx/*=0*/) {
 
 	std::cout << "\n\n\n\n  ------ xi_delta_QSO_theta ------" << std::endl;
-	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/Python/Correlation/xi_delta_QSO_theta.py";
+	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_delta_QSO_theta.py";
 	command += commandEnd__;
 	std::cout << command << "\n" << std::endl;
 
@@ -2538,7 +2538,7 @@ void Correlation::xi_delta_QSO_theta(bool doBootstraps/*=False*/, unsigned int b
 void Correlation::xi_delta_QSO_lambda(bool doBootstraps/*=False*/, unsigned int bootIdx/*=0*/) {
 
 	std::cout << "\n\n\n\n  ------ xi_delta_QSO_lambda ------" << std::endl;
-	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/Python/Correlation/xi_delta_QSO_lambda.py";
+	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_delta_QSO_lambda.py";
 	command += commandEnd__;
 	std::cout << command << "\n" << std::endl;
 	if (doBootstraps)  std::cout << "  subsampling N° "     << bootIdx << std::endl;
@@ -2745,7 +2745,7 @@ void Correlation::xi_delta_QSO_lambda(bool doBootstraps/*=False*/, unsigned int 
 void Correlation::xi_delta_QSO_distortionMatrix(void) {
 
 	std::cout << "\n\n\n\n  ------ xi_delta_QSO_distortionMatrix ------" << std::endl;
-	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/Python/Correlation/xi_delta_QSO_distortionMatrix.py";
+	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_delta_QSO_distortionMatrix.py";
 	command += commandEnd__;
 	std::cout << command << "\n" << std::endl;
 
@@ -2965,7 +2965,7 @@ void Correlation::xi_delta_QSO_Wick(unsigned int diagramIdx) {
 	std::string strConvert = convert.str();
 
 	std::cout << "\n\n\n\n  ------ xi_delta_QSO_Wick ------" << std::endl;
-	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/Python/Correlation/xi_delta_QSO.py";
+	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_delta_QSO.py";
 	command += commandEnd__;
 	command += " ";
 	command += strConvert;
@@ -3260,7 +3260,7 @@ void Correlation::xi_delta_QSO_Wick(unsigned int diagramIdx) {
 void Correlation::xi_delta_QSO_MockJMc(bool doBootstraps/*=False*/, unsigned int bootIdx/*=0*/) {
 
 	std::cout << "\n\n\n\n  ------ xi_delta_QSO_MockJMc ------" << std::endl;
-	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/Python/Correlation/xi_delta_QSO.py";
+	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_delta_QSO.py";
 	command += commandEnd__;
 	std::cout << command << "\n" << std::endl;
 
@@ -3741,7 +3741,7 @@ void Correlation::xi_delta_QSO_MockJMc(bool doBootstraps/*=False*/, unsigned int
 void Correlation::xi_delta_QSO_MockJMc_distortionMatrix(void) {
 	
 	std::cout << "\n\n\n\n  ------ xi_delta_QSO_MockJMc_distortionMatrix ------" << std::endl;
-	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/Python/Correlation/xi_delta_QSO_distortionMatrix.py";
+	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_delta_QSO_distortionMatrix.py";
 	command += commandEnd__;
 	std::cout << command << "\n" << std::endl;
 
@@ -3976,7 +3976,7 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix(void) {
 void Correlation::xi_QSO_QSO(bool doBootstraps/*=false*/, unsigned int bootIdx/*=0*/) {
 
 	std::cout << "\n\n\n\n  ------ xi_QSO_QSO ------" << std::endl;
-	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/Python/Correlation/xi_Q_Q.py";
+	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_Q_Q.py";
 	command += commandEnd__;
 	std::cout << command << "\n" << std::endl;
 	loadDataQ1();
@@ -4182,7 +4182,7 @@ void Correlation::xi_QSO_QSO(bool doBootstraps/*=false*/, unsigned int bootIdx/*
 void Correlation::xi_QSO_QSO_MockJMc(bool doBootstraps/*=false*/, unsigned int bootIdx/*=0*/) {
 
 	std::cout << "\n\n\n\n  ------ xi_QSO_QSO_MockJMc ------" << std::endl;
-	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/Python/Correlation/xi_Q_Q.py";
+	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_Q_Q.py";
 	command += commandEnd__;
 	std::cout << command << "\n" << std::endl;
 
@@ -4622,7 +4622,7 @@ void Correlation::xi_QSO_QSO_MockJMc(bool doBootstraps/*=false*/, unsigned int b
 void Correlation::xi_Q1_Q2(void) {
 
 	std::cout << "\n\n\n\n  ------ xi_Q1_Q2 ------" << std::endl;
-	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/Python/Correlation/xi_Q1_Q2.py";
+	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_Q1_Q2.py";
 	command += commandEnd__;
 	std::cout << command << "\n" << std::endl;
 	loadDataQ1();

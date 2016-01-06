@@ -229,12 +229,10 @@ def meanDelta():
 	#path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits'
 	path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/DR12_primery_test_PDFMocksJMC_meanLambda.fits'
 	#path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_reObs/DR12_reObs.fits'
-	cat = pyfits.open(path, memmap=True)[1].data[:10000]
+	cat = pyfits.open(path, memmap=True)[1].data
 
-	cat = cat[ numpy.abs(cat['Z_VI'])<2.1 ]
-
-	cat = cat[ numpy.logical_and( numpy.logical_and(  numpy.logical_and( cat['ALPHA_2']!=1., cat['BETA_2']!=0.),  numpy.abs(cat['ALPHA_2'])<=59.5 ), numpy.abs(cat['BETA_2'])<=0.55 ) ]
-	#cat = cat[ numpy.logical_or( numpy.logical_or(  numpy.logical_or( cat['ALPHA_2']==1., cat['BETA_2']==0.),  numpy.abs(cat['ALPHA_2'])>=59.5 ), numpy.abs(cat['BETA_2'])>=0.55 ) ]
+	#cat = cat[ numpy.logical_and( numpy.logical_and(  numpy.logical_and( cat['ALPHA_2']!=1., cat['BETA_2']!=0.),  numpy.abs(cat['ALPHA_2'])<=59.5 ), numpy.abs(cat['BETA_2'])<=0.55 ) ]
+	cat = cat[ numpy.logical_or( numpy.logical_or(  numpy.logical_or( cat['ALPHA_2']==1., cat['BETA_2']==0.),  numpy.abs(cat['ALPHA_2'])>=59.5 ), numpy.abs(cat['BETA_2'])>=0.55 ) ]
 	print cat.size
 
 	#lambdaRFMin__      = 1410.

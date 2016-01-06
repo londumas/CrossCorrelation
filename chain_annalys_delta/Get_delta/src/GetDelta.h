@@ -114,7 +114,8 @@ const double lambdaObsMax__   = 7235.; //10326;  //7235
 const unsigned int nbBinRFMin__ = 50;
  
 /// Value allowing to put a roof to the error on a flux
-const double capForError__ = 0.19;
+//const double capForError__ = 0.19;
+
 const double z0__        = 2.25;
 const double gama__      = 3.8;
 const double minPowErrorDelta__ = 1.e-10;

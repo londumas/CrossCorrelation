@@ -68,7 +68,7 @@ std::string pathMoreForHist__ = "";
 
 /// Flags
 unsigned int stepDefinition = 2;
-unsigned int stepAnnalyse   = 1;
+unsigned int stepAnnalyse   = 0;
 const bool doVetoLines__          = true;
 const bool setDLA__               = false;
 const bool takeNotFittedSpectra__ = true;
@@ -836,7 +836,7 @@ void GetDelta::fitForests(unsigned int begin, unsigned int end) {
 				double zpix = v_ZZZ__[f][p];
 				FluxMeth2[NbPixMeth2]     = v_NORM_FLUX__[f][p];
 				double err = 1./sqrt(v_NORM_FLUX_IVAR__[f][p]);
-				if (err < capForError__) err = capForError__;
+//				if (err < capForError__) err = capForError__;
 				FluxErrMeth2[NbPixMeth2]  = err;
 				LambdaMeth2[NbPixMeth2]   = v_LAMBDA_RF__[f][p];
 				FluxMeanMeth2[NbPixMeth2] = v_TEMPLATE__[f][p];

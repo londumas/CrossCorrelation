@@ -28,14 +28,14 @@ from myTools import Get_TProfile
 from const_delta import *
 
 
-commandProd     = "/home/gpfs/manip/mnt0607/bao/hdumasde/Code/chain_annalys_delta/Get_delta/bin/main.exe"
-commandProd     = "/home/gpfs/manip/mnt0607/bao/hdumasde/Code/chain_annalys_delta/Correlation/bin/main.exe"
+commandProd     = "/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/chain_annalys_delta/Get_delta/bin/main.exe"
+commandProd     = "/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/chain_annalys_delta/Correlation/bin/main.exe"
 step      = 2000
 nbSpectra = 300000
 
 def main():
 
-	stepIdx = 1
+	stepIdx = 2
 
 	print
 	print "------ Start ------"
@@ -56,7 +56,7 @@ def main():
 		last  = step
 		while (first <= nbSpectra):
 		
-			tmp_command = "clubatch \"echo ; hostname ; /home/gpfs/manip/mnt0607/bao/hdumasde/Code/chain_annalys_delta/Get_delta/bin/main.exe 0 0 " + str(first) + " " + str(last) +"\""
+			tmp_command = "clubatch \"echo ; hostname ; /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/chain_annalys_delta/Get_delta/bin/main.exe 0 0 " + str(first) + " " + str(last) +"\""
 			subprocess.call(tmp_command, shell=True)
 		
 			tmp_command = "echo " + tmp_command
@@ -123,7 +123,8 @@ def main():
 		print '  idx of alpha==1    : ', idx[ (alpha==1.) ]
 		print '  nb of beta==0      : ', chi[ (beta==0.) ].size
 		print '  idx of beta==0     : ', idx[ (beta==0.) ]
-
+		print '  nb of chi2==0      : ', chi[ (chi==0.) ].size
+		print '  idx of chi2==0     : ', idx[ (chi==0.) ]
 
 		numpy.savetxt(folder+scheme+'all.txt', zip(idx,alpha,beta,chi))
 		
