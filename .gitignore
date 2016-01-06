@@ -26,3 +26,27 @@
 *.exe
 *.out
 *.app
+
+
+# Jobs launched
+time.e*
+time.o*
+main.exe.e*
+main.exe.o*
+python.e*
+python.o*
+echo.e*
+echo.o*
+
+# Data files
+*.fits
+*.npy
+
+
+# Useless 
+*.txt
+
+# Historic
+*~
+
+
