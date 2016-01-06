@@ -1,0 +1,399 @@
+# -*- coding: utf-8 -*-
+#
+# created by Hélion du Mas des Bourboux
+# < helion.du-mas-des-bourboux@cea.fr >
+
+### My tools
+import myTools
+
+
+import astropy.io.fits as pyfits
+import math
+import numpy
+import os
+import decimal ## To set the precision of the double values
+import cosmolopy.distance as cosmology
+import matplotlib.pyplot as plt
+from scipy import interpolate
+
+
+import myTools
+from myTools import Get_TProfile
+from const_delta import *
+
+
+
+
+def comparePlot():
+
+	path = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/"
+
+	'''
+	## Map data
+	catSimu = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/QSO_ALL_TESTS.fits')[1].data
+	catMock = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/MockV4/M3_0_0/000/mock.fits')[1].data
+	plt.plot(catSimu['RA'],  catSimu['DEC'], linestyle="", marker="o",label=r'$Data \, QSO$')
+	catSimu = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits')[1].data
+	plt.plot(catSimu['RA'],  catSimu['DEC'], linestyle="", marker="o",label=r'$Data \, Forest$')
+	plt.plot(catMock['RA'],  catMock['DEC'], linestyle="", marker="o",label=r'$Mock \, Forest$')
+	plt.xlabel(r'$R.A.$')
+	plt.ylabel(r'$Dec.$')
+	myTools.deal_with_plot(False,False,True)
+	plt.show()
+	del catSimu
+	del catMock
+	
+	## Map simu
+	catSimu = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Box_000/Simu_000/Data/QSO_withRSD.fits')[1].data
+	print int((numpy.amax(catSimu['X'])-numpy.amin(catSimu['X']))/(4.5*0.71)) + 1
+	print int((numpy.amax(catSimu['Y'])-numpy.amin(catSimu['Y']))/(4.5*0.71)) + 1
+	plt.plot(catSimu['X'],  catSimu['Y'], linestyle="", marker="o",label=r'$Simu \, QSO$')
+	catSimu = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Box_000/Simu_000/Data/delta.fits')[1].data
+	plt.plot(catSimu['RA'],  catSimu['DEC'], linestyle="", marker="o",label=r'$Simu \, Forest$')
+	plt.xlabel(r'$X$')
+	plt.ylabel(r'$Y$')
+	myTools.deal_with_plot(False,False,True)
+	plt.show()
+	del catSimu
+	
+	
+	## Distribution redshift QSO
+	catData = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/QSO_ALL_TESTS.fits')[1].data
+	catSimu = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Box_000/Simu_000/Data/QSO_withRSD.fits')[1].data
+	print '  catData = ', catData.size
+	print '  catSimu = ', catSimu.size
+	plt.hist(catData['Z'], bins=numpy.arange(1.7,4.,0.1),histtype='step',label=r'$Data$',color='blue')
+	plt.hist(catSimu['Z'], bins=numpy.arange(1.7,4.,0.1),histtype='step',label=r'$Simu$',color='red')
+	plt.xlabel(r'$z_{QSO}$')
+	plt.ylabel(r'$\#$')
+	myTools.deal_with_plot(False,False,True)
+	plt.show()
+	del catData
+	del catSimu
+	
+	## Distribution redshift Forest
+	catData = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits')[1].data
+	catSimu = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Box_000/Simu_000/Data/delta.fits')[1].data
+	catMock = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/MockV4/M3_0_0/000/mock.fits')[1].data
+	print '  catData = ', catData.size
+	print '  catSimu = ', catSimu.size
+	print '  catMock = ', catMock.size
+	plt.hist(catData['Z_VI'], bins=numpy.arange(1.7,4.,0.1),histtype='step',label=r'$Data$',color='blue')
+	plt.hist(catSimu['Z_VI'], bins=numpy.arange(1.7,4.,0.1),histtype='step',label=r'$Simu$',color='red')
+	plt.hist(catMock['Z_VI'], bins=numpy.arange(1.7,4.,0.1),histtype='step',label=r'$Mock$',color='green')
+	plt.xlabel(r'$z_{Forest}$')
+	plt.ylabel(r'$\#$')
+	myTools.deal_with_plot(False,False,True)
+	plt.show()
+	del catData
+	del catSimu
+	del catMock
+
+	### Distribution ALPHA
+	catData = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits')[1].data
+	catSimu = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Box_000/Simu_000/Data/delta.fits')[1].data
+	catMock = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/MockV4/M3_0_0/000/mock.fits')[1].data
+	#print '  catData = ', catData.size, catData[ (catData['ALPHA_2']==1.) ].size
+	#print '  catSimu = ', catSimu.size, catSimu[ (catSimu['ALPHA_2']==1.) ].size
+	#print '  catMock = ', catMock.size, catMock[ (catMock['ALPHA_2']==1.) ].size
+	data = myTools.GetHisto(catData['ALPHA_2'], numpy.arange(-50.,50.,0.01))
+	#data[:,1] /= catData.size
+	plt.plot(data[:,0],data[:,1],label=r'$Data$',color='blue')
+	data = myTools.GetHisto(catSimu['ALPHA_2'], numpy.arange(-50.,50.,0.01))
+	#data[:,1] /= catSimu.size
+	plt.plot(data[:,0],data[:,1],label=r'$Simu$',color='red')
+	data = myTools.GetHisto(catMock['ALPHA_2'], numpy.arange(-50.,50.,0.01))
+	#data[:,1] /= catMock.size
+	plt.plot(data[:,0],data[:,1],label=r'$Mock$',color='green')
+	plt.xlabel(r'$\alpha$')
+	plt.ylabel(r'$nb \, / \, Nb_{tot}$')
+	myTools.deal_with_plot(False,True,True)
+	plt.show()
+	del catData
+	del catSimu
+	del catMock
+	
+	### Distribution Beta
+	catData = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits')[1].data
+	catSimu = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Box_000/Simu_000/Data/delta.fits')[1].data
+	catMock = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/MockV4/M3_0_0/000/mock.fits')[1].data
+	#print '  catData = ', catData.size, catData[ (catData['BETA_2']==0.) ].size
+	#print '  catSimu = ', catSimu.size, catSimu[ (catSimu['BETA_2']==0.) ].size
+	#print '  catMock = ', catMock.size, catMock[ (catMock['BETA_2']==0.) ].size
+	data = myTools.GetHisto(catData['BETA_2'], numpy.arange(-0.4,0.4,0.001))
+	#data[:,1] /= catData.size
+	plt.plot(data[:,0],data[:,1],label=r'$Data$',color='blue')
+	data = myTools.GetHisto(catSimu['BETA_2'], numpy.arange(-0.4,0.4,0.001))
+	#data[:,1] /= catSimu.size
+	plt.plot(data[:,0],data[:,1],label=r'$Simu$',color='red')
+	data = myTools.GetHisto(catMock['BETA_2'], numpy.arange(-0.4,0.4,0.001))
+	#data[:,1] /= catMock.size
+	plt.plot(data[:,0],data[:,1],label=r'$Mock$',color='green')
+	plt.xlabel(r'$\beta$')
+	plt.ylabel(r'$nb \, / \, Nb_{tot}$')
+	myTools.deal_with_plot(False,True,True)
+	plt.show()
+	del catData
+	del catSimu
+	del catMock
+	
+
+	### Distribution NB_PIXEL
+	catData = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits')[1].data
+	catSimu = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Box_000/Simu_000/Data/delta.fits')[1].data
+	catMock = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/MockV4/M3_0_0/000/mock.fits')[1].data
+	print '  catData = ', catData.size
+	print '  catSimu = ', catSimu.size
+	print '  catMock = ', catMock.size
+	plt.hist(catData['NB_PIXEL'], bins=numpy.arange(0.,700.,2.),histtype='step',label=r'$Data$',color='blue')
+	plt.hist(catSimu['NB_PIXEL'], bins=numpy.arange(0.,700.,2.),histtype='step',label=r'$Simu$',color='red')
+	plt.hist(catMock['NB_PIXEL'], bins=numpy.arange(0.,700.,2.),histtype='step',label=r'$Mock$',color='green')
+	plt.xlabel(r'$number \, pixel$')
+	plt.ylabel(r'$\#$')
+	myTools.deal_with_plot(False,False,True)
+	plt.show()
+	del catData
+	del catSimu
+	del catMock
+
+
+	### Distribution MEAN_FOREST_LAMBDA_RF
+	catData = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits')[1].data
+	catSimu = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Box_000/Simu_000/Data/delta.fits')[1].data
+	catMock = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/MockV4/M3_0_0/000/mock.fits')[1].data
+	print '  catData = ', catData.size
+	print '  catSimu = ', catSimu.size
+	print '  catMock = ', catMock.size
+	plt.hist(catData['MEAN_FOREST_LAMBDA_RF'], bins=numpy.arange(1040.,1200.,1.),histtype='step',label=r'$Data$',color='blue')
+	plt.hist(catSimu['MEAN_FOREST_LAMBDA_RF'], bins=numpy.arange(1040.,1200.,1.),histtype='step',label=r'$Simu$',color='red')
+	plt.hist(catMock['MEAN_FOREST_LAMBDA_RF'], bins=numpy.arange(1040.,1200.,1.),histtype='step',label=r'$Mock$',color='green')
+	plt.xlabel(r'$< \lambda_{R.F.} >$')
+	plt.ylabel(r'$\#$')
+	myTools.deal_with_plot(False,False,True)
+	plt.show()
+	del catData
+	del catSimu
+	del catMock
+
+	'''
+	
+	distribSoverN()
+	
+
+	### Template
+	data = numpy.loadtxt(path + 'template.txt')
+	template = interpolate.interp1d(data[:,0],data[:,1],bounds_error=False,fill_value=0)
+	plt.errorbar(data[:,0], data[:,1], fmt='o', label=r'$Data$',color='blue') ##/template(1150.)
+	path = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/"
+	data = numpy.loadtxt(path + 'template_0_0.txt')
+	template = interpolate.interp1d(data[:,0],data[:,1],bounds_error=False,fill_value=0)
+	plt.errorbar(data[:,0], data[:,1], fmt='o', label=r'$Simu$',color='red')
+	plt.xlabel(r'$\lambda_{R.F.} \, [\AA]$', fontsize=40)
+	plt.ylabel(r'$f(\lambda_{R.F.})$', fontsize=40) ##/f(1150.)
+	myTools.deal_with_plot(False,False,True)
+	plt.show()
+	
+	
+	### delta+1 vs. lambda_RF
+	data = numpy.loadtxt(path + 'deltaVSLambdaRF.txt')
+	plt.errorbar(data[:,0], data[:,1], fmt='o', label=r'$Data$',color='blue')
+	path = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/"
+	data = numpy.loadtxt(path + 'deltaVSLambdaRF_0_0.txt')
+	plt.errorbar(data[:,0], data[:,1], fmt='o', label=r'$Simu$',color='red')
+	plt.xlabel(r'$\lambda_{R.F.} \, [\AA]$', fontsize=40)
+	plt.ylabel(r'$\delta$', fontsize=40)
+	myTools.deal_with_plot(False,False,True)
+	plt.xlim([1040.,1200.])
+	plt.show()
+	
+	
+	### delta+1 vs. lambda_Obs
+	data = numpy.loadtxt(path+'hDeltaVsLambdaObs_LYA.txt')
+	plt.errorbar(data[:,0]+3600., data[:,1], fmt='o', label=r'$Data$',color='blue')
+	data = numpy.loadtxt(path+'hDeltaVsLambdaObs_LYA_JMC_0_0.txt')
+	plt.errorbar(data[:,0]+3600., data[:,1], fmt='o', label=r'$Simu$',color='red')
+	plt.xlabel(r'$\lambda_{Obs.} \, [\AA]$', fontsize=40)
+	plt.ylabel(r'$f(\lambda_{Obs.})$', fontsize=40)
+	myTools.deal_with_plot(False,False,True)
+	plt.show()
+	
+	
+	### delta vs. lambda_Obs
+	data = numpy.loadtxt(path + 'deltaVSLambdaObs.txt')
+	plt.errorbar(data[:,0], data[:,1], fmt='o', label=r'$Data$',color='blue')
+	path = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/"
+	data = numpy.loadtxt(path + 'deltaVSLambdaObs_0_0.txt')
+	plt.errorbar(data[:,0], data[:,1], fmt='o', label=r'$Simu$',color='red')
+	plt.xlabel(r'$\lambda_{Obs.} \, [\AA]$', fontsize=40)
+	plt.ylabel(r'$\delta$', fontsize=40)
+	myTools.deal_with_plot(False,False,True)
+	plt.show()
+	
+	
+	### eta
+	data = numpy.loadtxt(path + 'eta.txt')
+	plt.errorbar(data[:,0], data[:,1], fmt='o', label=r'$Data$',color='blue')
+	path = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/"
+	data = numpy.loadtxt(path + 'eta_0_0.txt')
+	plt.errorbar(data[:,0], data[:,1], fmt='o', label=r'$Simu$',color='red')
+	plt.xlabel(r'$z_{pixel}$', fontsize=40)
+	plt.ylabel(r'$\eta$', fontsize=40)
+	myTools.deal_with_plot(False,False,True)
+	plt.show()
+	
+	
+	### sigma
+	data = numpy.loadtxt(path + 'sigma2LSS.txt')
+	plt.errorbar(data[:,0], data[:,1], fmt='o', label=r'$Data$',color='blue')
+	path = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/"
+	data = numpy.loadtxt(path + 'sigma2LSS_0_0.txt')
+	plt.errorbar(data[:,0], data[:,1], fmt='o', label=r'$Simu$',color='red')
+	plt.xlabel(r'$z_{pixel}$', fontsize=40)
+	plt.ylabel(r'$\sigma_{L.S.S.}^{2}$', fontsize=40)
+	myTools.deal_with_plot(False,False,True)
+	plt.show()
+
+	
+	distribDelta()
+
+def distribDelta():
+
+	print
+	print "------ Start ------"
+	print
+
+	name = ['/home/gpfs/manip/mnt0607/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits',
+		'/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Box_000/Simu_000/Data/delta.fits'
+		]
+	label = ['data','simu']
+
+	saveHist = []
+	saveVar  = []
+
+	for i in numpy.arange(len(name)):
+		print '\n\n'
+		print label[i]
+		### Data
+		cat = pyfits.open(name[i])[1].data[:10000]
+		print cat.size
+	
+		cut = numpy.logical_and(numpy.logical_and( numpy.logical_and((cat['DELTA_IVAR'] > 0.), (cat['DELTA_WEIGHT']>0.)), numpy.logical_and((cat['NORM_FLUX_IVAR'] > 0.), (cat['FLUX_DLA']>=0.8)) ), numpy.logical_and( (cat['LAMBDA_RF']>=1040.), (cat['LAMBDA_RF']<1200.)))
+		delta   = cat['DELTA'][cut].flatten()
+		weights = cat['DELTA_WEIGHT'][cut].flatten()
+
+
+		m = numpy.average(delta,weights=weights)
+		v = numpy.average((delta-m)**2, weights=weights)
+
+		print delta.size
+		print m, v
+
+		
+		### Plot
+		cut = numpy.abs(delta)<10.
+		delta   = delta[cut]
+		weights = weights[cut]
+
+		print '  with cut'
+		m = numpy.average(delta,weights=weights)
+		v = numpy.average((delta-m)**2, weights=weights)
+		print delta.size
+		print m, v
+
+		delta -= m
+		saveVar += [v]
+		
+
+		hist, axisX = numpy.histogram(delta,bins=numpy.arange(-10.,10.,0.1),weights=weights)
+	        xxx  = numpy.array([ axisX[j]+(axisX[j+1]-axisX[j])/2. for j in range(0,axisX.size-1) ])
+		hist = numpy.asarray(zip(xxx,hist))
+		hist[:,1] /= numpy.sum(hist[:,1])
+		#hist[:,1] /= numpy.amax(hist[:,1])
+		saveHist += [hist]
+
+	print '\n\n'
+
+
+        for i in numpy.arange(len(name)):
+		plt.errorbar(saveHist[i][:,0],saveHist[i][:,1],fmt='o',label=label[i])
+		print numpy.sum(saveHist[i][:,1][ numpy.abs(saveHist[i][:,0])<2.*saveVar[i] ]  )
+
+	plt.grid(True, which='both')
+	plt.xlabel(r'$\delta-<\delta>$', fontsize=40)
+	plt.ylabel(r'$Nb/integral$', fontsize=40)
+	plt.legend(fontsize=30, frameon=False, numpoints=1,ncol=2)
+	plt.yscale('log')
+	plt.show()
+	for i in numpy.arange(len(name)):
+		plt.errorbar(saveHist[i][:,0],saveHist[i][:,1],label=label[i])
+	plt.grid(True, which='both')
+	plt.xlabel(r'$\delta-<\delta>$', fontsize=40)
+	plt.ylabel(r'$Nb/integral$', fontsize=40)
+	plt.legend(fontsize=30, frameon=False, numpoints=1,ncol=2)
+	plt.show()
+
+	for i in numpy.arange(len(name)):
+                plt.errorbar(saveHist[i][:,0],(saveHist[i][:,1]-saveHist[0][:,1])/saveHist[0][:,1],fmt='o',label=label[i])
+	plt.grid(True, which='both')
+        plt.xlabel(r'$\delta-<\delta>$', fontsize=40)
+        plt.ylabel(r'$(nb_{i}-nb_{data})/nb_{data}$', fontsize=40)
+        plt.legend(fontsize=30, frameon=False, numpoints=1,ncol=2)
+        plt.show()
+
+	return
+
+def distribSoverN():
+
+
+	print
+	print "------ Start ------"
+	print
+
+	name = ['/home/gpfs/manip/mnt0607/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits',
+		'/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Box_000/Simu_000/Data/delta.fits',
+		'/home/gpfs/manip/mnt0607/bao/hdumasde/MockV4/M3_0_0/000/mock.fits',
+		]
+	label = ['data','simu','Mock \, pipeline']
+
+	saveHist = []
+
+	for i in numpy.arange(len(name)):
+		cat = pyfits.open(name[i])[1].data
+	
+		cut = numpy.logical_and(numpy.logical_and( numpy.logical_and((cat['DELTA_IVAR'] > 0.), (cat['DELTA_WEIGHT']>0.)), numpy.logical_and((cat['NORM_FLUX_IVAR'] > 0.), (cat['FLUX_DLA']>=0.8)) ), numpy.logical_and( (cat['LAMBDA_RF']>=1040.), (cat['LAMBDA_RF']<1200.)))
+		yyy = cat['NORM_FLUX'][cut].flatten()/numpy.power(cat['NORM_FLUX_IVAR'][cut].flatten(),-0.5)		
+
+		hist, axisX = numpy.histogram(yyy,bins=numpy.arange(-10.,100.,0.1))
+	        xxx  = numpy.array([ axisX[j]+(axisX[j+1]-axisX[j])/2. for j in range(0,axisX.size-1) ])
+		hist = numpy.asarray(zip(xxx,hist))
+		hist[:,1] /= numpy.sum(hist[:,1])
+		saveHist += [hist]
+
+	color = ['blue','red','green','black']
+        for i in numpy.arange(len(name)):
+		plt.plot(saveHist[i][:,0],saveHist[i][:,1],label=r'$'+label[i]+'$',color=color[i])
+
+	plt.grid(True, which='both')
+	plt.xlabel(r'$S/N \, = \, Flux/err$', fontsize=40)
+	plt.ylabel(r'$Nb \, / \, integral$', fontsize=40)
+	plt.legend(fontsize=30, frameon=False, numpoints=1,ncol=2)
+	plt.yscale('log')
+	plt.show()
+
+	return
+
+
+
+
+
+comparePlot()
+
+
+
+
+
+
+
+
+
+

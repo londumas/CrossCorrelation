@@ -1,0 +1,130 @@
+# -*- coding: utf-8 -*-
+#!/usr/bin/env python
+#
+# created by Hélion du Mas des Bourboux
+# <Helion.du-Mas-des-Bourboux@cea.fr>
+# module add scipy/0.13.1_Python_2.7.6-gnu
+
+import subprocess
+import time
+import myTools
+
+commandProd     = "/home/gpfs/manip/mnt0607/bao/hdumasde/Code/chain_annalys_delta/Correlation/bin/main.exe"
+
+def main():
+
+	
+	### For mocks
+	'''
+	### mock catalogue
+	for i in range(0,1):
+		### mock catalogue
+		for j in range(0,1):
+
+			### for region
+			for k in range(0,80):
+				tmp_command = "echo \" \n ------ Start ------ \n \" " 
+				subprocess.call(tmp_command, shell=True)
+
+				tmp_command = "clubatch \"time ; hostname ; " + commandProd + ' 5 0 ' + str(k) + ' 0 ' + str(i) + " " + str(j) + "\""
+				subprocess.call(tmp_command, shell=True)
+	
+				tmp_command = "echo " + tmp_command
+				subprocess.call(tmp_command, shell=True)
+				tmp_command = "echo " + time.ctime()
+				subprocess.call(tmp_command, shell=True)
+
+				time.sleep(10)
+                	        myTools.isReadyForNewJobs(200, 430,'time')
+		time.sleep(120)
+	'''
+	'''
+	for i in range(0,10):
+		for j in range(0,10):
+			tmp_command = "echo \" \n ------ Start ------ \n \" " 
+			subprocess.call(tmp_command, shell=True)
+
+			tmp_command = "clubatch \"time ; hostname ; " + commandProd + " 10 0 0 0 " + str(i) + ' ' + str(j) + " \""
+			subprocess.call(tmp_command, shell=True)
+	
+			tmp_command = "echo " + tmp_command
+			subprocess.call(tmp_command, shell=True)
+			tmp_command = "echo " + time.ctime()
+			subprocess.call(tmp_command, shell=True)
+
+			time.sleep(5)
+			myTools.isReadyForNewJobs(200, 430,'time')
+
+		time.sleep(120.)
+	'''
+
+	'''
+	for i in range(0,10):
+		for j in range(0,10):
+			### Get the data to 'good' files
+			#####################
+			#command = "clubatch \"time  ; hostname ; python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/Python/Correlation/xi_Q_Q.py a a a a " + str(i) + ' ' + str(j) + "\""
+			command = "clubatch \"time  ; hostname ; python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/Python/Correlation/xi_delta_QSO.py a a a a 0 " + str(i) + ' ' + str(j) + "\""
+			print command
+			subprocess.call(command, shell=True)
+			time.sleep(0.5)
+		time.sleep(10.)
+	'''
+
+
+	
+	for i in range(0,10000):
+		### Get the data to 'good' files
+		#####################
+		command = "clubatch \"time  ; hostname ; python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/Python/Correlation/xi_delta_QSO.py a a a a " + str(i) + "\""
+		print command
+		subprocess.call(command, shell=True)
+		isReadyForNewJobs(100, 430,'time')
+		time.sleep(10)
+	
+
+def isReadyForNewJobs(max_nbJobsMe, max_nbJobsAll,word='echo'):
+	'''
+		This function ends when there is room in the cluster for a job.
+		
+
+	'''
+
+	commandQstatMe  = "qstat | grep "+ word +" | wc -l"
+	commandQstatAll = "qstat -u '*' | wc -l"
+
+	## Duration to wait before checking again
+	waitTime = 60
+	## Number of lines that aren't jobs
+	noJobsLine = 2
+	
+	notDoProd = True
+	while (notDoProd):
+		
+		## Counts the jobs from me
+		nbJobsMe = int(subprocess.check_output(commandQstatMe, shell=True))
+		
+		## Counts jobs from everybody
+		nbJobsAll = int(subprocess.check_output(commandQstatAll, shell=True))
+		if (nbJobsAll>0):
+			nbJobsAll = nbJobsAll-noJobsLine
+
+		## Look if there are too many jobs
+		if (nbJobsMe < max_nbJobsMe and nbJobsAll < max_nbJobsAll):
+			notDoProd = False
+		else:
+			time.sleep(waitTime)
+
+	## Return if there is room for a new job
+	return
+
+
+
+
+	print
+	print " ------ End ------"
+	print
+
+
+## Execute the code
+main()
