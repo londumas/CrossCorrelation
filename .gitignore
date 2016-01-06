@@ -49,4 +49,6 @@ echo.o*
 # Historic
 *~
 
-
+# Except this file
+!.gitignore
+!.gitkeep
