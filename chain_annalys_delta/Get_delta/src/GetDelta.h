@@ -124,14 +124,14 @@ const double minPowErrorDeltaForFit__ = 1.e-10;
 const double maxPowErrorDeltaForFit__ = 200.;
 const double etaStart        = 1.;
 const double sigma2LSSStart  = 0.1;
-const double minAlpha__   = -60.;
-const double maxAlpha__   = 60.;
+const double minAlpha__   = -40.;
+const double maxAlpha__   = 40.;
 const double betaStart__ = 0.;
-const double minBeta__  = -0.6;
-const double maxBeta__  =  0.6;
+const double minBeta__  = -0.3;
+const double maxBeta__  =  0.3;
 
 /// Max values of DLA
-const unsigned int NbDLA0__     = 15;
+const unsigned int NbDLA0__ = 15;
 const unsigned int nbLoop__ = 10;
 
 /// Sky lines

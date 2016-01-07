@@ -9,13 +9,13 @@ import subprocess
 import time
 import myTools
 
-commandProd     = "/home/gpfs/manip/mnt0607/bao/hdumasde/Code/chain_annalys_delta/Correlation/bin/main.exe"
+commandProd     = "/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/chain_annalys_delta/Correlation/bin/main.exe"
 
 def main():
 
 	
 	### For mocks
-	'''
+	
 	### mock catalogue
 	for i in range(0,1):
 		### mock catalogue
@@ -34,10 +34,10 @@ def main():
 				tmp_command = "echo " + time.ctime()
 				subprocess.call(tmp_command, shell=True)
 
-				time.sleep(10)
+				time.sleep(3)
                 	        myTools.isReadyForNewJobs(200, 430,'time')
 		time.sleep(120)
-	'''
+	
 	'''
 	for i in range(0,10):
 		for j in range(0,10):
@@ -72,7 +72,7 @@ def main():
 	'''
 
 
-	
+	'''
 	for i in range(0,10000):
 		### Get the data to 'good' files
 		#####################
@@ -81,7 +81,7 @@ def main():
 		subprocess.call(command, shell=True)
 		isReadyForNewJobs(100, 430,'time')
 		time.sleep(10)
-	
+	'''
 
 def isReadyForNewJobs(max_nbJobsMe, max_nbJobsAll,word='echo'):
 	'''

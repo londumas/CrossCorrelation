@@ -59,7 +59,7 @@ double FluxMeth2[nbBinRFMax__];
 double FluxErrMeth2[nbBinRFMax__];
 double FluxMeanMeth2[nbBinRFMax__];
 double zHIMeth2[nbBinRFMax__];
-int NbPixMeth2;
+unsigned int NbPixMeth2;
 double LambdaMeanMeth2;
 double a_PDF[nbBinsFlux__][nbBinRFMax__];
 std::string pathForest__ = "";
@@ -71,7 +71,7 @@ unsigned int stepDefinition = 2;
 unsigned int stepAnnalyse   = 0;
 const bool doVetoLines__          = true;
 const bool setDLA__               = false;
-const bool takeNotFittedSpectra__ = true;
+const bool cutNotFittedSpectra__  = true;
 const bool putReobsTogether__     = false;
 const bool mocksColab__           = false;
 const bool mockJMC__              = false;
@@ -83,7 +83,7 @@ GetDelta::GetDelta(int argc, char** argv)
 		pathForest__   = "/home/gpfs/manip/mnt/bao/hdumasde/Data/";
 		pathForest__  += forest__;
 //		pathForest__  += "/FitsFile_DR12_Guy/DR12_reObs/DR12_reObs.fits";
-		pathForest__  += "/FitsFile_DR12_Guy/DR12_primery/DR12_primery_test_PDFMocksJMC_meanLambda.fits";
+		pathForest__  += "/FitsFile_DR12_Guy/DR12_primery/DR12_primery_test_PDFMocksJMC_meanLambda_testNoCap.fits";
 //		pathForest__  += "/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits";
 	}
 	else {
@@ -129,7 +129,7 @@ GetDelta::GetDelta(int argc, char** argv)
 
 	if (stepAnnalyse==0) {
 
-		loadDataForest(pathForest__,0,0,takeNotFittedSpectra__);
+		loadDataForest(pathForest__,0,0,cutNotFittedSpectra__);
 
 		/// Find the template
 		for (unsigned int i=0; i<nbLoop__; i++) {
@@ -287,9 +287,10 @@ void GetDelta::defineHistos() {
 		}
 	}
 
-	initFitCont();
-	mygMinuit->SetPrintLevel(-1);
-
+	if (stepAnnalyse==1) {
+		initFitCont();
+		mygMinuit->SetPrintLevel(-1);
+	}
 
 }
 void GetDelta::getHisto(unsigned int loopIdx) {
@@ -864,7 +865,6 @@ void GetDelta::fitForests(unsigned int begin, unsigned int end) {
 		double err;
 		double param[2] = {0.};
 		for (int ivar=0; ivar<2; ivar++) mygMinuit->GetParameter(ivar,param[ivar],err);
-
 		v_alpha[f] = param[0];
 		v_beta[f]  = param[1];
 		v_chi2[f]  = mygMinuit->fAmin;
@@ -915,40 +915,41 @@ void GetDelta::fitForests(unsigned int begin, unsigned int end) {
 
 double ProbPixel(double cont,double flux, double sig, double zpix, unsigned int idxPixel) {
 	
+	const double dF = 1./nbBinsFlux__;
 	double prb = 0.;
-	const double dF    = 1./nbBinsFlux__;
 	cont *= dF/sig;
 	flux /= sig;
-	const double fact1 = -1./(2.*(sig*sqrt(2.*M_PI)));
+	//const double fact1 = -0.5/(sig*sqrt(2.*M_PI));
+	const double fact1 = -0.5/sqrt(2.*M_PI);
 
-	for (unsigned int idp=0; idp<nbBinsFlux__; idp++) {
-		const double F   = idp+0.5;
-		const double PDF = a_PDF[idp][idxPixel];
+	for (unsigned int i=0; i<nbBinsFlux__; i++) {
+		const double F   = i+0.5;
+		const double PDF = a_PDF[i][idxPixel];
 		prb += exp( fact1*pow(cont*F-flux,2.) )*PDF;
-	}  
-	return log(prb*dF);
+	}
+	return log( prb*dF );
 }
 
 
 extern void Chi2(int &npar, double *gin, double &f, double *par, int iflag) {
 
 	f = 0.;
-	for (int ilam=0; ilam<NbPixMeth2; ilam++) {
-		const double cont = (par[0]+par[1]*(LambdaMeth2[ilam]-LambdaMeanMeth2))*FluxMeanMeth2[ilam];
-		const double flux = FluxMeth2[ilam];
-		const double sig  = FluxErrMeth2[ilam];
-		const double zpix = zHIMeth2[ilam];
-		f += -2.*ProbPixel(cont,flux,sig,zpix,ilam);
+	for (unsigned int i=0; i<NbPixMeth2; i++) {
+		const double cont = (par[0]+par[1]*(LambdaMeth2[i]-LambdaMeanMeth2))*FluxMeanMeth2[i];
+		const double flux = FluxMeth2[i];
+		const double sig  = FluxErrMeth2[i];
+		const double zpix = zHIMeth2[i];
+		f += -2.*ProbPixel(cont,flux,sig,zpix,i);
 	}
 }
 /*
 extern void Chi2(int &npar, double *gin, double &f, double *par, int iflag) {
 
 	f = 0.;
-	for (int ilam=0; ilam<NbPixMeth2; ilam++) {
-		const double cont = (par[0]+par[1]*(LambdaMeth2[ilam]-LambdaMeanMeth2))*FluxMeanMeth2[ilam];
-		const double flux = FluxMeth2[ilam];
-		const double sig  = FluxErrMeth2[ilam];
+	for (unsigned int i=0; i<NbPixMeth2; i++) {
+		const double cont = (par[0]+par[1]*(LambdaMeth2[i]-LambdaMeanMeth2))*FluxMeanMeth2[i];
+		const double flux = FluxMeth2[i];
+		const double sig  = FluxErrMeth2[i];
 		const double tmp = (flux-cont)/sig;
 		f += tmp*tmp;
 	}
@@ -976,7 +977,7 @@ void GetDelta::initFitCont(void) {
 
 
 
-void GetDelta::loadDataForest(std::string fitsnameSpec, unsigned int start, unsigned int end, bool takeNotFittedSpectra /*=false*/) {
+void GetDelta::loadDataForest(std::string fitsnameSpec, unsigned int start, unsigned int end, bool cutNotFittedSpectra /*=false*/) {
 
 	/*
 
@@ -1034,7 +1035,7 @@ void GetDelta::loadDataForest(std::string fitsnameSpec, unsigned int start, unsi
 		fits_read_col(fitsptrSpec,TDOUBLE, 20,i+1,1,nbBinRFMax__,NULL, &DELTA_WEIGHT,    NULL,&sta);
 		fits_read_col(fitsptrSpec,TDOUBLE, 21,i+1,1,nbBinRFMax__,NULL, &TEMPLATE,        NULL,&sta);
 
-		if (stepDefinition >= 2 && takeNotFittedSpectra==true && ( (alpha2 == alphaStart__ && beta2 == betaStart__) || (fabs(alpha2)>=maxAlpha__-0.5) || (fabs(beta2)>=maxBeta__-0.05) ) ) continue;
+		if (stepDefinition >= 2 && cutNotFittedSpectra==true && ( (alpha2 == alphaStart__ && beta2 == betaStart__) || (fabs(alpha2)>=maxAlpha__-0.5) || (fabs(beta2)>=maxBeta__-0.05) ) ) continue;
 
 		/// Vector with data
 		bool templateHasNegative = false;
@@ -1098,7 +1099,7 @@ void GetDelta::loadDataForest(std::string fitsnameSpec, unsigned int start, unsi
 			}
 		}
 
-		if (takeNotFittedSpectra==true && (tmp_nb<nbBinRFMin__ || templateHasNegative ) ) continue;
+		if (cutNotFittedSpectra==true && (tmp_nb<nbBinRFMin__ || templateHasNegative ) ) continue;
 
 		v_zz__.push_back(zz);
                 v_meanForestLambdaRF__.push_back(meanForestLambdaRF);

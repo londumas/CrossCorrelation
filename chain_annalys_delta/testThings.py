@@ -227,16 +227,22 @@ def meanDelta():
 
 	#path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits'  ##FitsFile_DR12_testNoCutLambdaOBS_Guy
 	#path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits'
-	path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/DR12_primery_test_PDFMocksJMC_meanLambda.fits'
+	path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/DR12_primery_test_PDFMocksJMC_meanLambda_testNoCap.fits'
 	#path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_reObs/DR12_reObs.fits'
 	cat = pyfits.open(path, memmap=True)[1].data
 
-	#cat = cat[ numpy.logical_and( numpy.logical_and(  numpy.logical_and( cat['ALPHA_2']!=1., cat['BETA_2']!=0.),  numpy.abs(cat['ALPHA_2'])<=59.5 ), numpy.abs(cat['BETA_2'])<=0.55 ) ]
-	cat = cat[ numpy.logical_or( numpy.logical_or(  numpy.logical_or( cat['ALPHA_2']==1., cat['BETA_2']==0.),  numpy.abs(cat['ALPHA_2'])>=59.5 ), numpy.abs(cat['BETA_2'])>=0.55 ) ]
+	cat = cat[ cat['ALPHA_2']>10. ]
+
+	cat = cat[ numpy.logical_and( numpy.logical_and(  numpy.logical_and( cat['ALPHA_2']!=1., cat['BETA_2']!=0.),  numpy.abs(cat['ALPHA_2'])<=59.5 ), numpy.abs(cat['BETA_2'])<=0.55 ) ]
+	#cat = cat[ numpy.logical_or( numpy.logical_or(  numpy.logical_or( cat['ALPHA_2']==1., cat['BETA_2']==0.),  numpy.abs(cat['ALPHA_2'])>=59.5 ), numpy.abs(cat['BETA_2'])>=0.55 ) ]
 	print cat.size
 
 	#lambdaRFMin__      = 1410.
 	#lambdaRFMax__      = 1530.
+
+
+	print '  nb |alpha| > 39.5  = ', cat[ (cat['ALPHA_2']>39.5) ].size
+	print '  nb |beta|  > 0.25  = ', cat[ (cat['BETA_2']>0.25) ].size
 
 	cat['DELTA'][ (cat['NORM_FLUX_IVAR']<0.) ] = 0.
 	cat['DELTA'][ (cat['DELTA_IVAR']<0.) ] = 0.
@@ -276,21 +282,45 @@ def meanDelta():
 	plt.hist(meanDelta,bins=1000)
 	myTools.deal_with_plot(False,False,True)
 	plt.show()
-	plt.hist(meanDelta,bins=1000)
-	myTools.deal_with_plot(False,True,True)
-	plt.show()
-
+	'''
+	'''
+	### alpha vs. |<delta>|
 	plt.errorbar(numpy.abs(meanDelta),cat['ALPHA_2'],fmt='o')
 	plt.xlabel(r'$numpy.abs(meanDelta)$', fontsize=40)
 	plt.ylabel(r'$cat[ALPHA_2]$', fontsize=40)
 	myTools.deal_with_plot(False,False,True)
 	plt.show()
+	### beta vs. |<delta>|
 	plt.errorbar(numpy.abs(meanDelta),cat['BETA_2'],fmt='o')
 	plt.xlabel(r'$numpy.abs(meanDelta)$', fontsize=40)
 	plt.ylabel(r'$cat[BETA_2]$', fontsize=40)
 	myTools.deal_with_plot(False,False,True)
 	plt.show()
-	'''
+	### alpha vs. <SNR>
+	plt.errorbar(meanSNR,cat['ALPHA_2'],fmt='o')
+	plt.xlabel(r'$<SNR>$', fontsize=40)
+	plt.ylabel(r'$alpha$', fontsize=40)
+	myTools.deal_with_plot(False,False,True)
+	plt.show()
+	### beta vs. <SNR>
+	plt.errorbar(meanSNR,cat['BETA_2'],fmt='o')
+	plt.xlabel(r'$<SNR>$', fontsize=40)
+	plt.ylabel(r'$beta$', fontsize=40)
+	myTools.deal_with_plot(False,False,True)
+	plt.show()
+	### alpha vs. Z
+	plt.errorbar(cat['Z_VI'],cat['ALPHA_2'],fmt='o')
+	plt.xlabel(r'$Z$', fontsize=40)
+	plt.ylabel(r'$alpha$', fontsize=40)
+	myTools.deal_with_plot(False,False,True)
+	plt.show()
+	### beta vs. Z
+	plt.errorbar(cat['Z_VI'],cat['BETA_2'],fmt='o')
+	plt.xlabel(r'$Z$', fontsize=40)
+	plt.ylabel(r'$beta$', fontsize=40)
+	myTools.deal_with_plot(False,False,True)
+	plt.show()
+	
 	plt.errorbar(numpy.abs(meanDelta[meanDLA==1.]),meanSNR[meanDLA==1.],fmt='o')
 	plt.errorbar(numpy.abs(meanDelta[meanDLA!=1.]),meanSNR[meanDLA!=1.],fmt='o',color='red')
 	plt.xlabel(r'$numpy.abs(meanDelta)$', fontsize=40)
@@ -305,14 +335,14 @@ def meanDelta():
 	plt.ylabel(r'$p \, (\%)$', fontsize=40)
 	myTools.deal_with_plot(True,True,True)
 	plt.show()
+	'''
 	
-	
-	#cat = cat[ meanSNR>20. ]
-	#meanDelta = meanDelta[ meanSNR>20. ]
-	#meanSNR = meanSNR[ meanSNR>20. ]
-	#cat = cat[ meanDelta>0.5 ]
-	#meanDelta = meanDelta[ meanDelta>0.5 ]
-	#meanSNR = meanSNR[ meanDelta>0.5 ]
+	#cat = cat[ meanSNR<0.5 ]
+	#meanDelta = meanDelta[ meanSNR<0.5 ]
+	#meanSNR = meanSNR[ meanSNR<0.5 ]
+	#cat = cat[ meanDelta>1. ]
+	#meanDelta = meanDelta[ meanDelta>1. ]
+	#meanSNR = meanSNR[ meanDelta>1. ]
 	#meanDelta = meanDelta[cat['Z_VI']>4 ]
 	#meanSNR = meanSNR[ cat['Z_VI']>4 ]
 	#cat = cat[ cat['Z_VI']>4 ]
@@ -330,7 +360,7 @@ def meanDelta():
 
 
 		#myTools.plotOnSpectra_plate(el['PLATE'], el['MJD'], el['FIBERID'])
-		#myTools.plotOnSpectra_spec(el['PLATE'], el['MJD'], el['FIBERID'],el['Z_VI'])
+		myTools.plotOnSpectra_spec(el['PLATE'], el['MJD'], el['FIBERID'],el['Z_VI'])
 
 		plt.errorbar(el['LAMBDA_RF'][cut],el['NORM_FLUX'][cut],yerr=numpy.power(el['NORM_FLUX_IVAR'][cut],-0.5),label='$Data$')
 		plt.plot(el['LAMBDA_RF'][cut],numpy.power(el['NORM_FLUX_IVAR'][cut],-0.5),label='flux err')

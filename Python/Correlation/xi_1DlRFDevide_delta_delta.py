@@ -122,6 +122,7 @@ xxx, yyy, yer = plot()
 path__ = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
 forest__ = 'LYA'
 xxx2, yyy2, yer2 = plot()
+path__ = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests_test_PDFMocksJMC_meanLambda_testNoCap/'
 forest__ = 'LYA'
 xxx3, yyy3, yer3 = plot()
 
@@ -143,6 +144,7 @@ plt.errorbar(xxx, yyy, yerr=yer, marker='o',label='LYA-LYA')
 plt.errorbar(xxx2,yyy2, yerr=yer2, marker='o',label='SIIV-SIIV')
 plt.errorbar(xxx3,yyy3, yerr=yer3, marker='o',label='CIV-CIV')
 
+'''
 ### Show lines in the correlation
 xMax    = numpy.amax(xxx)
 yMin    = numpy.amin(yyy)
@@ -161,7 +163,7 @@ for i in range(0,nbLines):
 		name = names[i]+' - '+names[j]
 		plt.plot(xLi,yLi,color='green')
 		plt.text(line, yMax, name, rotation='vertical', fontsize=20)
-
+'''
 
 plt.xlabel(r'$\lambda_{1}/\lambda_{2}$', fontsize=40)
 plt.ylabel(r'$\xi(\lambda_{1}/\lambda_{2})$', fontsize=40)

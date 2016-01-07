@@ -35,7 +35,7 @@ nbSpectra = 300000
 
 def main():
 
-	stepIdx = 2
+	stepIdx = 1
 
 	print
 	print "------ Start ------"
@@ -137,7 +137,7 @@ def main():
 		
 		
 		### Put the new alpha and beta in fits file
-		path     = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest+'/FitsFile_DR12_Guy/DR12_primery/DR12_primery_test_PDFMocksJMC_meanLambda.fits'
+		path     = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest+'/FitsFile_DR12_Guy/DR12_primery/DR12_primery_test_PDFMocksJMC_meanLambda_testNoCap.fits'
 		#path     = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_reObs/DR12_reObs.fits'
 		file_cat = pyfits.open(path,mode='update')
 		cat      = file_cat[1].data
@@ -150,7 +150,7 @@ def main():
 		plt.show()
 		plt.hist(cat['BETA_2']-beta,bins=1000,label='beta')
 		plt.show()
-		plt.hist(chi[ (numpy.isfinite(chi)) ]/cat['NB_PIXEL'][ (numpy.isfinite(chi)) ],bins=1000,label='chi2')
+		plt.hist(chi[ (numpy.isfinite(chi)) ]/(cat['NB_PIXEL'][ (numpy.isfinite(chi)) ]-2.),bins=1000,label='chi2')
 		plt.show()
 		
 		cat['ALPHA_2'] = alpha

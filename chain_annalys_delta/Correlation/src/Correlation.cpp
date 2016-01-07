@@ -96,14 +96,15 @@ const bool shuffleQSO     = false;
 const bool shuffleForest  = false;
 const bool randomQSO      = false;
 const bool randomForest   = false;
-const bool doBootstraps__ = false;
+const bool doBootstraps__ = true;
 
 const bool nicolasEstimator__  = false;
 std::string pathMoreForMocks__ = "";
 const bool haveFvsLambdaRFFlat = false;
 const bool removeFluxAccordingToNbPairs__ = false;
+const bool doVetoLines__ = true;
 
-std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests/";
+std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests_test_PDFMocksJMC_meanLambda_testNoCap/";
 
 Correlation::Correlation(int argc, char **argv) {
 
@@ -127,7 +128,7 @@ Correlation::Correlation(int argc, char **argv) {
 	
 
 	/// Set the number of forest to work on
-	nbForest_   = 10000;
+	nbForest_   = 0;
 	nbForest2__ = 0;
 	nbQ1__      = 0;
 	nbQ2__      = 0;
@@ -135,7 +136,7 @@ Correlation::Correlation(int argc, char **argv) {
 		pathForest__  = "/home/gpfs/manip/mnt/bao/hdumasde/Data/";
 		pathForest__  += forest__;
 //		pathForest__  += "/FitsFile_DR12_testNoCutLambdaOBS_Guy/DR12_primery/DR12_primery.fits";
-		pathForest__  += "/FitsFile_DR12_Guy/DR12_primery/DR12_primery_test_PDFMocksJMC_meanLambda.fits";
+		pathForest__  += "/FitsFile_DR12_Guy/DR12_primery/DR12_primery_test_PDFMocksJMC_meanLambda_testNoCap.fits";
 //		pathForest__  += "/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits";
 	}
 	else if (mocks) {
@@ -5055,7 +5056,7 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 		fits_read_col(fitsptrSpec,TDOUBLE, 18,i+1,1,nbBinRFMax__,NULL, &DELTA,           NULL,&sta);
 		fits_read_col(fitsptrSpec,TDOUBLE, 20,i+1,1,nbBinRFMax__,NULL, &DELTA_WEIGHT,    NULL,&sta);
 
-		if (!mocksNoNoiseNoCont && ( (alpha2 == 1. && beta2 == 0.) || (fabs(alpha2)>=39.5) || (fabs(beta2)>=0.25) ) ) continue;
+		if (!mocksNoNoiseNoCont && ( (alpha2 == 1. && beta2 == 0.) || (fabs(alpha2)>=maxAlpha__-0.5) || (fabs(beta2)>=maxBeta__-0.05) ) ) continue;
 		
 
 		/// If a reobs
@@ -5217,7 +5218,7 @@ void Correlation::loadDataDelta2(int dataNeeded/*=100*/) {
 		fits_read_col(fitsptrSpec,TDOUBLE, 18,i+1,1,nbBinRFMaxDelta2__,NULL, &DELTA,           NULL,&sta);
 		fits_read_col(fitsptrSpec,TDOUBLE, 20,i+1,1,nbBinRFMaxDelta2__,NULL, &DELTA_WEIGHT,    NULL,&sta);
 
-		if (!mocksNoNoiseNoCont && ( (alpha2 == 1. && beta2 == 0.) || (fabs(alpha2)>=39.5) || (fabs(beta2)>=0.25) ) ) continue;
+		if (!mocksNoNoiseNoCont && ( (alpha2 == 1. && beta2 == 0.) || (fabs(alpha2)>=maxAlpha__-0.5) || (fabs(beta2)>=maxBeta__-0.05) ) ) continue;
 
 		for (unsigned int j=0; j<nbBinRFMaxDelta2__; j++) {
 			if (DELTA_WEIGHT[j]>0. && NORM_FLUX_IVAR[j]>0. && FLUX_DLA[j]>=C_DLACORR && LAMBDA_RF[j]>=lambdaRFMinDelta2__ && LAMBDA_RF[j]<lambdaRFMaxDelta2__ && LAMBDA_OBS[j]>=lambdaObsMin__ && LAMBDA_OBS[j]<lambdaObsMax__) {

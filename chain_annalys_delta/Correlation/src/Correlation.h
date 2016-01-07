@@ -129,7 +129,10 @@ const unsigned int nbBinRFMin__ = 50;
 const double lambdaObsMin__   = 3600.;     ///3600.
 const double lambdaObsMax__   = 7235.;      ///7235
 const unsigned int nbBinlambdaObs__ = 3635;   ///3635
-const bool doVetoLines__ = true;
+
+const double maxAlpha__   = 40.;
+const double maxBeta__  =  0.3;
+
 const unsigned int nbVetoLines__ = 21;
 const double vetoLine__[42] = {3615.,3619.,3932.,3937.,3966.,3972.,4042.,4050.,
         4357.,4362.,5458.,5467.,5573.,5585.,5682.,5695.,
