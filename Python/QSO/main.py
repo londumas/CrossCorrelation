@@ -165,23 +165,20 @@ def getQsoCatalogueEBOSS():
 		Get the catalogue of qsos
 	'''
 
-	path = '/home/gpfs/manip/mnt0607/bao/Spectra/spAll-v5_7_9.fits'
+	path = '/home/gpfs/manip/mnt0607/bao/Spectra/spAll-v5_9_1.fits'
 	redShiftKey = 'Z'
 	cat = pyfits.open(path, memmap=True )[1].data
 
-	'''
 	print "  The size of the catalogue is           : ", cat.size
-	## cat = cat[ cat[redShiftKey]>minRedshift__]
-	## print "  We keep Z > " + str(minRedshift__) + "  , the size is      : ", cat.size
-	## cat = cat[ cat[redShiftKey]<=maxRedshift__]
-	## print "  We keep Z <= " + str(maxRedshift__) + "  , the size is      : ", cat.size
 	cat = cat[ cat['CLASS'] == 'QSO' ]
 	print '  We keep CLASS == QSO, the size is      : ', cat.size
 	cat = cat[ cat['ZWARNING'] == 0 ]
 	print '  We keep ZWARNING == 0, the size is      : ', cat.size
 	cat = cat[ cat['Z_ERR'] > 0 ]
 	print '  We keep Z_ERR > 0, the size is      : ', cat.size
-	'''
+
+	print  cat[ cat['Z'] > 1.7 ].size
+
 
 	### BOSS_TARGET1
 	selection_BOSS_TARGET1 = [10,11,12,13,14,15,16,17,18,19,40,41,42,43,44]
@@ -214,13 +211,6 @@ def getQsoCatalogueEBOSS():
 	for el in selection_EBOSS_TARGET2:
 		bits_EBOSS_TARGET2 += 2**el
 
-
-
-
-
-
-
-
 	print cat.size
 	select = ((cat['BOSS_TARGET1'] & bits_BOSS_TARGET1 )>0 )            \
 		| ((cat['ANCILLARY_TARGET1'] & bits_ANCILLARY_TARGET1 )>0)  \
@@ -230,14 +220,6 @@ def getQsoCatalogueEBOSS():
 		| ((cat['EBOSS_TARGET2'] & bits_EBOSS_TARGET2 )>0 )
 	cat = cat[select]
 	print cat.size
-
-	## cat = cat[ cat['ZWARNING'] == 0 ]
-	print '  We keep ZWARNING == 0, the size is      : ', cat[ cat['ZWARNING'] != 0 ].size
-	## cat = cat[ cat['Z_ERR'] > 0 ]
-	print '  We keep Z_ERR > 0, the size is      : ', cat[ cat['Z_ERR'] <= 0 ].size
-	print ' Z < 0  ', cat[ (cat[redShiftKey]<0.) ].size
-	print ' Z < 0.1  ', cat[ (cat[redShiftKey]<0.1) ].size
-	print ' Z > 1.8  ', cat[ (cat[redShiftKey]>1.8) ].size
 
 
 	print min(cat[redShiftKey])
@@ -266,11 +248,104 @@ def getQsoCatalogueEBOSS():
 	col_zz              = pyfits.Column(name='Z',   format='D', array=cat[redShiftKey] )
 	
 	tbhdu = pyfits.BinTableHDU.from_columns([col_ra, col_de, col_zz])
-	tbhdu.writeto('/home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/QSO_EBOSS.fits', clobber=True)
+	tbhdu.writeto('/home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/QSO_EBOSS.fits_updated', clobber=True)
 
 	
 	return
+def getQsoCatalogueAllQSO():
 
+	cat = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/QSO_DR7_DR12_EBOSS_2016_01_08.fits', memmap=True )[1].data
+
+	print cat.size
+	cat = cat[ cat['RA']!=0. ]
+	print cat.size
+
+	col_ra              = pyfits.Column(name='RA',  format='D', array=cat['RA'], unit='deg')
+	col_de              = pyfits.Column(name='DEC', format='D', array=cat['DEC'], unit='deg')
+	col_zz              = pyfits.Column(name='Z',   format='D', array=cat['Z'] )
+
+	## Map
+	plt.ticklabel_format(style='sci', axis='z', scilimits=(0,0))	
+	plt.grid()
+	plt.plot(cat["RA"], cat["DEC"], linestyle="", marker="o")
+	plt.xlabel("Right Ascension (degree)")
+	plt.ylabel("Declination (degree)")
+	plt.title("BOSS DR12")
+	plt.show()
+	## Distribution redshift
+	plt.ticklabel_format(style='sci', axis='z', scilimits=(0,0))
+	plt.grid()
+	plt.hist(cat['Z'][ cat['Z']>1.7 ], bins=50)
+	plt.xlabel("Z")
+	plt.ylabel("#")
+	plt.title("BOSS DR12")
+	plt.show()
+	
+	tbhdu = pyfits.BinTableHDU.from_columns([col_ra, col_de, col_zz])
+	tbhdu.writeto('/home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/QSO_DR7_DR12_EBOSS_2016_01_08.fits', clobber=True)
+def getQsoCatalogueAllObjects():
+	'''
+
+	'''
+
+	path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/'
+	listPAth = [path+'QSO_DR7_DR12_EBOSS_2016_01_08.fits',
+			path+'DLA_all.fits',
+			path+'all_Britt.fits',
+			path+'VIPERS.fits',
+			path+'QSO_3DHST.fits',
+			path+'LOWZ_all.fits',
+			path+'CMASS_all.fits']
+	name = ['QSO','DLA','Britt','VIPERS','3DHST','LOWZ','CMASS']
+
+	## Distribution redshift
+	for i in numpy.arange(len(listPAth)):
+		cat = pyfits.open(listPAth[i], memmap=True )[1].data
+		cat = cat[ (cat['Z']>0.1) ]
+		cat = cat[ (cat['Z']<7.) ]
+		if (cat.size==0): continue
+		plt.hist(cat['Z'], bins=100,histtype='step',label=name[i])
+
+	plt.xlabel("Z")
+	plt.ylabel("#")
+	myTools.deal_with_plot(False,False,True)
+	plt.show()
+
+	### Merge everyThing
+	cat = pyfits.open(listPAth[0], memmap=True )[1].data
+	ra = cat['RA']
+	de = cat['DEC']
+	zz = cat['Z']
+	for i in numpy.arange(1,len(listPAth)):
+		cat = pyfits.open(listPAth[i], memmap=True )[1].data
+		ra = numpy.append(ra, cat['RA'])
+		de = numpy.append(de, cat['DEC'])
+		zz = numpy.append(zz, cat['Z'])
+
+	## Map
+	plt.ticklabel_format(style='sci', axis='z', scilimits=(0,0))	
+	plt.grid()
+	plt.plot(ra, de, linestyle="", marker="o")
+	plt.xlabel("Right Ascension (degree)")
+	plt.ylabel("Declination (degree)")
+	plt.show()
+	## Distribution redshift
+	plt.ticklabel_format(style='sci', axis='z', scilimits=(0,0))
+	plt.grid()
+	plt.hist(zz, bins=200)
+	plt.xlabel("Z")
+	plt.ylabel("#")
+	plt.show()
+
+	### Save	
+	col_ra              = pyfits.Column(name='RA',  format='D', array=ra, unit='deg')
+	col_de              = pyfits.Column(name='DEC', format='D', array=de, unit='deg')
+	col_zz              = pyfits.Column(name='Z',   format='D', array=zz)
+	tbhdu = pyfits.BinTableHDU.from_columns([col_ra, col_de, col_zz])
+	tbhdu.writeto('/home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/ALL_EVERY_OBJECTS_2016_01_08.fits', clobber=True)
+
+
+getQsoCatalogueAllObjects()
 
 #getQsoCatalogueEBOSS()
 #main()
@@ -318,6 +393,14 @@ tbhdu.writeto('/home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/ALL_OBJECTS.
 
 '''
 
+cat3 = pyfits.open('/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits',memmap=True)[1].data
+cat3 = cat3[ cat3['Z_VI']>1.7 ]
+cat3 = cat3[ cat3['Z_VI']<7. ]
+RA  = cat3['RA']
+Dec = cat3['DEC']
+plt.errorbar(RA,Dec, fmt='o')
+plt.show()
+
 import numpy as np
 import ephem
 
@@ -327,6 +410,7 @@ projection='mollweide'
 fig = plt.figure(figsize=(10, 5))
 ax = fig.add_subplot(111, projection=projection, axisbg ='white')
 
+'''
 cat = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/QSO_ALL_TESTS.fits')[1].data
 cat = cat[ cat['Z']>1.7 ]
 cat = cat[ cat['Z']<7. ]
@@ -342,6 +426,15 @@ RA  = cat3['RA']
 Dec = cat3['DEC']
 RA[ RA>180. ] -= 360.
 ax.scatter(np.radians(RA),np.radians(Dec), label=r'$DR12: \, Forest$', color='red')  # convert degrees to radians
+'''
+
+cat3 = pyfits.open('/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits',memmap=True)[1].data
+cat3 = cat3[ cat3['Z_VI']>1.7 ]
+cat3 = cat3[ cat3['Z_VI']<7. ]
+RA  = cat3['RA']
+Dec = cat3['DEC']
+RA[ RA>180. ] -= 360.
+ax.scatter(np.radians(RA),np.radians(Dec), label=r'$eBOSS$', color='red')  # convert degrees to radian
 
 
 lon_array = np.arange(0,360)

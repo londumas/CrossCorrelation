@@ -29,22 +29,28 @@ path = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/"
 for i in range (0,chunckNb):
 	for j in range(0,simulNb):
 		mockNumber = '' #'_'+str(i)+'_'+str(j)
-		#data = numpy.loadtxt(path+'hDeltaVsLambdaObs_LYA.txt_backupNotCorrected')
-		#plt.errorbar(data[:,0]+3547.5, data[:,1], label=r'$LYA \, forest \, not \, corrected$',color='green')
-		#data = numpy.loadtxt(path+'hDeltaVsLambdaObs_LYA'+mockNumber+'.txt_backupCorrected')
-		#plt.errorbar(data[:,0]+3547.5, data[:,1], label=r'$LYA \, forest \, corrected$',color='blue')
+
+		data = numpy.loadtxt('/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_histos_test_PDFMocksJMC/hDeltaVsLambdaObs_LYA.txt')
+                plt.errorbar(data[:,0]+3600.5, data[:,1], label=r'$DR12$',color='red')
+
 		data = numpy.loadtxt(path+'hDeltaVsLambdaObs_LYA'+mockNumber+'.txt')
-		plt.errorbar(data[:,0]+3600.5, data[:,1], label=r'$LYA \, forest \, corrected$',color='blue')
-		#data = numpy.loadtxt(path+'hDeltaVsLambdaObs_CIV'+mockNumber+'.txt_backup')
+		plt.errorbar(data[:,0]+3600.5, data[:,1], label=r'$eBOSS$',color='blue')
+
+		#data = numpy.loadtxt('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/calibration_flux_using_CIV_forest.txt')
 		#plt.errorbar(data[:,0]+3547.5, data[:,1], label=r'$CIV \, forest \, backup$',color='red')
-		data = numpy.loadtxt(path+'hDeltaVsLambdaObs_CIV'+mockNumber+'.txt')
-		plt.errorbar(data[:,0]+3547.5, data[:,1], label=r'$CIV \, forest$',color='cyan')
-		data = numpy.loadtxt(path+'hDeltaVsLambdaObs_SIIV.txt')
-                plt.errorbar(data[:,0]+3547.5, data[:,1], label=r'$CIV \, forest$',color='black')
-		data = numpy.loadtxt('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/hDeltaVsLambdaObs_LYA_JMC.txt')
-		plt.errorbar(data[:,1][ data[:,2]!=0. ], data[:,2][ data[:,2]!=0. ], label=r'$simulation$',color='green')
 
+		#data = numpy.loadtxt(path+'hDeltaVsLambdaObs_CIV'+mockNumber+'.txt')
+		#plt.errorbar(data[:,0]+3547.5, data[:,1], label=r'$CIV \, forest$',color='green')
 
+		#data = numpy.loadtxt(path+'hDeltaVsLambdaObs_SIIV.txt')
+                #plt.errorbar(data[:,0]+3547.5, data[:,1], label=r'$CIV \, forest$',color='black')
+
+		#data = numpy.loadtxt('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/hDeltaVsLambdaObs_LYA_JMC.txt')
+		#plt.errorbar(data[:,1][ data[:,2]!=0. ], data[:,2][ data[:,2]!=0. ], label=r'$simulation$',color='green')
+		#data = numpy.loadtxt('/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_histos_test_PDFMocksJMC/hDeltaVsLambdaObs_LYA.txt')
+		#plt.errorbar(data[:,0]+3600.5, data[:,1], label=r'$DR12$',color='red')
+
+		'''
 		yMin    = numpy.amin(0.)
 		yMax    = numpy.amax(1.)
 		skyLines__ = numpy.power(10.,skyLines__)
@@ -56,7 +62,7 @@ for i in range (0,chunckNb):
 			yLi = [yMin,yMax]
 			plt.plot(xLi,yLi,color='green')
 			plt.text(line, yMax, skyLinesNames__[i], rotation='vertical', fontsize=20)
-
+		'''
 
 #plt.title(r'$hDeltaVsLambdaObs$', fontsize=40)
 plt.xlabel(r'$\lambda_{Obs.} \, [\AA]$', fontsize=40)

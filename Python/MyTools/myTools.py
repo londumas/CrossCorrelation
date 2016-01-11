@@ -243,6 +243,19 @@ def convert1DTo2D(array1D,nbX,nbY):
 		array2D[i][j] = array1D[k]
 
 	return array2D
+def convert2DTo1D(array2D,nbX,nbY):
+	'''
+		convert a 2D array to a 1D array
+	'''
+
+	array1D = numpy.zeros(nbX*nbY)
+
+	for i in range(0,nbX):
+		for j in range(0,nbY):
+			k = i*nbY + j
+			array1D[k] = array2D[i][j]
+
+	return array1D
 def fitAGaussian(data, bins, p0=[1,0.,1.], log=False):
 	'''
 		from http://stackoverflow.com/questions/11507028/fit-a-gaussian-function
@@ -524,8 +537,8 @@ def plotOnSpectra_plate(plate,mjd,fiber):
 	'''
 	
 	### Constants
-	pathToSpec = '/home/gpfs/manip/mnt0607/bao/Spectra/SpectraV5_7_9/'
-	pathToCat  = '/home/gpfs/manip/mnt0607/bao/Spectra/spAll-v5_7_9.fits'
+	pathToSpec = '/home/gpfs/manip/mnt0607/bao/Spectra/SpectraV5_9_1/'
+	pathToCat  = '/home/gpfs/manip/mnt0607/bao/Spectra/spAll-v5_9_1.fits'
 	sizeBitsQSO = const_delta.bitsQSO__['NAME'].size
 	z = 0. 
 
@@ -554,12 +567,12 @@ def plotOnSpectra_plate(plate,mjd,fiber):
 	print '  myTools::plotOnSpectra_plate:: EBOSS_TARGET2 = ', [ const_delta.bitsQSO__['NAME'][i] for i in range(0,sizeBitsQSO) if ( cat['EBOSS_TARGET2'] & 2**const_delta.bitsQSO__['BIT'][i] >0 and const_delta.bitsQSO__['KEY'][i]=='EBOSS_TARGET2') ]
 	'''
 
-	'''
+	
 	### Get its redshift from reduced cat
-	data, plate_list = numpy.load('/home/gpfs/manip/mnt0607/bao/hdumasde/Code/chain_annalys_delta/Run/list_CIV.npy')
+	data, plate_list = numpy.load('/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/chain_annalys_delta/Run/list_LYA.npy')
 	z = data[:,5][ numpy.logical_and( numpy.logical_and( data[:,0]==plate, data[:,1]==mjd ), data[:,2]==fiber) ][0]
 	print '  myTools::plotOnSpectra_plate:: z = ', z
-	'''
+	
 
 	### Get spectrum
 	tmpCat = pyfits.open(pathToSpec + 'spPlate-' + str(plate) + '-' + str(mjd) + '.fits', memmap=True)

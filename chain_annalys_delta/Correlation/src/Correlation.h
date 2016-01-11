@@ -118,6 +118,7 @@ class Correlation
 		void xi_delta_QSO_MockJMc( bool doBootstraps=false, unsigned int bootIdx=0);
 		void xi_delta_QSO_MockJMc_distortionMatrix( void );
 		void xi_delta_QSO_distortionMatrix(void);
+		void xi_delta_QSO_distortionMatrix_1D(void);
 		void xi_delta_QSO_Wick(unsigned int diagramIdx);
 
 		void xi_QSO_QSO(bool doBootstraps=false, unsigned int bootIdx=0);
@@ -152,7 +153,7 @@ const unsigned int nbBinRFMax__ = 647;
 const double distMinPixel__     = 3670.;
 const double minRedshiftQSO__   = 1.7;
 const double maxRedshiftQSO__   = 5.75;
-
+const double alphaStart__       = 1.;
 
 /// If LYA_JMC
 //const unsigned int nbBinRFMax__ = 645;
@@ -176,6 +177,7 @@ const unsigned int nbBinRFMax__ = 373;
 const double distMinPixel__     = 2870.;
 const double minRedshiftQSO__   = 1.14;
 const double maxRedshiftQSO__   = 4.22;
+const double alphaStart__       = 1.;
 */
 /*
 /// If MGII
@@ -187,6 +189,7 @@ const unsigned int nbBinRFMax__ = 2414;
 const double distMinPixel__     = 780.;
 const double minRedshiftQSO__   = 0.17;
 const double maxRedshiftQSO__   = 1.82;
+const double alphaStart__       = 1.;
 */
 /*
 /// If LYB
@@ -198,6 +201,7 @@ const unsigned int nbBinRFMax__ = 1085;
 const double distMinPixel__     = 4190.;
 const double minRedshiftQSO__   = 2.19;
 const double maxRedshiftQSO__   = 7.08;
+const double alphaStart__       = 1.;
 */
 /*
 /// If SIIV
@@ -209,6 +213,7 @@ const unsigned int nbBinRFMax__ = 326;
 const double distMinPixel__     = 2880.;  ///3220
 const double minRedshiftQSO__   = 1.37;   /// 1.37///1.14
 const double maxRedshiftQSO__   = 4.83;   /// 4.83///4.22
+const double alphaStart__       = 1.;
 */
 
 
@@ -227,6 +232,7 @@ const double distMinPixelDelta2__     = 3670.;
 const double minRedshiftQDelta2__   = 1.7;
 const double maxRedshiftQDelta2__   = 5.75;
 const std::string pathDelta2__ = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits";
+const double alphaStart2__       = 1.3;
 */
 /*
 /// For Delta 2 (CIV)
@@ -239,6 +245,7 @@ const double distMinPixelDelta2__     = 2870.;
 const double minRedshiftQDelta2__   = 1.17824434332;
 const double maxRedshiftQDelta2__   = 4.10198406827;
 const std::string pathDelta2__ = "/home/gpfs/manip/mnt/bao/hdumasde/Data/CIV/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits";
+const double alphaStart2__       = 1.;
 */
 /*
 /// For Delta 2 (MGII)
@@ -251,6 +258,7 @@ const double distMinPixelDelta2__     = 780.;
 const double minRedshiftQDelta2__   = 0.201354106684;
 const double maxRedshiftQDelta2__   = 1.76719159405;
 const std::string pathDelta2__ = "/home/gpfs/manip/mnt/bao/hdumasde/Data/MGII/FitsFile_DR12/DR12_primery/DR12_primery.fits";
+const double alphaStart2__       = 1.;
 */
 /*
 /// For Delta 2 (LYB)
@@ -263,6 +271,7 @@ const double distMinPixelDelta2__     = 4190.;
 const double minRedshiftQDelta2__   = 2.25743931576;
 const double maxRedshiftQDelta2__   = 6.85278103355;
 const std::string pathDelta2__ = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYB/FitsFile_DR12_testNoCutLambdaOBS_Guy/DR12_primery/DR12_primery.fits";
+const double alphaStart2__       = 1.;
 */
 
 /// For Delta 2 (SIIV)
@@ -275,6 +284,7 @@ const double distMinPixelDelta2__     = 2880.;
 const double minRedshiftQDelta2__     = 1.37;
 const double maxRedshiftQDelta2__     = 4.83;
 const std::string pathDelta2__ = "/home/gpfs/manip/mnt/bao/hdumasde/Data/SIIV/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits";
+const double alphaStart2__       = 1.;
 
 
 /// For Q2

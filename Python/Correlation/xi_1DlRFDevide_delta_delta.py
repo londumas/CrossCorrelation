@@ -116,12 +116,12 @@ def saveListRealMocks(ni,nj):
 
 
 
-
+path__ = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/eBOSS/'
 forest__ = 'LYA'
 xxx, yyy, yer = plot()
-path__ = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
-forest__ = 'LYA'
-xxx2, yyy2, yer2 = plot()
+#path__ = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
+#forest__ = 'LYA'
+#xxx2, yyy2, yer2 = plot()
 path__ = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests_test_PDFMocksJMC_meanLambda_testNoCap/'
 forest__ = 'LYA'
 xxx3, yyy3, yer3 = plot()
@@ -140,9 +140,9 @@ xxx3 = xxx3[50:]
 yyy3 = yyy3[50:]
 yer3 = yer3[50:]
 '''
-plt.errorbar(xxx, yyy, yerr=yer, marker='o',label='LYA-LYA')
-plt.errorbar(xxx2,yyy2, yerr=yer2, marker='o',label='SIIV-SIIV')
-plt.errorbar(xxx3,yyy3, yerr=yer3, marker='o',label='CIV-CIV')
+plt.errorbar(xxx, yyy, yerr=yer, marker='o',label='eBOSS')
+#plt.errorbar(xxx2,yyy2, yerr=yer2, marker='o',label='SIIV-SIIV')
+plt.errorbar(xxx3,yyy3, yerr=yer3, marker='o',label='DR12',color='red')
 
 '''
 ### Show lines in the correlation

@@ -52,7 +52,7 @@ def make_all_Fits(iStart=0,iEnd=-1):
 	pathToSpec = Get_Path_To_Fits()
 	
 	### Get the catalogue
-	data, plate_list = numpy.load('/home/gpfs/manip/mnt0607/bao/hdumasde/Code/chain_annalys_delta/Run/list_'+forest__+'.npy') #Get_Catalogue()
+	data, plate_list = numpy.load('/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/chain_annalys_delta/Run/list_'+forest__+'.npy') #Get_Catalogue()
 
 	### Get the flux vs. lambda_Obs
 	removeSkyLines = scipy.loadtxt('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/calibration_flux_using_CIV_forest.txt')
@@ -537,6 +537,9 @@ def Get_Catalogue():
 			
 	if (pipeline__=='DR12' or pipeline__=='Guy' or pipeline__=='Margala' or pipeline__=='MOCK'):
 		cat = pyfits.open(path, memmap=True )[1].data
+
+		print numpy.amax(cat['MJD'])
+
 		print "  The size of the catalogue is           : " + str(cat.size)
 		cat = cat[ cat["BAL_FLAG_VI"]==0]
 		print "  We keep BAL_FLAG_VI == 0 , the size is : " + str(cat.size)
@@ -705,8 +708,8 @@ if (len(sys.argv)>=5):
 	chunckNb__ = int(sys.argv[3])
 	simulNb__  = int(sys.argv[4])
 
-#cat = Get_Catalogue()
+cat = Get_Catalogue()
 #numpy.save('list_'+forest__,cat)
 
 #make_all_Fits(iStart,iEnd)
-Merge_Files()
+#Merge_Files()

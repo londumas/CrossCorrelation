@@ -175,6 +175,7 @@ def lookNotFittedSpectra():
 def distribSomething():
 
 	path = ['/home/gpfs/manip/mnt0607/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits']
+	path = ['/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits']
 	#path = ['/home/gpfs/manip/mnt0607/bao/hdumasde/Data/CIV/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits']
 	cat = pyfits.open(path[0])[1].data[:10000]
 	#cat2 = cat[ numpy.logical_or( numpy.logical_or(  numpy.logical_or( cat['ALPHA_2']==1., cat['BETA_2']==0.),  numpy.abs(cat['ALPHA_2'])>=39.5 ), numpy.abs(cat['BETA_2'])>=0.25 ) ]
@@ -182,9 +183,9 @@ def distribSomething():
 	print cat.size
 	#print cat2.size
 
+	'''
 	### All spectra
 	value = []
-
 	for el in cat:
 		cut = numpy.logical_and( el['NORM_FLUX_IVAR']>0.,el['DELTA_IVAR']>0.)
 		value += [ (el['ALPHA_2']+el['BETA_2']*(el['LAMBDA_RF'][cut]-el['MEAN_FOREST_LAMBDA_RF']))*el['TEMPLATE'][cut] ]
@@ -192,7 +193,7 @@ def distribSomething():
 	plt.hist(value,bins=100)
 	myTools.deal_with_plot(False,False,True)
 	plt.show()
-	
+	'''
 
 	'''
 	value = cat['ALPHA_2']
@@ -231,7 +232,9 @@ def meanDelta():
 	#path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_reObs/DR12_reObs.fits'
 	cat = pyfits.open(path, memmap=True)[1].data
 
-	cat = cat[ cat['ALPHA_2']>10. ]
+	print numpy.mean(cat['BETA_2'])
+
+	cat = cat[ cat['Z_VI']>6. ]
 
 	cat = cat[ numpy.logical_and( numpy.logical_and(  numpy.logical_and( cat['ALPHA_2']!=1., cat['BETA_2']!=0.),  numpy.abs(cat['ALPHA_2'])<=59.5 ), numpy.abs(cat['BETA_2'])<=0.55 ) ]
 	#cat = cat[ numpy.logical_or( numpy.logical_or(  numpy.logical_or( cat['ALPHA_2']==1., cat['BETA_2']==0.),  numpy.abs(cat['ALPHA_2'])>=59.5 ), numpy.abs(cat['BETA_2'])>=0.55 ) ]
@@ -359,8 +362,8 @@ def meanDelta():
 		print meanSNR[i],meanDelta[i], el['Z_VI'], el['PLATE'], el['MJD'], el['FIBERID'], el['ALPHA_2'], el['BETA_2']
 
 
-		#myTools.plotOnSpectra_plate(el['PLATE'], el['MJD'], el['FIBERID'])
-		myTools.plotOnSpectra_spec(el['PLATE'], el['MJD'], el['FIBERID'],el['Z_VI'])
+		myTools.plotOnSpectra_plate(el['PLATE'], el['MJD'], el['FIBERID'])
+		#myTools.plotOnSpectra_spec(el['PLATE'], el['MJD'], el['FIBERID'],el['Z_VI'])
 
 		plt.errorbar(el['LAMBDA_RF'][cut],el['NORM_FLUX'][cut],yerr=numpy.power(el['NORM_FLUX_IVAR'][cut],-0.5),label='$Data$')
 		plt.plot(el['LAMBDA_RF'][cut],numpy.power(el['NORM_FLUX_IVAR'][cut],-0.5),label='flux err')

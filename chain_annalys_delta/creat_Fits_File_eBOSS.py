@@ -52,11 +52,11 @@ def make_all_Fits(iStart=0,iEnd=-1):
 	pathToSpec = Get_Path_To_Fits()
 	
 	### Get the catalogue
-	data, plate_list = numpy.load('/home/gpfs/manip/mnt0607/bao/hdumasde/Code/chain_annalys_delta/Run/list_'+forest__+'.npy') #Get_Catalogue()
+	data, plate_list = numpy.load('/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/chain_annalys_delta/Run/list_'+forest__+'.npy') #Get_Catalogue()
 
 	### Get the flux vs. lambda_Obs
-	#removeSkyLines = scipy.loadtxt('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/hDeltaVsLambdaObs_CIV.txt_backup')
-	#removeSkyLines = interpolate.interp1d(numpy.log10(3547.5+removeSkyLines[:,0]),removeSkyLines[:,1],bounds_error=False,fill_value=0)
+	#removeSkyLines = scipy.loadtxt('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/calibration_flux_using_CIV_forest.txt')
+	#removeSkyLines = interpolate.interp1d(numpy.log10(3547.5+removeSkyLines[:,0]),removeSkyLines[:,1],bounds_error=False,fill_value=1)
 
 	sizeMax = data[:,0].size
 
@@ -110,7 +110,7 @@ def make_all_Fits(iStart=0,iEnd=-1):
 			### eBOSS
 			tmpCat = pyfits.open(pathToSpec + 'spPlate-' + str(el['PLATE']) + '-' + str(el['MJD']) + '.fits', memmap=True)
 		except Exception,error:
-			if (not verbose): continue
+			#if (not verbose): continue
 			tmp_string = pathToSpec + 'spPlate-' + str(el['PLATE']) + '-' + str(el['MJD']) + '.fits'
 	
 			tmp_command = "echo  \"" + "  File not found \n " + tmp_string + "\""
@@ -139,18 +139,24 @@ def make_all_Fits(iStart=0,iEnd=-1):
 				
 		### Apply cuts for bad pixels
 		############################## 
-			
+
 		### CCD and too many sky lines
 		#cat = cat[ (numpy.logical_and( (cat["LOGLAM"]>=log10lambdaObsMin__) , (cat["LOGLAM"]<log10lambdaObsMax__) )) ]
 		### Sky Lines
 		#for lines in skyLines__:
 		#	cat = cat[ (numpy.logical_or( (cat["LOGLAM"]<=lines[0]) , (cat["LOGLAM"]>=lines[1]) )) ]
-		cat = cat[ numpy.logical_and( numpy.logical_and( (cat["IVAR"]>0.), (cat["AND_MASK"]<bit16__)), (numpy.isfinite(cat["FLUX"])) ) ]
+		#cat = cat[ numpy.logical_and( numpy.logical_and( (cat["IVAR"]>0.), (cat["AND_MASK"]<bit16__)), (numpy.isfinite(cat["FLUX"])) ) ]
 
 		### Get the devident coef to correct for sky residuals
 		#coef = removeSkyLines(cat["LOGLAM"])
 		#cat['FLUX'] /= coef
 		#cat['IVAR'] *= coef*coef
+
+		'''
+		plt.errorbar(cat['LOGLAM'],cat['FLUX'])
+		myTools.deal_with_plot(False,False,False)
+		plt.show()
+		'''
 			
 		### Get the normalisation factor
 		try:
@@ -181,7 +187,22 @@ def make_all_Fits(iStart=0,iEnd=-1):
 		el['LAMBDA_OBS'][:tmp_lenCat] = cat["LOGLAM"]
 		el['FLUX'][:tmp_lenCat]       = cat["FLUX"]
 		el['FLUX_IVAR'][:tmp_lenCat]  = cat["IVAR"]
-		
+
+		'''
+		print tmp_lenCat
+		plt.errorbar(el["LAMBDA_OBS"][el["FLUX_IVAR"]>0.],el['FLUX'][el["FLUX_IVAR"]>0.])
+		plt.errorbar(el["LAMBDA_OBS"][el["FLUX_IVAR"]>0.],el["FLUX_IVAR"][el["FLUX_IVAR"]>0.])
+		myTools.deal_with_plot(False,False,False)
+		plt.show()
+			
+		print tmp_lenCat
+		plt.errorbar(numpy.power(10., el["LAMBDA_OBS"][el["FLUX_IVAR"]>0.])/(1.+el['Z_VI']),el['FLUX'][el["FLUX_IVAR"]>0.])
+		plt.errorbar(numpy.power(10., el["LAMBDA_OBS"][el["FLUX_IVAR"]>0.])/(1.+el['Z_VI']),el["FLUX_IVAR"][el["FLUX_IVAR"]>0.])
+		print numpy.min( el["LAMBDA_OBS"][el["FLUX_IVAR"]>0.]), numpy.amax(el["LAMBDA_OBS"][el["FLUX_IVAR"]>0.])
+		print numpy.min( numpy.power(10., el["LAMBDA_OBS"][el["FLUX_IVAR"]>0.]))/(1.+el['Z_VI']), numpy.amax( numpy.power(10., el["LAMBDA_OBS"][el["FLUX_IVAR"]>0.]))/(1.+el['Z_VI'])
+		myTools.deal_with_plot(False,False,False)
+		plt.show()
+		'''
 
 	print "  Number of forest (init)                                : " + str(cat_tbhdu.size)
 	
@@ -203,6 +224,10 @@ def make_all_Fits(iStart=0,iEnd=-1):
 	print numpy.amax(cat_tbhdu['NORM_FACTOR'])
 	print numpy.amin(cat_tbhdu['NORM_FACTOR'])
 	print cat_tbhdu[ cat_tbhdu['NORM_FACTOR']==1.].size
+	print 
+	print cat_tbhdu.size
+	cat_tbhdu = cat_tbhdu[ (cat_tbhdu['NORM_FACTOR']>=0.) ]
+	print cat_tbhdu.size
 
 	tbhdu = pyfits.BinTableHDU(data=cat_tbhdu)
 	tbhdu.update()
@@ -388,7 +413,7 @@ def Merge_Files():
 	meanLambdaRF         = pyfits.Column(name='MEAN_FOREST_LAMBDA_RF', format='D', array=mean_lambdaRF_in_forest, unit='angstrom')
 	alpha1               = pyfits.Column(name='ALPHA_1',         format='D', array=numpy.ones(sizeMax) )
 	beta1                = pyfits.Column(name='BETA_1',          format='D', array=numpy.zeros(sizeMax) )
-	alpha2               = pyfits.Column(name='ALPHA_2',         format='D', array=numpy.ones(sizeMax) )
+	alpha2               = pyfits.Column(name='ALPHA_2',         format='D', array=alphaStart__*numpy.ones(sizeMax) )
 	beta2                = pyfits.Column(name='BETA_2',          format='D', array=numpy.zeros(sizeMax) )
 
 	tmp_nbBinForest     = str(nbBinRFMax__)+'D'
@@ -460,7 +485,7 @@ def Get_Path_To_Fits():
 		if (location__ == "ICLUST"):
 			path = "/home/gpfs/manip/mnt0607/bao/MockV4/M3_0_" + str(chunckNb__) + '/' + str(simulNb__).zfill(3) + '/'
 	elif (pipeline__ == 'eBOSS'):
-			path = "/home/gpfs/manip/mnt0607/bao/Spectra/SpectraV5_8_0/"
+			path = "/home/gpfs/manip/mnt0607/bao/Spectra/SpectraV5_9_1/"
 	
 	print '  Path to specFiles = ', path	
 	return path			
@@ -503,7 +528,24 @@ def Get_Catalogue():
 	
 	if (pipeline__ == 'eBOSS'):
 		redShiftKey = 'Z'
-		cat = pyfits.open('/home/gpfs/manip/mnt0607/bao/Spectra/spAll-v5_7_9.fits')[1].data
+		cat = pyfits.open('/home/gpfs/manip/mnt0607/bao/Spectra/spAll-v5_9_1.fits')[1].data
+
+		#print cat.size
+		#cat = cat[ (cat['MJD']>56837) ]
+		#print cat.size
+
+		print "  The size of the catalogue is           : ", cat.size
+		cat = cat[ cat[redShiftKey]>minRedshift__]
+		print "  We keep Z > " + str(minRedshift__) + "  , the size is      : ", cat.size
+		cat = cat[ cat[redShiftKey]<=maxRedshift__]
+		print "  We keep Z <= " + str(maxRedshift__) + "  , the size is      : ", cat.size
+		cat = cat[ cat['CLASS'] == 'QSO' ]
+		print '  We keep CLASS == QSO, the size is      : ', cat.size
+		cat = cat[ cat['ZWARNING'] == 0 ]
+		print '  We keep ZWARNING == 0, the size is      : ', cat.size
+		cat = cat[ cat['Z_ERR'] > 0 ]
+		print '  We keep Z_ERR > 0, the size is      : ', cat.size
+
 
 		### BOSS_TARGET1
 		selection_BOSS_TARGET1 = [10,11,12,13,14,15,16,17,18,19,40,41,42,43,44]
@@ -545,20 +587,6 @@ def Get_Catalogue():
 			| ((cat['EBOSS_TARGET2'] & bits_EBOSS_TARGET2 )>0 )
 		cat = cat[select]
 		print cat.size
-
-
-
-		print "  The size of the catalogue is           : ", cat.size
-		cat = cat[ cat[redShiftKey]>minRedshift__]
-		print "  We keep Z > " + str(minRedshift__) + "  , the size is      : ", cat.size
-		cat = cat[ cat[redShiftKey]<=maxRedshift__]
-		print "  We keep Z <= " + str(maxRedshift__) + "  , the size is      : ", cat.size
-		#cat = cat[ cat['CLASS'] == 'QSO' ]
-		#print '  We keep CLASS == QSO, the size is      : ', cat.size
-		cat = cat[ cat['ZWARNING'] == 0 ]
-		print '  We keep ZWARNING == 0, the size is      : ', cat.size
-		cat = cat[ cat['Z_ERR'] > 0 ]
-		print '  We keep Z_ERR > 0, the size is      : ', cat.size
 
 		
 

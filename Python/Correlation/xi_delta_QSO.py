@@ -898,13 +898,18 @@ def saveListReal(nbReal,path1D,path2D,pathToSave,subsampling=False):
 
 	for i in numpy.arange(nbReal):
 
-		xi1D, xi2D, xiMu, xiWe = loadData(path1D+str(i)+'.txt',path2D+str(i)+'.txt')
-		list1D[:,i]         = xi1D[:,1]
-		list2D[:,i]         = xi2D[:,:,1].flatten()
-		listMu[:,i]         = xiMu[:,:,2].flatten()
-		listWe[:,:,i]       = xiWe[:,:,1]
-		listMultipol[:,:,i] = plotMultipol(xiMu)[:,:,1]
-
+		try:
+			xi1D, xi2D, xiMu, xiWe = loadData(path1D+str(i)+'.txt',path2D+str(i)+'.txt')
+			list1D[:,i]         = xi1D[:,1]
+			list2D[:,i]         = xi2D[:,:,1].flatten()
+			listMu[:,i]         = xiMu[:,:,2].flatten()
+			listWe[:,:,i]       = xiWe[:,:,1]
+			listMultipol[:,:,i] = plotMultipol(xiMu)[:,:,1]
+		except:
+			print '   ERROR:: ', path1D+str(i)+'.txt',path2D+str(i)+'.txt'
+			commandProd = "/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/chain_annalys_delta/Correlation/bin/main.exe"
+			tmp_command = "clubatch \"time ; hostname ; " + commandProd + ' 5 0 ' + str(i) + ' 0 0 0 ' + "\""
+			subprocess.call(tmp_command, shell=True)
 
 	numpy.save(pathToSave+'1D',list1D)
 	numpy.save(pathToSave+'2D',list2D)
@@ -942,13 +947,16 @@ def saveListRealMocks(ni,nj):
 	for i in numpy.arange(ni):
 		for j in numpy.arange(nj):
 			tmpPath =  path + str(i)+'/Simu_00'+str(j)+'/Results/xi_delta_QSO_'
-			xi1D, xi2D, xiMu, xiWe = loadData(tmpPath+'Mu_LYA_QSO.txt',tmpPath+'2D_LYA_QSO.txt')
-			list1D[:,i*10+j]         = xi1D[:,1]
-			list2D[:,i*10+j]         = xi2D[:,:,1].flatten()
-			listMu[:,i*10+j]         = xiMu[:,:,2].flatten()
-			listWe[:,:,i*10+j]       = xiWe[:,:,1]
-			listMultipol[:,:,i*10+j] = plotMultipol(xiMu)[:,:,1]
 
+			try:
+				xi1D, xi2D, xiMu, xiWe = loadData(tmpPath+'Mu_LYA_QSO.txt',tmpPath+'2D_LYA_QSO.txt')
+				list1D[:,i*10+j]         = xi1D[:,1]
+				list2D[:,i*10+j]         = xi2D[:,:,1].flatten()
+				listMu[:,i*10+j]         = xiMu[:,:,2].flatten()
+				listWe[:,:,i*10+j]       = xiWe[:,:,1]
+				listMultipol[:,:,i*10+j] = plotMultipol(xiMu)[:,:,1]
+			except:
+				print '   ERROR:: ', tmpPath
 	numpy.save(pathToSave+'1D',list1D)
 	numpy.save(pathToSave+'2D',list2D)
 	numpy.save(pathToSave+'Mu',listMu)
@@ -1229,10 +1237,18 @@ def saveMeanCov():
 
 
 
+### Data
+path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests_test_PDFMocksJMC_meanLambda_testNoCap/'
+saveListReal(5000,path+'xi_delta_QSO_Mu_LYA_QSO_shuffleForest_',path+'xi_delta_QSO_2D_LYA_QSO_shuffleForest_',path+'shuffleForest_LYA_QSO_',False)
+
+cov = numpy.load('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests_test_PDFMocksJMC_meanLambda_testNoCap/shuffleForest_LYA_QSO_cov_2D.npy')
+cor = myTools.getCorrelationMatrix(cov)
+myTools.plot2D(cor)
+a = myTools.plotCovar([cor],['a'])
+myTools.plot2D(a)
 
 
-
-xi1D_, xi2D_, xiMu_, xiWe_ = loadData('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests/xi_delta_QSO_Mu_'+forest1__+'_'+qso1__+'.txt','/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests/xi_delta_QSO_2D_'+forest1__+'_'+qso1__+'.txt')
+xi1D_, xi2D_, xiMu_, xiWe_ = loadData('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests_test_PDFMocksJMC_meanLambda_testNoCap/xi_delta_QSO_Mu_'+forest1__+'_'+qso1__+'.txt','/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests_test_PDFMocksJMC_meanLambda_testNoCap/xi_delta_QSO_2D_'+forest1__+'_'+qso1__+'.txt')
 plotXi(0)
 plotXi(1)
 plotXi(2)

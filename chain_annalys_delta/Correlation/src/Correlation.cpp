@@ -43,7 +43,7 @@ std::string alQSO[9]     = {"QSO_ALL_LowZ_2_397.fits", "QSO_ALL_highZ_2_397.fits
 */
 std::string QSO__    = "";
 std::string pathQ1__ = "";
-std::string alQSOName[18] = {"QSO",
+std::string alQSOName[19] = {"QSO",
 				"DLA",
 				"CMASS",
 				"CMASSLOWZ",
@@ -60,9 +60,10 @@ std::string alQSOName[18] = {"QSO",
 				"QSO_3DHST",
 				"QSO_EBOSS",
 				"QSO_DR7_DR12_EBOSS",
-				"ALL_OBJECTS"
+				"ALL_OBJECTS",
+				"ALL_EVERY_OBJECTS"
 };
-std::string alQSO[18] = {"QSO_ALL_TESTS",
+std::string alQSO[19] = {"QSO_ALL_TESTS",
 				"DLA_all",
 				"CMASS_all",
 				"CMASSLOWZ_all",
@@ -78,8 +79,9 @@ std::string alQSO[18] = {"QSO_ALL_TESTS",
 				"VIPERS",
 				"QSO_3DHST",
 				"QSO_EBOSS",
-				"QSO_DR7_DR12_EBOSS",
-				"ALL_OBJECTS"
+				"QSO_DR7_DR12_EBOSS_2016_01_08",
+				"ALL_OBJECTS",
+				"ALL_EVERY_OBJECTS_2016_01_08"
 };
 
 
@@ -93,10 +95,10 @@ const double randomPositionOfQSOInCell__ = false;
 const double randomPositionOfQSOInCellNotBeforeCorrelation__ = false;
 
 const bool shuffleQSO     = false;
-const bool shuffleForest  = false;
+const bool shuffleForest  = true;
 const bool randomQSO      = false;
 const bool randomForest   = false;
-const bool doBootstraps__ = true;
+const bool doBootstraps__ = false;
 
 const bool nicolasEstimator__  = false;
 std::string pathMoreForMocks__ = "";
@@ -104,7 +106,7 @@ const bool haveFvsLambdaRFFlat = false;
 const bool removeFluxAccordingToNbPairs__ = false;
 const bool doVetoLines__ = true;
 
-std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests_test_PDFMocksJMC_meanLambda_testNoCap/";
+std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests_test_PDFMocksJMC_meanLambda_testNoCap//";
 
 Correlation::Correlation(int argc, char **argv) {
 
@@ -228,7 +230,8 @@ Correlation::Correlation(int argc, char **argv) {
 	else if (idxCommand[0] == 16) xi_A_delta_delta_lambda();
 	else if (idxCommand[0] == 17) xi_A_delta_delta2_lambda();
 	else if (idxCommand[0] == 18) xi_delta_QSO_distortionMatrix();
-	else if (idxCommand[0] == 19) xi_delta_QSO_MockJMc_distortionMatrix();
+	else if (idxCommand[0] == 19) xi_delta_QSO_distortionMatrix_1D();
+	else if (idxCommand[0] == 20) xi_delta_QSO_MockJMc_distortionMatrix();
 
 	std::cout << "\n\n\n\n" << std::endl;
 }
@@ -949,11 +952,13 @@ void Correlation::xi_A_delta_delta(void) {
 		const double sinDe          = v_SinDe__[f1];
 		const double firstPixelPow2 = v_r__[f1][0]*v_r__[f1][0];
 		const double ra1            = v_ra__[f1];
+		const double de1            = v_de__[f1];
 
 		for (unsigned int f2=0; f2<f1; f2++) {
 
 			/// Usefull for eBOSS data because many re-obs.
-			if (v_ra__[f1]==v_ra__[f2] && v_CosDe__[f1]==v_CosDe__[f2] && v_SinDe__[f1]==v_SinDe__[f2]) continue;
+			if (ra1==v_ra__[f2] && de1==v_de__[f2]) continue;
+			else if (fabs(ra1-v_ra__[f2])<C_AUTOCORRCRIT && fabs(de1-v_de__[f2])<C_AUTOCORRCRIT ) continue;
 
 			/// Angle between the two directions of the qso and the lya
 			const double cosTheta = cosDe*v_CosDe__[f2]*cos(ra1-v_ra__[f2]) + sinDe*v_SinDe__[f2];
@@ -2154,13 +2159,12 @@ void Correlation::xi_delta_QSO(bool doBootstraps/*=False*/, unsigned int bootIdx
 		const double sinDe         = v_SinDe__[f];
 		const double ra            = v_ra__[f];
 		const double dec           = v_de__[f];
-		const double z             = v_zz__[f];
+		//const double z             = v_zz__[f];
 			
 		for (unsigned int q=0; q<nbQ1__; q++) {
-
 			/// Remove the correlation qso-ownForest
-			if (fabs(ra-v_raQ1__[q])<1.e-10 && fabs(dec-v_deQ1__[q])<1.e-10 ) continue;
-			else if (fabs(ra-v_raQ1__[q])<C_AUTOCORRCRIT && fabs(dec-v_deQ1__[q])<C_AUTOCORRCRIT && fabs(z-v_zzQ1__[q])<0.001 ) continue;
+			//if (fabs(ra-v_raQ1__[q])<1.e-9 && fabs(dec-v_deQ1__[q])<1.e-9 ) continue;
+			if (fabs(ra-v_raQ1__[q])<C_AUTOCORRCRIT && fabs(dec-v_deQ1__[q])<C_AUTOCORRCRIT ) continue;  // && fabs(z-v_zzQ1__[q])<0.001
 
 			/// Angle between the two directions of the qso and the lya
 			const double cosTheta = cosDe*v_CosDeQ1__[q]*cos(ra-v_raQ1__[q]) + sinDe*v_SinDeQ1__[q];
@@ -2807,10 +2811,12 @@ void Correlation::xi_delta_QSO_distortionMatrix(void) {
 	const double fromValToIdx  = nbBin/max;
 
 	/// Arrays for distortion matrix
+	double weight2D[nbBin2D];
 	double** data2DMatrix = new double*[nbBin2D];
 	for (unsigned int i=0; i<nbBin2D; i++) {
-	    data2DMatrix[i] = new double[nbBin2D];
-	    for (unsigned int j=0; j<nbBin2D; j++) {
+		weight2D[i] = 0.;
+		data2DMatrix[i] = new double[nbBin2D];
+		for (unsigned int j=0; j<nbBin2D; j++) {
 			data2DMatrix[i][j] = 0.;
 		}
 	}
@@ -2897,9 +2903,12 @@ void Correlation::xi_delta_QSO_distortionMatrix(void) {
 				const double val0 = w*invSumWeight;
 	
 				/// Fill the histogramm of xi(r_{perp}, r_{paral}
-				const unsigned int globalBin = rPerpBinIdx+nbBinX*int( (distP+max)*fromValToIdx );
+				const unsigned int globalBin = rPerpBinIdx*nbBinY+int( (distP+max)*fromValToIdx );
 				xValue[globalBin]  += val0;
 				xlValue[globalBin] += val0*v_varLambda[f][ii];
+
+				/// Fill array of weights
+				weight2D[globalBin] += w;
 
 				/// Keep values for the distortion matrix
 				binIdx.push_back(globalBin);
@@ -2950,7 +2959,227 @@ void Correlation::xi_delta_QSO_distortionMatrix(void) {
 	/// [0] for value, [1] for error, [2] for bin center
 	for (unsigned int i=0; i<nbBin2D; i++) {
 		for (unsigned int j=0; j<nbBin2D; j++) {
-			fFile << data2DMatrix[i][j] << " ";
+			double value = 0.;
+			if (weight2D[i]!=0.) value = data2DMatrix[i][j]/weight2D[i];
+			fFile << value << " ";
+		}
+		fFile << std::endl;
+	}
+	fFile.close();
+
+	return;
+}
+void Correlation::xi_delta_QSO_distortionMatrix_1D(void) {
+
+	std::cout << "\n\n\n\n  ------ xi_delta_QSO_distortionMatrix_1D ------" << std::endl;
+	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_delta_QSO_distortionMatrix_1D.py";
+	command += commandEnd__;
+	std::cout << command << "\n" << std::endl;
+
+	/// QSO
+	loadDataQ1();
+	if (nbQ1__==0) return;
+	/// Forest
+        loadDataForest(pathForest__);
+
+	/// Empty useless vectors
+	v_d__.clear();
+	v_z__.clear();
+	v_lObs__.clear();
+	v_nb__.clear();
+
+	/// Set usefull vectors
+	std::vector<double> v_invSumWeight(nbForest_,0.);
+	std::vector< std::vector< double > > v_varLambda(v_lRF__);
+
+	for (unsigned int f=0; f<nbForest_; f++) {
+		const unsigned int nbPixel = v_nbPixelDelta1__[f];
+
+		double sumWeight  = 0.;
+		double meanLambda = 0.;
+		double stdLambda  = 0.;
+
+		/// Loops over all pixels of the forest
+		for (unsigned int i=0; i<nbPixel; i++) {
+
+			const double w = v_w__[f][i];
+			const double l = v_lRF__[f][i];
+
+			sumWeight  += w;
+			meanLambda += w*l;
+			stdLambda  += w*l*l;
+		}
+
+		meanLambda        /= sumWeight;
+		stdLambda          = 1./sqrt(stdLambda/sumWeight - meanLambda*meanLambda);
+		v_invSumWeight[f]  = 1./sumWeight;
+
+		for (unsigned int i=0; i<nbPixel; i++) {
+			v_varLambda[f][i] = (v_lRF__[f][i]-meanLambda)*stdLambda;
+		}
+	}
+
+
+
+	/// Constants:
+	/// The space between bins is of 10 Mpc.h^-1
+	const double max           = 200.;
+	const double binSize       = 4.;
+	const unsigned int nbBin   = int(max/binSize);
+	const double maxPow2       = max*max;
+	const double fromValToIdx  = nbBin/max;
+
+	/// Arrays for distortion matrix
+	double weight[nbBin];
+	double** dataMatrix = new double*[nbBin];
+	for (unsigned int i=0; i<nbBin; i++) {
+		weight[i] = 0.;
+		dataMatrix[i] = new double[nbBin];
+		for (unsigned int j=0; j<nbBin; j++) {
+			dataMatrix[i][j] = 0.;
+		}
+	}
+
+
+
+
+	std::cout << "\n\n  Starting" << std::endl;
+
+
+	for (unsigned int f=0; f<nbForest_; f++) {
+	
+		/// Get number of pixels in forest
+		const unsigned int nbPixel = v_nbPixelDelta1__[f];
+		const double firstPixel    = v_r__[f][0];
+		const double lastPixel     = v_r__[f][nbPixel-1];
+		const double cosDe         = v_CosDe__[f];
+		const double sinDe         = v_SinDe__[f];
+		const double ra            = v_ra__[f];
+		const double dec           = v_de__[f];
+		const double z             = v_zz__[f];
+
+		const double invSumWeight  = v_invSumWeight[f];
+
+		for (unsigned int q=0; q<nbQ1__; q++) {
+
+			/// Remove the correlation qso-ownForest
+			if (fabs(ra-v_raQ1__[q])<1.e-10 && fabs(dec-v_deQ1__[q])<1.e-10 ) continue;
+			else if (fabs(ra-v_raQ1__[q])<C_AUTOCORRCRIT && fabs(dec-v_deQ1__[q])<C_AUTOCORRCRIT && fabs(z-v_zzQ1__[q])<0.001 ) continue;
+
+			/// Angle between the two directions of the qso and the lya
+			const double cosTheta = cosDe*v_CosDeQ1__[q]*cos(ra-v_raQ1__[q]) + sinDe*v_SinDeQ1__[q];
+
+			/// reject QSO with a distance too large
+			const double distTransQsoLyaPow2 = v_rQ1__[q]*v_rQ1__[q]*(1.-cosTheta*cosTheta);
+			if (distTransQsoLyaPow2 >= maxPow2) continue;
+
+			/// Parrallel distance between the qso and the lya
+			const double distParalQsoLya = v_rQ1__[q]*cosTheta;
+
+			/// Distance between the qso and the first pixel
+			const double distParalQsoFirstPixel = firstPixel - distParalQsoLya;
+			if ( distParalQsoFirstPixel >= max) continue;
+
+			/// Distance between the qso and the last pixel
+			const double distParalQsoLastPixel = lastPixel - distParalQsoLya;
+			if ( distParalQsoLastPixel <= -max) continue;
+
+			/// 'true' if first pixel of forest is further than the QSO
+			const bool infPosBool = (distParalQsoFirstPixel > 0.);
+			/// 'true' if last pixel of forest is lower than the QSO
+			const bool supPosBool = (distParalQsoLastPixel < 0.);
+
+
+
+			/// get the weight and mean lambda
+			double xValue[50]  = {0.};
+			double xlValue[50] = {0.};
+
+			/// Index of the bin
+			std::vector< unsigned int > binIdx;
+			std::vector< unsigned int > fromBinsToPixels;
+
+
+			/// Loops over all pixels of the forest
+			for (unsigned int i=0; i<nbPixel; i++) {
+
+				unsigned int ii = i;
+				if (supPosBool) ii = nbPixel-1-i;
+	
+				const double distP = v_r__[f][ii] - distParalQsoLya;				
+
+				/// Look at the position of the Lya forest regarding the qso
+				if (fabs(distP) >= max) {
+					if (infPosBool || supPosBool) break;
+					else continue;
+				}
+
+				const double distTotPow2 = distTransQsoLyaPow2 + distP*distP;
+				if (distTotPow2 >= maxPow2) continue;
+
+				const double w    = v_w__[f][ii];
+				const double val0 = w*invSumWeight;
+	
+				/// Fill the histogramm of xi(r_{perp}, r_{paral}
+				const unsigned int globalBin = int(sqrt(distTotPow2)*fromValToIdx);
+				xValue[globalBin]  += val0;
+				xlValue[globalBin] += val0*v_varLambda[f][ii];
+
+				/// Fill array of weights
+				weight[globalBin] += w;
+
+				/// Keep values for the distortion matrix
+				binIdx.push_back(globalBin);
+				fromBinsToPixels.push_back(ii);
+			}
+
+			/// Number of pixels with pairs 
+			const unsigned int nbPixelsWithPairs = binIdx.size();
+
+			/// Loops over all pixels of the forest (Fill the distortion matrix)
+			for (unsigned int i=0; i<nbPixelsWithPairs; i++) {
+
+				const unsigned int globalBin1 = binIdx[i];
+				const unsigned int pixelIdx   = fromBinsToPixels[i];
+
+				const double w    = v_w__[f][pixelIdx];
+				const double val1 = v_varLambda[f][pixelIdx];
+				
+				/// Fill the distortion matrix
+				dataMatrix[globalBin1][globalBin1] += w;
+
+				for (unsigned int j=0; j<nbPixelsWithPairs; j++) {
+					const unsigned int globalBin2 = binIdx[j];
+					dataMatrix[globalBin1][globalBin2] -= w*( xValue[globalBin2] + val1*xlValue[globalBin2] );
+				}
+			}
+		}
+	}
+	
+
+
+	std::cout << "\n\n\n" << std::endl;
+	std::ofstream fFile;
+
+	/// Save the 2D cross-correlation 
+	std::string pathToSave = pathToSave__;
+	pathToSave += "xi_delta_QSO_distortionMatrix_1D_";
+	pathToSave += forest__;
+	pathToSave += "_";
+	pathToSave += QSO__;
+	pathToSave += ".txt";
+	std::cout << "\n  " << pathToSave << std::endl;
+	fFile.open(pathToSave.c_str());
+	fFile << std::scientific;
+	fFile.precision(17);
+	
+	/// Set the values of data
+	/// [0] for value, [1] for error, [2] for bin center
+	for (unsigned int i=0; i<nbBin; i++) {
+		for (unsigned int j=0; j<nbBin; j++) {
+			double value = 0.;
+			if (weight[i]!=0.) value = dataMatrix[i][j]/weight[i];
+			fFile << value << " ";
 		}
 		fFile << std::endl;
 	}
@@ -5056,7 +5285,7 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 		fits_read_col(fitsptrSpec,TDOUBLE, 18,i+1,1,nbBinRFMax__,NULL, &DELTA,           NULL,&sta);
 		fits_read_col(fitsptrSpec,TDOUBLE, 20,i+1,1,nbBinRFMax__,NULL, &DELTA_WEIGHT,    NULL,&sta);
 
-		if (!mocksNoNoiseNoCont && ( (alpha2 == 1. && beta2 == 0.) || (fabs(alpha2)>=maxAlpha__-0.5) || (fabs(beta2)>=maxBeta__-0.05) ) ) continue;
+		if (!mocksNoNoiseNoCont && ( (alpha2 == alphaStart__ && beta2 == 0.) || (fabs(alpha2)>=maxAlpha__-0.5) || (fabs(beta2)>=maxBeta__-0.05) ) ) continue;
 		
 
 		/// If a reobs
@@ -5095,9 +5324,9 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 				/// For Nicolas's estimator
 				if (nicolasEstimator__) {
 					meanNeeded[0] += DELTA_WEIGHT[j]*DELTA[j];
-					meanNeeded[1] += DELTA_WEIGHT[j]*LAMBDA_OBS[j];
-					meanNeeded[2] += DELTA_WEIGHT[j]*LAMBDA_OBS[j]*LAMBDA_OBS[j];
-					meanNeeded[3] += DELTA_WEIGHT[j]*DELTA[j]*LAMBDA_OBS[j];
+					meanNeeded[1] += DELTA_WEIGHT[j]*LAMBDA_RF[j];
+					meanNeeded[2] += DELTA_WEIGHT[j]*LAMBDA_RF[j]*LAMBDA_RF[j];
+					meanNeeded[3] += DELTA_WEIGHT[j]*LAMBDA_RF[j]*DELTA[j];
 					meanNeeded[4] += DELTA_WEIGHT[j];
 				}
 			}
@@ -5115,7 +5344,7 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 			const double meanLambda = meanNeeded[1]/meanNeeded[4];
 			const double coef       = (meanNeeded[3]/meanNeeded[4]-meanDelta*meanLambda)/(meanNeeded[2]/meanNeeded[4]-meanLambda*meanLambda);
 			for (unsigned int j=0; j<tmp_nb; j++) {
-				DELTA[j] -= (meanDelta+(LAMBDA_OBS[j]-meanLambda)*coef);
+				DELTA[j] -= meanDelta+(LAMBDA_RF[j]-meanLambda)*coef;
 			}
 		}
 
@@ -5218,7 +5447,7 @@ void Correlation::loadDataDelta2(int dataNeeded/*=100*/) {
 		fits_read_col(fitsptrSpec,TDOUBLE, 18,i+1,1,nbBinRFMaxDelta2__,NULL, &DELTA,           NULL,&sta);
 		fits_read_col(fitsptrSpec,TDOUBLE, 20,i+1,1,nbBinRFMaxDelta2__,NULL, &DELTA_WEIGHT,    NULL,&sta);
 
-		if (!mocksNoNoiseNoCont && ( (alpha2 == 1. && beta2 == 0.) || (fabs(alpha2)>=maxAlpha__-0.5) || (fabs(beta2)>=maxBeta__-0.05) ) ) continue;
+		if (!mocksNoNoiseNoCont && ( (alpha2 == alphaStart__ && beta2 == 0.) || (fabs(alpha2)>=maxAlpha__-0.5) || (fabs(beta2)>=maxBeta__-0.05) ) ) continue;
 
 		for (unsigned int j=0; j<nbBinRFMaxDelta2__; j++) {
 			if (DELTA_WEIGHT[j]>0. && NORM_FLUX_IVAR[j]>0. && FLUX_DLA[j]>=C_DLACORR && LAMBDA_RF[j]>=lambdaRFMinDelta2__ && LAMBDA_RF[j]<lambdaRFMaxDelta2__ && LAMBDA_OBS[j]>=lambdaObsMin__ && LAMBDA_OBS[j]<lambdaObsMax__) {

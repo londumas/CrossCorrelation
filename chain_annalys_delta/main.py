@@ -35,7 +35,7 @@ nbSpectra = 300000
 
 def main():
 
-	stepIdx = 1
+	stepIdx = 2
 
 	print
 	print "------ Start ------"
@@ -126,33 +126,40 @@ def main():
 		print '  nb of chi2==0      : ', chi[ (chi==0.) ].size
 		print '  idx of chi2==0     : ', idx[ (chi==0.) ]
 
+		alpha[ (numpy.isinf(chi)) ] = alphaStart__
+		beta[ (numpy.isinf(chi)) ]  = 0.
+		alpha[ (chi==0.) ] = alphaStart__
+		beta[ (chi==0.) ]  = 0.
+
 		numpy.savetxt(folder+scheme+'all.txt', zip(idx,alpha,beta,chi))
-		
+		'''
 		plt.hist(alpha[ (numpy.isfinite(chi)) ],bins=1000,label='alpha')
 		plt.show()
 		plt.hist(beta[ (numpy.isfinite(chi)) ],bins=1000,label='beta')
 		plt.show()
 		plt.hist(chi[ (numpy.isfinite(chi)) ],bins=1000,label='chi2')
 		plt.show()
-		
+		'''
 		
 		### Put the new alpha and beta in fits file
 		path     = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest+'/FitsFile_DR12_Guy/DR12_primery/DR12_primery_test_PDFMocksJMC_meanLambda_testNoCap.fits'
 		#path     = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_reObs/DR12_reObs.fits'
+		#path     = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest+'/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits'
+		#path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest+'/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits'
 		file_cat = pyfits.open(path,mode='update')
 		cat      = file_cat[1].data
 
 		print '  nb spectra         : ', cat.size
 		print '  alpha diff         : ', cat['ALPHA_2']-alpha
 		print '  beta diff          : ', cat['BETA_2']-beta
-		
+		'''
 		plt.hist(cat['ALPHA_2']-alpha,bins=1000,label='alpha')
 		plt.show()
 		plt.hist(cat['BETA_2']-beta,bins=1000,label='beta')
 		plt.show()
 		plt.hist(chi[ (numpy.isfinite(chi)) ]/(cat['NB_PIXEL'][ (numpy.isfinite(chi)) ]-2.),bins=1000,label='chi2')
 		plt.show()
-		
+		'''
 		cat['ALPHA_2'] = alpha
 		cat['BETA_2']  = beta
 

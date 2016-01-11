@@ -612,7 +612,25 @@ def saveListRealMocks(ni,nj):
 
 
 
-xi1D_, xi2D_, xiMu_, xiWe_ = loadData('//home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Mock_JMC__z_0_2_5/xi_A_delta_delta_Mu_'+forest__+'.txt','/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Mock_JMC__z_0_2_5/xi_A_delta_delta_2D_'+forest__+'.txt')
+xi1D_, xi2D_, xiMu_, xiWe_ = loadData('//home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/eBOSS/xi_A_delta_delta_Mu_'+forest__+'.txt','/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/eBOSS/xi_A_delta_delta_2D_'+forest__+'.txt')
+
+plotXi(0)
+plotXi(1)
+plotXi(2)
+print fitCamb(xi1D_,'/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/CAMB_2_4/xi-z2.4.dat')
+plotXi2D(0)
+plotXi2D(1)
+plotXi2D(2)
+
+plotMu(0)
+plotMu(1)
+plotMu(2)
+
+plotWe(0)
+plotWe(1)
+plotWe(2)
+
+
 
 xi1DD_, xi2DD_, xiMuD_, xiWeD_ = loadData('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_test_PDFMocksJMC__z_0_2_5/xi_A_delta_delta_Mu_'+forest__+'.txt','/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_test_PDFMocksJMC__z_0_2_5/xi_A_delta_delta_2D_'+forest__+'.txt')
 

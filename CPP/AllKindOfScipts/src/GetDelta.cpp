@@ -41,8 +41,8 @@
 GetDelta::GetDelta(int argc, char** argv) {
 
 	//get_Ra_Dec_DLA();
-	//get_Catalogue();
-	get_flux_vs_lambdaObs();
+	get_Catalogue();
+	//get_flux_vs_lambdaObs();
 	//get_weigted_covar_matrix();
 
 }
@@ -183,8 +183,7 @@ void GetDelta::get_Catalogue(void)
 	//const double critZ = 0.001;
 
 	/// Path to save
-	std::string pathToSave = "/home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/QSO_DR7_DR12_EBOSS.fits";
-
+	std::string pathToSave = "/home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/QSO_DR7_DR12_EBOSS_2016_01_08.fits";
 	/// Number of catalogues
 	const unsigned int nbCat = 3;
 
@@ -193,10 +192,10 @@ void GetDelta::get_Catalogue(void)
 	std::vector<std::string> pathToCat(nbCat);
 	nameCat[0]   = "DR12";
 	pathToCat[0] = "/home/gpfs/manip/mnt/bao/hdumasde/Data/Catalogue/DR12Q_v2_10.fits";
-	nameCat[1]   = "DR7";
-	pathToCat[1] = "/home/gpfs/manip/mnt/bao/hdumasde/Data/Catalogue/knownquasarstar.060910.fits";
-	nameCat[2]   = "EBOSS";
-	pathToCat[2] = "/home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/QSO_EBOSS.fits";
+	nameCat[1]   = "EBOSS";
+	pathToCat[1] = "/home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/QSO_EBOSS_updated.fits";
+	nameCat[2]   = "DR7";
+	pathToCat[2] = "/home/gpfs/manip/mnt/bao/hdumasde/Data/Catalogue/knownquasarstar.060910.fits";
 
 	/// Index of data in FITS
 	unsigned int idxData[nbCat][3];
@@ -204,14 +203,14 @@ void GetDelta::get_Catalogue(void)
 	idxData[0][0] = 2;
 	idxData[0][1] = 3;
 	idxData[0][2] = 8;
-	/// DR7
-	idxData[1][0] = 2;
-	idxData[1][1] = 3;
-	idxData[1][2] = 4;
 	/// EBOSS
-	idxData[2][0] = 1;
-	idxData[2][1] = 2;
-	idxData[2][2] = 3;
+	idxData[1][0] = 1;
+	idxData[1][1] = 2;
+	idxData[1][2] = 3;
+	/// DR7
+	idxData[2][0] = 2;
+	idxData[2][1] = 3;
+	idxData[2][2] = 4;
 
 	/// Load data
 	std::vector<std::vector<double > > ra(nbCat);
@@ -265,7 +264,7 @@ void GetDelta::get_Catalogue(void)
 		std::cout << "  " << c << " : " << ra[c].size() << std::endl;
 	}
 
-	/// Find re-observations inside own catalogues
+	/// Find re-observations inside own catalogues (Don't do for DR12Q)
 	for (unsigned int c=1; c<nbCat; c++) {
 		const unsigned int nb = ra[c].size();
 
@@ -287,6 +286,17 @@ void GetDelta::get_Catalogue(void)
 				}
 			}
 		}
+	}
+
+	/// Print number of re-observed
+	for (unsigned int c=0; c<nbCat; c++) {
+		const unsigned int nb = ra[c].size();
+
+		unsigned int n = 0;
+		for (unsigned int q=0; q<nb; q++) {
+			if (bo[c][q]) n++;
+		}
+		std::cout << "  Auto reobs " << c << " : " << n << std::endl;
 	}
 
 	/// Find re-observations
@@ -326,7 +336,7 @@ void GetDelta::get_Catalogue(void)
 		for (unsigned int q=0; q<nb; q++) {
 			if (bo[c][q]) n++;
 		}
-		std::cout << "  Reobs " << c << " : " << n << std::endl;
+		std::cout << "  Cross reobs " << c << " : " << n << std::endl;
 	}
 
 
