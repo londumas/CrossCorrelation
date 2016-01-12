@@ -190,8 +190,8 @@ Correlation::Correlation(int argc, char **argv) {
 		pathToSave__ += argv[5];
 		pathToSave__ += "/Simu_00";
 		pathToSave__ += argv[6];
-		if (!randomPositionOfQSOInCell__ && !randomPositionOfQSOInCellNotBeforeCorrelation__) pathToSave__ += "/Results/";
-		else pathToSave__ += "/Results/";  //_RandomPosInCell
+		if (!randomPositionOfQSOInCell__ && !randomPositionOfQSOInCellNotBeforeCorrelation__) pathToSave__ += "/Results_NicolasDistortion/";
+		else pathToSave__ += "/Results_NicolasDistortion/";  //_RandomPosInCell
 		
 	}
 
@@ -2261,65 +2261,12 @@ void Correlation::xi_delta_QSO(bool doBootstraps/*=False*/, unsigned int bootIdx
 	prefix += "_";
 	prefix += strBootIdx;
 
-
 	std::ofstream fFile;
-	std::string pathToSave = pathToSave__;
-	pathToSave += "xi_delta_QSO_1D_";
-	pathToSave += forest__;
-	pathToSave += "_";
-	pathToSave += QSO__;
-	if (doBootstraps || shuffleForest || shuffleQSO || randomQSO) pathToSave += prefix;
-	pathToSave += ".txt";
-	std::cout << "\n  " << pathToSave << std::endl;
-	fFile.open(pathToSave.c_str());
-	fFile << std::scientific;
-	fFile.precision(17);
-
+	std::string pathToSave;
 	long double sumOne = 0.;
 	long double sumZZZ = 0.;
 	long double sumWeg = 0.;
 
-	/// Set the values of data
-	/// [0] for value, [1] for error, [2] for bin center
-	for (unsigned int i=0; i<nbBin; i++) {
-
-		long double save0 = 0.;
-		long double save1 = 0.;
-		long double save2 = 0.;
-		long double save3 = 0.;
-		long double save4 = 0.;
-		long double save5 = 0.;
-		long double save6 = 0.;
-
-		for (unsigned int j=0; j<nbBinM; j++) {
-			save0 += dataMu[i][j][0];
-			save1 += dataMu[i][j][1];
-			save2 += dataMu[i][j][2];
-			save3 += dataMu[i][j][3];
-			save4 += dataMu[i][j][4];
-			save5 += dataMu[i][j][5];
-			save6 += dataMu[i][j][6];
-		}
-
-		fFile << save0;
-		fFile << " " << save1;
-		fFile << " " << save2;
-		fFile << " " << save3;
-		fFile << " " << save4/2.;
-		fFile << " " << save5;
-		fFile << " " << save6;
-		fFile << std::endl;
-
-		sumZZZ += save4/2.;
-		sumWeg += save5;
-		sumOne += save6;
-	}
-	fFile.close();
-
-	std::cout << "  < z >                = " << sumZZZ/sumWeg    << " +- " << 0. << std::endl;
-	std::cout << "  number of pairs      = " << sumOne          << std::endl;
-	std::cout << "  < pairs per forest > = " << sumOne/nbForest_ << std::endl;
-	std::cout << "  < pairs per QSO >    = " << sumOne/nbQ1__    << std::endl;
 
 	/// Save the 2D cross-correlation
 	pathToSave = pathToSave__;
@@ -2366,7 +2313,7 @@ void Correlation::xi_delta_QSO(bool doBootstraps/*=False*/, unsigned int bootIdx
 	std::cout << "  < pairs per QSO >    = " << sumOne/nbQ1__    << std::endl;
 
 
-	/// Save the 2D cross-correlation
+	/// Save the Mu cross-correlation
 	pathToSave = pathToSave__;
 	pathToSave += "xi_delta_QSO_Mu_";
 	pathToSave += forest__;
@@ -3513,6 +3460,15 @@ void Correlation::xi_delta_QSO_MockJMc(bool doBootstraps/*=False*/, unsigned int
 	convert << bootIdx;
 	const std::string strBootIdx = convert.str();
 
+	/// Set the prefix for different type of runs
+	std::string prefix = "_";
+	if (doBootstraps)  prefix += "subsampling";
+	if (shuffleForest) prefix += "shuffleForest";
+	if (shuffleQSO)    prefix += "shuffleQSO";
+	if (randomQSO)     prefix += "randomQSO";
+	prefix += "_";
+	prefix += strBootIdx;
+
 
 	/// Schiffle the forest
 	if (shuffleForest) {
@@ -3739,89 +3695,12 @@ void Correlation::xi_delta_QSO_MockJMc(bool doBootstraps/*=False*/, unsigned int
 
 
 	std::cout << "\n\n\n" << std::endl;
-
 	std::ofstream fFile;
-	std::string pathToSave = pathToSave__;
-	pathToSave += "xi_delta_QSO_1D_";
-	pathToSave += forest__;
-	pathToSave += "_";
-	pathToSave += QSO__;
-	if (doBootstraps) {
-		pathToSave += "_";
-		pathToSave += "subsampling";
-		pathToSave += "_";
-		pathToSave += strBootIdx;
-	}
-	if (shuffleForest) {
-		pathToSave += "_";
-                pathToSave += "shuffleForest";
-                pathToSave += "_";
-		pathToSave += strBootIdx;;
-	}
-	if (shuffleQSO) {
-                pathToSave += "_";
-                pathToSave += "shuffleQSO";
-                pathToSave += "_";
-                pathToSave += strBootIdx;;
-        }
-	if (randomQSO) {
-                pathToSave += "_";
-                pathToSave += "randomQSO";
-                pathToSave += "_";
-                pathToSave += strBootIdx;;
-        }
-	pathToSave += ".txt";
-	std::cout << "\n  " << pathToSave << std::endl;
-	fFile.open(pathToSave.c_str());
-	fFile << std::scientific;
-	fFile.precision(17);
+	std::string pathToSave;
 
 	long double sumZZZ = 0.;
 	long double sumWeg = 0.;
 	long double sumOne = 0.;
-
-	/// Set the values of data
-	/// [0] for value, [1] for error, [2] for bin center
-	for (unsigned int i=0; i<nbBin; i++) {
-
-		long double save0 = 0.;
-		long double save1 = 0.;
-		long double save2 = 0.;
-		long double save3 = 0.;
-		long double save4 = 0.;
-		long double save5 = 0.;
-		long double save6 = 0.;
-
-		for (unsigned int j=0; j<nbBinM; j++) {
-			save0 += dataMu[i][j][0];
-			save1 += dataMu[i][j][1];
-			save2 += dataMu[i][j][2];
-			save3 += dataMu[i][j][3];
-			save4 += dataMu[i][j][4];
-			save5 += dataMu[i][j][5];
-			save6 += dataMu[i][j][6];
-		}
-
-		fFile << save0;
-		fFile << " " << save1;
-		fFile << " " << save2;
-		fFile << " " << save3;
-		fFile << " " << save4/2.;
-		fFile << " " << save5;
-		fFile << " " << save6;
-		fFile << std::endl;
-
-		sumZZZ += save4/2.;
-		sumWeg += save5;
-		sumOne += save6;
-	}
-	fFile.close();
-
-	std::cout << "  < z >                = " << sumZZZ/sumWeg    << std::endl;
-	std::cout << "  number of pairs      = " << sumOne           << std::endl;
-	std::cout << "  < pairs per forest > = " << sumOne/nbForest_ << std::endl;
-	std::cout << "  < pairs per QSO >    = " << sumOne/nbQ1__    << std::endl;
-	sumOne = 0.;
 
 	/// Save the 2D cross-correlation
 	pathToSave = pathToSave__;
@@ -3829,30 +3708,7 @@ void Correlation::xi_delta_QSO_MockJMc(bool doBootstraps/*=False*/, unsigned int
 	pathToSave += forest__;
 	pathToSave += "_";
 	pathToSave += QSO__;
-	if (doBootstraps) {
-		pathToSave += "_";
-		pathToSave += "subsampling";
-		pathToSave += "_";
-		pathToSave += strBootIdx;
-	}
-	if (shuffleForest) {
-		pathToSave += "_";
-                pathToSave += "shuffleForest";
-                pathToSave += "_";
-		pathToSave += strBootIdx;;
-	}
-	if (shuffleQSO) {
-                pathToSave += "_";
-                pathToSave += "shuffleQSO";
-                pathToSave += "_";
-                pathToSave += strBootIdx;;
-        }
-	if (randomQSO) {
-                pathToSave += "_";
-                pathToSave += "randomQSO";
-                pathToSave += "_";
-                pathToSave += strBootIdx;;
-        }
+	if (doBootstraps || shuffleForest || shuffleQSO || randomQSO) pathToSave += prefix;
 	pathToSave += ".txt";
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
@@ -3891,36 +3747,13 @@ void Correlation::xi_delta_QSO_MockJMc(bool doBootstraps/*=False*/, unsigned int
 	std::cout << "  < pairs per QSO >    = " << sumOne/nbQ1__    << std::endl;
 
 
-	/// Save the 2D cross-correlation
+	/// Save the Mu cross-correlation
 	pathToSave = pathToSave__;
 	pathToSave += "xi_delta_QSO_Mu_";
 	pathToSave += forest__;
 	pathToSave += "_";
 	pathToSave += QSO__;
-	if (doBootstraps) {
-		pathToSave += "_";
-		pathToSave += "subsampling";
-		pathToSave += "_";
-		pathToSave += strBootIdx;
-	}
-	if (shuffleForest) {
-		pathToSave += "_";
-                pathToSave += "shuffleForest";
-                pathToSave += "_";
-		pathToSave += strBootIdx;;
-	}
-	if (shuffleQSO) {
-                pathToSave += "_";
-                pathToSave += "shuffleQSO";
-                pathToSave += "_";
-                pathToSave += strBootIdx;;
-        }
-	if (randomQSO) {
-                pathToSave += "_";
-                pathToSave += "randomQSO";
-                pathToSave += "_";
-                pathToSave += strBootIdx;;
-        }
+	if (doBootstraps || shuffleForest || shuffleQSO || randomQSO) pathToSave += prefix;
 	pathToSave += ".txt";
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());

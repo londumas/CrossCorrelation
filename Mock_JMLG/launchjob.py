@@ -29,7 +29,7 @@ import cosmolopy.distance as cosmology
 
 
 
-pathToFolder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/noNoisenoCont/'
+pathToFolder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/'
 #pathToFolder = '/home/gpfs/manip/mnt0607/bao/Mock_JMLG/v1528/'
 
 def main():
@@ -116,9 +116,9 @@ def main():
 			#tbhduForest.writeto(path + 'Data/delta.fits', clobber=True)
 			#tbhduForest.writeto(path + 'Data/delta_noNoise_noCont.fits', clobber=True)
 			
-			subprocess.call('mkdir ' + path + '/Results/BaoFit_q_f', shell=True)
+			#subprocess.call('mkdir ' + path + '/Results/BaoFit_q_f', shell=True)
 			#subprocess.call('mkdir ' + path + 'BaoFit_q_f_covFromFit_fixedBAO_FixAlphaParal', shell=True)
-			#subprocess.call('mkdir ' + path + 'Results_RandomPosInCell', shell=True)
+			subprocess.call('mkdir ' + path + 'Results_NicolasDistortion', shell=True)
 
 			'''
 			command = 'clubatch cp ' + pathToFolder + 'Box_000/Simu_000/Data/delta_noNoise_noCont.fits ' + path + 'Data/delta_noNoise_noCont.fits'
