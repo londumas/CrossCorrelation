@@ -374,43 +374,162 @@ def plotWe(rescale):
 	myTools.deal_with_plot(False,False,False)
 	plt.xlim([ numpy.min(xxx)-10., numpy.max(xxx)+10. ])
 	plt.show()
+def fitCamb(data,pathToFile,mulpol=0):
+	'''
+
+	'''
+
+	### Constants
+	startFit   = 25.
+	endFit     = 60.
+	maxForGues = 60.
+	idx=1
+	if (mulpol==2):
+		idx = 2
+
+
+	### Get the data
+	cut = numpy.logical_and( (data[:,0]>=startFit),(data[:,0]<endFit) )
+	xxx = data[:,0][cut]
+	yyy = data[:,1][cut]
+	yer = data[:,2][cut]
+
+	### Get Camb
+	data_camb = numpy.loadtxt(pathToFile)
+	yyy_Camb = numpy.interp(xxx,data_camb[1:,0],data_camb[1:,idx])
+
+	b1b2_init = -1. #numpy.mean(yyy[ (xxx<maxForGues) ]/yyy_Camb[ (xxx<maxForGues) ])
+	print '  b1b2_init = ', b1b2_init
+
+	'''
+	### Show result
+	for i in range(0,3):
+
+		coef = numpy.power(xxx,i)
+		plt.errorbar(xxx,coef*yyy,yerr=coef*yer,fmt='o')
+
+		coef = numpy.power(xxx,i)
+		plt.plot(xxx,coef*b1b2_init*yyy_Camb,marker='o')
+		myTools.deal_with_plot(False,False,False)
+		plt.show()
+	'''
+
+	### Define the fit function
+	def chi2(b1b2,roof):
+		fit = yyy_Camb*b1b2+roof
+		return numpy.sum( numpy.power( (yyy-fit)/yer ,2.) )
+
+	### Init and perform the fit
+	
+	m = Minuit(chi2, b1b2=b1b2_init,error_b1b2=0.1, roof=0.,error_roof=0.1,print_level=-1, errordef=0.01,fix_roof=True) 	
+	m.migrad()
+
+	### Get result
+	b1b2 = m.values[ 'b1b2' ]
+	roof = m.values[ 'roof' ]
+	print '  b1b2 = ', b1b2
+	print '  roof = ', roof
+
+	### Print chi^2
+	print '  DoF   = ', yyy.size, ' - ', 1
+	print '  chi^2 = ', numpy.sum( numpy.power( (yyy-yyy_Camb*b1b2-roof)/yer ,2.) )
 
 
 
-xi1D_, xi2D_, xiMu_, xiWe_ = loadData('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests_test_PDFMocksJMC_meanLambda_testNoCap/xi_delta_QSO_Mu_'+forest1__+'_'+qso1__+'.txt','/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests_test_PDFMocksJMC_meanLambda_testNoCap/xi_delta_QSO_2D_'+forest1__+'_'+qso1__+'.txt')
+	### Get the data
+	xxx = data[:,0]
+	yyy = data[:,1]
+	yer = data[:,2]
+
+	### Get the smooth CAMB
+	cut = (data_camb[1:,0] <= numpy.amax(xxx)*1.1)
+	size = cut[cut].size
+	result_1D_camb = numpy.zeros( shape=(size,3) )
+	result_1D_camb[:,0] = data_camb[1:,0][cut]
+	result_1D_camb[:,1] = b1b2*data_camb[1:,idx][cut]+roof
+	result_1D_camb[:,2] = 0.0000000001
+
+	### Show result
+	for i in range(0,3):
+
+		coef = numpy.power(xxx,i)
+		plt.errorbar(xxx,coef*yyy,yerr=coef*yer,fmt='o')
+
+		coef = numpy.power(result_1D_camb[:,0],i)
+		plt.plot(result_1D_camb[:,0],coef*result_1D_camb[:,1],color='red')
+
+		if (i==0):
+			plt.ylabel(r'$\xi^{qq} (|s|)$', fontsize=40)
+		if (i==1):
+			plt.ylabel(r'$|s|^{1}.\xi^{qq} (|s|) \, [h^{-1}.Mpc]$', fontsize=40)
+		if (i==2):
+			plt.ylabel(r'$|s|^{2}.\xi^{qq} (|s|) \, [(h^{-1}.Mpc)^{2}]$', fontsize=40)
+		
+		plt.title(r'', fontsize=40)
+		plt.xlabel(r'$|s| \, [h^{-1}.Mpc]$', fontsize=40)
+		myTools.deal_with_plot(False,False,False)
+		plt.xlim([ numpy.min(xxx)-10., numpy.max(xxx)+10. ])
+		plt.show()
+	
+	return b1b2
+
+#nbPixel = nbBin1D__
+nbPixel = nbBin2D__
+
+#xi1D_, xi2D_, xiMu_, xiWe_ = loadData('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests_DR12_nicolas/xi_delta_QSO_Mu_'+forest1__+'_'+qso1__+'.txt','/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests_DR12_nicolas/xi_delta_QSO_2D_'+forest1__+'_'+qso1__+'.txt')
+#path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests_test_PDFMocksJMC_meanLambda_testNoCap/xi_delta_QSO_distortionMatrix_1D_LYA_QSO.txt'
+
+xi1D_, xi2D_, xiMu_, xiWe_ = loadData('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Box_000/Simu_000/Results/xi_delta_QSO_Mu_'+forest1__+'_'+qso1__+'.txt','/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Box_000/Simu_000/Results/xi_delta_QSO_2D_'+forest1__+'_'+qso1__+'.txt')
+path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Box_000/Simu_000/Results/xi_delta_QSO_distortionMatrix_2D_LYA_QSO.txt'
 
 
-xi1D = myTools.convert2DTo1D(xi2D_[:,:,1], 50,100)
-#plt.errorbar(numpy.arange(5000),xi1D,fmt='o')
-#plt.show()
-
-
-path__ = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests_test_PDFMocksJMC_meanLambda_testNoCap/'
-path = path__ + 'xi_delta_QSO_distortionMatrix_1D_LYA_QSO.txt'
-path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests_test_PDFMocksJMC_meanLambda_testNoCap//xi_delta_QSO_distortionMatrix_2D_LYA_QSO.txt'
 print path
 data = numpy.loadtxt(path)
-numpy.save('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests_test_PDFMocksJMC_meanLambda_testNoCap//xi_delta_QSO_distortionMatrix_2D_LYA_QSO',data)
+myTools.plot2D(data)
+plt.hist(data[data!=0.],bins=100)
+plt.hist(numpy.diag(data),bins=100)
+plt.show()
+
+'''
+cov = numpy.array(data)
+### Test if symetric
+for i in numpy.arange(nbPixel):
+	for j in numpy.arange(nbPixel):
+		data[i][j] -= cov[j][i]
+data[ data==0. ] = numpy.float('nan')
+myTools.plot2D(data)
+'''
+
+plt.hist(data[data!=0.],bins=100)
+plt.hist(numpy.diag(data),bins=100)
+plt.show()
 
 
+
+if (nbPixel==nbBin1D__):
+	xi1D = xi1D_[:,1]
+else:
+	xi1D = myTools.convert2DTo1D(xi2D_[:,:,1], 50,100)
 
 xi1D_2 = numpy.dot(data,xi1D)
 
-#plt.errorbar(numpy.arange(5000),xi1D,fmt='o')
-#plt.errorbar(numpy.arange(5000),xi1D_2,fmt='o')
+plt.errorbar(numpy.arange(nbPixel),xi1D,fmt='o',label='Before correction')
+plt.errorbar(numpy.arange(nbPixel),xi1D_2,fmt='o',label='After correction')
+myTools.deal_with_plot(False,False,True)
+plt.show()
 
-print xi1D/xi1D_2
-
-#plt.show()
-
-#xi1D_3 = myTools.convert1DTo2D(xi1D_2,50,100)
-#myTools.plot2D(xi1D_3)
-
-xi2D_[:,:,1] = myTools.convert1DTo2D(xi1D/xi1D_2,50,100)  #xi1D_3
-plt.hist(xi2D_[:,:,1],bins=50)
-plotXi2D(0)
-plotXi2D(1)
-plotXi2D(2)
+if (nbPixel==nbBin1D__):
+	xi1D_[:,1] = xi1D_2
+	plotXi(0)
+	plotXi(1)
+	plotXi(2)
+	pathToCamb = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/CAMB_2_4/xi-z2.4.dat'
+	fitCamb(xi1D_,pathToCamb,0)
+else:
+	xi2D_[:,:,1] = myTools.convert1DTo2D(xi1D_2,50,100)
+	plotXi2D(0)
+	plotXi2D(1)
+	plotXi2D(2)
 
 
 

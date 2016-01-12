@@ -115,10 +115,11 @@ class Correlation
 		void xi_delta_QSO(         bool doBootstraps=false, unsigned int bootIdx=0);
 		void xi_delta_QSO_theta(   bool doBootstraps=false, unsigned int bootIdx=0);
 		void xi_delta_QSO_lambda(   bool doBootstraps=false, unsigned int bootIdx=0);
-		void xi_delta_QSO_MockJMc( bool doBootstraps=false, unsigned int bootIdx=0);
-		void xi_delta_QSO_MockJMc_distortionMatrix( void );
 		void xi_delta_QSO_distortionMatrix(void);
 		void xi_delta_QSO_distortionMatrix_1D(void);
+		void xi_delta_QSO_MockJMc( bool doBootstraps=false, unsigned int bootIdx=0);
+		void xi_delta_QSO_MockJMc_distortionMatrix( void );
+		void xi_delta_QSO_MockJMc_distortionMatrix_1D( void );
 		void xi_delta_QSO_Wick(unsigned int diagramIdx);
 
 		void xi_QSO_QSO(bool doBootstraps=false, unsigned int bootIdx=0);

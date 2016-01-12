@@ -1236,19 +1236,19 @@ def saveMeanCov():
 
 
 
-
+'''
 ### Data
-path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests_test_PDFMocksJMC_meanLambda_testNoCap/'
-saveListReal(5000,path+'xi_delta_QSO_Mu_LYA_QSO_shuffleForest_',path+'xi_delta_QSO_2D_LYA_QSO_shuffleForest_',path+'shuffleForest_LYA_QSO_',False)
+#path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests_test_PDFMocksJMC_meanLambda_testNoCap/'
+#saveListReal(5000,path+'xi_delta_QSO_Mu_LYA_QSO_shuffleForest_',path+'xi_delta_QSO_2D_LYA_QSO_shuffleForest_',path+'shuffleForest_LYA_QSO_',False)
 
 cov = numpy.load('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests_test_PDFMocksJMC_meanLambda_testNoCap/shuffleForest_LYA_QSO_cov_2D.npy')
 cor = myTools.getCorrelationMatrix(cov)
 myTools.plot2D(cor)
 a = myTools.plotCovar([cor],['a'])
 myTools.plot2D(a)
+'''
 
-
-xi1D_, xi2D_, xiMu_, xiWe_ = loadData('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests_test_PDFMocksJMC_meanLambda_testNoCap/xi_delta_QSO_Mu_'+forest1__+'_'+qso1__+'.txt','/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests_test_PDFMocksJMC_meanLambda_testNoCap/xi_delta_QSO_2D_'+forest1__+'_'+qso1__+'.txt')
+xi1D_, xi2D_, xiMu_, xiWe_ = loadData('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests_DR12_nicolas/xi_delta_QSO_Mu_'+forest1__+'_'+qso1__+'.txt','/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests_DR12_nicolas/xi_delta_QSO_2D_'+forest1__+'_'+qso1__+'.txt')
 plotXi(0)
 plotXi(1)
 plotXi(2)
