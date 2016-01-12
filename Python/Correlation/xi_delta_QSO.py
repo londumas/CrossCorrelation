@@ -229,10 +229,6 @@ def createIni2(inputFile, pathToOutFit, pathToData,pathToIni, dim, param=None):
 	param = param.astype('str')
 
 	data = numpy.loadtxt(inputFile)
-	save2 = data[:,2]
-	save3 = data[:,3]
-	save4 = data[:,4]
-	save5 = data[:,5]
 
 	tmp_save2  = numpy.zeros(shape=(nbBinX2D__,nbBinY2D__))
 	tmp_save3  = numpy.zeros(shape=(nbBinX2D__,nbBinY2D__))
@@ -240,41 +236,39 @@ def createIni2(inputFile, pathToOutFit, pathToData,pathToIni, dim, param=None):
 	tmp_save5  = numpy.zeros(shape=(nbBinX2D__,nbBinY2D__))
 	meanRperp  = numpy.zeros(shape=(nbBinX2D__,2))
 	meanRparal = numpy.zeros(shape=(nbBinY2D__,2))
-	meanRedshift = numpy.sum(save4)/numpy.sum(save5)
+	meanRedshift = numpy.sum(data[:,4])/numpy.sum(data[:,5])
 			
-	for i in range(0,len(save2)):
+	for i in range(0,data[:,2].size):
+		
 		iX = i/int(maxY2D__-minY2D__)
 		iY = i%int(maxY2D__-minY2D__)
 	
 		idX = iX/int(binSize__)
 		idY = iY/int(binSize__)
 	
-		meanRperp[idX][0]  += save2[i]
-		meanRperp[idX][1]  += save5[i]
-		meanRparal[idY][0] += save3[i]
-		meanRparal[idY][1] += save5[i]
-
-
+		meanRperp[idX][0]  += data[i,2]
+		meanRperp[idX][1]  += data[i,5]
+		meanRparal[idY][0] += data[i,3]
+		meanRparal[idY][1] += data[i,5]
+		
+		tmp_save2[idX][idY] += data[i,2]
+		tmp_save3[idX][idY] += data[i,3]
+		tmp_save4[idX][idY] += data[i,4]
+		tmp_save5[idX][idY] += data[i,5]
 		
 	### Get the grid
 	rParal = tmp_save3 / tmp_save5
 	rPerp  = tmp_save2 / tmp_save5
 	z      = tmp_save4 / tmp_save5
 
-	tmp_idx    = numpy.arange(0,nbBin2D__)
-	tmp_rParal = numpy.zeros(nbBin2D__)
-	tmp_rPerp  = numpy.zeros(nbBin2D__)
-	tmp_z      = numpy.zeros(nbBin2D__)
-	for k1 in range(0,nbBin2D__):
-		i1       = k1/nbBinY2D__
-		j1       = k1%nbBinY2D__
-		k11      = j1*nbBinX2D__ + i1
-		tmp_rParal[k11] = rParal[i1,j1]
-		tmp_rPerp[k11]  = rPerp[i1,j1]
-		tmp_z[k11]      = z[i1,j1]
-	numpy.savetxt(pathToData+'bao'+dim+'.grid',zip(tmp_idx,tmp_rParal,tmp_rPerp,tmp_z),fmt='%u %1.20e %1.20e %1.20e')
+	grid = numpy.zeros( shape=(nbBin2D__,4) )
+	indexMatrix = numpy.arange(nbBin2D__)
+	grid[:,0] = (indexMatrix%nbBinY2D__)*nbBinX2D__ + indexMatrix/nbBinY2D__
+	grid[:,1] = rParal.flatten()
+	grid[:,2] = rPerp.flatten()
+	grid[:,3] = z.flatten()
+	numpy.savetxt(pathToData+'bao'+dim+'.grid',zip(grid[:,0],grid[:,1],grid[:,2],grid[:,3]),fmt='%u %1.20e %1.20e %1.20e')
 		
-
 	### Get the s_perp bin center
 	meanRperp[:,0]  /= meanRperp[:,1]
 	stringRperp = ''
