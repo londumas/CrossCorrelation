@@ -50,189 +50,175 @@ if (len(sys.argv)>6):
 	simul__ = int(sys.argv[7])
 
 
-def loadData(path1D, path2D):
+def loadData(path1D, path2D,selection=0):
+	'''
+
+	selection:
+		- 0: do all
+		- 1: only 1D
+		- 2: only 2D
+
+	'''
 
 	print path2D
 	print path1D
 
-	### 2D
-	data = numpy.loadtxt(path2D)
-
-	save0 = data[:,0]
-	save1 = data[:,1]
-	save2 = data[:,2]
-	save3 = data[:,3]
-	save4 = data[:,4]
-	save5 = data[:,5]
-	save6 = data[:,6]
-
-	#print '  <z> = ', numpy.sum(save4)/numpy.sum(save5)
-
-	tmp_save0  = numpy.zeros(shape=(nbBinX2D__,nbBinY2D__))
-	tmp_save1  = numpy.zeros(shape=(nbBinX2D__,nbBinY2D__))
-	tmp_save2  = numpy.zeros(shape=(nbBinX2D__,nbBinY2D__))
-	tmp_save3  = numpy.zeros(shape=(nbBinX2D__,nbBinY2D__))
-	tmp_save4  = numpy.zeros(shape=(nbBinX2D__,nbBinY2D__))
-	tmp_save5  = numpy.zeros(shape=(nbBinX2D__,nbBinY2D__))
-	tmp_save6  = numpy.zeros(shape=(nbBinX2D__,nbBinY2D__))
-
-	for i in range(0,len(save0)):
-		iX = i/int(maxY2D__-minY2D__)
-		iY = i%int(maxY2D__-minY2D__)
-
-		idX = iX/int(binSize__)
-		idY = iY/int(binSize__)
-
-		tmp_save0[idX][idY] += save0[i]
-		tmp_save1[idX][idY] += save1[i]
-		tmp_save2[idX][idY] += save2[i]
-		tmp_save3[idX][idY] += save3[i]
-		tmp_save4[idX][idY] += save4[i]
-		tmp_save5[idX][idY] += save5[i]
-		tmp_save6[idX][idY] += save6[i]
-
 	xi2D = numpy.zeros(shape=(nbBinX2D__,nbBinY2D__,3))
-
-	xi2D[:,:,0] = numpy.sqrt( (tmp_save2/tmp_save5)**2. + (tmp_save3/tmp_save5)**2. )
-	xi2D[:,:,1] = tmp_save0 / tmp_save5
-	xi2D[:,:,2] = numpy.sqrt( (tmp_save1/tmp_save5 - xi2D[:,:,1]*xi2D[:,:,1])/tmp_save6 )
-	cut = (tmp_save5 == 0.)
-	xi2D[:,:,0][cut] = 0.
-	xi2D[:,:,1][cut] = 0.
-	xi2D[:,:,2][cut] = 0.
-
-
-	'''
-	### --------------------------------------------
-	### If needed to save the grid
-	rParal = tmp_save3 / tmp_save5
-	rPerp  = tmp_save2 / tmp_save5
-	z      = tmp_save4 / tmp_save5
-
-	tmp_rParal = numpy.zeros(nbBin2D__)
-	tmp_rPerp  = numpy.zeros(nbBin2D__)
-	tmp_z      = numpy.zeros(nbBin2D__)
-	tmp_idx    = numpy.arange(0,nbBin2D__)
-	for k1 in range(0,nbBin2D__):
-		i1       = k1/nbBinY2D__
-		j1       = k1%nbBinY2D__
-		k11      = j1*nbBinX2D__ + i1
-		tmp_rParal[k11] = rParal[i1,j1]
-		tmp_rPerp[k11]  = rPerp[i1,j1]
-		tmp_z[k11]      = z[i1,j1]
-	
-	numpy.savetxt('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/BaoFit_q_f/bao2D.grid',zip(tmp_idx,tmp_rParal,tmp_rPerp,tmp_z),fmt='%u %1.20e %1.20e %1.20e')
-	### --------------------------------------------
-	'''
-
-	### Mu
-	data = numpy.loadtxt(path1D)
-
-	save0 = data[:,0]
-	save1 = data[:,1]
-	save2 = data[:,2]
-	save3 = data[:,3]
-	save4 = data[:,4]
-	save5 = data[:,5]
-	save6 = data[:,6]
-
-	tmp_save0 = numpy.zeros(shape=(nbBin1D__,nbBinM__))
-	tmp_save1 = numpy.zeros(shape=(nbBin1D__,nbBinM__))
-	tmp_save2 = numpy.zeros(shape=(nbBin1D__,nbBinM__))
-	tmp_save3 = numpy.zeros(shape=(nbBin1D__,nbBinM__))
-	tmp_save4 = numpy.zeros(shape=(nbBin1D__,nbBinM__))
-	tmp_save5 = numpy.zeros(shape=(nbBin1D__,nbBinM__))
-	tmp_save6 = numpy.zeros(shape=(nbBin1D__,nbBinM__))
-
-	tmp_save00 = numpy.zeros(shape=(nbBin1D__,3))
-	tmp_save11 = numpy.zeros(shape=(nbBin1D__,3))
-	tmp_save22 = numpy.zeros(shape=(nbBin1D__,3))
-	tmp_save33 = numpy.zeros(shape=(nbBin1D__,3))
-	tmp_save44 = numpy.zeros(shape=(nbBin1D__,3))
-	tmp_save55 = numpy.zeros(shape=(nbBin1D__,3))
-	tmp_save66 = numpy.zeros(shape=(nbBin1D__,3))
-
-	tmp_save000 = numpy.zeros(nbBin1D__)
-	tmp_save111 = numpy.zeros(nbBin1D__)
-	tmp_save222 = numpy.zeros(nbBin1D__)
-	tmp_save333 = numpy.zeros(nbBin1D__)
-	tmp_save444 = numpy.zeros(nbBin1D__)
-	tmp_save555 = numpy.zeros(nbBin1D__)
-	tmp_save666 = numpy.zeros(nbBin1D__)
-
-	binSizeX = int(max1D__)/nbBin1D__
-	binSizeY = 100/nbBinM__
-	
-	for i in range(0,len(save0)):
-		iX = i/100
-		iY = i%100
-
-		### for mu
-		idX = iX/binSizeX
-		idY = iY/binSizeY
-
-		tmp_save0[idX][idY] += save0[i]
-		tmp_save1[idX][idY] += save1[i]
-		tmp_save2[idX][idY] += save2[i]
-		tmp_save3[idX][idY] += save3[i]
-		tmp_save4[idX][idY] += save4[i]
-		tmp_save5[idX][idY] += save5[i]
-		tmp_save6[idX][idY] += save6[i]
-		
-		
-		### for wedges
-		if (iY<10 or iY>90):
-			idY = 0
-		elif ( (iY>=10 and iY<25) or (iY<=90 and iY>75) ):
-			idY = 1
-		else:
-			idY = 2
-
-		tmp_save00[idX][idY] += save0[i]
-		tmp_save11[idX][idY] += save1[i]
-		tmp_save22[idX][idY] += save2[i]
-		tmp_save33[idX][idY] += save3[i]
-		tmp_save44[idX][idY] += save4[i]
-		tmp_save55[idX][idY] += save5[i]
-		tmp_save66[idX][idY] += save6[i]
-
-		### for xi1D
-		tmp_save000[idX] += save0[i]
-		tmp_save111[idX] += save1[i]
-		tmp_save222[idX] += save2[i]
-		tmp_save333[idX] += save3[i]
-		tmp_save444[idX] += save4[i]
-		tmp_save555[idX] += save5[i]
-		tmp_save666[idX] += save6[i]
-	
 	xiMu = numpy.zeros(shape=(nbBin1D__,nbBinM__,4))
-	xiMu[:,:,0] = tmp_save2/tmp_save5
-	xiMu[:,:,1] = tmp_save3/tmp_save5
-	xiMu[:,:,2] = tmp_save0/tmp_save5
-	xiMu[:,:,3] = numpy.sqrt( (tmp_save1/tmp_save5 - xiMu[:,:,2]*xiMu[:,:,2])/tmp_save6)
-	cut = (tmp_save5==0.)
-	xiMu[:,:,0][cut] = 0.
-	xiMu[:,:,1][cut] = 0.
-	xiMu[:,:,2][cut] = 0.
-	xiMu[:,:,3][cut] = 0.
-
 	xiWe = numpy.zeros(shape=(nbBin1D__,3,3))
-	xiWe[:,:,0] = tmp_save22/tmp_save55
-	xiWe[:,:,1] = tmp_save00/tmp_save55
-	xiWe[:,:,2] = numpy.sqrt( (tmp_save11/tmp_save55 - xiWe[:,:,1]*xiWe[:,:,1])/tmp_save66 )
-	cut = (tmp_save55==0.)
-	xiWe[:,:,0][cut] = 0.
-	xiWe[:,:,1][cut] = 0.
-	xiWe[:,:,2][cut] = 0.
-
 	xi1D = numpy.zeros(shape=(nbBin1D__,3))
-	xi1D[:,0] = tmp_save222/tmp_save555
-	xi1D[:,1] = tmp_save000/tmp_save555
-	xi1D[:,2] = numpy.sqrt( (tmp_save111/tmp_save555 - xi1D[:,1]*xi1D[:,1])/tmp_save666 )
-	cut = (tmp_save555==0.)
-	xi1D[:,0][cut] = 0.
-	xi1D[:,1][cut] = 0.
-	xi1D[:,2][cut] = 0.
+
+	if (selection==0 or selection==1):
+		### Mu
+		data = numpy.loadtxt(path1D)
+
+		save0 = data[:,0]
+		save1 = data[:,1]
+		save2 = data[:,2]
+		save3 = data[:,3]
+		save4 = data[:,4]
+		save5 = data[:,5]
+		save6 = data[:,6]
+
+		tmp_save0 = numpy.zeros(shape=(nbBin1D__,nbBinM__))
+		tmp_save1 = numpy.zeros(shape=(nbBin1D__,nbBinM__))
+		tmp_save2 = numpy.zeros(shape=(nbBin1D__,nbBinM__))
+		tmp_save3 = numpy.zeros(shape=(nbBin1D__,nbBinM__))
+		tmp_save4 = numpy.zeros(shape=(nbBin1D__,nbBinM__))
+		tmp_save5 = numpy.zeros(shape=(nbBin1D__,nbBinM__))
+		tmp_save6 = numpy.zeros(shape=(nbBin1D__,nbBinM__))
+
+		tmp_save00 = numpy.zeros(shape=(nbBin1D__,3))
+		tmp_save11 = numpy.zeros(shape=(nbBin1D__,3))
+		tmp_save22 = numpy.zeros(shape=(nbBin1D__,3))
+		tmp_save33 = numpy.zeros(shape=(nbBin1D__,3))
+		tmp_save44 = numpy.zeros(shape=(nbBin1D__,3))
+		tmp_save55 = numpy.zeros(shape=(nbBin1D__,3))
+		tmp_save66 = numpy.zeros(shape=(nbBin1D__,3))
+
+		tmp_save000 = numpy.zeros(nbBin1D__)
+		tmp_save111 = numpy.zeros(nbBin1D__)
+		tmp_save222 = numpy.zeros(nbBin1D__)
+		tmp_save333 = numpy.zeros(nbBin1D__)
+		tmp_save444 = numpy.zeros(nbBin1D__)
+		tmp_save555 = numpy.zeros(nbBin1D__)
+		tmp_save666 = numpy.zeros(nbBin1D__)
+
+		binSizeX = int(max1D__)/nbBin1D__
+		binSizeY = 100/nbBinM__
+	
+		for i in range(0,len(save0)):
+			iX = i/100
+			iY = i%100
+
+			### for mu
+			idX = iX/binSizeX
+			idY = iY/binSizeY
+
+			tmp_save0[idX][idY] += save0[i]
+			tmp_save1[idX][idY] += save1[i]
+			tmp_save2[idX][idY] += save2[i]
+			tmp_save3[idX][idY] += save3[i]
+			tmp_save4[idX][idY] += save4[i]
+			tmp_save5[idX][idY] += save5[i]
+			tmp_save6[idX][idY] += save6[i]
+		
+		
+			### for wedges
+			if (iY<10 or iY>90):
+				idY = 0
+			elif ( (iY>=10 and iY<25) or (iY<=90 and iY>75) ):
+				idY = 1
+			else:
+				idY = 2
+
+			tmp_save00[idX][idY] += save0[i]
+			tmp_save11[idX][idY] += save1[i]
+			tmp_save22[idX][idY] += save2[i]
+			tmp_save33[idX][idY] += save3[i]
+			tmp_save44[idX][idY] += save4[i]
+			tmp_save55[idX][idY] += save5[i]
+			tmp_save66[idX][idY] += save6[i]
+
+			### for xi1D
+			tmp_save000[idX] += save0[i]
+			tmp_save111[idX] += save1[i]
+			tmp_save222[idX] += save2[i]
+			tmp_save333[idX] += save3[i]
+			tmp_save444[idX] += save4[i]
+			tmp_save555[idX] += save5[i]
+			tmp_save666[idX] += save6[i]
+	
+		xiMu[:,:,0] = tmp_save2/tmp_save5
+		xiMu[:,:,1] = tmp_save3/tmp_save5
+		xiMu[:,:,2] = tmp_save0/tmp_save5
+		xiMu[:,:,3] = numpy.sqrt( (tmp_save1/tmp_save5 - xiMu[:,:,2]*xiMu[:,:,2])/tmp_save6)
+		cut = (tmp_save5==0.)
+		xiMu[:,:,0][cut] = 0.
+		xiMu[:,:,1][cut] = 0.
+		xiMu[:,:,2][cut] = 0.
+		xiMu[:,:,3][cut] = 0.
+
+		xiWe[:,:,0] = tmp_save22/tmp_save55
+		xiWe[:,:,1] = tmp_save00/tmp_save55
+		xiWe[:,:,2] = numpy.sqrt( (tmp_save11/tmp_save55 - xiWe[:,:,1]*xiWe[:,:,1])/tmp_save66 )
+		cut = (tmp_save55==0.)
+		xiWe[:,:,0][cut] = 0.
+		xiWe[:,:,1][cut] = 0.
+		xiWe[:,:,2][cut] = 0.
+
+		xi1D[:,0] = tmp_save222/tmp_save555
+		xi1D[:,1] = tmp_save000/tmp_save555
+		xi1D[:,2] = numpy.sqrt( (tmp_save111/tmp_save555 - xi1D[:,1]*xi1D[:,1])/tmp_save666 )
+		cut = (tmp_save555==0.)
+		xi1D[:,0][cut] = 0.
+		xi1D[:,1][cut] = 0.
+		xi1D[:,2][cut] = 0.
+
+	if (selection==0 or selection==2):
+		### 2D
+		data = numpy.loadtxt(path2D)
+
+		save0 = data[:,0]
+		save1 = data[:,1]
+		save2 = data[:,2]
+		save3 = data[:,3]
+		save4 = data[:,4]
+		save5 = data[:,5]
+		save6 = data[:,6]
+
+		#print '  <z> = ', numpy.sum(save4)/numpy.sum(save5)
+
+		tmp_save0  = numpy.zeros(shape=(nbBinX2D__,nbBinY2D__))
+		tmp_save1  = numpy.zeros(shape=(nbBinX2D__,nbBinY2D__))
+		tmp_save2  = numpy.zeros(shape=(nbBinX2D__,nbBinY2D__))
+		tmp_save3  = numpy.zeros(shape=(nbBinX2D__,nbBinY2D__))
+		tmp_save4  = numpy.zeros(shape=(nbBinX2D__,nbBinY2D__))
+		tmp_save5  = numpy.zeros(shape=(nbBinX2D__,nbBinY2D__))
+		tmp_save6  = numpy.zeros(shape=(nbBinX2D__,nbBinY2D__))
+
+		for i in range(0,len(save0)):
+			iX = i/int(maxY2D__-minY2D__)
+			iY = i%int(maxY2D__-minY2D__)
+
+			idX = iX/int(binSize__)
+			idY = iY/int(binSize__)
+
+			tmp_save0[idX][idY] += save0[i]
+			tmp_save1[idX][idY] += save1[i]
+			tmp_save2[idX][idY] += save2[i]
+			tmp_save3[idX][idY] += save3[i]
+			tmp_save4[idX][idY] += save4[i]
+			tmp_save5[idX][idY] += save5[i]
+			tmp_save6[idX][idY] += save6[i]
+
+		xi2D[:,:,0] = numpy.sqrt( (tmp_save2/tmp_save5)**2. + (tmp_save3/tmp_save5)**2. )
+		xi2D[:,:,1] = tmp_save0 / tmp_save5
+		xi2D[:,:,2] = numpy.sqrt( (tmp_save1/tmp_save5 - xi2D[:,:,1]*xi2D[:,:,1])/tmp_save6 )
+		cut = (tmp_save5 == 0.)
+		xi2D[:,:,0][cut] = 0.
+		xi2D[:,:,1][cut] = 0.
+		xi2D[:,:,2][cut] = 0.
 
 	return xi1D, xi2D, xiMu, xiWe
 def createIni2(inputFile, pathToOutFit, pathToData,pathToIni, dim, param=None):
@@ -247,7 +233,11 @@ def createIni2(inputFile, pathToOutFit, pathToData,pathToIni, dim, param=None):
 	save3 = data[:,3]
 	save4 = data[:,4]
 	save5 = data[:,5]
-			
+
+	tmp_save2  = numpy.zeros(shape=(nbBinX2D__,nbBinY2D__))
+	tmp_save3  = numpy.zeros(shape=(nbBinX2D__,nbBinY2D__))
+	tmp_save4  = numpy.zeros(shape=(nbBinX2D__,nbBinY2D__))
+	tmp_save5  = numpy.zeros(shape=(nbBinX2D__,nbBinY2D__))
 	meanRperp  = numpy.zeros(shape=(nbBinX2D__,2))
 	meanRparal = numpy.zeros(shape=(nbBinY2D__,2))
 	meanRedshift = numpy.sum(save4)/numpy.sum(save5)
@@ -263,17 +253,37 @@ def createIni2(inputFile, pathToOutFit, pathToData,pathToIni, dim, param=None):
 		meanRperp[idX][1]  += save5[i]
 		meanRparal[idY][0] += save3[i]
 		meanRparal[idY][1] += save5[i]
-			
-	meanRperp[:,0]  /= meanRperp[:,1]
-	meanRparal[:,0] /= meanRparal[:,1]
-			
+
+
+		
+	### Get the grid
+	rParal = tmp_save3 / tmp_save5
+	rPerp  = tmp_save2 / tmp_save5
+	z      = tmp_save4 / tmp_save5
+
+	tmp_idx    = numpy.arange(0,nbBin2D__)
+	tmp_rParal = numpy.zeros(nbBin2D__)
+	tmp_rPerp  = numpy.zeros(nbBin2D__)
+	tmp_z      = numpy.zeros(nbBin2D__)
+	for k1 in range(0,nbBin2D__):
+		i1       = k1/nbBinY2D__
+		j1       = k1%nbBinY2D__
+		k11      = j1*nbBinX2D__ + i1
+		tmp_rParal[k11] = rParal[i1,j1]
+		tmp_rPerp[k11]  = rPerp[i1,j1]
+		tmp_z[k11]      = z[i1,j1]
+	numpy.savetxt(pathToData+'bao'+dim+'.grid',zip(tmp_idx,tmp_rParal,tmp_rPerp,tmp_z),fmt='%u %1.20e %1.20e %1.20e')
+		
+
 	### Get the s_perp bin center
+	meanRperp[:,0]  /= meanRperp[:,1]
 	stringRperp = ''
 	for el in meanRperp[:-1,0]:
 		stringRperp += str(el) + ','
 	stringRperp += str(meanRperp[-1,0])
 			
 	### Get the s_paral bin center
+	meanRparal[:,0] /= meanRparal[:,1]
 	stringRparal = ''
 	for el in meanRparal[:-1,0]:
 		stringRparal += str(el) + ','
@@ -282,8 +292,6 @@ def createIni2(inputFile, pathToOutFit, pathToData,pathToIni, dim, param=None):
 	### Get the redshift center
 	stringRedshift = str(meanRedshift)
 	print ' <z> = ', stringRedshift
-
-###model-config = value[delta-v]="""+param[4]+""";
 
 	string = """
 
@@ -302,6 +310,8 @@ anisotropic = yes
 decoupled   = yes
 custom-grid = yes
 pixelize = yes
+#dist-matrix = yes
+#dist-matrix-order = 5000
 
 # Parameter setup
 model-config = value[beta]=               """+param[0] +""";
@@ -345,6 +355,7 @@ dist-add = rP,rT=0:2,-3:1
 
 ## Data to analyze
 data = """+pathToData+"""bao"""+dim+"""
+#dist-matrix-name = """+pathToData+"""bao"""+dim+"""
 
 ## Data format
 data-format = comoving-cartesian
@@ -1005,7 +1016,7 @@ def prepareForBAOFIT():
 
 	### Constants
 	param = numpy.asarray( [1.6,-0.336,0.9,0.,0.,3.25,0.962524,3.26,1.966,1.,1.,1.,1.,0.,0.,0.,0.,0.,0.] )
-	doBootstraps = True
+	doBootstraps = False
 	nbRegions    = 80
 
 	'''
@@ -1026,11 +1037,13 @@ def prepareForBAOFIT():
 	'''
 	
 	### For data
-	rowPath = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
+	rowPath = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests_test_PDFMocksJMC_meanLambda_testNoCap/'
 	path    = rowPath + '/xi_delta_QSO_'
-	cov     = numpy.load('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/subsampling_LYA_QSO_cov_2D.npy')
+	cov     = numpy.load('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests_test_PDFMocksJMC_meanLambda_testNoCap/shuffleForest_LYA_QSO_cov_2D.npy')
 	cor     = numpy.load('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Results_RandomPosInCell/xi_delta_QSO_result_cor_2D_allSubSamplingFromFit.npy')
-	inputFile    = rowPath + '/xi_delta_QSO_2D_LYA_QSO.txt'
+	#inputFile    = rowPath + '/xi_delta_QSO_2D_LYA_QSO.txt'
+	inputFile    = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests_DR12_nicolas/xi_delta_QSO_2D_LYA_QSO.txt'
+	pathToDistortionMatrix = rowPath + '/xi_delta_QSO_distortionMatrix_2D_LYA_QSO.txt'
 	pathToOutFit = rowPath + 'BaoFit_q_f/'
 	pathToData   = rowPath + 'BaoFit_q_f/'
 	pathToIni    = rowPath + 'BaoFit_q_f/'
@@ -1040,10 +1053,8 @@ def prepareForBAOFIT():
 		pathToData   += 'Bootstraps/boot_'+str(wickIdx__).zfill(4)+'/'
 		pathToIni    += 'Bootstraps/boot_'+str(wickIdx__).zfill(4)+'/'
 		subprocess.call('mkdir ' + pathToIni, shell=True)
-		subprocess.call('cp '+rowPath+'/BaoFit_q_f/bao2D.grid ' + pathToIni, shell=True)
-	createIni2(inputFile, pathToOutFit, pathToData,pathToIni,'2D',param)
+		#subprocess.call('cp '+rowPath+'/BaoFit_q_f/bao2D.grid ' + pathToIni, shell=True)
 	
-	if (doBootstraps):
 		### Set the seed
 		numpy.random.seed(seed=42)
 		array = numpy.random.choice(numpy.arange(1000000).astype(int), size=10000, replace=False)
@@ -1063,55 +1074,50 @@ def prepareForBAOFIT():
 		xi2D_[:,:,1] = myTools.convert1DTo2D(xi2D1D,nbBinX2D__,nbBinY2D__)
 	else:
 		### Get the correlation (data)
-		xi1D_, xi2D_, xiMu_, xiWe_ = loadData(path+'Mu_LYA_QSO.txt',path+'2D_LYA_QSO.txt')
+		xi1D_, xi2D_, xiMu_, xiWe_ = loadData('',inputFile,2)
 
-	### If correlation matrix from another matrix
+	### Create the 'bao2D.grid' file
+	createIni2(inputFile, pathToOutFit, pathToData,pathToIni,'2D',param)
+
+	### Correlation
+	correlation = numpy.zeros( shape=(nbBin2D__,2) )
+	indexMatrix = numpy.arange(nbBin2D__)
+	correlation[:,0] = (indexMatrix%nbBinY2D__)*nbBinX2D__ + indexMatrix/nbBinY2D__
+	correlation[:,1] = xi2D_[:,:,1].flatten()
+	cutCorrelation = (correlation[:,1]!=0.)
+
+	### Covariance matrix
 	cov = myTools.getCovarianceMatrix(cor,numpy.diag(cov))
+	covarianceMatrix = numpy.zeros( shape=(nbBin2D__*nbBin2D__,3) )
+	indexMatrix1 = numpy.arange(nbBin2D__*nbBin2D__).reshape(nbBin2D__,nbBin2D__)/nbBin2D__
+	indexMatrix2 = numpy.arange(nbBin2D__*nbBin2D__).reshape(nbBin2D__,nbBin2D__)%nbBin2D__
+	indexMatrix1 = (indexMatrix1%nbBinY2D__)*nbBinX2D__ + indexMatrix1/nbBinY2D__
+	indexMatrix2 = (indexMatrix2%nbBinY2D__)*nbBinX2D__ + indexMatrix2/nbBinY2D__
+	covarianceMatrix[:,0] = numpy.triu(indexMatrix1,k=0).flatten()
+	covarianceMatrix[:,1] = numpy.triu(indexMatrix2,k=0).flatten()
+	covarianceMatrix[:,2] = numpy.triu(cov,k=0).flatten()
+	cutCovarMatrix = (covarianceMatrix[:,2]!=0.)
+	if (covarianceMatrix[:,2][cutCovarMatrix].size != int(nbBin2D__*(nbBin2D__+1.)/2.) ):
+		print '  xi_delta_QSO.py::prepareForBAOFIT()  size of covariance matrix is incorrect'
+		print '  size covariance matrix', cutCovarMatrix[:,2][cutCovarMatrix].size
+		print '  size it should have', nbBin2D__*(nbBin2D__+1.)/2.
+		return
 
-	
-	### Ready to save data
-	tmp_xi2D        = numpy.zeros(nbBin2D__)
-	tmp_idx         = numpy.arange(0,nbBin2D__)
-	nbBin2D = nbBin2D__*(nbBin2D__+1.)/2.
-	tmp_xi2DCov     = numpy.zeros(nbBin2D)
-	tmp_xi2DCovIdx  = numpy.zeros(nbBin2D)
-	tmp_xi2DCovIdx2 = numpy.zeros(nbBin2D)
-	idx = 0
+	### Distortion matrix
+	dmatData = numpy.loadtxt(pathToDistortionMatrix)
+	distortionMatrix = numpy.zeros( shape=(nbBin2D__*nbBin2D__,3) )
+	distortionMatrix[:,0] = indexMatrix1.flatten()
+	distortionMatrix[:,1] = indexMatrix2.flatten()
+	distortionMatrix[:,2] = dmatData.flatten()
+	cutDistortionMatrix = (distortionMatrix[:,2]!=0.)
 
-	for k1 in range(0,nbBin2D__):
-		i1       = k1/nbBinY2D__
-		j1       = k1%nbBinY2D__
-		k11      = j1*nbBinX2D__ + i1
-		tmp_xi2D[k11] = xi2D_[i1,j1,1]
-		
-		for k2 in range(0,k1+1):
-			i2       = k2/nbBinY2D__
-			j2       = k2%nbBinY2D__
-			k22      = j2*nbBinX2D__ + i2
-
-			### Keep only the diagonal
-			#if (k1==k2): tmp_xi2DCov[idx] = cov[k1][k2]
-
-			### Keep near the diag
-			#if (k1==k2): tmp_xi2DCov[idx] = cov[k1][k2]
-			#elif (abs(i1-i2)==0 and abs(j1-j2)<=5): tmp_xi2DCov[idx] = cov[k1][k2]
-			#elif (abs(i1-i2)==1 and abs(j1-j2)<=3): tmp_xi2DCov[idx] = cov[k1][k2]
-			#elif (abs(i1-i2)==2 and abs(j1-j2)<=2): tmp_xi2DCov[idx] = cov[k1][k2]
-
-			### Take everything
-			tmp_xi2DCov[idx] = cov[k1][k2]
-
-			tmp_xi2DCovIdx[idx]  = k11
-			tmp_xi2DCovIdx2[idx] = k22
-			idx += 1
-		
 	### Save data
-	numpy.savetxt( pathToData + '/bao2D.data',zip(tmp_idx,tmp_xi2D),fmt='%u %1.20e')
-	numpy.savetxt( pathToData + '/bao2D.cov',zip(tmp_xi2DCovIdx,tmp_xi2DCovIdx2,tmp_xi2DCov),fmt='%u %u %1.20e')
+	#numpy.savetxt( pathToData + '/bao2D.data',zip(correlation[:,0][cutCorrelation],correlation[:,1][cutCorrelation]),fmt='%u %1.20e')
+	#numpy.savetxt( pathToData + '/bao2D.cov',zip(covarianceMatrix[:,0][cutCovarMatrix],covarianceMatrix[:,1][cutCovarMatrix],covarianceMatrix[:,2][cutCovarMatrix]),fmt='%u %u %1.20e')
+	#numpy.savetxt( pathToData + '/bao2D.dmat',zip(distortionMatrix[:,0][cutDistortionMatrix], distortionMatrix[:,1][cutDistortionMatrix], distortionMatrix[:,2][cutDistortionMatrix]),fmt='%u %u %1.20e')
 	
-
 	### Send the fit
-	command = '/home/gpfs/manip/mnt0607/bao/hdumasde/Program/baofit/build/baofit -i ' + pathToIni + 'bao2D.ini' #--parameter-scan'   ### --toymc-samples 10000
+	command = '/home/gpfs/manip/mnt0607/bao/hdumasde/Program/deepzot/bin/baofit -i ' + pathToIni + 'bao2D.ini' #--parameter-scan'   ### --toymc-samples 10000
 	print command
 	subprocess.call(command, shell=True)
 	
@@ -1234,7 +1240,7 @@ def saveMeanCov():
 	numpy.save('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Results_RandomPosInCell/xi_delta_QSO_result_cov_2D_meanSubSampling.npy',tmpcov1D)
 
 
-
+prepareForBAOFIT()
 
 '''
 ### Data
@@ -1249,6 +1255,7 @@ myTools.plot2D(a)
 '''
 
 xi1D_, xi2D_, xiMu_, xiWe_ = loadData('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests_DR12_nicolas/xi_delta_QSO_Mu_'+forest1__+'_'+qso1__+'.txt','/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests_DR12_nicolas/xi_delta_QSO_2D_'+forest1__+'_'+qso1__+'.txt')
+#xi1D_, xi2D_, xiMu_, xiWe_ = loadData('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Box_000/Simu_002/Results_NicolasDistortion/xi_delta_QSO_Mu_'+forest1__+'_'+qso1__+'.txt','/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Box_000/Simu_002/Results_NicolasDistortion/xi_delta_QSO_2D_'+forest1__+'_'+qso1__+'.txt')
 plotXi(0)
 plotXi(1)
 plotXi(2)

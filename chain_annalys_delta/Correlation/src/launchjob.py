@@ -28,17 +28,13 @@ def main():
 
 				tmp_command = "clubatch \"time ; hostname ; " + commandProd + ' 10 0 ' + str(k) + ' 0 ' + str(i) + " " + str(j) + "\""
 				subprocess.call(tmp_command, shell=True)
-				tmp_command = "clubatch \"time ; hostname ; " + commandProd + ' 20 0 ' + str(k) + ' 0 ' + str(i) + " " + str(j) + "\""
-				subprocess.call(tmp_command, shell=True)
-				tmp_command = "clubatch \"time ; hostname ; " + commandProd + ' 21 0 ' + str(k) + ' 0 ' + str(i) + " " + str(j) + "\""
-				subprocess.call(tmp_command, shell=True)
 
 				tmp_command = "echo " + tmp_command
 				subprocess.call(tmp_command, shell=True)
 				tmp_command = "echo " + time.ctime()
 				subprocess.call(tmp_command, shell=True)
 
-				time.sleep(60)
+				time.sleep(30)
                 	        myTools.isReadyForNewJobs(200, 430,'time')
 		time.sleep(120)
 	
