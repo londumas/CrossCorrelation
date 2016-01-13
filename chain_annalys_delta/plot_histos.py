@@ -16,7 +16,7 @@ from const_delta import *
 chunckNb = 1
 simulNb  = 1
 
-forest__ = 'LYA'
+forest__ = 'CIV'
 
 ###
 #path = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_histos/"
@@ -36,11 +36,11 @@ for i in range (0,chunckNb):
 		data = numpy.loadtxt(path+'hDeltaVsLambdaObs_LYA'+mockNumber+'.txt')
 		plt.errorbar(data[:,0]+3600.5, data[:,1], label=r'$eBOSS$',color='blue')
 
-		#data = numpy.loadtxt('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/calibration_flux_using_CIV_forest.txt')
-		#plt.errorbar(data[:,0]+3547.5, data[:,1], label=r'$CIV \, forest \, backup$',color='red')
+		data = numpy.loadtxt('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/calibration_flux_using_CIV_forest.txt')
+		plt.errorbar(data[:,0]+3547.5, data[:,1], label=r'$CIV \, forest \, backup$',color='red')
 
-		#data = numpy.loadtxt(path+'hDeltaVsLambdaObs_CIV'+mockNumber+'.txt')
-		#plt.errorbar(data[:,0]+3547.5, data[:,1], label=r'$CIV \, forest$',color='green')
+		data = numpy.loadtxt(path+'hDeltaVsLambdaObs_CIV'+mockNumber+'.txt')
+		plt.errorbar(data[:,0]+3547.5, data[:,1], label=r'$CIV \, forest$',color='green')
 
 		#data = numpy.loadtxt(path+'hDeltaVsLambdaObs_SIIV.txt')
                 #plt.errorbar(data[:,0]+3547.5, data[:,1], label=r'$CIV \, forest$',color='black')

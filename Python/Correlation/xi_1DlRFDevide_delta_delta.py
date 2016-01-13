@@ -114,16 +114,10 @@ def saveListRealMocks(ni,nj):
 	return
 
 
-
-
-path__ = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/eBOSS/'
-forest__ = 'LYA'
+path__ = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests4/'
 xxx, yyy, yer = plot()
-#path__ = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
-#forest__ = 'LYA'
-#xxx2, yyy2, yer2 = plot()
-path__ = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests_test_PDFMocksJMC_meanLambda_testNoCap/'
-forest__ = 'LYA'
+path__ = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
+forest__ = 'CIV'
 xxx3, yyy3, yer3 = plot()
 
 '''

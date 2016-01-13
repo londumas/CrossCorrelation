@@ -121,9 +121,8 @@ class Correlation
 };
 
 const unsigned int nbBinRFMin__ = 50;
-const double lambdaObsMin__   = 3600.;     ///3600.
-const double lambdaObsMax__   = 7235.;      ///7235
-const unsigned int nbBinlambdaObs__ = 3635;   ///3635
+const double lambdaObsMin__   = 3600.; //3547.;
+const double lambdaObsMax__   = 7235.; //10326.;
 
 const double maxAlpha__   = 40.;
 const double maxBeta__  =  0.3;
@@ -138,15 +137,15 @@ const double vetoLine__[42] = {3615.,3619.,3932.,3937.,3966.,3972.,4042.,4050.,
 
 const double raSeperationTwoRegions__ = 5.;
 
+const double maxCorrelation__ = 200.;
+
+
 /// If LYA
 const std::string forest__      = "LYA";
 const double lambdaRFLine__     = 1215.67;
 const double lambdaRFMin__      = 1040.;
 const double lambdaRFMax__      = 1200.;
 const unsigned int nbBinRFMax__ = 647;
-const double distMinPixel__     = 3670.;
-const double minRedshiftQSO__   = 1.7;
-const double maxRedshiftQSO__   = 5.75;
 const double alphaStart__       = 1.;
 
 /// If LYA_JMC
@@ -168,9 +167,6 @@ const double lambdaRFLine__     = 1550.77845;
 const double lambdaRFMin__      = 1410.;
 const double lambdaRFMax__      = 1530.;
 const unsigned int nbBinRFMax__ = 373;
-const double distMinPixel__     = 2870.;
-const double minRedshiftQSO__   = 1.14;
-const double maxRedshiftQSO__   = 4.22;
 const double alphaStart__       = 1.;
 */
 /*
@@ -180,9 +176,6 @@ const double lambdaRFLine__  = 2803.5324;
 const double lambdaRFMin__   = 1570.;
 const double lambdaRFMax__   = 2790.;
 const unsigned int nbBinRFMax__ = 2414;
-const double distMinPixel__     = 780.;
-const double minRedshiftQSO__   = 0.17;
-const double maxRedshiftQSO__   = 1.82;
 const double alphaStart__       = 1.;
 */
 /*
@@ -192,9 +185,6 @@ const double lambdaRFLine__     = 1025.72;
 const double lambdaRFMin__      = 800.;
 const double lambdaRFMax__      = 1020.;
 const unsigned int nbBinRFMax__ = 1085;
-const double distMinPixel__     = 4190.;
-const double minRedshiftQSO__   = 2.19;
-const double maxRedshiftQSO__   = 7.08;
 const double alphaStart__       = 1.;
 */
 /*
@@ -204,9 +194,6 @@ const double lambdaRFLine__     = 1402.77291;
 const double lambdaRFMin__      = 1286.;
 const double lambdaRFMax__      = 1380.;
 const unsigned int nbBinRFMax__ = 326;
-const double distMinPixel__     = 2880.;  ///3220
-const double minRedshiftQSO__   = 1.37;   /// 1.37///1.14
-const double maxRedshiftQSO__   = 4.83;   /// 4.83///4.22
 const double alphaStart__       = 1.;
 */
 
@@ -222,25 +209,19 @@ const double lambdaRFLineDelta2__     = 1215.67;
 const double lambdaRFMinDelta2__      = 1040.;
 const double lambdaRFMaxDelta2__      = 1200.;
 const unsigned int nbBinRFMaxDelta2__ = 647;
-const double distMinPixelDelta2__     = 3670.;
-const double minRedshiftQDelta2__   = 1.7;
-const double maxRedshiftQDelta2__   = 5.75;
 const std::string pathDelta2__ = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits";
 const double alphaStart2__       = 1.3;
 */
-/*
+
 /// For Delta 2 (CIV)
 const std::string forest2__  = "CIV";
 const double lambdaRFLineDelta2__  = 1550.77845;
 const double lambdaRFMinDelta2__   = 1410.;
 const double lambdaRFMaxDelta2__   = 1530.;
 const unsigned int nbBinRFMaxDelta2__ = 373;
-const double distMinPixelDelta2__     = 2870.;
-const double minRedshiftQDelta2__   = 1.17824434332;
-const double maxRedshiftQDelta2__   = 4.10198406827;
 const std::string pathDelta2__ = "/home/gpfs/manip/mnt/bao/hdumasde/Data/CIV/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits";
 const double alphaStart2__       = 1.;
-*/
+
 /*
 /// For Delta 2 (MGII)
 const std::string forest2__  = "MGII";
@@ -248,9 +229,6 @@ const double lambdaRFLineDelta2__  = 2804;
 const double lambdaRFMinDelta2__   = 1570.;
 const double lambdaRFMaxDelta2__   = 2790.;
 const unsigned int nbBinRFMaxDelta2__ = 2414;
-const double distMinPixelDelta2__     = 780.;
-const double minRedshiftQDelta2__   = 0.201354106684;
-const double maxRedshiftQDelta2__   = 1.76719159405;
 const std::string pathDelta2__ = "/home/gpfs/manip/mnt/bao/hdumasde/Data/MGII/FitsFile_DR12/DR12_primery/DR12_primery.fits";
 const double alphaStart2__       = 1.;
 */
@@ -261,25 +239,19 @@ const double lambdaRFLineDelta2__  = 1025.72;
 const double lambdaRFMinDelta2__   = 800.;
 const double lambdaRFMaxDelta2__   = 1020.;
 const unsigned int nbBinRFMaxDelta2__ = 1080;
-const double distMinPixelDelta2__     = 4190.;
-const double minRedshiftQDelta2__   = 2.25743931576;
-const double maxRedshiftQDelta2__   = 6.85278103355;
 const std::string pathDelta2__ = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYB/FitsFile_DR12_testNoCutLambdaOBS_Guy/DR12_primery/DR12_primery.fits";
 const double alphaStart2__       = 1.;
 */
-
+/*
 /// For Delta 2 (SIIV)
 const std::string forest2__           = "SIIV";
 const double lambdaRFLineDelta2__     = 1402.77291;
 const double lambdaRFMinDelta2__      = 1286.;
 const double lambdaRFMaxDelta2__      = 1380.;
 const unsigned int nbBinRFMaxDelta2__ = 326;
-const double distMinPixelDelta2__     = 2880.;
-const double minRedshiftQDelta2__     = 1.37;
-const double maxRedshiftQDelta2__     = 4.83;
 const std::string pathDelta2__ = "/home/gpfs/manip/mnt/bao/hdumasde/Data/SIIV/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits";
 const double alphaStart2__       = 1.;
-
+*/
 
 /// For Q2
 const std::string QSO2__  = "DLA";

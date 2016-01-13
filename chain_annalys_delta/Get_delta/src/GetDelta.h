@@ -17,8 +17,6 @@
 //     REVISION: ---
 //===================================================================================
 
-#include "Constants.h"
-
 #include <vector>
 #include "TH1D.h"
 #include "TGraphErrors.h"
@@ -26,6 +24,7 @@
 #ifndef GETDELTA_H
 #define GETDELTA_H
 
+/*
 /// If LYA
 const std::string forest__  = "LYA";
 const double lambdaRFLine__  = 1215.67;
@@ -33,14 +32,14 @@ const double lambdaRFMin__   = 1040.;
 const double lambdaRFMax__   = 1200.;
 const unsigned int nbBinRFMax__   = 647;
 const double alphaStart__ = 1.;
+#define C_NBBINZ 12
 #define C_ZEXTREMA0 2.
 #define C_ZEXTREMA1 4.5
-#define C_BINSIZEZ 2.08333333333333343e-01
-
+*/
 /// If LYA_JMC
 //const unsigned int nbBinRFMax__ = 645;
 
-/*
+
 /// If CIV
 const std::string forest__   = "CIV";
 const double lambdaRFLine__  = 1550.77845;
@@ -48,10 +47,9 @@ const double lambdaRFMin__   = 1410.;
 const double lambdaRFMax__   = 1530.;
 const unsigned int nbBinRFMax__   = 373;
 const double alphaStart__ = 1.;
+#define C_NBBINZ 9
 #define C_ZEXTREMA0 1.4
 #define C_ZEXTREMA1 3.2
-#define C_BINSIZEZ 0.2
-*/
 
 /*
 /// If MGII
@@ -61,11 +59,10 @@ const double lambdaRFMin__   = 1970.;
 const double lambdaRFMax__   = 2760.;
 const unsigned int nbBinRFMax__ = 1450;
 const double alphaStart__ = 1.;
+#define C_NBBINZ 9
 #define C_ZEXTREMA0 0.4
 #define C_ZEXTREMA1 1.7
-#define C_BINSIZEZ 0.15
 */
-
 /*
 /// If LYB
 const std::string forest__  = "LYB";
@@ -74,9 +71,9 @@ const double lambdaRFMin__   = 800.;
 const double lambdaRFMax__   = 1020.;
 const unsigned int nbBinRFMax__ = 1085;
 const double alphaStart__ = 1.;
+#define C_NBBINZ 12
 #define C_ZEXTREMA0 2.
 #define C_ZEXTREMA1 4.5
-#define C_BINSIZEZ 2.08333333333333343e-01
 */
 /*
 /// If SIIV
@@ -86,13 +83,13 @@ const double lambdaRFMin__   = 1286.;
 const double lambdaRFMax__   = 1380.;
 const unsigned int nbBinRFMax__ = 326;
 const double alphaStart__ = 1.;
+#define C_NBBINZ 9
 #define C_ZEXTREMA0 1.4
 #define C_ZEXTREMA1 3.4
-#define C_BINSIZEZ 0.2
 */
 
 
-
+const double C_BINSIZEZ = (C_ZEXTREMA1-C_ZEXTREMA0)/C_NBBINZ;
 
 /// Constants for the PDF
 const double minRedshift__ = 1.96;
@@ -103,8 +100,8 @@ const double maxFlux__ = 1.000001;
 const unsigned int nbBinsFlux__ = 100;
 
 
-const double lambdaObsMin__   = 3600.; //3547.;  //3600
-const double lambdaObsMax__   = 7235.; //10326;  //7235
+const double lambdaObsMin__   = 3547.;  //3600
+const double lambdaObsMax__   = 10326.;  //7235
 const unsigned int nbBinRFMin__ = 50;
  
 /// Value allowing to put a roof to the error on a flux

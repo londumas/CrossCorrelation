@@ -35,7 +35,7 @@ nbSpectra = 300000
 
 def main():
 
-	stepIdx = 2
+	stepIdx = 1
 
 	print
 	print "------ Start ------"
@@ -74,7 +74,7 @@ def main():
 	
 	if (stepIdx==2):
 	
-		forest = 'LYA'
+		forest = 'CIV'
 
 		### Put files of alpha and beta together
 
@@ -132,19 +132,19 @@ def main():
 		beta[ (chi==0.) ]  = 0.
 
 		numpy.savetxt(folder+scheme+'all.txt', zip(idx,alpha,beta,chi))
-		'''
+		
 		plt.hist(alpha[ (numpy.isfinite(chi)) ],bins=1000,label='alpha')
 		plt.show()
 		plt.hist(beta[ (numpy.isfinite(chi)) ],bins=1000,label='beta')
 		plt.show()
 		plt.hist(chi[ (numpy.isfinite(chi)) ],bins=1000,label='chi2')
 		plt.show()
-		'''
+		
 		
 		### Put the new alpha and beta in fits file
-		path     = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest+'/FitsFile_DR12_Guy/DR12_primery/DR12_primery_test_PDFMocksJMC_meanLambda_testNoCap.fits'
+		#path     = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest+'/FitsFile_DR12_Guy/DR12_primery/DR12_primery_test_PDFMocksJMC_meanLambda_testNoCap.fits'
 		#path     = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_reObs/DR12_reObs.fits'
-		#path     = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest+'/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits'
+		path     = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest+'/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits'
 		#path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest+'/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits'
 		file_cat = pyfits.open(path,mode='update')
 		cat      = file_cat[1].data
@@ -152,14 +152,14 @@ def main():
 		print '  nb spectra         : ', cat.size
 		print '  alpha diff         : ', cat['ALPHA_2']-alpha
 		print '  beta diff          : ', cat['BETA_2']-beta
-		'''
+		
 		plt.hist(cat['ALPHA_2']-alpha,bins=1000,label='alpha')
 		plt.show()
 		plt.hist(cat['BETA_2']-beta,bins=1000,label='beta')
 		plt.show()
 		plt.hist(chi[ (numpy.isfinite(chi)) ]/(cat['NB_PIXEL'][ (numpy.isfinite(chi)) ]-2.),bins=1000,label='chi2')
 		plt.show()
-		'''
+		
 		cat['ALPHA_2'] = alpha
 		cat['BETA_2']  = beta
 

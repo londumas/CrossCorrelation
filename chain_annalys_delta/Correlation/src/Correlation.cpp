@@ -87,7 +87,10 @@ std::string alQSO[19] = {"QSO_ALL_TESTS",
 				"ALL_EVERY_OBJECTS_2016_01_08"
 };
 
-
+/// Constants
+const unsigned int nbBinlambdaObs__  = int(lambdaObsMax__-lambdaObsMin__);
+double distMinPixel__ = 0.;
+double distMinPixelDelta2__ = 0.;
 
 /// Flags for Jean-Marc's simulations
 const bool mocks          = false;
@@ -107,7 +110,7 @@ const bool nicolasEstimator__  = false;
 std::string pathMoreForMocks__ = "";
 const bool haveFvsLambdaRFFlat = false;
 const bool removeFluxAccordingToNbPairs__ = false;
-const bool doVetoLines__ = true;
+const bool doVetoLines__ = false;
 
 std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests4/";
 
@@ -141,6 +144,7 @@ Correlation::Correlation(int argc, char **argv) {
 		pathForest__  = "/home/gpfs/manip/mnt/bao/hdumasde/Data/";
 		pathForest__  += forest__;
 //		pathForest__  += "/FitsFile_DR12_testNoCutLambdaOBS_Guy/DR12_primery/DR12_primery.fits";
+//		pathForest__  += "/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits";
 		pathForest__  += "/FitsFile_DR12_Guy/DR12_primery/DR12_primery_test_PDFMocksJMC_meanLambda_testNoCap.fits";
 //		pathForest__  += "/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits";
 	}
@@ -5132,6 +5136,13 @@ void Correlation::loadDataQ1(void) {
 	/// Create the conversion table from redshift to distance
 	Cosmology* cosmo = new Cosmology(C_H, C_OMEGAM, C_OMEGAB);
 	TH1D* hConvertRedshDist = cosmo->createHistoConvertRedshDist(C_NBBINREDSH, C_ZEXTREMABINCONVERT0, C_ZEXTREMABINCONVERT1);
+
+	// Get min_z, max_z according to pixels positions
+	double array[2] = {0.};
+	cosmo->FindMinMaxRedsift(maxCorrelation__, lambdaObsMin__, lambdaObsMax__, lambdaRFLine__, array);
+	const double minRedshiftQSO = array[0];
+	const double maxRedshiftQSO = array[1];
+
 	delete cosmo;
 
 	//From Fits
@@ -5168,7 +5179,7 @@ void Correlation::loadDataQ1(void) {
 		fits_read_col(fitsptrSpec,TDOUBLE, 3,i+1,1,1,NULL,&zz, NULL,&sta);
 
 		if ( !mockBox__ && ra==0. && de==0. ) continue;
-		if ( !mockBox__ && (zz<minRedshiftQSO__ || zz>maxRedshiftQSO__) ) continue;
+		if ( !mockBox__ && (zz<minRedshiftQSO || zz>maxRedshiftQSO) ) continue;
 
 		/// If not dealing with Jean-Marc's simulations
 		if (!mockJMC__ && !mockBox__) {
@@ -5264,6 +5275,10 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 	/// Create the conversion table from redshift to distance
 	Cosmology* cosmo = new Cosmology(C_H, C_OMEGAM, C_OMEGAB);
 	TH1D* hConvertRedshDist = cosmo->createHistoConvertRedshDist(C_NBBINREDSH, C_ZEXTREMABINCONVERT0, C_ZEXTREMABINCONVERT1);
+
+	// Get the minimal distance of pixels
+	distMinPixel__ = cosmo->GetMinDistPixels(lambdaObsMin__, lambdaRFLine__);
+
 	delete cosmo;
 
 
@@ -5472,6 +5487,10 @@ void Correlation::loadDataDelta2(int dataNeeded/*=100*/) {
 	/// Create the conversion table from redshift to distance
 	Cosmology* cosmo = new Cosmology(C_H, C_OMEGAM, C_OMEGAB);
 	TH1D* hConvertRedshDist = cosmo->createHistoConvertRedshDist(C_NBBINREDSH, C_ZEXTREMABINCONVERT0, C_ZEXTREMABINCONVERT1);
+
+	// Get the minimal distance of pixels
+	distMinPixelDelta2__ = cosmo->GetMinDistPixels(lambdaObsMin__, lambdaRFLineDelta2__);
+
 	delete cosmo;
 
 	const TString TSfitsnameSpec = pathDelta2__;

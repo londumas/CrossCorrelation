@@ -42,6 +42,9 @@ class Cosmology
 		//	in h^{-1}.Mpc
 		TF1* dChidz__;
 
+		// histogram to convert redshift into comoving distance in h^{-1}.Mpc
+		TH1D* hConvertRedshDist__;
+
 	public:
 
 		// Class constructor:
@@ -76,7 +79,36 @@ class Cosmology
 		//	in h^{-1}.Mpc
 		double DTfunct(double* zz, double *par);
 
+		// Fill an array with redshift min and max of QSO according to lambda_obs_min and lambda_obs_max of pixels
+		//		- double maxDist      : maximum distance of correlation in h^{-1}.Mpc
+		//		- double lambdaObsMin : minimum of lambda_obs
+		//		- double lambdaObsMax : maximum of lambda_obs
+		//		- double lambdaRFLine : lambda_RF of the line
+		//		- double* array       : array of size two to fill
+		void FindMinMaxRedsift(double maxDist, double lambdaObsMin, double lambdaObsMax, double lambdaRFLine, double* array);
+
+		// Returns the distance minimum of pixels according to lambda_obs_min	
+		//		- double lambdaObsMin : minimum of lambda_obs
+		//		- double lambdaRFLine : lambda_RF of the line
+		double GetMinDistPixels(double lambdaObsMin, double lambdaRFLine);
+
 };
 
 #endif
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

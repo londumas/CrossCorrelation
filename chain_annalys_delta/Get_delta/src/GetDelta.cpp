@@ -70,7 +70,7 @@ std::string pathMoreForHist__ = "";
 /// Flags
 unsigned int stepDefinition = 2;
 unsigned int stepAnnalyse   = 0;
-const bool doVetoLines__          = true;
+const bool doVetoLines__          = false;
 const bool setDLA__               = false;
 const bool cutNotFittedSpectra__  = true;
 const bool putReobsTogether__     = false;
@@ -84,9 +84,9 @@ GetDelta::GetDelta(int argc, char** argv)
 		pathForest__   = "/home/gpfs/manip/mnt/bao/hdumasde/Data/";
 		pathForest__  += forest__;
 //		pathForest__  += "/FitsFile_DR12_Guy/DR12_reObs/DR12_reObs.fits";
-		pathForest__  += "/FitsFile_DR12_Guy/DR12_primery/DR12_primery_test_PDFMocksJMC_meanLambda_testNoCap.fits";
+//		pathForest__  += "/FitsFile_DR12_Guy/DR12_primery/DR12_primery_test_PDFMocksJMC_meanLambda_testNoCap.fits";
 //		pathForest__  += "/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits";
-//		pathForest__  += "/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits";
+		pathForest__  += "/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits";
 	}
 	else {
 	
@@ -915,7 +915,7 @@ void GetDelta::fitForests(unsigned int begin, unsigned int end) {
 	return;
 }
 
-
+/*
 double ProbPixel(double cont,double flux, double sig, double zpix, unsigned int idxPixel) {
 	
 	const double dF = 1./nbBinsFlux__;
@@ -943,8 +943,8 @@ extern void Chi2(int &npar, double *gin, double &f, double *par, int iflag) {
 		f += -2.*ProbPixel(cont,flux,sig,zpix,i);
 	}
 }
+*/
 
-/*
 extern void Chi2(int &npar, double *gin, double &f, double *par, int iflag) {
 
 	f = 0.;
@@ -955,7 +955,7 @@ extern void Chi2(int &npar, double *gin, double &f, double *par, int iflag) {
 		const double tmp = (flux-cont)/sig;
 		f += tmp*tmp;
 	}
-}*/
+}
 
 void GetDelta::initFitCont(void) {
 
