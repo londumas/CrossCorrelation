@@ -127,14 +127,6 @@ const double lambdaObsMax__   = 7235.; //10326.;
 const double maxAlpha__   = 40.;
 const double maxBeta__  =  0.3;
 
-const unsigned int nbVetoLines__ = 21;
-const double vetoLine__[42] = {3615.,3619.,3932.,3937.,3966.,3972.,4042.,4050.,
-        4357.,4362.,5458.,5467.,5573.,5585.,5682.,5695.,
-        5885.,5902.,6235.,6241.,6256.,6263.,6296.,6311.,
-        6320.,6334.,6362.,6369.,6498.,6502.,6554.,6557.,
-        6825.,6840.,6862.,6870.,6922.,6928.,6948.,6954.,
-        6977.,6982.};
-
 const double raSeperationTwoRegions__ = 5.;
 
 const double maxCorrelation__ = 200.;

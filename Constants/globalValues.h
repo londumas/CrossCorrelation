@@ -17,7 +17,7 @@
 //     REVISION: ---
 //===================================================================================
 
-
+#include <vector>
 
 #ifndef GLOBALVALUES_H
 #define GLOBALVALUES_H
@@ -35,7 +35,14 @@
 // Number of sub-samples the sky is split into:
 #define C_NBSUBSAMPLES 80
 
-
+// Lines in the sky to veto or not
+const unsigned int nbVetoLines__ = 21;
+const double vetoLine__[42] = {3615.,3619.,3932.,3937.,3966.,3972.,4042.,4050.,
+        4357.,4362.,5458.,5467.,5573.,5585.,5682.,5695.,
+        5885.,5902.,6235.,6241.,6256.,6263.,6296.,6311.,
+        6320.,6334.,6362.,6369.,6498.,6502.,6554.,6557.,
+        6825.,6840.,6862.,6870.,6922.,6928.,6948.,6954.,
+        6977.,6982.};
 
 
 // Cosmology

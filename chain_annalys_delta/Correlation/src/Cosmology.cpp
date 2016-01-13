@@ -96,9 +96,11 @@ void Cosmology::FindMinMaxRedsift(double maxDist, double lambdaObsMin, double la
 		return;
 	}
 
+	// Distance min and max of pixels
 	const double d_pixel_min = hConvertRedshDist__->Interpolate(z_pixel_min);
 	const double d_pixel_max = hConvertRedshDist__->Interpolate(z_pixel_max);
 
+	// Distance min and max of QSOs
 	const double d_QSO_min = d_pixel_min-dist_max;
 	const double d_QSO_max = d_pixel_max+dist_max;
 
@@ -112,6 +114,7 @@ void Cosmology::FindMinMaxRedsift(double maxDist, double lambdaObsMin, double la
 	}
 	TGraph* gFromDistanceToRedshfit = new TGraph(nbBin, distance, redShift);
 
+	// Redshift min and max of QSOs
 	array[0] = std::floor( 10.*gFromDistanceToRedshfit->Eval(d_QSO_min))/10.;
 	array[1] = std::ceil( 10.*gFromDistanceToRedshfit->Eval(d_QSO_max))/10.;
 

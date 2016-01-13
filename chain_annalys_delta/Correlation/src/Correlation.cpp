@@ -18,14 +18,14 @@
 //===================================================================================
 
 /// LIB
-#include <iostream> // std::cout
+#include <iostream>	// std::cout
 #include <fstream>
-#include <sstream> //stringstream
+#include <sstream>	//stringstream
 #include <cmath>
 #include <assert.h>
 #include <vector>
-#include <algorithm>    // std::random_shuffle
-#include <cstdlib>      // std::rand, std::srand
+#include <algorithm>	// std::random_shuffle
+#include <cstdlib>	// std::rand, std::srand
 
 /// ROOT
 #include "TH1D.h"
@@ -95,10 +95,10 @@ double distMinPixelDelta2__ = 0.;
 /// Flags for Jean-Marc's simulations
 const bool mocks          = false;
 const bool mocksNoNoiseNoCont = false;
-const bool mockJMC__          = false;
+const bool mockJMC__          = true;
 const bool mockBox__          = false;
 const double randomPositionOfQSOInCell__ = false;
-const double randomPositionOfQSOInCellNotBeforeCorrelation__ = false;
+const double randomPositionOfQSOInCellNotBeforeCorrelation__ = true;
 
 const bool shuffleQSO     = false;
 const bool shuffleForest  = false;
@@ -106,11 +106,11 @@ const bool randomQSO      = false;
 const bool randomForest   = false;
 const bool doBootstraps__ = false;
 
-const bool nicolasEstimator__  = false;
+const bool nicolasEstimator__  = true;
 std::string pathMoreForMocks__ = "";
 const bool haveFvsLambdaRFFlat = false;
 const bool removeFluxAccordingToNbPairs__ = false;
-const bool doVetoLines__ = false;
+const bool doVetoLines__ = true;
 
 std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests4/";
 
@@ -2720,34 +2720,69 @@ void Correlation::xi_delta_QSO_distortionMatrix(void) {
 	std::vector<double> v_invSumWeight(nbForest_,0.);
 	std::vector< std::vector< double > > v_varLambda(v_lRF__);
 
+	TH1D* hist1 = new TH1D("hist1","",100000,-10000.,10000.);
+	TH1D* hist2 = new TH1D("hist2","",100000,-10000.,10000.);
+	TH1D* hist3 = new TH1D("hist3","",100000,-10000.,10000.);
+	TH1D* hist4 = new TH1D("hist4","",100000,-10000.,10000.);
+
+	long double test2 = 0.;
+
 	for (unsigned int f=0; f<nbForest_; f++) {
 		const unsigned int nbPixel = v_nbPixelDelta1__[f];
 
-		double sumWeight  = 0.;
-		double meanLambda = 0.;
-		double stdLambda  = 0.;
+		long double sumWeight  = 0.;
+		long double meanLambda = 0.;
+		long double stdLambda  = 0.;
 
 		/// Loops over all pixels of the forest
 		for (unsigned int i=0; i<nbPixel; i++) {
 
-			const double w = v_w__[f][i];
-			const double l = v_lRF__[f][i];
+			const long double w = v_w__[f][i];
+			const long double l = v_lRF__[f][i];
 
 			sumWeight  += w;
 			meanLambda += w*l;
 			stdLambda  += w*l*l;
+
+			hist1->Fill(w);
+			hist2->Fill(l);
 		}
 
+		if (sumWeight==0.) std::cout << "   ERROR:: sumWeight = 0. " << std::endl;
 		meanLambda        /= sumWeight;
-		stdLambda          = 1./sqrt(stdLambda/sumWeight - meanLambda*meanLambda);
+		stdLambda          = stdLambda/sumWeight - meanLambda*meanLambda;
+		if (stdLambda==0.) std::cout << "   ERROR:: stdLambda = 0. " << std::endl;
+		stdLambda          = 1./sqrt(stdLambda);
 		v_invSumWeight[f]  = 1./sumWeight;
+		hist3->Fill(meanLambda);
+
+		long double test = 0.;
 
 		for (unsigned int i=0; i<nbPixel; i++) {
 			v_varLambda[f][i] = (v_lRF__[f][i]-meanLambda)*stdLambda;
+			hist4->Fill(v_varLambda[f][i]);
+			test += v_w__[f][i]*v_varLambda[f][i];
+			test2 += v_w__[f][i]*v_varLambda[f][i];
 		}
+		if (fabs(test)>1.e-9) std::cout << test << std::endl;
 	}
 
+	std::cout << test2 << std::endl;
 
+	R_plot1D(hist1,"w");
+	R_plot1D(hist2,"l");
+	R_plot1D(hist3,"<l>");
+	R_plot1D(hist4,"varLambda");
+	std::cout << hist1->GetMean() << std::endl;
+	std::cout << hist2->GetMean() << std::endl;
+	std::cout << hist3->GetMean() << std::endl;
+	std::cout << hist4->GetMean() << std::endl;
+	delete hist1;
+	delete hist2;
+	delete hist3;
+	delete hist4;
+
+	//return;
 
 	/// Constants:
 	/// The space between bins is of 10 Mpc.h^-1
@@ -2834,6 +2869,9 @@ void Correlation::xi_delta_QSO_distortionMatrix(void) {
 			std::vector< unsigned int > binIdx;
 			std::vector< unsigned int > fromBinsToPixels;
 
+			// Copy the 'bins_touched' logic
+			std::vector< unsigned int> bins_touched;
+			int bin_prev = -1;
 
 			/// Loops over all pixels of the forest
 			for (unsigned int i=0; i<nbPixel; i++) {
@@ -2853,7 +2891,7 @@ void Correlation::xi_delta_QSO_distortionMatrix(void) {
 				const double val0 = w*invSumWeight;
 	
 				/// Fill the histogramm of xi(r_{perp}, r_{paral}
-				const unsigned int globalBin = rPerpBinIdx*nbBinY+int( (distP+max)*fromValToIdx );
+				const int globalBin = rPerpBinIdx*nbBinY+int( (distP+max)*fromValToIdx );
 				xValue[globalBin]  += val0;
 				xlValue[globalBin] += val0*v_varLambda[f][ii];
 
@@ -2863,10 +2901,19 @@ void Correlation::xi_delta_QSO_distortionMatrix(void) {
 				/// Keep values for the distortion matrix
 				binIdx.push_back(globalBin);
 				fromBinsToPixels.push_back(ii);
+
+				// Copy the 'bins_touched' logic
+				if (globalBin!=bin_prev) {
+					bin_prev = globalBin;
+					bins_touched.push_back(globalBin);
+				}
 			}
 
 			/// Number of pixels with pairs 
 			const unsigned int nbPixelsWithPairs = binIdx.size();
+
+			// Copy the 'bins_touched' logic
+			const unsigned int nbBinsTouched = bins_touched.size();
 
 			/// Loops over all pixels of the forest (Fill the distortion matrix)
 			for (unsigned int i=0; i<nbPixelsWithPairs; i++) {
@@ -2880,9 +2927,9 @@ void Correlation::xi_delta_QSO_distortionMatrix(void) {
 				/// Fill the distortion matrix
 				data2DMatrix[globalBin1][globalBin1] += w;
 
-				for (unsigned int j=0; j<nbPixelsWithPairs; j++) {
-					const unsigned int globalBin2 = binIdx[j];
-					data2DMatrix[globalBin1][globalBin2] -= w*( xValue[globalBin2] + val1*xlValue[globalBin2] );
+				for (unsigned int j=0; j<nbBinsTouched; j++) {
+					const unsigned int globalBin2 = bins_touched[j];
+					data2DMatrix[globalBin2][globalBin1] -= w*( xValue[globalBin2] + val1*xlValue[globalBin2] );
 				}
 			}
 		}
@@ -3049,6 +3096,9 @@ void Correlation::xi_delta_QSO_distortionMatrix_1D(void) {
 			std::vector< unsigned int > binIdx;
 			std::vector< unsigned int > fromBinsToPixels;
 
+			// Copy the 'bins_touched' logic
+			std::vector< unsigned int> bins_touched;
+			int bin_prev = -1;
 
 			/// Loops over all pixels of the forest
 			for (unsigned int i=0; i<nbPixel; i++) {
@@ -3071,7 +3121,7 @@ void Correlation::xi_delta_QSO_distortionMatrix_1D(void) {
 				const double val0 = w*invSumWeight;
 	
 				/// Fill the histogramm of xi(r_{perp}, r_{paral}
-				const unsigned int globalBin = int(sqrt(distTotPow2)*fromValToIdx);
+				const int globalBin = int(sqrt(distTotPow2)*fromValToIdx);
 				xValue[globalBin]  += val0;
 				xlValue[globalBin] += val0*v_varLambda[f][ii];
 
@@ -3081,10 +3131,19 @@ void Correlation::xi_delta_QSO_distortionMatrix_1D(void) {
 				/// Keep values for the distortion matrix
 				binIdx.push_back(globalBin);
 				fromBinsToPixels.push_back(ii);
+
+				// Copy the 'bins_touched' logic
+				if (globalBin!=bin_prev) {
+                                        bin_prev = globalBin;
+                                        bins_touched.push_back(globalBin);
+                                }
 			}
 
 			/// Number of pixels with pairs 
 			const unsigned int nbPixelsWithPairs = binIdx.size();
+
+			// Copy the 'bins_touched' logic
+			const unsigned int nbBinsTouched = bins_touched.size();			
 
 			/// Loops over all pixels of the forest (Fill the distortion matrix)
 			for (unsigned int i=0; i<nbPixelsWithPairs; i++) {
@@ -3098,11 +3157,10 @@ void Correlation::xi_delta_QSO_distortionMatrix_1D(void) {
 				/// Fill the distortion matrix
 				dataMatrix[globalBin1][globalBin1] += w;
 
-				for (unsigned int j=0; j<nbPixelsWithPairs; j++) {
-					const unsigned int globalBin2 = binIdx[j];
-					dataMatrix[globalBin1][globalBin2] -= w*( xValue[globalBin2] + val1*xlValue[globalBin2] );
-				}
-
+				for (unsigned int j=0; j<nbBinsTouched; j++) {
+                                        const unsigned int globalBin2 = bins_touched[j];
+                                        dataMatrix[globalBin2][globalBin1] -= w*( xValue[globalBin2] + val1*xlValue[globalBin2] );
+                                }
 			}
 		}
 	}
@@ -3970,7 +4028,10 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix(void) {
 			/// Index of the bin
 			std::vector< unsigned int > binIdx;
 			std::vector< unsigned int > fromBinsToPixels;
-			
+		
+			std::vector< unsigned int> bins_touched;
+                        int bin_prev = -1;
+	
 			/// Loops over all pixels of the forest
 			for (unsigned int i=0; i<nbPixel; i++) {
 
@@ -3981,7 +4042,7 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix(void) {
 				const double val0 = w*invSumWeight;
 	
 				/// Fill the histogramm of xi(r_{perp}, r_{paral}
-				const unsigned int globalBin = rPerpBinIdx*nbBinY + int( (distP+max)*fromValToIdx );
+				const int globalBin = rPerpBinIdx*nbBinY + int( (distP+max)*fromValToIdx );
 				xValue[globalBin]  += val0;
 				xlValue[globalBin] += val0*v_varLambda[f][i];
 
@@ -3991,10 +4052,18 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix(void) {
 				/// Keep values for the distortion matrix
 				binIdx.push_back(globalBin);
 				fromBinsToPixels.push_back(i);
+
+				if (globalBin!=bin_prev) {
+                                        bin_prev = globalBin;
+                                        bins_touched.push_back(globalBin);
+                                }
 			}
 
 			/// Number of pixels with pairs 
 			const unsigned int nbPixelsWithPairs = binIdx.size();
+
+			// Copy the 'bins_touched' logic
+			const unsigned int nbBinsTouched = bins_touched.size();
 
 			/// Loops over all pixels of the forest (Fill the distortion matrix)
 			for (unsigned int i=0; i<nbPixelsWithPairs; i++) {
@@ -4008,10 +4077,10 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix(void) {
 				/// Fill the distortion matrix
 				dataMatrix[globalBin1][globalBin1] += w;
 
-				for (unsigned int j=0; j<nbPixelsWithPairs; j++) {
-					const unsigned int globalBin2 = binIdx[j];
-					dataMatrix[globalBin1][globalBin2] -= w*( xValue[globalBin2] + val1*xlValue[globalBin2] );
-				}
+				for (unsigned int j=0; j<nbBinsTouched; j++) {
+                                        const unsigned int globalBin2 = bins_touched[j];
+                                        dataMatrix[globalBin2][globalBin1] -= w*( xValue[globalBin2] + val1*xlValue[globalBin2] );
+                                }
 			}
 		}
 	}

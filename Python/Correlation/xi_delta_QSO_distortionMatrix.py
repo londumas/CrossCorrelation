@@ -477,15 +477,21 @@ def fitCamb(data,pathToFile,mulpol=0):
 
 
 
+path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests4/xi_delta_QSO_distortionMatrix_1D_LYA_QSO.txt'
+'''
+print path
+data = numpy.loadtxt(path)
+print data
+print numpy.diag(data)
+myTools.plot2D(data)
+'''
 
 
 
+nbPixel = nbBin1D__
+#nbPixel = nbBin2D__
 
-
-#nbPixel = nbBin1D__
-nbPixel = nbBin2D__
-
-
+'''
 #### Matrix from Nicolas
 data = numpy.loadtxt("/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/chain_annalys_delta/Correlation/run/xcf_v5_8_guy_c2_baseline.dmat")
 distortionMatrix = numpy.zeros( shape=(nbBin2D__,nbBin2D__) )
@@ -497,28 +503,30 @@ for i in numpy.arange(size):
 	distortionMatrix[ save0[i] ][ save1[i] ] = save2[i]
 
 path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Box_000/Simu_000/Results_NicolasDistortion/xi_delta_QSO_distortionMatrix_2D_LYA_QSO.txt'
-print path
-data = numpy.loadtxt(path)
+path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests4/xi_delta_QSO_distortionMatrix_2D_LYA_QSO.txt'
+'''
+#print path
+#data = numpy.loadtxt(path)
 
-plt.hist( data[ data!=0. ], bins=1000  )
-plt.hist( distortionMatrix[ distortionMatrix!=0. ], bins=1000  )
-plt.show()
+#plt.hist( data[ data!=0. ], bins=1000  )
+#plt.hist( distortionMatrix[ distortionMatrix!=0. ], bins=1000  )
+#plt.show()
 
 
-#xi1D_, xi2D_, xiMu_, xiWe_ = loadData('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests_DR12_nicolas/xi_delta_QSO_Mu_'+forest1__+'_'+qso1__+'.txt','/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests_DR12_nicolas/xi_delta_QSO_2D_'+forest1__+'_'+qso1__+'.txt')
+xi1D_, xi2D_, xiMu_, xiWe_ = loadData('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests_DR12_nicolas/xi_delta_QSO_Mu_'+forest1__+'_'+qso1__+'.txt','/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests_DR12_nicolas/xi_delta_QSO_2D_'+forest1__+'_'+qso1__+'.txt')
 #path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests_test_PDFMocksJMC_meanLambda_testNoCap/xi_delta_QSO_distortionMatrix_1D_LYA_QSO.txt'
 
 
-xi1D_, xi2D_, xiMu_, xiWe_ = loadData('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Box_000/Simu_003/Results_NicolasDistortion/xi_delta_QSO_Mu_'+forest1__+'_'+qso1__+'.txt','/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Box_000/Simu_003/Results_NicolasDistortion/xi_delta_QSO_2D_'+forest1__+'_'+qso1__+'.txt')
-path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Box_000/Simu_003/Results_NicolasDistortion/xi_delta_QSO_distortionMatrix_2D_LYA_QSO.txt'
+#xi1D_, xi2D_, xiMu_, xiWe_ = loadData('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Box_000/Simu_003/Results_NicolasDistortion/xi_delta_QSO_Mu_'+forest1__+'_'+qso1__+'.txt','/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Box_000/Simu_003/Results_NicolasDistortion/xi_delta_QSO_2D_'+forest1__+'_'+qso1__+'.txt')
+#path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Box_000/Simu_003/Results_NicolasDistortion/xi_delta_QSO_distortionMatrix_2D_LYA_QSO.txt'
 
 
 print path
 data = numpy.loadtxt(path)
-myTools.plot2D(data)
-plt.hist(data[data!=0.],bins=100)
-plt.hist(numpy.diag(data),bins=100)
-plt.show()
+#myTools.plot2D(data)
+#plt.hist(data[data!=0.],bins=100)
+#plt.hist(numpy.diag(data),bins=100)
+#plt.show()
 
 '''
 cov = numpy.array(data)
@@ -530,9 +538,9 @@ data[ data==0. ] = numpy.float('nan')
 myTools.plot2D(data)
 '''
 
-plt.hist(data[data!=0.],bins=100)
-plt.hist(numpy.diag(data),bins=100)
-plt.show()
+#plt.hist(data[data!=0.],bins=100)
+#plt.hist(numpy.diag(data),bins=100)
+#plt.show()
 
 
 
