@@ -85,7 +85,10 @@ class LymanForest
 		//		 (see private variable definition)
 		//		- bool euclidean=false: true if eucldeen coordinate, false if spherical
 		LymanForest(std::string pathToFile, unsigned int nbRegions, double raSeperationTwoRegions, bool euclidean=false);
-		
+
+		// Class destructor:
+		~LymanForest();
+
 		// Fill an array of size 4 with the coordinate of the region:
 		//	minRA, maxRA, minDec, maxDec
 		//		- int regionIdx: region to get the coordinate of

@@ -21,6 +21,7 @@
 //===================================================================================
 
 #include "LymanAlphaForestRegion.h"
+#include "../../../Constants/constants.h"
 
 #include <fstream>
 #include <iostream>     // std::cout
@@ -62,7 +63,13 @@ LymanForest::LymanForest(std::string pathToFile, unsigned int nbRegions, double 
 	PrintData();
 
 }
-
+LymanForest::~LymanForest() {
+	ra_.clear();
+	de_.clear();
+	pa_.clear();
+	id_.clear();
+	co_.clear();
+}
 
 void LymanForest::LoadForest(std::string pathToFile) {
 	
@@ -561,7 +568,7 @@ void LymanForest::SaveRegionMap(std::string pathToSave) {
 
 	//const double piTimes2   = M_PI*2.;
 	double radToDeg = 1.;
-	if (!euclidean_) radToDeg *= 180./M_PI;
+	if (!euclidean_) radToDeg = C_RADTODEG;
 
 	for (unsigned int i=0; i<nbRegion_; i++) {
 		const unsigned int nbForest = ra_[i].size();

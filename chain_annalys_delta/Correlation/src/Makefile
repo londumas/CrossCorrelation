@@ -17,9 +17,6 @@
 #     REVISION: ---
 #===================================================================================
 
-#WORKDIR = /home/helion/Documents/Thèse
-WORKDIR = /home/usr201/mnt/hdumasde
-
 ROOTCFLAGS    = $(shell root-config --cflags)
 ROOTLIBS      = $(shell root-config --libs)
 ROOTGLIBS     = $(shell root-config --glibs)
@@ -43,11 +40,11 @@ GLIBS         = $(ROOTGLIBS) $(SYSLIBS) -lMinuit  -lTreePlayer -lMLP  -L$(CFITSI
 
 BIN = ../bin
 OBJ = ../obj
-ROOT = $(WORKDIR)/Code/Root/Library
-MATH = $(WORKDIR)/Code/Cpp/Library
-CLASS = $(WORKDIR)/Code/Cpp/X_Correlat_firstStep/src
+ROOT = ../../../Root/Library
+MATH = ../../../Cpp/Library
+CONSTANTS = ../../../Constants
 
-INC = Constants.h Correlation.h $(ROOT)/RootHistoFunctions.h $(MATH)/mathFunctions.h $(CLASS)/Cosmology.h LymanAlphaForestRegion.h
+INC = Correlation.h Cosmology.h LymanAlphaForestRegion.h $(ROOT)/RootHistoFunctions.h $(MATH)/mathFunctions.h $(CONSTANTS)/constants.h $(CONSTANTS)/globalValues.h
 #TTreeSpectra.h
 MYLIBS = $(LIBS) -lc $(GLIBS)
 
@@ -77,8 +74,8 @@ $(OBJ)/Correlation.o: Correlation.cpp $(INC)
 $(OBJ)/LymanAlphaForestRegion.o: LymanAlphaForestRegion.cpp $(INC)
 	$(CXX) $(CXXFLAGS) -c -o $@ LymanAlphaForestRegion.cpp
 
-$(OBJ)/Cosmology.o: $(CLASS)/Cosmology.cpp $(INC)
-	$(CXX) $(CXXFLAGS) -c -o $@ $(CLASS)/Cosmology.cpp
+$(OBJ)/Cosmology.o: Cosmology.cpp $(INC)
+	$(CXX) $(CXXFLAGS) -c -o $@ Cosmology.cpp
 	
 $(OBJ)/RootHistoFunctions.o: $(ROOT)/RootHistoFunctions.cpp $(INC)
 	$(CXX) $(CXXFLAGS) -c -o $@ $(ROOT)/RootHistoFunctions.cpp

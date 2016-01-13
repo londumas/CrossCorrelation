@@ -17,11 +17,8 @@
 //     REVISION: ---
 //===================================================================================
 
-#include "Constants.h"
-
 #include <vector>
-
-#include "TH1D.h"
+#include <cmath>
 
 #ifndef CORRELATION_H
 #define CORRELATION_H
@@ -85,10 +82,6 @@ class Correlation
 		std::vector<double> v_CosDeQ2__;
 		std::vector<double> v_SinDeQ2__;
 
-
-		/// Convert redshift to distance
-		TH1D* hConvertRedshDist_;
-
 		/// Instance
 		void loadDataQ1(void);
 		void loadDataQ2(void);
@@ -144,8 +137,6 @@ const double vetoLine__[42] = {3615.,3619.,3932.,3937.,3966.,3972.,4042.,4050.,
         6977.,6982.};
 
 const double raSeperationTwoRegions__ = 5.;
-
-
 
 /// If LYA
 const std::string forest__      = "LYA";

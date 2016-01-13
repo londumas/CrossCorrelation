@@ -935,13 +935,24 @@ def saveListReal(nbReal,path1D,path2D,pathToSave,subsampling=False):
 	numpy.save(pathToSave+'cov_Mu',covMu)
 
 	return
-def saveListRealMocks(ni,nj):
+def saveListRealMocks(ni,nj,distortion=False):
 	'''
+		- ni: Box
+		- nj: Simu
+		- distortion: Flag to use or not the distortion matrix (defalut=False)
+
+		Usage example:
+			cov = numpy.load('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Results_NicolasDistortion/xi_delta_QSO_result_cov_1D.npy')
+			cor = myTools.getCorrelationMatrix(cov)
+			myTools.plot2D(cor)
+			a = myTools.plotCovar([cor],['a'])
 
 	'''
 
-	path       = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/noNoisenoCont/Box_00'
-	pathToSave = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/noNoisenoCont/Results/xi_delta_QSO_result_'
+	### Where to get correlation
+	path       = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Box_00'
+	### Where to save the results
+	pathToSave = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Results_NicolasDistortionWithDistortion/xi_delta_QSO_result_'
 
 	list1D       = numpy.zeros( shape=(nbBin1D__,ni*nj) )
 	list2D       = numpy.zeros( shape=(nbBin2D__,ni*nj) )
@@ -951,7 +962,7 @@ def saveListRealMocks(ni,nj):
 
 	for i in numpy.arange(ni):
 		for j in numpy.arange(nj):
-			tmpPath =  path + str(i)+'/Simu_00'+str(j)+'/Results/xi_delta_QSO_'
+			tmpPath =  path + str(i)+'/Simu_00'+str(j)+'/Results_NicolasDistortion/xi_delta_QSO_'
 
 			try:
 				xi1D, xi2D, xiMu, xiWe = loadData(tmpPath+'Mu_LYA_QSO.txt',tmpPath+'2D_LYA_QSO.txt')
@@ -962,6 +973,23 @@ def saveListRealMocks(ni,nj):
 				listMultipol[:,:,i*10+j] = plotMultipol(xiMu)[:,:,1]
 			except:
 				print '   ERROR:: ', tmpPath
+
+			if (distortion):
+				tmp_command = " echo " + str(i) + " " + str(j)
+				subprocess.call(tmp_command, shell=True)
+
+				### distortion matrix 1D
+				data = numpy.loadtxt(tmpPath+'distortionMatrix_1D_LYA_QSO.txt')
+				list1D[:,i*10+j] = numpy.dot(data,xi1D[:,1])
+				#myTools.plot2D(data)
+				#myTools.plot1D([xi1D[:,1],list1D[:,i*10+j]],'-','-','-',['before','after'])
+				### distortion matrix 2D
+				data = numpy.loadtxt(tmpPath+'distortionMatrix_2D_LYA_QSO.txt')
+				xi1D = myTools.convert2DTo1D(xi2D[:,:,1], nbBinX2D__,nbBinY2D__)
+				list2D[:,i*10+j] = numpy.dot(data,xi1D)
+
+				
+
 	numpy.save(pathToSave+'1D',list1D)
 	numpy.save(pathToSave+'2D',list2D)
 	numpy.save(pathToSave+'Mu',listMu)
@@ -1129,8 +1157,7 @@ def replaceValueByMean():
 
 	'''
 	
-	rawPath = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Results_RandomPosInCell/xi_delta_QSO_result_'
-	#rawPath = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_primery_correctedBadFit3/shuffleQSO_LYA_QSO_'
+	rawPath = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Results_NicolasDistortionWithDistortion/xi_delta_QSO_result_'
 
 	list1D = numpy.load(rawPath+'1D.npy')
 	list2D = numpy.load(rawPath+'2D.npy')
@@ -1233,8 +1260,17 @@ def saveMeanCov():
 	tmpcov1D /= 100
 	numpy.save('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Results_RandomPosInCell/xi_delta_QSO_result_cov_2D_meanSubSampling.npy',tmpcov1D)
 
-
-#prepareForBAOFIT()
+'''
+saveListRealMocks(10,10,True)
+cov = numpy.load('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Results_NicolasDistortionWithDistortion/xi_delta_QSO_result_cov_1D.npy')
+cor = myTools.getCorrelationMatrix(cov)
+myTools.plot2D(cor)
+a = myTools.plotCovar([cor],['a'])
+cov = numpy.load('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Results_NicolasDistortionWithDistortion/xi_delta_QSO_result_cov_2D.npy')
+cor = myTools.getCorrelationMatrix(cov)
+myTools.plot2D(cor)
+#a = myTools.plotCovar([cor],['a'])
+'''
 
 '''
 ### Data
@@ -1248,10 +1284,17 @@ a = myTools.plotCovar([cor],['a'])
 myTools.plot2D(a)
 '''
 
-#xi1D_, xi2D_, xiMu_, xiWe_ = loadData('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests_DR12_nicolas/xi_delta_QSO_Mu_'+forest1__+'_'+qso1__+'.txt','/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests_DR12_nicolas/xi_delta_QSO_2D_'+forest1__+'_'+qso1__+'.txt')
-xi1D_, xi2D_, xiMu_, xiWe_ = loadData('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Box_000/Simu_002/Results_NicolasDistortion/xi_delta_QSO_Mu_'+forest1__+'_'+qso1__+'.txt','/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Box_000/Simu_002/Results_NicolasDistortion/xi_delta_QSO_2D_'+forest1__+'_'+qso1__+'.txt')
-#plotXi(0)
-#plotXi(1)
+
+xi1D_, xi2D_, xiMu_, xiWe_ = loadData('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests4/xi_delta_QSO_Mu_'+forest1__+'_'+qso1__+'.txt','/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests4/xi_delta_QSO_2D_'+forest1__+'_'+qso1__+'.txt')
+
+'''
+xi1D_, xi2D_, xiMu_, xiWe_ = loadData('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Box_000/Simu_000/Results_NicolasDistortion/xi_delta_QSO_Mu_'+forest1__+'_'+qso1__+'.txt','/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Box_000/Simu_000/Results_NicolasDistortion/xi_delta_QSO_2D_'+forest1__+'_'+qso1__+'.txt')
+result_Multipol_ = plotMultipol(xiMu_)
+replaceValueByMean()
+'''
+
+plotXi(0)
+plotXi(1)
 plotXi(2)
 pathToCamb = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/CAMB_2_4/xi-z2.4.dat'
 fitCamb(xi1D_,pathToCamb,0)

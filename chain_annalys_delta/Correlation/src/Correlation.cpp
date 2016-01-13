@@ -21,21 +21,24 @@
 #include <iostream> // std::cout
 #include <fstream>
 #include <sstream> //stringstream
-#include <math.h>
+#include <cmath>
 #include <assert.h>
 #include <vector>
 #include <algorithm>    // std::random_shuffle
 #include <cstdlib>      // std::rand, std::srand
 
 /// ROOT
+#include "TH1D.h"
 #include "fitsio.h"
 #include "TString.h"
 
 #include "Correlation.h"
 #include "LymanAlphaForestRegion.h"
-#include C_MYCOSMOLIB
-#include C_MYROOTLIB
-#include C_MYCPPLIB
+#include "Cosmology.h"
+#include "../../../Root/Library/RootHistoFunctions.h"
+#include "../../../Cpp/Library/mathFunctions.h"
+#include "../../../Constants/constants.h"
+#include "../../../Constants/globalValues.h"
 
 /*
 std::string alQSOName[9] = {"QSO_ALL_LowZ", "QSO_ALL_highZ", "QSO_ALL_SGC", "QSO_ALL_NGC", "QSO_ALL_DR7", "QSO_ALL_DR12", "QSO_ALL_CORE", "QSO_ALL_LowMg", "QSO_ALL_HighMg"};
@@ -98,7 +101,7 @@ const bool shuffleQSO     = false;
 const bool shuffleForest  = false;
 const bool randomQSO      = false;
 const bool randomForest   = false;
-const bool doBootstraps__ = true;
+const bool doBootstraps__ = false;
 
 const bool nicolasEstimator__  = false;
 std::string pathMoreForMocks__ = "";
@@ -205,11 +208,6 @@ Correlation::Correlation(int argc, char **argv) {
 	commandEnd__ += " ";
 	commandEnd__ += QSO2__;
 	std::cout << "  " << commandEnd__ << std::endl;
-
-	/// Create the conversion table from redshift to distance
-	Cosmology* cosmo = new Cosmology(C_H, C_OMEGAM, C_OMEGAB);
-	hConvertRedshDist_ = cosmo->createHistoConvertRedshDist(C_NBBINREDSH, C_ZEXTREMABINCONVERT0, C_ZEXTREMABINCONVERT1);
-	delete cosmo;
 
 	if      (idxCommand[0] == 0)  xi_1D_delta_delta();
 	else if (idxCommand[0] == 1)  xi_1DlRF_delta_delta();
@@ -5131,6 +5129,11 @@ void Correlation::xi_Q1_Q2(void) {
 
 void Correlation::loadDataQ1(void) {
 
+	/// Create the conversion table from redshift to distance
+	Cosmology* cosmo = new Cosmology(C_H, C_OMEGAM, C_OMEGAB);
+	TH1D* hConvertRedshDist = cosmo->createHistoConvertRedshDist(C_NBBINREDSH, C_ZEXTREMABINCONVERT0, C_ZEXTREMABINCONVERT1);
+	delete cosmo;
+
 	//From Fits
 	std::cout << "\n\n  ------ load Data Q1 ------" << std::endl;
 
@@ -5187,15 +5190,22 @@ void Correlation::loadDataQ1(void) {
 		v_SinDeQ1__.push_back(sin(de));
 		v_zzQ1__.push_back(zz);
 		if (mockBox__) v_rQ1__.push_back( zz );
-		else v_rQ1__.push_back( hConvertRedshDist_->Interpolate(zz) );
+		else v_rQ1__.push_back( hConvertRedshDist->Interpolate(zz) );
 	}
 
 	nbQ1__ = v_raQ1__.size();
 	std::cout << "  number of good   Q1    = " << nbQ1__ << std::endl;
 
+	delete hConvertRedshDist;
+
 	return;
 }
 void Correlation::loadDataQ2(void) {
+
+	/// Create the conversion table from redshift to distance
+	Cosmology* cosmo = new Cosmology(C_H, C_OMEGAM, C_OMEGAB);
+	TH1D* hConvertRedshDist = cosmo->createHistoConvertRedshDist(C_NBBINREDSH, C_ZEXTREMABINCONVERT0, C_ZEXTREMABINCONVERT1);
+	delete cosmo;
 
 	//From Fits
 		
@@ -5237,17 +5247,24 @@ void Correlation::loadDataQ2(void) {
 		v_CosDeQ2__.push_back(cos(de));
 		v_SinDeQ2__.push_back(sin(de));
 		v_zzQ2__.push_back(zz);
-		v_rQ2__.push_back( hConvertRedshDist_->Interpolate(zz) );
+		v_rQ2__.push_back( hConvertRedshDist->Interpolate(zz) );
 	}
 
 	nbQ2__ = v_raQ2__.size();
 	std::cout << "  number of good   Q2    = " << nbQ2__ << std::endl;
+
+	delete hConvertRedshDist;
 
 	return;
 }
 void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=false*/, unsigned int bootIdx/*=0*/) {
 
 	std::cout << "\n\n  ------ load Data Forest ------" << std::endl;
+
+	/// Create the conversion table from redshift to distance
+	Cosmology* cosmo = new Cosmology(C_H, C_OMEGAM, C_OMEGAB);
+	TH1D* hConvertRedshDist = cosmo->createHistoConvertRedshDist(C_NBBINREDSH, C_ZEXTREMABINCONVERT0, C_ZEXTREMABINCONVERT1);
+	delete cosmo;
 
 
 	/// Constants
@@ -5292,7 +5309,7 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 		pathToSave += QSO__;
 		pathToSave += ".txt";
 
-		LymanForest* lymanForestObject = new LymanForest(pathToSave, C_NBBOOTSTRAP, raSeperationTwoRegions__, mockJMC__);
+		LymanForest* lymanForestObject = new LymanForest(pathToSave, C_NBSUBSAMPLES, raSeperationTwoRegions__, mockJMC__);
 		//lymanForestObject->SaveRegionMap("map.txt");
 		//return;
 		lymanForestObject->GetRegionArray(regionMap);
@@ -5370,7 +5387,7 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 
 				const double zi = LAMBDA_OBS[j]/lambdaRFLine__ -1.;
 
-				v_tmp_r.push_back(hConvertRedshDist_->Interpolate(zi));
+				v_tmp_r.push_back(hConvertRedshDist->Interpolate(zi));
 				v_tmp_d.push_back(DELTA[j]);
 				v_tmp_w.push_back(DELTA_WEIGHT[j]);
 				v_tmp_z.push_back(zi);
@@ -5444,12 +5461,18 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 
 	fits_close_file(fitsptrSpec,&sta);
 
+	delete hConvertRedshDist;
+
 	return;
 }
 void Correlation::loadDataDelta2(int dataNeeded/*=100*/) {
 
 	std::cout << "\n\n  ------ load Data Forest 2 ------" << std::endl;
-	
+
+	/// Create the conversion table from redshift to distance
+	Cosmology* cosmo = new Cosmology(C_H, C_OMEGAM, C_OMEGAB);
+	TH1D* hConvertRedshDist = cosmo->createHistoConvertRedshDist(C_NBBINREDSH, C_ZEXTREMABINCONVERT0, C_ZEXTREMABINCONVERT1);
+	delete cosmo;
 
 	const TString TSfitsnameSpec = pathDelta2__;
 	std::cout << "  pathToFits = " << pathDelta2__ << std::endl;
@@ -5529,7 +5552,7 @@ void Correlation::loadDataDelta2(int dataNeeded/*=100*/) {
 				if ( alpha2+beta2*(LAMBDA_RF[j]-meanForestLambdaRF) <= 0.) templateHasNegative = true;
 
 				const double zi = LAMBDA_OBS[j]/lambdaRFLineDelta2__ -1.;
-				v_tmp_r.push_back(hConvertRedshDist_->Interpolate(zi));
+				v_tmp_r.push_back(hConvertRedshDist->Interpolate(zi));
 				v_tmp_d.push_back(DELTA[j]);
 				v_tmp_w.push_back(DELTA_WEIGHT[j]);
 				v_tmp_z.push_back(zi);
@@ -5565,6 +5588,8 @@ void Correlation::loadDataDelta2(int dataNeeded/*=100*/) {
 	
 	nbForest2__ = v_raDelta2__.size();
 	std::cout << "  number of good forest   = " << nbForest2__ << std::endl;
+
+	delete hConvertRedshDist;
 
 	return;
 }

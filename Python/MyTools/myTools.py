@@ -157,17 +157,22 @@ def isReadyForNewJobs(max_nbJobsMe, max_nbJobsAll,word='echo'):
 
 	## Return if there is room for a new job
 	return
-def plot1D(data, xTitle='-',yTitle='-',title='-'):
+def plot1D(data, xTitle='-',yTitle='-',title='-',label=None):
 	'''
 	'''
 
-	for el in data:
-		plt.plot(numpy.arange(0,el.size),el,marker='o')
+	size = len(data)
+
+	for i in numpy.arange(size):
+		if (label!=None): plt.plot(numpy.arange(0,data[i].size),data[i],marker='o',label=label[i])
+		else: plt.plot(numpy.arange(0,data[i].size),data[i],marker='o')
 
 	plt.xlabel(r'$'+xTitle+'$', fontsize=40)
 	plt.ylabel(r'$'+yTitle+'$', fontsize=40)
 
-	deal_with_plot()
+	if (label!=None): deal_with_plot(False,False,True)
+	else: deal_with_plot()
+
 	plt.show()
 
 	return

@@ -1,10 +1,10 @@
 //===================================================================================
 //
-//         FILE: Constants.h
+//         FILE: globalValues.h
 //
-//        USAGE: clubatch ../bin/main.exe -s "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/RootFile" -d "/home/gpfs/manip/mnt0607/bao/hdumasde/CrossCorrelation/Prod_DR12_1_Multiple_Margala" -w "/home/gpfs/manip/mnt0607/bao/hdumasde/CrossCorrelation_StartingAgainFrom1347/CrossCorrelation/RootFile/source_histos_DR12_Margala.root" -n "DR12_1_Multiple_Margala"
+//        USAGE:
 //
-//  DESCRIPTION: Constants needed to do the Lya-qso cross correlation
+//  DESCRIPTION: global values that can change
 //
 //      OPTIONS: ---
 // REQUIREMENTS: ---
@@ -17,11 +17,44 @@
 //     REVISION: ---
 //===================================================================================
 
-#include <cmath>
-#include <string>
 
-#ifndef CONSTANTS_H
-#define CONSTANTS_H
+
+#ifndef GLOBALVALUES_H
+#define GLOBALVALUES_H
+
+
+// Forests
+// -------------------------------------------------------------
+
+// const double C_AUTOCORRCRIT = 0.0005*M_PI/180.;
+#define C_AUTOCORRCRIT 8.72664625997164823e-06
+// Define the max of DLA correction
+#define C_DLACORR  0.8
+// Number of sub-samples the sky is split into:
+#define C_NBSUBSAMPLES 80
+
+
+
+// Cosmology
+// -------------------------------------------------------------
+
+// Defines the number of bins for the interpolation dist=f(z)
+#define C_NBBINREDSH 12000
+// Defines the extrema for the interpolation dist=f(z)
+#define C_ZEXTREMABINCONVERT0 0.
+#define C_ZEXTREMABINCONVERT1 12.
+
+#define C_H 0.71 // (100 km/s/Mpc)^-1
+#define C_OMEGAM 0.27
+#define C_OMEGAB 0.0463
+
+
+
+#endif
+
+
+
+/*
 
 // const double C_DEGTORAD = M_PI/180;
 #define C_DEGTORAD 1.74532925199432955e-02
@@ -164,11 +197,7 @@ const double C_PARSETVALUE[6] = {6.84738e-02, -1.05170, 1.32220e+03, 9e-3, 2.621
 #define C_OMEGAM 0.27
 #define C_OMEGAB 0.0463
 #define C_C 299792.458 // km/s //3.0e05
-
-#endif
-
-
-
+*/
 
 
 
