@@ -4,7 +4,10 @@
 //
 //        USAGE: ---
 //
-//  DESCRIPTION: Class of list of forest to do regions
+//  DESCRIPTION: Devide a sky of forests into 'nbRegion_' regions according to 
+//		the statistical weight of this forets (i.e. the sum of weight over 
+//		pairs forest-QSO)
+//		The sky can be a RA-Dec (data) or X-Y (mocks)
 //
 //      OPTIONS: ---
 // REQUIREMENTS: ---
@@ -22,25 +25,14 @@
 #include C_MYCPPLIB
 #include C_MYROOTLIB
 
-#include "TFile.h"
-#include "TTree.h"
-#include "TLeaf.h"
-#include "TCanvas.h"
-#include "TGraph.h"
-
 #include <fstream>
 #include <iostream>     // std::cout
 #include <sstream>	    //stringstream
 
-LymanForest::LymanForest(std::string pathToFile, unsigned int nbRegions)
-{
-	// Construct the object with the information of qsos from a '.txt' file
-	//
-	// std::string pathToFile     : path to the file
-	// TH1D* hConvertRedshDist    : convert histo from redshift into physica distance
+LymanForest::LymanForest(std::string pathToFile, unsigned int nbRegions, bool euclidien/*=false*/) {
 	
 	raSeperationTwoRegions_ = 5.;
-	mockjMc_ = false;
+	euclidien_ = false;
 	
 	if (nbRegions < 1) {
 		std::cout << "  ERROR: LymanForest::LymanForest: nbRegions < 1" <<std::endl;
@@ -70,14 +62,7 @@ LymanForest::LymanForest(std::string pathToFile, unsigned int nbRegions)
 }
 
 
-void LymanForest::LoadForest(std::string pathToFile)
-{
-	// Load the information of qsos from a '.txt' file
-	//
-	// std::string pathToFile  : path to the file
-	// TH1D* hConvertRedshDist : convert histo from redshift into physica distance
-	//
-	// return void             :
+void LymanForest::LoadForest(std::string pathToFile) {
 	
 	std::cout << "\n\n\n" <<  std::endl;
 	std::cout << "***************************************************" <<  std::endl;
@@ -94,7 +79,7 @@ void LymanForest::LoadForest(std::string pathToFile)
 		fileData>>idx>>ra>>de>>nbPairs;
 		if (fileData==0) break;
 
-		if (ra < M_PI/2. && !mockjMc_) ra += 2.*M_PI;
+		if (ra < M_PI/2. && !euclidien_) ra += 2.*M_PI;
 		id_[0].push_back( idx );
 		ra_[0].push_back( ra );
 		de_[0].push_back( de );
@@ -128,8 +113,7 @@ void LymanForest::LoadForest(std::string pathToFile)
 	minDe_ = co_[0][2];
 	maxDe_ = co_[0][3];
 }
-void LymanForest::DevideInRegions(void)
-{
+void LymanForest::DevideInRegions(void) {
 	
 	// Maximum number of steps we have to use to reach
 	//  equally spaced strips
@@ -166,7 +150,7 @@ void LymanForest::DevideInRegions(void)
 		for (unsigned int i=0; i<ra_[0].size(); i++) {
 		
 			unsigned int regIdx = 0;
-			if (ra_[0][i] < raSeperationTwoRegions_ && !mockjMc_) regIdx = 1;
+			if (ra_[0][i] < raSeperationTwoRegions_ && !euclidien_) regIdx = 1;
 			
 			tmp2_ra[regIdx].push_back(ra_[0][i]);
 			tmp2_de[regIdx].push_back(de_[0][i]);
@@ -494,11 +478,7 @@ void LymanForest::DevideInRegions(void)
 		
 	}
 }
-void LymanForest::PrintData(void)
-{
-	// Print on the screen the information about the qsos
-	//
-	// return void :
+void LymanForest::PrintData(void) {
 
 	unsigned int nbForesTot = 0;
 	double nbPairsTot = 0;
@@ -533,18 +513,7 @@ void LymanForest::PrintData(void)
 }
 
 
-void LymanForest::GetRegionArray(unsigned int* array)
-{
-	for (unsigned int i=0; i<nbRegion_; i++) {
-		for (unsigned int j=0; j<ra_[i].size(); j++) {
-			array[ id_[i][j] ] = i;
-		}
-	}
-	
-}
-void LymanForest::GetCoordRegion(int regionIdx, double* array)
-{
-	// Get the coordinate of the region inside an array
+void LymanForest::GetCoordRegion(int regionIdx, double* array) {
 	
 	int idx = regionIdx;
 	if (idx == -1) idx = 0;
@@ -570,20 +539,27 @@ void LymanForest::GetCoordRegion(int regionIdx, double* array)
 	}
 	
 }
-void LymanForest::SaveRegionMap(void)
-{
+void LymanForest::GetRegionArray(unsigned int* array) {
 	
-	std::string pathToSave = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/map.txt";
-        std::cout << "\n  " << pathToSave << std::endl;
-
+	for (unsigned int i=0; i<nbRegion_; i++) {
+		for (unsigned int j=0; j<ra_[i].size(); j++) {
+			array[ id_[i][j] ] = i;
+		}
+	}
+	
+}
+void LymanForest::SaveRegionMap(std::string pathToSave) {
+	
+	std::cout << "\n  " << pathToSave << std::endl;
+	
 	std::ofstream fFile;
-        fFile.open(pathToSave.c_str());
-        fFile << std::scientific;
-        fFile.precision(17);
+	fFile.open(pathToSave.c_str());
+	fFile << std::scientific;
+	fFile.precision(17);
 
 	//const double piTimes2   = M_PI*2.;
 	double radToDeg = 1.;
-	if (!mockjMc_) radToDeg *= 180./M_PI;
+	if (!euclidien_) radToDeg *= 180./M_PI;
 
 	for (unsigned int i=0; i<nbRegion_; i++) {
 		const unsigned int nbForest = ra_[i].size();
@@ -602,7 +578,7 @@ void LymanForest::SaveRegionMap(void)
 	}
 	fFile.close();
 
-	 std::cout << "\n  LymanForest::SaveRegionMap: Finished" << std::endl;
+	std::cout << "\n  LymanForest::SaveRegionMap: Finished" << std::endl;
 }
 
 

@@ -5286,14 +5286,14 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 
 		/// For the cross-correlation
 		std::string pathToSave = pathToSave__;
-        	pathToSave += "xi_delta_QSO_nbPairsForest_";
-        	pathToSave += forest__;
-        	pathToSave += "_";
-        	pathToSave += QSO__;
+		pathToSave += "xi_delta_QSO_nbPairsForest_";
+		pathToSave += forest__;
+		pathToSave += "_";
+		pathToSave += QSO__;
 		pathToSave += ".txt";
 
-		LymanForest* lymanForestObject = new LymanForest(pathToSave, C_NBBOOTSTRAP);
-		//lymanForestObject->SaveRegionMap();
+		LymanForest* lymanForestObject = new LymanForest(pathToSave, C_NBBOOTSTRAP,mockJMC__);
+		//lymanForestObject->SaveRegionMap("map.txt");
 		//return;
 		lymanForestObject->GetRegionArray(regionMap);
 		delete lymanForestObject;
@@ -5331,11 +5331,11 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 
 		fits_read_col(fitsptrSpec,TDOUBLE, 4,i+1,1,1,NULL,&ra,   NULL,&sta);
 		fits_read_col(fitsptrSpec,TDOUBLE, 5,i+1,1,1,NULL,&de,   NULL,&sta);
-                fits_read_col(fitsptrSpec,TDOUBLE, 6,i+1,1,1,NULL,&zz,   NULL,&sta);
-                fits_read_col(fitsptrSpec,TDOUBLE, 8, i+1,1,1,NULL,&meanForestLambdaRF,   NULL,&sta);
+		fits_read_col(fitsptrSpec,TDOUBLE, 6,i+1,1,1,NULL,&zz,   NULL,&sta);
+		fits_read_col(fitsptrSpec,TDOUBLE, 8,i+1,1,1,NULL,&meanForestLambdaRF,   NULL,&sta);
 		fits_read_col(fitsptrSpec,TDOUBLE, 9,i+1,1,1,NULL,&alpha1,                NULL,&sta);
-                fits_read_col(fitsptrSpec,TDOUBLE, 11,i+1,1,1,NULL,&alpha2,               NULL,&sta);
-                fits_read_col(fitsptrSpec,TDOUBLE, 12,i+1,1,1,NULL,&beta2,                NULL,&sta);
+		fits_read_col(fitsptrSpec,TDOUBLE, 11,i+1,1,1,NULL,&alpha2,               NULL,&sta);
+		fits_read_col(fitsptrSpec,TDOUBLE, 12,i+1,1,1,NULL,&beta2,                NULL,&sta);
 
 		fits_read_col(fitsptrSpec,TDOUBLE, 13,i+1,1,nbBinRFMax__,NULL, &LAMBDA_OBS,      NULL,&sta);
 		fits_read_col(fitsptrSpec,TDOUBLE, 14,i+1,1,nbBinRFMax__,NULL, &LAMBDA_RF,       NULL,&sta);
@@ -5347,7 +5347,6 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 
 		if (!mocksNoNoiseNoCont && ( (alpha2 == alphaStart__ && beta2 == 0.) || (fabs(alpha2)>=maxAlpha__-0.5) || (fabs(beta2)>=maxBeta__-0.05) ) ) continue;
 		
-
 		/// If a reobs
 		if (alpha1==isReobsFlag) continue;
 
