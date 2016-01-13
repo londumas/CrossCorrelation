@@ -19,18 +19,12 @@
 
 #include "Constants.h"
 
-#include <fstream>
 #include <vector>
 #include "TH1D.h"
 #include "TGraphErrors.h"
 
-
 #ifndef GETDELTA_H
 #define GETDELTA_H
-
-
-
-
 
 /// If LYA
 const std::string forest__  = "LYA";

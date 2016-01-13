@@ -18,9 +18,9 @@
 //===================================================================================
 
 #include "GetDelta.h"
-
-#include C_MYROOTLIB
-#include C_MYCPPLIB
+#include "../../../Root/Library/RootHistoFunctions.h"
+#include "../../../Cpp/Library/mathFunctions.h"
+#include "../../../Constants/globalValues.h"
 
 #include <fstream>
 #include <iostream> // std::cout
@@ -177,11 +177,6 @@ void GetDelta::get_Ra_Dec_DLA(void)
 }
 void GetDelta::get_Catalogue(void)
 {
-	/// Constants
-	const double degToArcsec = 3600.;
-	const double crit  = 2./degToArcsec;
-	//const double critZ = 0.001;
-
 	/// Path to save
 	std::string pathToSave = "/home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/QSO_DR7_DR12_EBOSS_2016_01_08.fits";
 	/// Number of catalogues
@@ -281,7 +276,7 @@ void GetDelta::get_Catalogue(void)
 				const double ra2 = ra[c][q2];
 				const double de2 = de[c][q2];
 
-				if ( (fabs(ra1-ra2) < crit) && (fabs(de1-de2) < crit) ) {
+				if ( (fabs(ra1-ra2) < C_AUTOCORRCRITDEG) && (fabs(de1-de2) < C_AUTOCORRCRITDEG) ) {
 					bo[c][q2] = true;
 				}
 			}
@@ -320,7 +315,7 @@ void GetDelta::get_Catalogue(void)
 					const double ra2 = ra[c2][q2];
 					const double de2 = de[c2][q2];
 
-					if ( (fabs(ra1-ra2) < crit) && (fabs(de1-de2) < crit) ) {
+					if ( (fabs(ra1-ra2) < C_AUTOCORRCRITDEG) && (fabs(de1-de2) < C_AUTOCORRCRITDEG) ) {
 						bo[c2][q2] = true;
 					}
 				}

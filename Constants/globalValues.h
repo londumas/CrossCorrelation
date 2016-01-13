@@ -28,10 +28,13 @@
 
 // const double C_AUTOCORRCRIT = 0.0005*M_PI/180.;
 #define C_AUTOCORRCRIT 8.72664625997164823e-06
+#define C_AUTOCORRCRITDEG 0.0005
+
 // Define the max of DLA correction
 #define C_DLACORR  0.8
 // Number of sub-samples the sky is split into:
 #define C_NBSUBSAMPLES 80
+
 
 
 

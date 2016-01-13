@@ -19,15 +19,15 @@
 
 #include "GetDelta.h"
 
-#include C_MYROOTLIB
-#include C_MYCPPLIB
+#include "../../../Root/Library/RootHistoFunctions.h"
+#include "../../../Cpp/Library/mathFunctions.h"
 
 #include <fstream>
-#include <iostream> // std::cout
+#include <iostream>	// std::cout
 #include <sstream>	//stringstream
-#include <stdlib.h>     /* atoi */
-#include <unistd.h> //getopt
-#include <cstdlib>      // std::rand, std::srand
+#include <stdlib.h>	//atoi
+#include <unistd.h>	//getopt
+#include <cstdlib>	// std::rand, std::srand
 
 /// ROOT
 #include "fitsio.h"
@@ -131,7 +131,13 @@ GetDelta::GetDelta(int argc, char** argv) {
 	std::cout << "\n\n" << std::endl;
 
 }
-GetDelta::~GetDelta(void) {	
+GetDelta::~GetDelta(void) {
+	if (findPDF__) {
+		delete hFluxVsLambdaObs__;
+		delete hFluxPDF__;
+		delete hRedshift__;
+		delete hFlux__;
+	}
 }
 void GetDelta::defineHistos() {
 

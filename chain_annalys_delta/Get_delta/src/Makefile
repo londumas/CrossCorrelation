@@ -17,8 +17,6 @@
 #     REVISION: ---
 #===================================================================================
 
-#WORKDIR = /home/helion/Documents/Thèse
-WORKDIR = /home/usr201/mnt/hdumasde
 
 ROOTCFLAGS    = $(shell root-config --cflags)
 ROOTLIBS      = $(shell root-config --libs)
@@ -43,10 +41,11 @@ GLIBS         = $(ROOTGLIBS) $(SYSLIBS) -lMinuit  -lTreePlayer -lMLP  -L$(CFITSI
 
 BIN = ../bin
 OBJ = ../obj
-ROOT = $(WORKDIR)/Code/Root/Library
-MATH = $(WORKDIR)/Code/Cpp/Library
+ROOT = ../../../Root/Library
+MATH = ../../../Cpp/Library
+CONSTANTS = ../../../Constants
 
-INC = Constants.h GetDelta.h $(ROOT)/RootHistoFunctions.h $(MATH)/mathFunctions.h 
+INC = GetDelta.h $(ROOT)/RootHistoFunctions.h $(MATH)/mathFunctions.h $(CONSTANTS)/globalValues.h
 #TTreeSpectra.h
 MYLIBS = $(LIBS) -lc $(GLIBS)
 

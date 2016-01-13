@@ -17,13 +17,8 @@
 //     REVISION: ---
 //===================================================================================
 
-#include "Constants.h"
-
-#include <fstream>
-#include <vector>
 #include "TH1D.h"
 #include "TH2D.h"
-#include "TGraphErrors.h"
 #include "TProfile.h"
 
 #ifndef GETDELTA_H

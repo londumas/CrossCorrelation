@@ -18,15 +18,16 @@
 //===================================================================================
 
 #include "GetDelta.h"
+#include "../../../Root/Library/RootHistoFunctions.h"
+#include "../../../Cpp/Library/mathFunctions.h"
+#include "../../../Constants/globalValues.h"
 
-#include C_MYROOTLIB
-#include C_MYCPPLIB
-
+#include <cmath>
 #include <fstream>
-#include <iostream> // std::cout
+#include <iostream>	// std::cout
 #include <sstream>	//stringstream
-#include <stdlib.h>     /* atoi */
-#include <unistd.h> //getopt
+#include <stdlib.h>	// atoi
+#include <unistd.h>	//getopt
 
 
 /// ROOT
