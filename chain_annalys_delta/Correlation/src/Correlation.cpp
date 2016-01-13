@@ -89,24 +89,24 @@ std::string alQSO[19] = {"QSO_ALL_TESTS",
 /// Flags for Jean-Marc's simulations
 const bool mocks          = false;
 const bool mocksNoNoiseNoCont = false;
-const bool mockJMC__          = true;
+const bool mockJMC__          = false;
 const bool mockBox__          = false;
 const double randomPositionOfQSOInCell__ = false;
-const double randomPositionOfQSOInCellNotBeforeCorrelation__ = true;
+const double randomPositionOfQSOInCellNotBeforeCorrelation__ = false;
 
 const bool shuffleQSO     = false;
 const bool shuffleForest  = false;
 const bool randomQSO      = false;
 const bool randomForest   = false;
-const bool doBootstraps__ = false;
+const bool doBootstraps__ = true;
 
-const bool nicolasEstimator__  = true;
+const bool nicolasEstimator__  = false;
 std::string pathMoreForMocks__ = "";
 const bool haveFvsLambdaRFFlat = false;
 const bool removeFluxAccordingToNbPairs__ = false;
 const bool doVetoLines__ = true;
 
-std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests_DR12_nicolas/";
+std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests4/";
 
 Correlation::Correlation(int argc, char **argv) {
 
@@ -3198,7 +3198,7 @@ void Correlation::xi_delta_QSO_Wick(unsigned int diagramIdx) {
 	/// ------------------------------------------------------------------
 	/// Load correlation delta-delta same forest
 	std::string pathToFile = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests/xi_1D_delta_delta_LYA.txt";
-	ifstream fileData(pathToFile.c_str());
+	std::ifstream fileData(pathToFile.c_str());
 
 	std::vector<double> tmp_xidd1D;
 
@@ -3229,7 +3229,7 @@ void Correlation::xi_delta_QSO_Wick(unsigned int diagramIdx) {
 	/// ------------------------------------------------------------------
 	/// Load correlation delta-delta different forest
 	pathToFile = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests/xi_A_delta_delta_2D_LYA.txt";
-	ifstream fileData2(pathToFile.c_str());
+	std::ifstream fileData2(pathToFile.c_str());
 
 	double xidd3D[nbBin][nbBin];
 	for (unsigned int i=0; i<nbBin; i++) {
@@ -5292,7 +5292,7 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 		pathToSave += QSO__;
 		pathToSave += ".txt";
 
-		LymanForest* lymanForestObject = new LymanForest(pathToSave, C_NBBOOTSTRAP,mockJMC__);
+		LymanForest* lymanForestObject = new LymanForest(pathToSave, C_NBBOOTSTRAP, raSeperationTwoRegions__, mockJMC__);
 		//lymanForestObject->SaveRegionMap("map.txt");
 		//return;
 		lymanForestObject->GetRegionArray(regionMap);

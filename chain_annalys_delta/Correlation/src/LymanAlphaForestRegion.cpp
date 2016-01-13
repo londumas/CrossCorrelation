@@ -22,24 +22,26 @@
 
 #include "LymanAlphaForestRegion.h"
 
-#include C_MYCPPLIB
-#include C_MYROOTLIB
-
 #include <fstream>
 #include <iostream>     // std::cout
-#include <sstream>	    //stringstream
+#include <sstream>	//stringstream
+#include <cmath>
 
-LymanForest::LymanForest(std::string pathToFile, unsigned int nbRegions, bool euclidien/*=false*/) {
+LymanForest::LymanForest(std::string pathToFile, unsigned int nbRegions, double raSeperationTwoRegions, bool euclidean/*=false*/) {
 	
-	raSeperationTwoRegions_ = 5.;
-	euclidien_ = false;
+	raSeperationTwoRegions_ = raSeperationTwoRegions;
+	euclidean_ = euclidean;
 	
 	if (nbRegions < 1) {
 		std::cout << "  ERROR: LymanForest::LymanForest: nbRegions < 1" <<std::endl;
 		return;
 	}
 	nbRegion_ = nbRegions;
-	
+
+	std::cout << "\n  nbRegion_ = " << nbRegion_ << std::endl;
+	std::cout << "  raSeperationTwoRegions_ = " << raSeperationTwoRegions_ << std::endl;
+	std::cout << "  euclidean_ = " << euclidean_ << std::endl;
+
 	ra_ = std::vector <std::vector <double> >(1);
 	de_ = std::vector <std::vector <double> >(1);
 	pa_ = std::vector <std::vector <double> >(1);
@@ -74,12 +76,12 @@ void LymanForest::LoadForest(std::string pathToFile) {
 	double de = 0.;
 	double nbPairs = 0.;
 
-	ifstream fileData(pathToFile.c_str());
+	std::ifstream fileData(pathToFile.c_str());
 	while (fileData) {
 		fileData>>idx>>ra>>de>>nbPairs;
 		if (fileData==0) break;
 
-		if (ra < M_PI/2. && !euclidien_) ra += 2.*M_PI;
+		if (ra < M_PI/2. && !euclidean_) ra += 2.*M_PI;
 		id_[0].push_back( idx );
 		ra_[0].push_back( ra );
 		de_[0].push_back( de );
@@ -150,7 +152,7 @@ void LymanForest::DevideInRegions(void) {
 		for (unsigned int i=0; i<ra_[0].size(); i++) {
 		
 			unsigned int regIdx = 0;
-			if (ra_[0][i] < raSeperationTwoRegions_ && !euclidien_) regIdx = 1;
+			if (ra_[0][i] < raSeperationTwoRegions_ && !euclidean_) regIdx = 1;
 			
 			tmp2_ra[regIdx].push_back(ra_[0][i]);
 			tmp2_de[regIdx].push_back(de_[0][i]);
@@ -559,7 +561,7 @@ void LymanForest::SaveRegionMap(std::string pathToSave) {
 
 	//const double piTimes2   = M_PI*2.;
 	double radToDeg = 1.;
-	if (!euclidien_) radToDeg *= 180./M_PI;
+	if (!euclidean_) radToDeg *= 180./M_PI;
 
 	for (unsigned int i=0; i<nbRegion_; i++) {
 		const unsigned int nbForest = ra_[i].size();

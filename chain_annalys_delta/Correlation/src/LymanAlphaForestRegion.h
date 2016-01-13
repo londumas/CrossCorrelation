@@ -20,8 +20,6 @@
 //     REVISION: ---
 //===================================================================================
 
-#include "/home/usr201/mnt/hdumasde/Code/Cpp/X_Correlat_firstStep/src/Constants.h"
-
 #include <string>
 #include <vector>
 
@@ -36,7 +34,7 @@ class LymanForest
 		// Flag: 
 		//	* true if using a X-Y sky (euclidean coordinate)
 		//	* false if using a RA-Dec sky (spherical coordinate)
-		bool euclidien_;
+		bool euclidean_;
 		// The sky of DR12 is separeted into "North Galactic Cap" (NGC) and 
 		//	"South Galactic Cap" (SGC). This double gives the value of RA
 		//	the separated the two regions
@@ -83,8 +81,10 @@ class LymanForest
 		// Class constructor:
 		//		- std::string pathToFile: path to forest attributes
 		//		- unsigned int nbRegions: number of regions to devide the sky into
-		//		- bool euclidien=false: true if eucldeen coordinate, false if spherical
-		LymanForest(std::string pathToFile, unsigned int nbRegions, bool euclidien=false);
+		//		- This double gives the value of RA that separates NGC and SGC
+		//		 (see private variable definition)
+		//		- bool euclidean=false: true if eucldeen coordinate, false if spherical
+		LymanForest(std::string pathToFile, unsigned int nbRegions, double raSeperationTwoRegions, bool euclidean=false);
 		
 		// Fill an array of size 4 with the coordinate of the region:
 		//	minRA, maxRA, minDec, maxDec

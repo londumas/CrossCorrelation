@@ -143,6 +143,8 @@ const double vetoLine__[42] = {3615.,3619.,3932.,3937.,3966.,3972.,4042.,4050.,
         6825.,6840.,6862.,6870.,6922.,6928.,6948.,6954.,
         6977.,6982.};
 
+const double raSeperationTwoRegions__ = 5.;
+
 
 
 /// If LYA
@@ -150,14 +152,14 @@ const std::string forest__      = "LYA";
 const double lambdaRFLine__     = 1215.67;
 const double lambdaRFMin__      = 1040.;
 const double lambdaRFMax__      = 1200.;
-//const unsigned int nbBinRFMax__ = 647;
+const unsigned int nbBinRFMax__ = 647;
 const double distMinPixel__     = 3670.;
 const double minRedshiftQSO__   = 1.7;
 const double maxRedshiftQSO__   = 5.75;
 const double alphaStart__       = 1.;
 
 /// If LYA_JMC
-const unsigned int nbBinRFMax__ = 645;
+//const unsigned int nbBinRFMax__ = 645;
 
 const unsigned int sizeGridX__   = 2560;
 const unsigned int sizeGridY__   = 1920;
