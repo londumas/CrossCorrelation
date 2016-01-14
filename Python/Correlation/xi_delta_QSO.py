@@ -304,8 +304,8 @@ anisotropic = yes
 decoupled   = yes
 custom-grid = yes
 pixelize = yes
-#dist-matrix = yes
-#dist-matrix-order = 5000
+dist-matrix = yes
+dist-matrix-order = 5000
 
 # Parameter setup
 model-config = value[beta]=               """+param[0] +""";
@@ -349,7 +349,7 @@ dist-add = rP,rT=0:2,-3:1
 
 ## Data to analyze
 data = """+pathToData+"""bao"""+dim+"""
-#dist-matrix-name = """+pathToData+"""bao"""+dim+"""
+dist-matrix-name = """+pathToData+"""bao"""+dim+"""
 
 ## Data format
 data-format = comoving-cartesian
@@ -779,9 +779,9 @@ def fitCamb(data,pathToFile,mulpol=0):
 	'''
 
 	### Constants
-	startFit   = 25.
-	endFit     = 60.
-	maxForGues = 60.
+	startFit   = 20.
+	endFit     = 200.
+	maxForGues = 200.
 	idx=1
 	if (mulpol==2):
 		idx = 2
@@ -797,10 +797,10 @@ def fitCamb(data,pathToFile,mulpol=0):
 	data_camb = numpy.loadtxt(pathToFile)
 	yyy_Camb = numpy.interp(xxx,data_camb[1:,0],data_camb[1:,idx])
 
-	b1b2_init = -1. #numpy.mean(yyy[ (xxx<maxForGues) ]/yyy_Camb[ (xxx<maxForGues) ])
+	b1b2_init = -0.2 #numpy.mean(yyy[ (xxx<maxForGues) ]/yyy_Camb[ (xxx<maxForGues) ])
 	print '  b1b2_init = ', b1b2_init
 
-	'''
+	
 	### Show result
 	for i in range(0,3):
 
@@ -811,7 +811,7 @@ def fitCamb(data,pathToFile,mulpol=0):
 		plt.plot(xxx,coef*b1b2_init*yyy_Camb,marker='o')
 		myTools.deal_with_plot(False,False,False)
 		plt.show()
-	'''
+	
 
 	### Define the fit function
 	def chi2(b1b2,roof):
@@ -1059,7 +1059,7 @@ def prepareForBAOFIT():
 	'''
 	
 	### For data
-	rowPath = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests_test_PDFMocksJMC_meanLambda_testNoCap/'
+	rowPath = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests_DR12_nicolas/'
 	path    = rowPath + '/xi_delta_QSO_'
 	cov     = numpy.load('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests_test_PDFMocksJMC_meanLambda_testNoCap/shuffleForest_LYA_QSO_cov_2D.npy')
 	cor     = numpy.load('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Results_RandomPosInCell/xi_delta_QSO_result_cor_2D_allSubSamplingFromFit.npy')
@@ -1107,7 +1107,9 @@ def prepareForBAOFIT():
 	correlation[:,0] = (indexMatrix%nbBinY2D__)*nbBinX2D__ + indexMatrix/nbBinY2D__
 	correlation[:,1] = xi2D_[:,:,1].flatten()
 	cutCorrelation = (correlation[:,1]!=0.)
+	numpy.savetxt( pathToData + '/bao2D.data',zip(correlation[:,0][cutCorrelation],correlation[:,1][cutCorrelation]),fmt='%u %1.20e')
 
+	'''
 	### Covariance matrix
 	cov = myTools.getCovarianceMatrix(cor,numpy.diag(cov))
 	covarianceMatrix = numpy.zeros( shape=(nbBin2D__*nbBin2D__,3) )
@@ -1124,6 +1126,7 @@ def prepareForBAOFIT():
 		print '  size covariance matrix', cutCovarMatrix[:,2][cutCovarMatrix].size
 		print '  size it should have', nbBin2D__*(nbBin2D__+1.)/2.
 		return
+	numpy.savetxt( pathToData + '/bao2D.cov',zip(covarianceMatrix[:,0][cutCovarMatrix],covarianceMatrix[:,1][cutCovarMatrix],covarianceMatrix[:,2][cutCovarMatrix]),fmt='%u %u %1.20e')
 
 	### Distortion matrix
 	dmatData = numpy.loadtxt(pathToDistortionMatrix)
@@ -1132,12 +1135,9 @@ def prepareForBAOFIT():
 	distortionMatrix[:,1] = indexMatrix2.flatten()
 	distortionMatrix[:,2] = dmatData.flatten()
 	cutDistortionMatrix = (distortionMatrix[:,2]!=0.)
+	numpy.savetxt( pathToData + '/bao2D.dmat',zip(distortionMatrix[:,0][cutDistortionMatrix], distortionMatrix[:,1][cutDistortionMatrix], distortionMatrix[:,2][cutDistortionMatrix]),fmt='%u %u %1.20e')
+	'''
 
-	### Save data
-	#numpy.savetxt( pathToData + '/bao2D.data',zip(correlation[:,0][cutCorrelation],correlation[:,1][cutCorrelation]),fmt='%u %1.20e')
-	#numpy.savetxt( pathToData + '/bao2D.cov',zip(covarianceMatrix[:,0][cutCovarMatrix],covarianceMatrix[:,1][cutCovarMatrix],covarianceMatrix[:,2][cutCovarMatrix]),fmt='%u %u %1.20e')
-	#numpy.savetxt( pathToData + '/bao2D.dmat',zip(distortionMatrix[:,0][cutDistortionMatrix], distortionMatrix[:,1][cutDistortionMatrix], distortionMatrix[:,2][cutDistortionMatrix]),fmt='%u %u %1.20e')
-	
 	### Send the fit
 	command = '/home/gpfs/manip/mnt0607/bao/hdumasde/Program/deepzot/bin/baofit -i ' + pathToIni + 'bao2D.ini' #--parameter-scan'   ### --toymc-samples 10000
 	print command
@@ -1284,8 +1284,20 @@ a = myTools.plotCovar([cor],['a'])
 myTools.plot2D(a)
 '''
 
-
-xi1D_, xi2D_, xiMu_, xiWe_ = loadData('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests4/xi_delta_QSO_Mu_'+forest1__+'_'+qso1__+'.txt','/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests4/xi_delta_QSO_2D_'+forest1__+'_'+qso1__+'.txt')
+#prepareForBAOFIT()
+xi1D_, xi2D_, xiMu_, xiWe_ = loadData('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests6/xi_delta_QSO_Mu_'+forest1__+'_'+qso1__+'.txt','/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests6/xi_delta_QSO_2D_'+forest1__+'_'+qso1__+'.txt')
+'''
+path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests5/xi_delta_QSO_distortionMatrix_1D_LYA_QSO.txt'
+data = numpy.loadtxt(path)
+xi1D_[:,1] = numpy.dot(data,xi1D_[:,1])
+myTools.plot2D(data)
+'''
+'''
+path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests5/xi_delta_QSO_distortionMatrix_2D_LYA_QSO.txt'
+data = numpy.loadtxt(path)
+xi2D_[:,:,1] = myTools.convert1DTo2D(numpy.dot(data,myTools.convert2DTo1D(xi2D_[:,:,1], 50,100)),50,100)
+myTools.plot2D(data)
+'''
 
 '''
 xi1D_, xi2D_, xiMu_, xiWe_ = loadData('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Box_000/Simu_000/Results_NicolasDistortion/xi_delta_QSO_Mu_'+forest1__+'_'+qso1__+'.txt','/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Box_000/Simu_000/Results_NicolasDistortion/xi_delta_QSO_2D_'+forest1__+'_'+qso1__+'.txt')
@@ -1296,6 +1308,7 @@ replaceValueByMean()
 plotXi(0)
 plotXi(1)
 plotXi(2)
+
 pathToCamb = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/CAMB_2_4/xi-z2.4.dat'
 fitCamb(xi1D_,pathToCamb,0)
 

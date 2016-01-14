@@ -7,8 +7,8 @@ import numpy
 import cosmolopy.distance as cosmology
 
 
-#forest__ = 'LYA'
-forest__ = 'CIV'
+forest__ = 'LYA'
+#forest__ = 'CIV'
 #forest__ = 'MGII'
 #forest__ = 'LYB'
 #forest__ = 'SIIV'

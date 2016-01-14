@@ -21,6 +21,7 @@
 
 #include "../../../Root/Library/RootHistoFunctions.h"
 #include "../../../Cpp/Library/mathFunctions.h"
+#include "../../../Constants/globalValues.h"
 
 #include <fstream>
 #include <iostream>	// std::cout
@@ -344,7 +345,7 @@ void GetDelta::GetData(void) {
 		long tmp_nbPixels = 0;
 		fits_get_num_rows(fitsptrSpec, &tmp_nbPixels, &sta);
 		const unsigned int tmp_nbPixels2 = tmp_nbPixels;
-		if (tmp_nbPixels2 < nbBinRFMin__ && !findPDF__) continue;
+		if (tmp_nbPixels2 < C_MIN_NB_PIXEL && !findPDF__) continue;
 		
 
 		/// Variables for new fit
@@ -413,7 +414,7 @@ void GetDelta::GetData(void) {
 		if (nbPixelTemplate>nbPixelsTemplate__)  std::cout << nbPixelTemplate << " " << nbPixelsTemplate__ << std::endl;
 
 		/// Normalisation zone
-		if (NORM_FACTOR_nb == 0 || NORM_FACTOR <= 0. || nbPixelTemplate == 0 || NB_PIXEL < nbBinRFMin__) {
+		if (NORM_FACTOR_nb == 0 || NORM_FACTOR <= 0. || nbPixelTemplate == 0 || NB_PIXEL < C_MIN_NB_PIXEL) {
 			//std::cout << Z << " " << NORM_FACTOR_nb << " " << NORM_FACTOR << " " << nbPixelTemplate << " " << NB_PIXEL << std::endl;
 			continue;
 		}

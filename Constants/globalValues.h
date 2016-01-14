@@ -22,20 +22,30 @@
 #ifndef GLOBALVALUES_H
 #define GLOBALVALUES_H
 
+// ---------------------------------------------------------------------
+//
+//		Forests
+//
+// ---------------------------------------------------------------------
 
-// Forests
-// -------------------------------------------------------------
-
-// const double C_AUTOCORRCRIT = 0.0005*M_PI/180.;
+//// const double C_AUTOCORRCRIT = 0.0005*M_PI/180.;
 #define C_AUTOCORRCRIT 8.72664625997164823e-06
 #define C_AUTOCORRCRITDEG 0.0005
+//// The sky of DR12 is separeted into "North Galactic Cap" (NGC) and 
+////	"South Galactic Cap" (SGC). This "global value" gives the value
+////	of RA that separated the two regions
+#define C_RA_SEPERATION_NGC_SGC 5.
 
-// Define the max of DLA correction
+//// Define the limit for which a FLUX_DLA is considered zero
+#define C_FLUX_DLA_IS_ZERO 1.e-100
+//// Define the max of DLA correction
 #define C_DLACORR  0.8
-// Number of sub-samples the sky is split into:
+//// Number of sub-samples the sky is split into:
 #define C_NBSUBSAMPLES 80
+//// Minimum number of pixels in a forest
+# define C_MIN_NB_PIXEL 50
 
-// Lines in the sky to veto or not
+//// Lines in the sky to veto or not
 const unsigned int nbVetoLines__ = 21;
 const double vetoLine__[42] = {3615.,3619.,3932.,3937.,3966.,3972.,4042.,4050.,
         4357.,4362.,5458.,5467.,5573.,5585.,5682.,5695.,
@@ -44,13 +54,15 @@ const double vetoLine__[42] = {3615.,3619.,3932.,3937.,3966.,3972.,4042.,4050.,
         6825.,6840.,6862.,6870.,6922.,6928.,6948.,6954.,
         6977.,6982.};
 
+// ---------------------------------------------------------------------
+//
+//		Cosmology
+//
+// ---------------------------------------------------------------------
 
-// Cosmology
-// -------------------------------------------------------------
-
-// Defines the number of bins for the interpolation dist=f(z)
+//// Defines the number of bins for the interpolation dist=f(z)
 #define C_NBBINREDSH 12000
-// Defines the extrema for the interpolation dist=f(z)
+//// Defines the extrema for the interpolation dist=f(z)
 #define C_ZEXTREMABINCONVERT0 0.
 #define C_ZEXTREMABINCONVERT1 12.
 

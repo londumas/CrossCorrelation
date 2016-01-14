@@ -25,7 +25,6 @@
 #define GETDELTA_H
 
 /// Constants
-const unsigned int nbBinRFMin__ = 50;
 const unsigned int nbPixelsTemplate__ = 645;
 const double lambdaRFMin__ = 1040.;
 const double lambdaRFMax__ = 1200.;

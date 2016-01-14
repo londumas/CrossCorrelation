@@ -35,7 +35,7 @@ nbSpectra = 300000
 
 def main():
 
-	stepIdx = 1
+	stepIdx = 2
 
 	print
 	print "------ Start ------"
@@ -146,6 +146,7 @@ def main():
 		#path     = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_reObs/DR12_reObs.fits'
 		path     = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest+'/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits'
 		#path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest+'/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits'
+		#path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/chain_annalys_delta/Get_delta/src/DR12_primery_test_1000.fits'
 		file_cat = pyfits.open(path,mode='update')
 		cat      = file_cat[1].data
 

@@ -91,28 +91,26 @@ std::string alQSO[19] = {"QSO_ALL_TESTS",
 const unsigned int nbBinlambdaObs__  = int(lambdaObsMax__-lambdaObsMin__);
 double distMinPixel__ = 0.;
 double distMinPixelDelta2__ = 0.;
+unsigned int idxCommand_[6] = {0};
 
 ///// Flags for Jean-Marc's simulations
 const bool mocks          = false;
 const bool mocksNoNoiseNoCont = false;
-const bool mockJMC__          = true;
+const bool mockJMC__          = false;
 const bool mockBox__          = false;
 const double randomPositionOfQSOInCell__ = false;
-const double randomPositionOfQSOInCellNotBeforeCorrelation__ = true;
-
+const double randomPositionOfQSOInCellNotBeforeCorrelation__ = false;
+//// Flags for covariance matrix estimation
 const bool shuffleQSO     = false;
 const bool shuffleForest  = false;
 const bool randomQSO      = false;
 const bool randomForest   = false;
 const bool doBootstraps__ = false;
 
-const bool nicolasEstimator__  = true;
-std::string pathMoreForMocks__ = "";
-const bool haveFvsLambdaRFFlat = false;
-const bool removeFluxAccordingToNbPairs__ = false;
+const bool nicolasEstimator__ = true;
 const bool doVetoLines__ = true;
 
-std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests4/";
+std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests6_nicolasEstimator/";
 
 Correlation::Correlation(int argc, char **argv) {
 
@@ -122,16 +120,15 @@ Correlation::Correlation(int argc, char **argv) {
 	// command
 
 	///// 0: correlation, 1: mockCatalogue, 2: bootstraps, 3: Wick, 4: mockChunck, 5: mockSimul
-	unsigned int idxCommand[6] = {0};
 	for (unsigned int i=0; i<6; i++) {
 		std::string string = argv[i+1];
-		idxCommand[i] = atoi(string.c_str());
+		idxCommand_[i] = atoi(string.c_str());
 	}
 
 	
-	QSO__    = alQSOName[idxCommand[1]];
+	QSO__    = alQSOName[idxCommand_[1]];
 	pathQ1__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/";
-	pathQ1__ += alQSO[idxCommand[1]];
+	pathQ1__ += alQSO[idxCommand_[1]];
 	pathQ1__ += ".fits";
 	
 
@@ -144,9 +141,10 @@ Correlation::Correlation(int argc, char **argv) {
 		pathForest__  = "/home/gpfs/manip/mnt/bao/hdumasde/Data/";
 		pathForest__  += forest__;
 //		pathForest__  += "/FitsFile_DR12_testNoCutLambdaOBS_Guy/DR12_primery/DR12_primery.fits";
-//		pathForest__  += "/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits";
-		pathForest__  += "/FitsFile_DR12_Guy/DR12_primery/DR12_primery_test_PDFMocksJMC_meanLambda_testNoCap.fits";
+//		pathForest__  += "/FitsFile_DR12_Guy/DR12_primery/DR12_primery_method1.fits";
+//		pathForest__  += "/FitsFile_DR12_Guy/DR12_primery/DR12_primery_test_PDFMocksJMC_meanLambda_testNoCap.fits";
 //		pathForest__  += "/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits";
+pathForest__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/chain_annalys_delta/Get_delta/src/DR12_primery_test_1000.fits";
 	}
 	else if (mocks) {
 		pathForest__   = "/home/gpfs/manip/mnt0607/bao/hdumasde/MockV4/M3_0_";
@@ -155,14 +153,6 @@ Correlation::Correlation(int argc, char **argv) {
 		pathForest__  += argv[6];
 		pathForest__  += "/mock.fits";
 
-		pathMoreForMocks__  = "";
-/*
-		pathMoreForMocks__  = "_";
-		pathMoreForMocks__ += argv[5];
-		pathMoreForMocks__ += "_";
-		pathMoreForMocks__ += argv[6];
-		pathMoreForMocks__ += "_";
-*/
 		pathToSave__  = "/home/gpfs/manip/mnt0607/bao/hdumasde/MockV4/M3_0_";
 		pathToSave__ += argv[5];
 		pathToSave__ += "/00";
@@ -213,7 +203,7 @@ Correlation::Correlation(int argc, char **argv) {
 	commandEnd__ += QSO2__;
 	std::cout << "  " << commandEnd__ << std::endl;
 	
-	const unsigned int command = idxCommand[0];
+	const unsigned int command = idxCommand_[0];
 
 	//
 	if      (command == 0)  xi_1D_delta_delta();
@@ -227,21 +217,21 @@ Correlation::Correlation(int argc, char **argv) {
 	else if (command == 7)  xi_A_delta_delta2();
 	else if (command == 8)  xi_A_delta_delta2_lambda();
 	//
-	else if (command == 9)  xi_delta_QSO(doBootstraps__,idxCommand[2]);
-	else if (command == 10) xi_delta_QSO_theta(doBootstraps__,idxCommand[2]);
-	else if (command == 11) xi_delta_QSO_lambda(doBootstraps__,idxCommand[2]);
+	else if (command == 9)  xi_delta_QSO(doBootstraps__,idxCommand_[2]);
+	else if (command == 10) xi_delta_QSO_theta(doBootstraps__,idxCommand_[2]);
+	else if (command == 11) xi_delta_QSO_lambda(doBootstraps__,idxCommand_[2]);
 	else if (command == 12) xi_delta_QSO_distortionMatrix();
 	else if (command == 13) xi_delta_QSO_distortionMatrix_1D();
-	else if (command == 14) xi_delta_QSO_Wick(idxCommand[3]);
+	else if (command == 14) xi_delta_QSO_Wick(idxCommand_[3]);
 	//
-	else if (command == 15) xi_QSO_QSO(doBootstraps__,idxCommand[2]);
+	else if (command == 15) xi_QSO_QSO(doBootstraps__,idxCommand_[2]);
 	else if (command == 16) xi_Q1_Q2();
 	//
 	else if (command == 17) xi_A_delta_delta_MockJMc();
-	else if (command == 18) xi_delta_QSO_MockJMc(doBootstraps__,idxCommand[2]);
+	else if (command == 18) xi_delta_QSO_MockJMc(doBootstraps__,idxCommand_[2]);
 	else if (command == 19) xi_delta_QSO_MockJMc_distortionMatrix();
 	else if (command == 20) xi_delta_QSO_MockJMc_distortionMatrix_1D();
-	else if (command == 21) xi_QSO_QSO_MockJMc(doBootstraps__,idxCommand[2]);
+	else if (command == 21) xi_QSO_QSO_MockJMc(doBootstraps__,idxCommand_[2]);
 
 	std::cout << "\n\n\n\n" << std::endl;
 }
@@ -259,17 +249,11 @@ Correlation::~Correlation(void) {
 // ---------------------------------------------------------------------
 void Correlation::xi_1D_delta_delta(void) {
 
-	/*
-
-	To see the result
-	python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/Python/1D_Correlat/make_1D_Correlat.py
-
-	*/
-
 	std::cout << "\n\n\n\n  ------ xi_1D_delta_delta ------" << std::endl;
 	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_1D_delta_delta.py";
 	command += commandEnd__;
 	std::cout << command << "\n" << std::endl;
+
 	loadDataForest(pathForest__);
 	std::cout << "  Starting" << std::endl;
 
@@ -284,6 +268,7 @@ void Correlation::xi_1D_delta_delta(void) {
 	v_idx__.clear();
 	v_lRF__.clear();
 	v_lObs__.clear();
+	v_nb__.clear();
 
 	///// Constants:
 	///// The space between bins is of 1 Mpc.h^-1, the first bin is for deltaR == 0.
@@ -403,7 +388,7 @@ void Correlation::xi_1DlRF_delta_delta(void) {
 	v_idx__.clear();
 	v_r__.clear();
 	v_lObs__.clear();
-
+	v_nb__.clear();
 
 
 	///// Constants:
@@ -519,7 +504,7 @@ void Correlation::xi_1DlRFDevide_delta_delta(void) {
 	v_idx__.clear();
 	v_r__.clear();
 	v_lObs__.clear();
-
+	v_nb__.clear();
 
 
 	///// Constants:
@@ -634,11 +619,13 @@ void Correlation::xi_1D_delta_delta2(void) {
 	v_idx__.clear();
 	v_lRF__.clear();
 	v_lObs__.clear();
+	v_nb__.clear();
 	///// Forest 2
 	loadDataDelta2();
-
-
-
+	v_CosDeDelta2__.clear();
+	v_SinDeDelta2__.clear();
+	v_lRFDelta2__.clear();
+	v_lObsDelta2__.clear();
 
 	std::cout << "  Starting" << std::endl;
 
@@ -776,9 +763,13 @@ void Correlation::xi_1DlRF_delta_delta2(void) {
 	v_idx__.clear();
 	v_r__.clear();
 	v_lObs__.clear();
+	v_nb__.clear();
 	///// Forest 2
 	loadDataDelta2();
-
+	v_CosDeDelta2__.clear();
+	v_SinDeDelta2__.clear();
+	v_rDelta2__.clear();
+	v_lObsDelta2__.clear();
 
 
 
@@ -933,7 +924,7 @@ void Correlation::xi_A_delta_delta(void) {
 	v_idx__.clear();
 	v_lRF__.clear();
 	v_lObs__.clear();
-
+	v_nb__.clear();
 
 
 
@@ -1321,6 +1312,7 @@ void Correlation::xi_A_delta_delta2(void) {
 	v_idx__.clear();
 	v_lRF__.clear();
 	v_lObs__.clear();
+	v_nb__.clear();
 	///// Forest 2
 	loadDataDelta2();
 	v_lRFDelta2__.clear();
@@ -1740,10 +1732,10 @@ void Correlation::xi_delta_QSO(bool doBootstraps/*=False*/, unsigned int bootIdx
 	if (doBootstraps) removeFalseCorrelations();
 
 	///// Empty useless vectors
+	v_zz__.clear();
 	v_lRF__.clear();
 	v_lObs__.clear();
 	v_nb__.clear();
-
 
 	std::stringstream convert;
 	convert << bootIdx;
@@ -1912,7 +1904,6 @@ void Correlation::xi_delta_QSO(bool doBootstraps/*=False*/, unsigned int bootIdx
 		const double sinDe         = v_SinDe__[f];
 		const double ra            = v_ra__[f];
 		const double dec           = v_de__[f];
-		//const double z             = v_zz__[f];
 			
 		for (unsigned int q=0; q<nbQ1__; q++) {
 			///// Remove the correlation qso-ownForest
@@ -2135,11 +2126,13 @@ void Correlation::xi_delta_QSO_theta(bool doBootstraps/*=False*/, unsigned int b
 	loadDataQ1();
 	v_zzQ1__.clear();
 	v_rQ1__.clear();
+	v_nb__.clear();
 	///// Forest
 	loadDataForest(pathForest__,doBootstraps,bootIdx);
 	v_zz__.clear();
 	v_r__.clear();
 	v_z__.clear();
+	v_idx__.clear();
 	v_lRF__.clear();
 	v_lObs__.clear();
 
@@ -2311,15 +2304,13 @@ void Correlation::xi_delta_QSO_lambda(bool doBootstraps/*=False*/, unsigned int 
 		const double sinDe         = v_SinDe__[f];
 		const double ra            = v_ra__[f];
 		const double dec           = v_de__[f];
-		const double z             = v_zz__[f];
 		const double firstPixelLambda = v_lObs__[f][0];
 		const double lastPixelLambda  = v_lObs__[f][nbPixel-1];
 			
 		for (unsigned int q=0; q<nbQ1__; q++) {
 
 			///// Remove the correlation qso-ownForest
-			if (fabs(ra-v_raQ1__[q])<1.e-10 && fabs(dec-v_deQ1__[q])<1.e-10 ) continue;
-			else if (fabs(ra-v_raQ1__[q])<C_AUTOCORRCRIT && fabs(dec-v_deQ1__[q])<C_AUTOCORRCRIT && fabs(z-v_zzQ1__[q])<0.001 ) continue;
+			if (fabs(ra-v_raQ1__[q])<C_AUTOCORRCRIT && fabs(dec-v_deQ1__[q])<C_AUTOCORRCRIT ) continue;
 
 			///// Angle between the two directions of the qso and the lya
 			const double cosTheta = cosDe*v_CosDeQ1__[q]*cos(ra-v_raQ1__[q]) + sinDe*v_SinDeQ1__[q];
@@ -2461,21 +2452,16 @@ void Correlation::xi_delta_QSO_distortionMatrix(void) {
 	loadDataForest(pathForest__);
 
 	///// Empty useless vectors
+	v_zz__.clear();
 	v_d__.clear();
 	v_z__.clear();
 	v_lObs__.clear();
 	v_nb__.clear();
+	v_idx__.clear();
 
 	///// Set usefull vectors
 	std::vector<double> v_invSumWeight(nbForest_,0.);
 	std::vector< std::vector< double > > v_varLambda(v_lRF__);
-
-	TH1D* hist1 = new TH1D("hist1","",100000,-10000.,10000.);
-	TH1D* hist2 = new TH1D("hist2","",100000,-10000.,10000.);
-	TH1D* hist3 = new TH1D("hist3","",100000,-10000.,10000.);
-	TH1D* hist4 = new TH1D("hist4","",100000,-10000.,10000.);
-
-	long double test2 = 0.;
 
 	for (unsigned int f=0; f<nbForest_; f++) {
 		const unsigned int nbPixel = v_nbPixelDelta1__[f];
@@ -2493,9 +2479,6 @@ void Correlation::xi_delta_QSO_distortionMatrix(void) {
 			sumWeight  += w;
 			meanLambda += w*l;
 			stdLambda  += w*l*l;
-
-			hist1->Fill(w);
-			hist2->Fill(l);
 		}
 
 		if (sumWeight==0.) std::cout << "   ERROR:: sumWeight = 0. " << std::endl;
@@ -2504,35 +2487,14 @@ void Correlation::xi_delta_QSO_distortionMatrix(void) {
 		if (stdLambda==0.) std::cout << "   ERROR:: stdLambda = 0. " << std::endl;
 		stdLambda          = 1./sqrt(stdLambda);
 		v_invSumWeight[f]  = 1./sumWeight;
-		hist3->Fill(meanLambda);
-
-		long double test = 0.;
 
 		for (unsigned int i=0; i<nbPixel; i++) {
 			v_varLambda[f][i] = (v_lRF__[f][i]-meanLambda)*stdLambda;
-			hist4->Fill(v_varLambda[f][i]);
-			test += v_w__[f][i]*v_varLambda[f][i];
-			test2 += v_w__[f][i]*v_varLambda[f][i];
 		}
-		if (fabs(test)>1.e-9) std::cout << test << std::endl;
 	}
 
-	std::cout << test2 << std::endl;
-
-	R_plot1D(hist1,"w");
-	R_plot1D(hist2,"l");
-	R_plot1D(hist3,"<l>");
-	R_plot1D(hist4,"varLambda");
-	std::cout << hist1->GetMean() << std::endl;
-	std::cout << hist2->GetMean() << std::endl;
-	std::cout << hist3->GetMean() << std::endl;
-	std::cout << hist4->GetMean() << std::endl;
-	delete hist1;
-	delete hist2;
-	delete hist3;
-	delete hist4;
-
-	//return;
+	//// Clear usless vector
+	v_lRF__.clear();
 
 	///// Constants:
 	///// The space between bins is of 10 Mpc.h^-1
@@ -2572,15 +2534,13 @@ void Correlation::xi_delta_QSO_distortionMatrix(void) {
 		const double sinDe         = v_SinDe__[f];
 		const double ra            = v_ra__[f];
 		const double dec           = v_de__[f];
-		const double z             = v_zz__[f];
 
 		const double invSumWeight  = v_invSumWeight[f];
 
 		for (unsigned int q=0; q<nbQ1__; q++) {
 
 			///// Remove the correlation qso-ownForest
-			if (fabs(ra-v_raQ1__[q])<1.e-10 && fabs(dec-v_deQ1__[q])<1.e-10 ) continue;
-			else if (fabs(ra-v_raQ1__[q])<C_AUTOCORRCRIT && fabs(dec-v_deQ1__[q])<C_AUTOCORRCRIT && fabs(z-v_zzQ1__[q])<0.001 ) continue;
+			if (fabs(ra-v_raQ1__[q])<C_AUTOCORRCRIT && fabs(dec-v_deQ1__[q])<C_AUTOCORRCRIT ) continue;
 
 			///// Angle between the two directions of the qso and the lya
 			const double cosTheta = cosDe*v_CosDeQ1__[q]*cos(ra-v_raQ1__[q]) + sinDe*v_SinDeQ1__[q];
@@ -2676,7 +2636,7 @@ void Correlation::xi_delta_QSO_distortionMatrix(void) {
 
 				for (unsigned int j=0; j<nbBinsTouched; j++) {
 					const unsigned int globalBin2 = bins_touched[j];
-					data2DMatrix[globalBin2][globalBin1] -= w*( xValue[globalBin2] + val1*xlValue[globalBin2] );
+					data2DMatrix[globalBin1][globalBin2] -= w*( xValue[globalBin2] + val1*xlValue[globalBin2] );
 				}
 			}
 		}
@@ -2727,10 +2687,12 @@ void Correlation::xi_delta_QSO_distortionMatrix_1D(void) {
 	loadDataForest(pathForest__);
 
 	///// Empty useless vectors
+	v_zz__.clear();
 	v_d__.clear();
 	v_z__.clear();
 	v_lObs__.clear();
 	v_nb__.clear();
+	v_idx__.clear();
 
 	///// Set usefull vectors
 	std::vector<double> v_invSumWeight(nbForest_,0.);
@@ -2763,7 +2725,8 @@ void Correlation::xi_delta_QSO_distortionMatrix_1D(void) {
 		}
 	}
 
-
+	//// Clear usless vector
+	v_lRF__.clear();
 
 	///// Constants:
 	///// The space between bins is of 10 Mpc.h^-1
@@ -2800,15 +2763,13 @@ void Correlation::xi_delta_QSO_distortionMatrix_1D(void) {
 		const double sinDe         = v_SinDe__[f];
 		const double ra            = v_ra__[f];
 		const double dec           = v_de__[f];
-		const double z             = v_zz__[f];
 
 		const double invSumWeight  = v_invSumWeight[f];
 
 		for (unsigned int q=0; q<nbQ1__; q++) {
 
 			///// Remove the correlation qso-ownForest
-			if (fabs(ra-v_raQ1__[q])<1.e-10 && fabs(dec-v_deQ1__[q])<1.e-10 ) continue;
-			else if (fabs(ra-v_raQ1__[q])<C_AUTOCORRCRIT && fabs(dec-v_deQ1__[q])<C_AUTOCORRCRIT && fabs(z-v_zzQ1__[q])<0.001 ) continue;
+			if (fabs(ra-v_raQ1__[q])<C_AUTOCORRCRIT && fabs(dec-v_deQ1__[q])<C_AUTOCORRCRIT ) continue;
 
 			///// Angle between the two directions of the qso and the lya
 			const double cosTheta = cosDe*v_CosDeQ1__[q]*cos(ra-v_raQ1__[q]) + sinDe*v_SinDeQ1__[q];
@@ -2901,7 +2862,7 @@ void Correlation::xi_delta_QSO_distortionMatrix_1D(void) {
 
 				for (unsigned int j=0; j<nbBinsTouched; j++) {
 					const unsigned int globalBin2 = bins_touched[j];
-					dataMatrix[globalBin2][globalBin1] -= w*( xValue[globalBin2] + val1*xlValue[globalBin2] );
+					dataMatrix[globalBin1][globalBin2] -= w*( xValue[globalBin2] + val1*xlValue[globalBin2] );
 				}
 			}
 		}
@@ -3169,8 +3130,8 @@ void Correlation::xi_delta_QSO_Wick(unsigned int diagramIdx) {
 			for (unsigned int i=0; i<nbPairs; i++) {
 
 				const unsigned int idx1    = vect_idx[i];
-				const unsigned int idxPix1 = vect_idxPix[i];
-				const unsigned int idxQSO1 = vect_idxQSO[i];
+				//const unsigned int idxPix1 = vect_idxPix[i];
+				//const unsigned int idxQSO1 = vect_idxQSO[i];
 				const double       rrr1    = vect_rrr[i];
 				const double       www1    = vect_www[i];
 
@@ -3659,7 +3620,7 @@ void Correlation::xi_A_delta_delta_MockJMc(void) {
 	v_idx__.clear();
 	v_lRF__.clear();
 	v_lObs__.clear();
-
+	v_nb__.clear();
 
 
 	std::cout << "  Starting" << std::endl;
@@ -3942,9 +3903,10 @@ void Correlation::xi_delta_QSO_MockJMc(bool doBootstraps/*=False*/, unsigned int
 	}
 	v_CosDe__.clear();
 	v_SinDe__.clear();
+	v_zz__.clear();
 	v_lRF__.clear();
 	v_lObs__.clear();
-
+	v_nb__.clear();
 
 	std::stringstream convert;
 	convert << bootIdx;
@@ -4309,8 +4271,10 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix(void) {
 	//// Empty useless vectors
 	v_CosDe__.clear();
 	v_SinDe__.clear();
+	v_zz__.clear();
 	v_d__.clear();
 	v_z__.clear();
+	v_idx__.clear();
 	v_lObs__.clear();
 	v_nb__.clear();
 
@@ -4345,6 +4309,8 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix(void) {
 		}
 	}
 	
+	//// Clear usless vector
+	v_lRF__.clear();
 	
 	//// Vectors of randomized positions in cell
 	std::vector<double> v_raRandForest;
@@ -4508,7 +4474,7 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix(void) {
 
 				for (unsigned int j=0; j<nbBinsTouched; j++) {
 					const unsigned int globalBin2 = bins_touched[j];
-					dataMatrix[globalBin2][globalBin1] -= w*( xValue[globalBin2] + val1*xlValue[globalBin2] );
+					dataMatrix[globalBin1][globalBin2] -= w*( xValue[globalBin2] + val1*xlValue[globalBin2] );
 				}
 			}
 		}
@@ -4561,8 +4527,10 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix_1D(void) {
 	//// Empty useless vectors
 	v_CosDe__.clear();
 	v_SinDe__.clear();
+	v_zz__.clear();
 	v_d__.clear();
 	v_z__.clear();
+	v_idx__.clear();
 	v_lObs__.clear();
 	v_nb__.clear();
 
@@ -4596,7 +4564,9 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix_1D(void) {
 			v_varLambda[f][i] = (v_lRF__[f][i]-meanLambda)*stdLambda;
 		}
 	}
-	
+
+	//// Clear usless vector
+	v_lRF__.clear();
 	
 	//// Vectors of randomized positions in cell
 	std::vector<double> v_raRandForest;
@@ -4755,7 +4725,7 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix_1D(void) {
 
 				for (unsigned int j=0; j<nbBinsTouched; j++) {
 					const unsigned int globalBin2 = bins_touched[j];
-					dataMatrix[globalBin2][globalBin1] -= w*( xValue[globalBin2] + val1*xlValue[globalBin2] );
+					dataMatrix[globalBin1][globalBin2] -= w*( xValue[globalBin2] + val1*xlValue[globalBin2] );
 				}
 			}
 		}
@@ -5244,6 +5214,49 @@ void Correlation::xi_QSO_QSO_MockJMc(bool doBootstraps/*=false*/, unsigned int b
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // ---------------------------------------------------------------------
 //
 //		Load data
@@ -5251,10 +5264,15 @@ void Correlation::xi_QSO_QSO_MockJMc(bool doBootstraps/*=false*/, unsigned int b
 // ---------------------------------------------------------------------
 void Correlation::loadDataQ1(void) {
 
+	//// Starting
+	std::cout << "\n\n  ------ load Data Q1 ------" << std::endl;
+
 	//// Create the conversion table from redshift to distance
 	Cosmology* cosmo = new Cosmology(C_H, C_OMEGAM, C_OMEGAB);
 	TH1D* hConvertRedshDist = cosmo->createHistoConvertRedshDist(C_NBBINREDSH, C_ZEXTREMABINCONVERT0, C_ZEXTREMABINCONVERT1);
 
+	bool selectWindowRedshift = true;
+	if (idxCommand_[0]==15 || idxCommand_[0]==16 || idxCommand_[0]==21 || mockBox__) selectWindowRedshift = false;
 	// Get min_z, max_z according to pixels positions
 	double array[2] = {0.};
 	cosmo->FindMinMaxRedsift(maxCorrelation__, lambdaObsMin__, lambdaObsMax__, lambdaRFLine__, array);
@@ -5263,17 +5281,12 @@ void Correlation::loadDataQ1(void) {
 
 	delete cosmo;
 
-	//From Fits
-	std::cout << "\n\n  ------ load Data Q1 ------" << std::endl;
-
-
 	//// Constants
 	if (randomPositionOfQSOInCell__) std::srand(42);
 
+	//// Variables for FITS
 	const TString TSfitsnameSpec = pathQ1__;
 	std::cout << "  pathToFits = " << pathQ1__ << std::endl;
-
-	//// Variables for FITS
 	int sta = 0;
 	long nrows = 0;
 
@@ -5285,19 +5298,23 @@ void Correlation::loadDataQ1(void) {
 	std::cout << "  number of        Q1    = " << nrows << std::endl;
 	std::cout << "  number of loaded Q1    = " << nbQ1__ << std::endl;
 
-	//// Variables for data in FITS
-	double ra = 0.;
-	double de = 0.;
-	double zz = 0.;
-
 	//// Load data
 	for (unsigned int i=0; i<nbQ1__; i++) {
+
+		//// Variables for data in FITS
+		double ra = 0.;
+		double de = 0.;
+		double zz = 0.;
+
 		fits_read_col(fitsptrSpec,TDOUBLE, 1,i+1,1,1,NULL,&ra, NULL,&sta);
 		fits_read_col(fitsptrSpec,TDOUBLE, 2,i+1,1,1,NULL,&de, NULL,&sta);
 		fits_read_col(fitsptrSpec,TDOUBLE, 3,i+1,1,1,NULL,&zz, NULL,&sta);
 
-		if ( !mockBox__ && ra==0. && de==0. ) continue;
-		if ( !mockBox__ && (zz<minRedshiftQSO || zz>maxRedshiftQSO) ) continue;
+		if ( !mockBox__ && ra==0. && de==0. ) {
+			std::cout << "  Correlation::loadDataQ1::  ERROR:  ra==0. && de==0. , RA = " << ra << " , Dec = " << de << " , idx = " << i << std::endl;
+			continue;
+		}
+		if ( selectWindowRedshift && (zz<minRedshiftQSO || zz>maxRedshiftQSO) ) continue;
 
 		//// If not dealing with Jean-Marc's simulations
 		if (!mockJMC__ && !mockBox__) {
@@ -5331,20 +5348,17 @@ void Correlation::loadDataQ1(void) {
 }
 void Correlation::loadDataQ2(void) {
 
+	//// Starting
+	std::cout << "\n\n  ------ load Data Q2 ------" << std::endl;
+
 	//// Create the conversion table from redshift to distance
 	Cosmology* cosmo = new Cosmology(C_H, C_OMEGAM, C_OMEGAB);
 	TH1D* hConvertRedshDist = cosmo->createHistoConvertRedshDist(C_NBBINREDSH, C_ZEXTREMABINCONVERT0, C_ZEXTREMABINCONVERT1);
 	delete cosmo;
 
-	//From Fits
-		
-
-	std::cout << "\n\n  ------ load Data Q2 ------" << std::endl;
-
+	//// Variables for FITS
 	const TString TSfitsnameSpec = pathQ2__;
 	std::cout << "  pathToFits = " << pathQ2__ << std::endl;
-
-	//// Variables for FITS
 	int sta = 0;
 	long nrows = 0;
 
@@ -5356,13 +5370,14 @@ void Correlation::loadDataQ2(void) {
 	std::cout << "  number of        Q2    = " << nrows << std::endl;
 	std::cout << "  number of loaded Q2    = " << nbQ2__ << std::endl;
 
-	//// Variables for data in FITS
-	double ra = 0.;
-	double de = 0.;
-	double zz = 0.;
-
 	//// Load data
 	for (unsigned int i=0; i<nbQ2__; i++) {
+
+		//// Variables for data in FITS
+		double ra = 0.;
+		double de = 0.;
+		double zz = 0.;
+
 		fits_read_col(fitsptrSpec,TDOUBLE, 1,i+1,1,1,NULL,&ra, NULL,&sta);
 		fits_read_col(fitsptrSpec,TDOUBLE, 2,i+1,1,1,NULL,&de, NULL,&sta);
 		fits_read_col(fitsptrSpec,TDOUBLE, 3,i+1,1,1,NULL,&zz, NULL,&sta);
@@ -5399,19 +5414,12 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 
 	delete cosmo;
 
-
 	//// Constants
 	if (randomPositionOfQSOInCell__) std::srand(42);
 
-
-	//// Constants
-	//const double coefRandPositionCell = sizeCell__/RAND_MAX;
-	double isReobsFlag = -100.;
-
+	//// Variables for FITS
 	const TString TSfitsnameSpec = pathToFits;
 	std::cout << "  pathToFits = " << pathToFits << std::endl;
-
-	//// Variables for FITS
 	int sta = 0;
 	long nrows = 0;
 
@@ -5426,7 +5434,7 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 
 
 	unsigned int regionMap[nrows];
-	//// If doing bootstrap, geting the array to know if in the given region
+	//// If doing sub-sampling, geting the array to know if the forest is in the given region
 	if (doBootstraps) {
 
 		//// Init the values
@@ -5442,13 +5450,15 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 		pathToSave += QSO__;
 		pathToSave += ".txt";
 
-		LymanForest* lymanForestObject = new LymanForest(pathToSave, C_NBSUBSAMPLES, raSeperationTwoRegions__, mockJMC__);
+		LymanForest* lymanForestObject = new LymanForest(pathToSave, C_NBSUBSAMPLES, C_RA_SEPERATION_NGC_SGC, mockJMC__);
 		//lymanForestObject->SaveRegionMap("map.txt");
 		//return;
 		lymanForestObject->GetRegionArray(regionMap);
 		delete lymanForestObject;
 	}
 
+	double meanDelta[3] = {0.};
+	double meanDelta_Nicolas[3] = {0.};
 
 	//// Load data
 	for (unsigned int i=0; i<nbForest_; i++) {
@@ -5479,6 +5489,8 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 		std::vector< double > v_tmp_lRF;
 		std::vector< double > v_tmp_lObs;
 
+		double tmp_meanDelta[3] = {0.};
+
 		fits_read_col(fitsptrSpec,TDOUBLE, 4,i+1,1,1,NULL,&ra,   NULL,&sta);
 		fits_read_col(fitsptrSpec,TDOUBLE, 5,i+1,1,1,NULL,&de,   NULL,&sta);
 		fits_read_col(fitsptrSpec,TDOUBLE, 6,i+1,1,1,NULL,&zz,   NULL,&sta);
@@ -5498,7 +5510,7 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 		if (!mocksNoNoiseNoCont && ( (alpha2 == alphaStart__ && beta2 == 0.) || (fabs(alpha2)>=maxAlpha__-0.5) || (fabs(beta2)>=maxBeta__-0.05) ) ) continue;
 		
 		//// If a reobs
-		if (alpha1==isReobsFlag) continue;
+		if (alpha1==isReobsFlag__) continue;
 
 		//// For Nicolas's estimator
 		double meanNeeded[5] = {0.};
@@ -5530,6 +5542,11 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 				//// Get if the template is even one time negative
 				if ( alpha2+beta2*(LAMBDA_RF[j]-meanForestLambdaRF) <= 0.) templateHasNegative = true;
 
+				//// Get Nb Pixel in forest
+				tmp_meanDelta[0] += DELTA_WEIGHT[j]*DELTA[j];
+				tmp_meanDelta[1] += DELTA_WEIGHT[j];
+				tmp_meanDelta[2] ++;
+
 				//// For Nicolas's estimator
 				if (nicolasEstimator__) {
 					meanNeeded[0] += DELTA_WEIGHT[j]*DELTA[j];
@@ -5542,7 +5559,12 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 		}
 
 		const unsigned int tmp_nb = v_tmp_r.size();
-		if (tmp_nb<nbBinRFMin__ || templateHasNegative ) continue;
+		if (tmp_nb<C_MIN_NB_PIXEL || templateHasNegative ) continue;
+
+		//// Get Nb Pixel in forest
+		meanDelta[0] += tmp_meanDelta[0];
+		meanDelta[1] += tmp_meanDelta[1];
+		meanDelta[2] += tmp_meanDelta[2];
 
 		//// Set array for the number a pixel is taken inside a pair
 		std::vector< unsigned int > v_tmp_nb(tmp_nb,0);
@@ -5556,6 +5578,11 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 			const double coef        = numerator/denominator;
 			for (unsigned int j=0; j<tmp_nb; j++) {
 				v_tmp_d[j] -= meanDelta+(LAMBDA_RF[j]-meanLambda)*coef;
+
+				//// Get Nb Pixel in forest
+				meanDelta_Nicolas[0] += v_tmp_w[j]*v_tmp_d[j];
+				meanDelta_Nicolas[1] += v_tmp_w[j];
+				meanDelta_Nicolas[2] ++;
 			}
 		}
 
@@ -5592,6 +5619,16 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 	nbForest_ = v_ra__.size();
 	std::cout << "  number of good forest   = " << nbForest_ << std::endl;
 
+     	std::cout << "  < delta >       = " << meanDelta[0]/meanDelta[1] << std::endl;
+	std::cout << "  sum(w_i)        = " << meanDelta[1]              << std::endl;
+	std::cout << "  nb pixel        = " << (long long unsigned int)meanDelta[2]              << std::endl;
+
+	if (nicolasEstimator__) {
+		std::cout << "  < delta_Nicolas >       = " << meanDelta_Nicolas[0]/meanDelta_Nicolas[1] << std::endl;
+		std::cout << "  sum(w_i)_Nicolas        = " << meanDelta_Nicolas[1]              << std::endl;
+		std::cout << "  nb pixel_Nicolas        = " << (long long unsigned int)meanDelta_Nicolas[2]              << std::endl;
+	}
+
 	fits_close_file(fitsptrSpec,&sta);
 
 	delete hConvertRedshDist;
@@ -5600,6 +5637,7 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 }
 void Correlation::loadDataDelta2(int dataNeeded/*=100*/) {
 
+	//// Starting
 	std::cout << "\n\n  ------ load Data Forest 2 ------" << std::endl;
 
 	//// Create the conversion table from redshift to distance
@@ -5611,10 +5649,11 @@ void Correlation::loadDataDelta2(int dataNeeded/*=100*/) {
 
 	delete cosmo;
 
-	const TString TSfitsnameSpec = pathDelta2__;
-	std::cout << "  pathToFits = " << pathDelta2__ << std::endl;
+
 
 	//// Variables for FITS
+	const TString TSfitsnameSpec = pathDelta2__;
+	std::cout << "  pathToFits = " << pathDelta2__ << std::endl;
 	int sta = 0;
 	long nrows = 0;
 
@@ -5625,6 +5664,8 @@ void Correlation::loadDataDelta2(int dataNeeded/*=100*/) {
 
 	std::cout << "  number of        forest = " << nrows << std::endl;
 	std::cout << "  number of loaded forest = " << nbForest2__ << std::endl;
+
+	double meanDelta[3] = {0.};
 
 	//// Load data
 	for (unsigned int i=0; i<nbForest2__; i++) {
@@ -5652,6 +5693,8 @@ void Correlation::loadDataDelta2(int dataNeeded/*=100*/) {
 		std::vector< double > v_tmp_z;
 		std::vector< double > v_tmp_lRF;
 		std::vector< double > v_tmp_lObs;
+
+		double tmp_meanDelta[3] = {0.};
 
 		fits_read_col(fitsptrSpec,TDOUBLE, 4,i+1,1,1,NULL,&ra,   NULL,&sta);
 		fits_read_col(fitsptrSpec,TDOUBLE, 5,i+1,1,1,NULL,&de,   NULL,&sta);
@@ -5688,6 +5731,10 @@ void Correlation::loadDataDelta2(int dataNeeded/*=100*/) {
 				//// Get if the template is even one time negative
 				if ( alpha2+beta2*(LAMBDA_RF[j]-meanForestLambdaRF) <= 0.) templateHasNegative = true;
 
+				tmp_meanDelta[0] += DELTA_WEIGHT[j]*DELTA[j];
+				tmp_meanDelta[1] += DELTA_WEIGHT[j];
+				tmp_meanDelta[2] ++;
+
 				const double zi = LAMBDA_OBS[j]/lambdaRFLineDelta2__ -1.;
 				v_tmp_r.push_back(hConvertRedshDist->Interpolate(zi));
 				v_tmp_d.push_back(DELTA[j]);
@@ -5701,7 +5748,12 @@ void Correlation::loadDataDelta2(int dataNeeded/*=100*/) {
 
 
 		const unsigned int tmp_nb = v_tmp_r.size();
-		if (tmp_nb<nbBinRFMin__ || templateHasNegative ) continue;
+		if (tmp_nb<C_MIN_NB_PIXEL || templateHasNegative ) continue;
+
+		//// Get Nb Pixel in forest
+		meanDelta[0] += tmp_meanDelta[0];
+		meanDelta[1] += tmp_meanDelta[1];
+		meanDelta[2] += tmp_meanDelta[2];
 
 		ra = ra*C_DEGTORAD;
 		de = de*C_DEGTORAD;
@@ -5725,6 +5777,10 @@ void Correlation::loadDataDelta2(int dataNeeded/*=100*/) {
 	
 	nbForest2__ = v_raDelta2__.size();
 	std::cout << "  number of good forest   = " << nbForest2__ << std::endl;
+
+     	std::cout << "  < delta >       = " << meanDelta[0]/meanDelta[1] << std::endl;
+	std::cout << "  sum(w_i)        = " << meanDelta[1]              << std::endl;
+	std::cout << "  nb pixel        = " << (long long unsigned int)meanDelta[2]              << std::endl;
 
 	delete hConvertRedshDist;
 

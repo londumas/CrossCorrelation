@@ -123,16 +123,14 @@ class Correlation
 		void xi_QSO_QSO_MockJMc(bool doBootstraps=false, unsigned int bootIdx=0);
 };
 
-const unsigned int nbBinRFMin__ = 50;
-const double lambdaObsMin__   = 3600.; //3547.;
-const double lambdaObsMax__   = 7235.; //10326.;
+const double lambdaObsMin__   = 3600.; //3547.;  //3600.; //
+const double lambdaObsMax__   = 7235.; //10326.;  //7235.; //
 
 const double maxAlpha__   = 40.;
 const double maxBeta__  =  0.3;
 
-const double raSeperationTwoRegions__ = 5.;
-
 const double maxCorrelation__ = 200.;
+const double isReobsFlag__ = -100.;
 
 
 /// If LYA

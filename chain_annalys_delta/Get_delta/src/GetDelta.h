@@ -100,9 +100,8 @@ const double maxFlux__ = 1.000001;
 const unsigned int nbBinsFlux__ = 100;
 
 
-const double lambdaObsMin__   = 3547.;  //3600
-const double lambdaObsMax__   = 10326.;  //7235
-const unsigned int nbBinRFMin__ = 50;
+const double lambdaObsMin__   = 3547.;  //3600.; //
+const double lambdaObsMax__   = 10326.;  //7235.; //
  
 /// Value allowing to put a roof to the error on a flux
 //const double capForError__ = 0.19;

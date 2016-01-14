@@ -37,7 +37,7 @@ class LymanForest
 		bool euclidean_;
 		// The sky of DR12 is separeted into "North Galactic Cap" (NGC) and 
 		//	"South Galactic Cap" (SGC). This double gives the value of RA
-		//	the separated the two regions
+		//	that separated the two regions
 		double raSeperationTwoRegions_;
 		// Nb of regions to devide the sky into
 		unsigned int nbRegion_;
