@@ -171,11 +171,14 @@ GetDelta::~GetDelta(void) {
 	
 	if (stepAnnalyse==0) {
 		for (unsigned int i=0; i<nbLoop__+1; i++) {
-			delete hTemplate__[i];
 			delete hDeltaVsLambdaObs__[i];
 			delete hDeltaVsLambdaRF__[i];
-			delete grEta__[i];
-			delete grSig__[i];
+
+			if (i<nbLoop__) {
+				delete hTemplate__[i];
+				delete grEta__[i];
+				delete grSig__[i];
+			}
 		}
 		delete hFluxPDF__;
 	}

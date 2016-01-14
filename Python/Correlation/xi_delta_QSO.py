@@ -1305,10 +1305,11 @@ result_Multipol_ = plotMultipol(xiMu_)
 replaceValueByMean()
 '''
 
-plotXi(0)
-plotXi(1)
+#plotXi(0)
+#plotXi(1)
 plotXi(2)
 
+'''
 pathToCamb = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/CAMB_2_4/xi-z2.4.dat'
 fitCamb(xi1D_,pathToCamb,0)
 
@@ -1320,6 +1321,7 @@ plotMu(1)
 plotMu(2)
 plotWe(0)
 plotWe(1)
+'''
 plotWe(2)
 
 
