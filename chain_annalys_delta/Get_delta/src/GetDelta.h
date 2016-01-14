@@ -130,8 +130,8 @@ class GetDelta
 	private:
 
 		std::vector< double > v_zz__;
-                std::vector< double > v_meanForestLambdaRF__;
-                std::vector< double > v_alpha2__;
+		std::vector< double > v_meanForestLambdaRF__;
+		std::vector< double > v_alpha2__;
 		std::vector< double > v_beta2__;
 		std::vector<unsigned int> v_nbPixel__;
 		std::vector<int> v_fromFitsIndexToVectorIndex__;

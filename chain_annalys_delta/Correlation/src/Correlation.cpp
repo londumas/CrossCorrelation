@@ -5524,7 +5524,7 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 					for (unsigned int k=0; k<nbVetoLines__; k++) {
 						 if (LAMBDA_OBS[j]>=vetoLine__[2*k] && LAMBDA_OBS[j]<vetoLine__[2*k+1]) {
 							isLine = true;
-							continue;
+							break;
 						}
 					}
 				}
@@ -5619,7 +5619,7 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 	nbForest_ = v_ra__.size();
 	std::cout << "  number of good forest   = " << nbForest_ << std::endl;
 
-     	std::cout << "  < delta >       = " << meanDelta[0]/meanDelta[1] << std::endl;
+	std::cout << "  < delta >       = " << meanDelta[0]/meanDelta[1] << std::endl;
 	std::cout << "  sum(w_i)        = " << meanDelta[1]              << std::endl;
 	std::cout << "  nb pixel        = " << (long long unsigned int)meanDelta[2]              << std::endl;
 
@@ -5722,7 +5722,7 @@ void Correlation::loadDataDelta2(int dataNeeded/*=100*/) {
 					for (unsigned int k=0; k<nbVetoLines__; k++) {
 						 if (LAMBDA_OBS[j]>=vetoLine__[2*k] && LAMBDA_OBS[j]<vetoLine__[2*k+1]) {
 							isLine = true;
-							continue;
+							break;
 						}
 					}
 				}
@@ -5778,7 +5778,7 @@ void Correlation::loadDataDelta2(int dataNeeded/*=100*/) {
 	nbForest2__ = v_raDelta2__.size();
 	std::cout << "  number of good forest   = " << nbForest2__ << std::endl;
 
-     	std::cout << "  < delta >       = " << meanDelta[0]/meanDelta[1] << std::endl;
+	std::cout << "  < delta >       = " << meanDelta[0]/meanDelta[1] << std::endl;
 	std::cout << "  sum(w_i)        = " << meanDelta[1]              << std::endl;
 	std::cout << "  nb pixel        = " << (long long unsigned int)meanDelta[2]              << std::endl;
 
