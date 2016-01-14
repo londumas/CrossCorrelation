@@ -224,7 +224,7 @@ Correlation::Correlation(int argc, char **argv) {
 	//
 	else if (command == 5)  xi_A_delta_delta();
 	else if (command == 6)  xi_A_delta_delta_lambda();
-	else if (command == 7)  xi_delta_delta2();
+	else if (command == 7)  xi_A_delta_delta2();
 	else if (command == 8)  xi_A_delta_delta2_lambda();
 	//
 	else if (command == 9)  xi_delta_QSO(doBootstraps__,idxCommand[2]);
@@ -1308,9 +1308,9 @@ void Correlation::xi_A_delta_delta_lambda(void) {
 
 	return;
 }
-void Correlation::xi_delta_delta2(void) {
+void Correlation::xi_A_delta_delta2(void) {
 
-	std::cout << "\n\n\n\n  ------ xi_delta_delta2 ------" << std::endl;
+	std::cout << "\n\n\n\n  ------ xi_A_delta_delta2 ------" << std::endl;
 	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_A_delta_delta2.py";
 	command += commandEnd__;
 	std::cout << command << "\n" << std::endl;
@@ -4755,7 +4755,7 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix_1D(void) {
 
 				for (unsigned int j=0; j<nbBinsTouched; j++) {
 					const unsigned int globalBin2 = bins_touched[j];
-					data2DMatrix[globalBin2][globalBin1] -= w*( xValue[globalBin2] + val1*xlValue[globalBin2] );
+					dataMatrix[globalBin2][globalBin1] -= w*( xValue[globalBin2] + val1*xlValue[globalBin2] );
 				}
 			}
 		}

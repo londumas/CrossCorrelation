@@ -94,30 +94,33 @@ class Correlation
 		Correlation(int argc, char** argv);
 		~Correlation();
 
+		//
 		void xi_1D_delta_delta(void);
 		void xi_1DlRF_delta_delta(void);
 		void xi_1DlRFDevide_delta_delta(void);
 		void xi_1D_delta_delta2(void);
 		void xi_1DlRF_delta_delta2(void);
+		//
 		void xi_A_delta_delta(void);
 		void xi_A_delta_delta_lambda(void);
+		void xi_A_delta_delta2(void);
 		void xi_A_delta_delta2_lambda(void);
-		void xi_A_delta_delta_MockJMc(void);
-		void xi_delta_delta2(void);
-
+		//
 		void xi_delta_QSO(         bool doBootstraps=false, unsigned int bootIdx=0);
 		void xi_delta_QSO_theta(   bool doBootstraps=false, unsigned int bootIdx=0);
 		void xi_delta_QSO_lambda(   bool doBootstraps=false, unsigned int bootIdx=0);
 		void xi_delta_QSO_distortionMatrix(void);
 		void xi_delta_QSO_distortionMatrix_1D(void);
+		void xi_delta_QSO_Wick(unsigned int diagramIdx);
+		//
+		void xi_QSO_QSO(bool doBootstraps=false, unsigned int bootIdx=0);
+		void xi_Q1_Q2(void);
+		//
+		void xi_A_delta_delta_MockJMc(void);
 		void xi_delta_QSO_MockJMc( bool doBootstraps=false, unsigned int bootIdx=0);
 		void xi_delta_QSO_MockJMc_distortionMatrix( void );
 		void xi_delta_QSO_MockJMc_distortionMatrix_1D( void );
-		void xi_delta_QSO_Wick(unsigned int diagramIdx);
-
-		void xi_QSO_QSO(bool doBootstraps=false, unsigned int bootIdx=0);
 		void xi_QSO_QSO_MockJMc(bool doBootstraps=false, unsigned int bootIdx=0);
-		void xi_Q1_Q2(void);
 };
 
 const unsigned int nbBinRFMin__ = 50;
