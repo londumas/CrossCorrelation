@@ -17,7 +17,7 @@
 //     REVISION: ---
 //===================================================================================
 
-/// LIB
+///// LIB
 #include <iostream>	// std::cout
 #include <fstream>
 #include <sstream>	//stringstream
@@ -27,7 +27,7 @@
 #include <algorithm>	// std::random_shuffle
 #include <cstdlib>	// std::rand, std::srand
 
-/// ROOT
+///// ROOT
 #include "TH1D.h"
 #include "fitsio.h"
 #include "TString.h"
@@ -87,12 +87,12 @@ std::string alQSO[19] = {"QSO_ALL_TESTS",
 				"ALL_EVERY_OBJECTS_2016_01_08"
 };
 
-/// Constants
+///// Constants
 const unsigned int nbBinlambdaObs__  = int(lambdaObsMax__-lambdaObsMin__);
 double distMinPixel__ = 0.;
 double distMinPixelDelta2__ = 0.;
 
-/// Flags for Jean-Marc's simulations
+///// Flags for Jean-Marc's simulations
 const bool mocks          = false;
 const bool mocksNoNoiseNoCont = false;
 const bool mockJMC__          = true;
@@ -121,7 +121,7 @@ Correlation::Correlation(int argc, char **argv) {
 
 	// command
 
-	/// 0: correlation, 1: mockCatalogue, 2: bootstraps, 3: Wick, 4: mockChunck, 5: mockSimul
+	///// 0: correlation, 1: mockCatalogue, 2: bootstraps, 3: Wick, 4: mockChunck, 5: mockSimul
 	unsigned int idxCommand[6] = {};
 	for (unsigned int i=0; i<6; i++) {
 		std::string string = argv[i+1];
@@ -135,7 +135,7 @@ Correlation::Correlation(int argc, char **argv) {
 	pathQ1__ += ".fits";
 	
 
-	/// Set the number of forest to work on
+	///// Set the number of forest to work on
 	nbForest_   = 0;
 	nbForest2__ = 0;
 	nbQ1__      = 0;
@@ -202,7 +202,7 @@ Correlation::Correlation(int argc, char **argv) {
 		
 	}
 
-	/// Command at the end
+	///// Command at the end
 	commandEnd__  = " ";
 	commandEnd__ += forest__;
 	commandEnd__ += " ";
@@ -269,14 +269,14 @@ void Correlation::xi_1D_delta_delta(void) {
 	v_lRF__.clear();
 	v_lObs__.clear();
 
-	/// Constants:
-	/// The space between bins is of 1 Mpc.h^-1, the first bin is for deltaR == 0.
+	///// Constants:
+	///// The space between bins is of 1 Mpc.h^-1, the first bin is for deltaR == 0.
 	const double max = 2100.;
 	const unsigned int nbBins = 2100;
 	const double binSize = max/nbBins;
 	const double inv_binSize = 1./binSize;
 
-	/// Arrays for data
+	///// Arrays for data
 	double data[nbBins][6];
 	for (unsigned int i=0; i<nbBins; i++) {
 		for (unsigned int j=0; j<6; j++) {
@@ -300,7 +300,7 @@ void Correlation::xi_1D_delta_delta(void) {
 			const double d1d1 = d1*d1;
 			const double z1z1 = z1+z1;
 
-			/// Compute the xi1D
+			///// Compute the xi1D
 			data[0][0] += w1w1*d1d1;
 			data[0][1] += w1w1*d1d1*d1d1;
 			data[0][3] += w1w1*z1z1;
@@ -314,10 +314,10 @@ void Correlation::xi_1D_delta_delta(void) {
 				const double d1d2 = d1*v_d__[f][i2];
 				const double z1z2 = z1+v_z__[f][i2];
 
-				/// Find bin index
+				///// Find bin index
 				const unsigned int idx = 1 + int(r1r2*inv_binSize);
 
-				/// Compute the xi1D
+				///// Compute the xi1D
 				data[idx][0] += w1w2*d1d2;
 				data[idx][1] += w1w2*d1d2*d1d2;
 				data[idx][2] += w1w2*r1r2;
@@ -344,8 +344,8 @@ void Correlation::xi_1D_delta_delta(void) {
 	long double sumZZZ = 0.;
 	long double sumWeg = 0.;
 
-	/// Set the values of data
-	/// [0] for value, [1] for error, [2] for bin center
+	///// Set the values of data
+	///// [0] for value, [1] for error, [2] for bin center
 	for (unsigned int i=0; i<nbBins; i++) {
 		fFile << data[i][0];
 		fFile << " " << data[i][1];
@@ -361,7 +361,7 @@ void Correlation::xi_1D_delta_delta(void) {
 	}
 	fFile.close();
 
-	/// Get mean redshift of pairs
+	///// Get mean redshift of pairs
 	std::cout << "  < z >           = " << sumZZZ/sumWeg << std::endl;
 	std::cout << "  Number of pairs = " << sumOne << std::endl;
 	
@@ -390,14 +390,14 @@ void Correlation::xi_1DlRF_delta_delta(void) {
 
 
 
-	/// Constants:
+	///// Constants:
 	const double max           = lambdaRFMax__-lambdaRFMin__;
 	const unsigned int nbBins  = nbBinRFMax__-1;
 	const double binSize = max/nbBins;
-        const double inv_binSize = 1./binSize;
+	const double inv_binSize = 1./binSize;
 
-	/// Arrays for data
-        double data[nbBins][6];
+	///// Arrays for data
+	double data[nbBins][6];
 	for (unsigned int i=0; i<nbBins; i++) {
 		for (unsigned int j=0; j<6; j++) {
 			data[i][j] = 0.;
@@ -420,12 +420,12 @@ void Correlation::xi_1DlRF_delta_delta(void) {
 			const double d1d1 = d1*d1;
 			const double z1z1 = z1+z1;
 
-			/// Compute the xi1D
+			///// Compute the xi1D
 			data[0][0] += w1w1*d1d1;
-                        data[0][1] += w1w1*d1d1*d1d1;
-                        data[0][3] += w1w1*z1z1;
-                        data[0][4] += w1w1;
-                        data[0][5] ++;
+			data[0][1] += w1w1*d1d1*d1d1;
+			data[0][3] += w1w1*z1z1;
+			data[0][4] += w1w1;
+			data[0][5] ++;
 
 			for (unsigned int i2=0; i2<i1; i2++) {
 
@@ -434,10 +434,10 @@ void Correlation::xi_1DlRF_delta_delta(void) {
 				const double d1d2  = d1*v_d__[f][i2];
 				const double z1z2  = z1+v_z__[f][i2];
 
-				/// Find bin index
+				///// Find bin index
 				const unsigned int idx = 1 + int(l1l2*inv_binSize);
 
-				/// Compute the xi1D
+				///// Compute the xi1D
 				data[idx][0] += w1w2*d1d2;
 				data[idx][1] += w1w2*d1d2*d1d2;
 				data[idx][2] += w1w2*l1l2;
@@ -462,7 +462,7 @@ void Correlation::xi_1DlRF_delta_delta(void) {
 	long double sumZZZ = 0.;
 	long double sumWeg = 0.;
 
-	/// Set the values of data
+	///// Set the values of data
 	for (unsigned int i=0; i<nbBins; i++) {
 		fFile << data[i][0];
 		fFile << " " << data[i][1];
@@ -506,15 +506,15 @@ void Correlation::xi_1DlRFDevide_delta_delta(void) {
 
 
 
-	/// Constants:
+	///// Constants:
 	//const double min           = lambdaRFMin__/lambdaRFMax__;
 	const double max           = lambdaRFMax__/lambdaRFMin__;
 	const unsigned int nbBins  = 10000;
 	const double binSize = (max-1.)/nbBins;
 	const double inv_binSize = 1./binSize;
 
-	/// Arrays for data
-        double data[nbBins][6];
+	///// Arrays for data
+	double data[nbBins][6];
 	for (unsigned int i=0; i<nbBins; i++) {
 		for (unsigned int j=0; j<6; j++) {
 			data[i][j] = 0.;
@@ -537,13 +537,13 @@ void Correlation::xi_1DlRFDevide_delta_delta(void) {
 			const double d1d1 = d1*d1;
 			const double z1z1 = z1+z1;
 
-			/// Compute the xi1D
+			///// Compute the xi1D
 			data[0][0] += w1w1*d1d1;
 			data[0][2] += w1w1;
-                        data[0][1] += w1w1*d1d1*d1d1;
-                        data[0][3] += w1w1*z1z1;
-                        data[0][4] += w1w1;
-                        data[0][5] ++;
+			data[0][1] += w1w1*d1d1*d1d1;
+			data[0][3] += w1w1*z1z1;
+			data[0][4] += w1w1;
+			data[0][5] ++;
 
 			for (unsigned int i2=0; i2<i1; i2++) {
 
@@ -552,12 +552,12 @@ void Correlation::xi_1DlRFDevide_delta_delta(void) {
 				const double d1d2  = d1*v_d__[f][i2];
 				const double z1z2  = z1+v_z__[f][i2];
 
-				/// Find bin index
+				///// Find bin index
 				const unsigned int idx = 1 + int( (l1l2-1.)*inv_binSize );
 
 if (idx>=nbBins) std::cout << idx << std::endl;
 
-				/// Compute the xi1D
+				///// Compute the xi1D
 				data[idx][0] += w1w2*d1d2;
 				data[idx][1] += w1w2*d1d2*d1d2;
 				data[idx][2] += w1w2*l1l2;
@@ -584,7 +584,7 @@ if (idx>=nbBins) std::cout << idx << std::endl;
 	long double sumZZZ = 0.;
 	long double sumWeg = 0.;
 
-	/// Set the values of data
+	///// Set the values of data
 	for (unsigned int i=0; i<nbBins; i++) {
 		fFile << data[i][0];
 		fFile << " " << data[i][1];
@@ -611,14 +611,14 @@ void Correlation::xi_1D_delta_delta2(void) {
 	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_1D_delta_delta2.py";
 	command += commandEnd__;
 	std::cout << command << "\n" << std::endl;
-	/// Forest 1
+	///// Forest 1
 	loadDataForest(pathForest__);
 	v_CosDe__.clear();
 	v_SinDe__.clear();
 	v_idx__.clear();
 	v_lRF__.clear();
 	v_lObs__.clear();
-	/// Forest 2
+	///// Forest 2
 	loadDataDelta2();
 
 
@@ -626,12 +626,12 @@ void Correlation::xi_1D_delta_delta2(void) {
 
 	std::cout << "  Starting" << std::endl;
 
-	/// Constants:
-	/// The space between bins is of 1 Mpc.h^-1, the first bin is for deltaR == 0.
+	///// Constants:
+	///// The space between bins is of 1 Mpc.h^-1, the first bin is for deltaR == 0.
 	const double max = 1000.;
 	const unsigned int nbBins = 2*int(max);
 
-	/// Arrays for data
+	///// Arrays for data
 	double meanZZ[2] = {};
 	double data_0[nbBins];
 	double data_1[nbBins];
@@ -673,17 +673,17 @@ void Correlation::xi_1D_delta_delta2(void) {
 					const double d1d2 = d1*v_dDelta2__[f2][i2];
 					const double z1z2 = z1+v_zDelta2__[f2][i2];
 	
-					/// Find bin index
+					///// Find bin index
 					const unsigned int idx = int(max+r1r2);
 	
-					/// Compute the xi1D
+					///// Compute the xi1D
 					data_0[idx] += w1w2*d1d2;
 					data_1[idx] += w1w2*d1d2*d1d2;
 					data_2[idx] += w1w2*r1r2;
 					data_3[idx] += w1w2;
 					data_4[idx] ++;
 	
-					/// Mean redshift of pairs
+					///// Mean redshift of pairs
 					meanZZ[0] += w1w2*z1z2;
 					meanZZ[1] += w1w2*z1z2*z1z2;
 				}
@@ -708,8 +708,8 @@ void Correlation::xi_1D_delta_delta2(void) {
 	long double sumOne = 0.;
 	long double sumWeg = 0.;
 
-	/// Set the values of data
-	/// [0] for value, [1] for error, [2] for bin center
+	///// Set the values of data
+	///// [0] for value, [1] for error, [2] for bin center
 	for (unsigned int i=0; i<nbBins; i++) {
 		if (data_4[i]!=0.) {
 			const long double save0 = data_0[i];
@@ -738,7 +738,7 @@ void Correlation::xi_1D_delta_delta2(void) {
 	}
 	fFile.close();
 
-	/// Get mean redshift of pairs
+	///// Get mean redshift of pairs
 	meanZZ[0] = meanZZ[0]/(2.*sumWeg);
 	meanZZ[1] = sqrt( (meanZZ[1]/(4.*sumWeg) - meanZZ[0]*meanZZ[0])/sumOne);
 
@@ -753,14 +753,14 @@ void Correlation::xi_1DlRF_delta_delta2(void) {
 	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_1DlRF_delta_delta2.py";
 	command += commandEnd__;
 	std::cout << command << "\n" << std::endl;
-	/// Forest 1
+	///// Forest 1
 	loadDataForest(pathForest__);
 	v_CosDe__.clear();
 	v_SinDe__.clear();
 	v_idx__.clear();
 	v_r__.clear();
 	v_lObs__.clear();
-	/// Forest 2
+	///// Forest 2
 	loadDataDelta2();
 
 
@@ -771,14 +771,14 @@ void Correlation::xi_1DlRF_delta_delta2(void) {
 
 	std::cout << "  Starting" << std::endl;
 
-	/// Constants:
-	/// The space between bins is of 1 Mpc.h^-1, the first bin is for deltaR == 0.
+	///// Constants:
+	///// The space between bins is of 1 Mpc.h^-1, the first bin is for deltaR == 0.
 	const double min = lambdaRFMin__/lambdaRFMaxDelta2__;
 	const double max = lambdaRFMax__/lambdaRFMinDelta2__;
 	const unsigned int nbBins = 50000;
 	const double binSize = (max-min)/nbBins;
 
-	/// Arrays for data
+	///// Arrays for data
 	double meanZZ[2] = {};
 	double data_0[nbBins];
 	double data_1[nbBins];
@@ -820,17 +820,17 @@ void Correlation::xi_1DlRF_delta_delta2(void) {
 					const double d1d2 = d1*v_dDelta2__[f2][i2];
 					const double z1z2 = z1+v_zDelta2__[f2][i2];
 	
-					/// Find bin index
+					///// Find bin index
 					const unsigned int idx = int((l1l2-min)/binSize);
 	
-					/// Compute the xi1D
+					///// Compute the xi1D
 					data_0[idx] += w1w2*d1d2;
 					data_1[idx] += w1w2*d1d2*d1d2;
 					data_2[idx] += w1w2*l1l2;
 					data_3[idx] += w1w2;
 					data_4[idx] ++;
 	
-					/// Mean redshift of pairs
+					///// Mean redshift of pairs
 					meanZZ[0] += w1w2*z1z2;
 					meanZZ[1] += w1w2*z1z2*z1z2;
 				}
@@ -855,8 +855,8 @@ void Correlation::xi_1DlRF_delta_delta2(void) {
 	long double sumOne = 0.;
 	long double sumWeg = 0.;
 
-	/// Set the values of data
-	/// [0] for value, [1] for error, [2] for bin center
+	///// Set the values of data
+	///// [0] for value, [1] for error, [2] for bin center
 	for (unsigned int i=0; i<nbBins; i++) {
 		if (data_4[i]!=0.) {
 			const long double save0 = data_0[i];
@@ -885,7 +885,7 @@ void Correlation::xi_1DlRF_delta_delta2(void) {
 	}
 	fFile.close();
 
-	/// Get mean redshift of pairs
+	///// Get mean redshift of pairs
 	meanZZ[0] = meanZZ[0]/(2.*sumWeg);
 	meanZZ[1] = sqrt( (meanZZ[1]/(4.*sumWeg) - meanZZ[0]*meanZZ[0])/sumOne);
 
@@ -901,7 +901,7 @@ void Correlation::xi_A_delta_delta(void) {
 	command += commandEnd__;
 	std::cout << command << "\n" << std::endl;
 
-	/// Load forest
+	///// Load forest
 	loadDataForest(pathForest__);
 	v_zz__.clear();
 	v_idx__.clear();
@@ -913,7 +913,7 @@ void Correlation::xi_A_delta_delta(void) {
 
 	std::cout << "  Starting" << std::endl;
 
-	/// Constants:
+	///// Constants:
 	const unsigned int max    = 200.;
 	const unsigned int nbBin  = int(max);
 	const unsigned int nbBinM = 50.;
@@ -922,12 +922,12 @@ void Correlation::xi_A_delta_delta(void) {
 	const double distMax      = sqrt(2.)*max+1.;
 	const double distMaxPow2  = 2.*max*max;
 
-	/// Find the maximal angle of seperation
+	///// Find the maximal angle of seperation
 	const double maxTheta = 2.*asin( distMax/(distMinPixel__*2.) );
 	const double cosmaxTheta = cos(maxTheta);
 	std::cout << "  maxTheta = " << maxTheta*180./M_PI << " degree" << std::endl;
 
-	/// Arrays for data
+	///// Arrays for data
 	double dataMu[nbBin][nbBinM][7];
 	double data2D[nbBin][nbBin][7];
 
@@ -959,11 +959,11 @@ void Correlation::xi_A_delta_delta(void) {
 
 		for (unsigned int f2=0; f2<f1; f2++) {
 
-			/// Usefull for eBOSS data because many re-obs.
+			///// Usefull for eBOSS data because many re-obs.
 			if (ra1==v_ra__[f2] && de1==v_de__[f2]) continue;
 			else if (fabs(ra1-v_ra__[f2])<C_AUTOCORRCRIT && fabs(de1-v_de__[f2])<C_AUTOCORRCRIT ) continue;
 
-			/// Angle between the two directions of the qso and the lya
+			///// Angle between the two directions of the qso and the lya
 			const double cosTheta = cosDe*v_CosDe__[f2]*cos(ra1-v_ra__[f2]) + sinDe*v_SinDe__[f2];
 			if (cosTheta<cosmaxTheta) continue;
 
@@ -976,7 +976,7 @@ void Correlation::xi_A_delta_delta(void) {
 
 			for (unsigned int i1=0; i1<nb1; i1++) {
 
-				/// Get the r_perp distance
+				///// Get the r_perp distance
 				const double rPerp = v_r__[f1][i1]*sinTheta;
 				if (rPerp>=max) continue;
 				const unsigned int rPerpBinIdx = int(rPerp);
@@ -1011,7 +1011,7 @@ void Correlation::xi_A_delta_delta(void) {
 						dataMu[idx][idxM][6] ++;
 					}
 					
-					/// Fill the histogramm of xi(r_{perp}, r_{paral}
+					///// Fill the histogramm of xi(r_{perp}, r_{paral}
 					const unsigned int rParralBinIdx = int(rParral);
 					data2D[rPerpBinIdx][rParralBinIdx][0] += w1w2*d1d2;
 					data2D[rPerpBinIdx][rParralBinIdx][1] += w1w2*d1d2*d1d2;
@@ -1040,8 +1040,8 @@ void Correlation::xi_A_delta_delta(void) {
 	long double sumZZZ = 0.;
 	long double sumWeg = 0.;
 
-	/// Set the values of data
-	/// [0] for value, [1] for error, [2] for bin center
+	///// Set the values of data
+	///// [0] for value, [1] for error, [2] for bin center
 	for (unsigned int i=0; i<nbBin; i++) {
 
 		long double save0 = 0.;
@@ -1084,7 +1084,7 @@ void Correlation::xi_A_delta_delta(void) {
 	sumZZZ = 0.;
 	sumWeg = 0.;
 
-	/// Save the 2D cross-correlation
+	///// Save the 2D cross-correlation
 	std::string pathToSave = pathToSave__;
 	pathToSave += "xi_A_delta_delta_2D_";
 	pathToSave += forest__;
@@ -1094,8 +1094,8 @@ void Correlation::xi_A_delta_delta(void) {
 	fFile << std::scientific;
 	fFile.precision(17);
 	
-	/// Set the values of data
-	/// [0] for value, [1] for error, [2] for bin center
+	///// Set the values of data
+	///// [0] for value, [1] for error, [2] for bin center
 	for (unsigned int i=0; i<nbBin; i++) {
 		for (unsigned int j=0; j<nbBin; j++) {
 			fFile << data2D[i][j][0];
@@ -1120,7 +1120,7 @@ void Correlation::xi_A_delta_delta(void) {
 	std::cout << "  < pairs per forest > = " << sumOne/nbForest_ << std::endl;
 
 
-	/// Mu
+	///// Mu
 	pathToSave = pathToSave__;
 	pathToSave += "xi_A_delta_delta_Mu_";
 	pathToSave += forest__;
@@ -1155,7 +1155,7 @@ void Correlation::xi_A_delta_delta_lambda(void) {
 	command += commandEnd__;
 	std::cout << command << "\n" << std::endl;
 
-	/// Load forest
+	///// Load forest
 	loadDataForest(pathForest__);
 	v_zz__.clear();
 	v_r__.clear();
@@ -1165,7 +1165,7 @@ void Correlation::xi_A_delta_delta_lambda(void) {
 
 	std::cout << "  Starting" << std::endl;
 
-	/// Rapport l1/l2
+	///// Rapport l1/l2
 	const double minl1l2 = 1.;
 	const double maxl1l2 = 1.11;
 	double binSizel1l2      = 1.e-03;
@@ -1175,9 +1175,9 @@ void Correlation::xi_A_delta_delta_lambda(void) {
 	const double inv_binSizel1l2 = 1./binSizel1l2;
 	std::cout << "  nbBin = " << nbBin<<std::endl;
 
-	/// Theta
+	///// Theta
 	const double minTheta = 0.;
-        const double maxTheta = 0.003;
+	const double maxTheta = 0.003;
 	const double cosThetaMax = cos(maxTheta);
 	double binSizeTheta   = 1.e-04;
 	const unsigned int nbBinM = int( (maxTheta-minTheta)/binSizeTheta);
@@ -1186,7 +1186,7 @@ void Correlation::xi_A_delta_delta_lambda(void) {
 	std::cout << "  nbBinM = " << nbBinM << std::endl;
 
 
-	/// Arrays for data
+	///// Arrays for data
 	double dataMu[nbBin][nbBinM][7];
 	for (unsigned int i=0; i<nbBin; i++) {
 		for (unsigned int j=0; j<nbBinM; j++) {
@@ -1204,16 +1204,16 @@ void Correlation::xi_A_delta_delta_lambda(void) {
 
 		for (unsigned int f2=0; f2<f1; f2++) {
 
-			/// Usefull for eBOSS data because many re-obs.
+			///// Usefull for eBOSS data because many re-obs.
 			if (v_ra__[f1]==v_ra__[f2] && v_CosDe__[f1]==v_CosDe__[f2] && v_SinDe__[f1]==v_SinDe__[f2]) continue;
 
-			/// Angle between the two directions of the qso and the lya
+			///// Angle between the two directions of the qso and the lya
 			const double cosTheta = cosDe*v_CosDe__[f2]*cos(ra1-v_ra__[f2]) + sinDe*v_SinDe__[f2];
 			if (cosTheta<cosThetaMax) continue;
 			const double theta = acos(cosTheta);
 			const unsigned int idxTheta = int( theta*inv_binSizeTheta );
 
-			/// Constants of forest n°2
+			///// Constants of forest n°2
 			const unsigned int nb2 = v_nbPixelDelta1__[f2];
 
 			for (unsigned int i1=0; i1<nb1; i1++) {
@@ -1225,7 +1225,7 @@ void Correlation::xi_A_delta_delta_lambda(void) {
 
 				for (unsigned int i2=0; i2<nb2; i2++) {
 
-					/// Same observed wavelength
+					///// Same observed wavelength
 					if (v_lObs__[f2][i2]==l1) continue;
 					const double l1Overl2 = std::max(v_lObs__[f2][i2]/l1, l1/v_lObs__[f2][i2]);
 					if (l1Overl2>maxl1l2) continue;
@@ -1249,7 +1249,7 @@ void Correlation::xi_A_delta_delta_lambda(void) {
 	
 	double sumOne = 0.;
 
-	/// Mu
+	///// Mu
 	std::ofstream fFile;
 	std::string tmp_pathToSave = pathToSave__;
 	tmp_pathToSave = pathToSave__;
@@ -1304,14 +1304,14 @@ void Correlation::xi_A_delta_delta_MockJMc(void) {
 
 	std::cout << "  Starting" << std::endl;
 
-	/// Constants:
+	///// Constants:
 	const unsigned int max = 200.;
 	const unsigned int nbBin = int(max);
 	const unsigned int nbBinM = 50.;
 
 	const double maxPow2      = max*max;
 
-	/// Arrays for data
+	///// Arrays for data
 	double dataMu[nbBin][nbBinM][7];
 	double data2D[nbBin][nbBin][7];
 	for (unsigned int i=0; i<nbBin; i++) {
@@ -1330,7 +1330,7 @@ void Correlation::xi_A_delta_delta_MockJMc(void) {
 	}
 	
 
-	/// Vectors of randomized positions in cell
+	///// Vectors of randomized positions in cell
 	std::vector<double> v_raRandForest;
 	std::vector<double> v_deRandForest;
 	if (randomPositionOfQSOInCellNotBeforeCorrelation__) {
@@ -1355,7 +1355,7 @@ void Correlation::xi_A_delta_delta_MockJMc(void) {
 
 		double x11 = x1;
 		double y11 = y1;
-		/// If random position in the cell
+		///// If random position in the cell
 		if (randomPositionOfQSOInCellNotBeforeCorrelation__) {
 			x11 = v_raRandForest[f1];
 			y11 = v_deRandForest[f1];
@@ -1366,22 +1366,22 @@ void Correlation::xi_A_delta_delta_MockJMc(void) {
 			const double x2 = v_ra__[f2];
 			const double y2 = v_de__[f2];
 
-			/// Not in the same line of sight
+			///// Not in the same line of sight
 			if (x1==x2 && y1==y2) continue;
 
 			double x22 = x2;
 			double y22 = y2;
-			/// If random position in the cell
+			///// If random position in the cell
 			if (randomPositionOfQSOInCellNotBeforeCorrelation__) {
 				x22 = v_raRandForest[f2];
 				y22 = v_deRandForest[f2];
 			}
 
-			/// If r_perp is too high
+			///// If r_perp is too high
 			const double distTransPow2 = (x11-x22)*(x11-x22) + (y11-y22)*(y11-y22);
 			if (distTransPow2 >= maxPow2) continue;
 
-			/// If forests too far from one another
+			///// If forests too far from one another
 			const unsigned int nb2 = v_nbPixelDelta1__[f2];
 			const double fpix2 = v_r__[f2][0];
 			const double lPix2 = v_r__[f2][nb2-1];
@@ -1389,7 +1389,7 @@ void Correlation::xi_A_delta_delta_MockJMc(void) {
 			if (minLastPixel==lPix1 && fpix2>lPix1 && fpix2-lPix1>=max ) continue;
 			if (minLastPixel==lPix2 && fpix1>lPix2 && fpix1-lPix2>=max ) continue;
 
-			/// Transvers distance
+			///// Transvers distance
 			const double rPerp = sqrt(distTransPow2);
 			const unsigned int rPerpBinIdx = int( rPerp );
 
@@ -1425,7 +1425,7 @@ void Correlation::xi_A_delta_delta_MockJMc(void) {
 						dataMu[idx][idxM][6] ++;
 					}
 					
-					/// Fill the histogramm of xi(r_{perp}, r_{paral}
+					///// Fill the histogramm of xi(r_{perp}, r_{paral}
 					const unsigned int rParralBinIdx = int(rParral);
 					data2D[rPerpBinIdx][rParralBinIdx][0] += w1w2*d1d2;
 					data2D[rPerpBinIdx][rParralBinIdx][1] += w1w2*d1d2*d1d2;
@@ -1458,8 +1458,8 @@ void Correlation::xi_A_delta_delta_MockJMc(void) {
 	long double sumWeg = 0.;
 	long double sumOne = 0.;
 
-	/// Set the values of data
-	/// [0] for value, [1] for error, [2] for bin center
+	///// Set the values of data
+	///// [0] for value, [1] for error, [2] for bin center
 	for (unsigned int i=0; i<nbBin; i++) {
 
 		long double save0 = 0.;
@@ -1499,7 +1499,7 @@ void Correlation::xi_A_delta_delta_MockJMc(void) {
 	std::cout << "  < pairs per forest > = " << sumOne/nbForest_ << std::endl;
 	sumOne = 0.;
 
-	/// Save the 2D cross-correlation
+	///// Save the 2D cross-correlation
 	std::string pathToSave = pathToSave__;
 	pathToSave += "xi_A_delta_delta_2D_";
 	pathToSave += forest__;
@@ -1513,8 +1513,8 @@ void Correlation::xi_A_delta_delta_MockJMc(void) {
 	sumWeg = 0.;
 	sumOne = 0.;
 	
-	/// Set the values of data
-	/// [0] for value, [1] for error, [2] for bin center
+	///// Set the values of data
+	///// [0] for value, [1] for error, [2] for bin center
 	for (unsigned int i=0; i<nbBin; i++) {
 		for (unsigned int j=0; j<nbBin; j++) {
 			fFile << data2D[i][j][0];
@@ -1539,7 +1539,7 @@ void Correlation::xi_A_delta_delta_MockJMc(void) {
 	std::cout << "  < pairs per forest > = " << sumOne/nbForest_ << std::endl;
 
 
-	/// Mu
+	///// Mu
 	pathToSave = pathToSave__;
 	pathToSave += "xi_A_delta_delta_Mu_";
 	pathToSave += forest__;
@@ -1574,12 +1574,12 @@ void Correlation::xi_delta_delta2(void) {
 	std::cout << command << "\n" << std::endl;
 
 
-	/// Forest 1
+	///// Forest 1
 	loadDataForest(pathForest__);
 	v_idx__.clear();
 	v_lRF__.clear();
 	v_lObs__.clear();
-	/// Forest 2
+	///// Forest 2
 	loadDataDelta2();
 	v_lRFDelta2__.clear();
 	v_lObsDelta2__.clear();
@@ -1589,7 +1589,7 @@ void Correlation::xi_delta_delta2(void) {
 
 	std::cout << "  Starting" << std::endl;
 
-	/// Constants:
+	///// Constants:
 	const unsigned int max = 200.;
 	const unsigned int nbBin = int(max);
 	const unsigned int nbBinX = nbBin;
@@ -1600,14 +1600,14 @@ void Correlation::xi_delta_delta2(void) {
 	const double distMax      = sqrt(2.)*max+1.;
 	const double distMaxPow2  = 2.*max*max;
 
-	/// Find the maximal angle of seperation
+	///// Find the maximal angle of seperation
 	const double maxTheta = 2.*asin( distMax/(std::min(distMinPixel__,distMinPixelDelta2__)*2.) );
 	const double cosmaxTheta = cos(maxTheta);
 	std::cout << "  maxTheta = " << maxTheta*180./M_PI << " degree" << std::endl;
 
 
 
-	/// Arrays for data
+	///// Arrays for data
 	double dataMu[nbBin][nbBinM][7];
 	double data2D[nbBinX][nbBinY][7];
 
@@ -1637,10 +1637,10 @@ void Correlation::xi_delta_delta2(void) {
 
 		for (unsigned int f2=0; f2<nbForest2__; f2++) {
 		
-			/// Remove the correlation qso-ownForest
+			///// Remove the correlation qso-ownForest
 			if (ra1==v_raDelta2__[f2] && de1==v_deDelta2__[f2] && zz1==v_zzDelta2__[f2]) continue;
 
-			/// Angle between the two directions of the qso and the lya
+			///// Angle between the two directions of the qso and the lya
 			const double cosTheta = cosDe*v_CosDeDelta2__[f2]*cos(ra1-v_raDelta2__[f2]) + sinDe*v_SinDeDelta2__[f2];
 			if (cosTheta<cosmaxTheta) continue;
 
@@ -1652,7 +1652,7 @@ void Correlation::xi_delta_delta2(void) {
 
 			for (unsigned int i1=0; i1<nb1; i1++) {
 
-				/// Get the r_perp distance
+				///// Get the r_perp distance
 				const double rPerp = v_r__[f1][i1]*sinTheta;
 				if (rPerp>=max) continue;
 				const unsigned int rPerpBinIdx = int(rPerp);
@@ -1687,7 +1687,7 @@ void Correlation::xi_delta_delta2(void) {
 						dataMu[idx][idxM][6] ++;
 					}
 					
-					/// Fill the histogramm of xi(r_{perp}, r_{paral}
+					///// Fill the histogramm of xi(r_{perp}, r_{paral}
 					const unsigned int rParralBinIdx = int(max+rParral);
 					data2D[rPerpBinIdx][rParralBinIdx][0] += w1w2*d1d2;
 					data2D[rPerpBinIdx][rParralBinIdx][1] += w1w2*d1d2*d1d2;
@@ -1718,7 +1718,7 @@ void Correlation::xi_delta_delta2(void) {
 	long double sumWeg = 0.;
 	long double sumOne = 0.;
 
-	/// Set the values of data
+	///// Set the values of data
 	for (unsigned int i=0; i<nbBin; i++) {
 
 		long double save0 = 0.;
@@ -1759,7 +1759,7 @@ void Correlation::xi_delta_delta2(void) {
 	std::cout << "  < pairs per forest > = " << sumOne/nbForest_ << std::endl;
 	sumOne = 0.;
 
-	/// Save the 2D cross-correlation
+	///// Save the 2D cross-correlation
 	tmp_pathToSave = pathToSave__;
 	tmp_pathToSave += "xi_A_delta_delta2_2D_";
 	tmp_pathToSave += forest__;
@@ -1775,8 +1775,8 @@ void Correlation::xi_delta_delta2(void) {
 	sumWeg = 0.;
 	sumOne = 0.;
 	
-	/// Set the values of data
-	/// [0] for value, [1] for error, [2] for bin center
+	///// Set the values of data
+	///// [0] for value, [1] for error, [2] for bin center
 	for (unsigned int i=0; i<nbBinX; i++) {
 		for (unsigned int j=0; j<nbBinY; j++) {
 			
@@ -1802,7 +1802,7 @@ void Correlation::xi_delta_delta2(void) {
 	std::cout << "  < pairs per forest > = " << sumOne/nbForest_ << std::endl;
 
 
-	/// Mu
+	///// Mu
 	tmp_pathToSave = pathToSave__;
 	tmp_pathToSave += "xi_A_delta_delta2_Mu_";
 	tmp_pathToSave += forest__;
@@ -1838,20 +1838,20 @@ void Correlation::xi_A_delta_delta2_lambda(void) {
 	command += commandEnd__;
 	std::cout << command << "\n" << std::endl;
 
-	/// Load forest 1
+	///// Load forest 1
 	loadDataForest(pathForest__);
 	v_r__.clear();
 	v_idx__.clear();
 	v_lRF__.clear();
 	v_nb__.clear();
-	/// Load forest 2
+	///// Load forest 2
 	loadDataDelta2();
 	v_rDelta2__.clear();
 	v_lRFDelta2__.clear();
 
 	std::cout << "  Starting" << std::endl;
 
-	/// Rapport l1/l2
+	///// Rapport l1/l2
 	const double minl1l2 = 0.89;
 	const double maxl1l2 = 1.11;
 	double binSizel1l2      = 1.e-03;
@@ -1861,9 +1861,9 @@ void Correlation::xi_A_delta_delta2_lambda(void) {
 	const double inv_binSizel1l2 = 1./binSizel1l2;
 	std::cout << "  nbBin = " << nbBin<<std::endl;
 
-	/// Theta
+	///// Theta
 	const double minTheta = 0.;
-        const double maxTheta = 0.003;
+	const double maxTheta = 0.003;
 	const double cosThetaMax = cos(maxTheta);
 	double binSizeTheta   = 1.e-04;
 	const unsigned int nbBinM = int( (maxTheta-minTheta)/binSizeTheta);
@@ -1872,7 +1872,7 @@ void Correlation::xi_A_delta_delta2_lambda(void) {
 	std::cout << "  nbBinM = " << nbBinM << std::endl;
 
 
-	/// Arrays for data
+	///// Arrays for data
 	double dataMu[nbBin][nbBinM][7];
 	for (unsigned int i=0; i<nbBin; i++) {
 		for (unsigned int j=0; j<nbBinM; j++) {
@@ -1892,16 +1892,16 @@ void Correlation::xi_A_delta_delta2_lambda(void) {
 
 		for (unsigned int f2=0; f2<nbForest2__; f2++) {
 
-			/// Remove the correlation qso-ownForest
+			///// Remove the correlation qso-ownForest
 			if (ra1==v_raDelta2__[f2] && de1==v_deDelta2__[f2] && zz1==v_zzDelta2__[f2]) continue;
 
-			/// Angle between the two directions of the qso and the lya
+			///// Angle between the two directions of the qso and the lya
 			const double cosTheta = cosDe*v_CosDeDelta2__[f2]*cos(ra1-v_raDelta2__[f2]) + sinDe*v_SinDeDelta2__[f2];
 			if (cosTheta<cosThetaMax) continue;
 			const double theta = acos(cosTheta);
 			const unsigned int idxTheta = int( theta*inv_binSizeTheta );
 
-			/// Constants of forest n°2
+			///// Constants of forest n°2
 			const unsigned int nb2 = v_nbPixelDelta2__[f2];
 
 			for (unsigned int i1=0; i1<nb1; i1++) {
@@ -1913,7 +1913,7 @@ void Correlation::xi_A_delta_delta2_lambda(void) {
 
 				for (unsigned int i2=0; i2<nb2; i2++) {
 
-					/// Same observed wavelength
+					///// Same observed wavelength
 					const double l2 = v_lObsDelta2__[f2][i2];
 					if (l2==l1) continue;
 					const double l1Overl2 = l2/l1;
@@ -1938,7 +1938,7 @@ void Correlation::xi_A_delta_delta2_lambda(void) {
 	
 	double sumOne = 0.;
 
-	/// Mu
+	///// Mu
 	std::ofstream fFile;
 	std::string tmp_pathToSave = pathToSave__;
 	tmp_pathToSave = pathToSave__;
@@ -1982,14 +1982,14 @@ void Correlation::xi_delta_QSO(bool doBootstraps/*=False*/, unsigned int bootIdx
 	if (doBootstraps)  std::cout << "  subsampling N° "     << bootIdx << std::endl;
 	if (shuffleForest) std::cout << "  shuffleForest seed " << bootIdx*10 << std::endl;
 
-	/// QSO
+	///// QSO
 	loadDataQ1();
 	if (nbQ1__==0) return;
-	/// Forest
-        loadDataForest(pathForest__,doBootstraps,bootIdx);
+	///// Forest
+	loadDataForest(pathForest__,doBootstraps,bootIdx);
 	if (doBootstraps) removeFalseCorrelations();
 
-	/// Empty useless vectors
+	///// Empty useless vectors
 	v_lRF__.clear();
 	v_lObs__.clear();
 	v_nb__.clear();
@@ -1999,8 +1999,8 @@ void Correlation::xi_delta_QSO(bool doBootstraps/*=False*/, unsigned int bootIdx
 	convert << bootIdx;
 	const std::string strBootIdx = convert.str();
 
-	/// Constants:
-	/// The space between bins is of 10 Mpc.h^-1
+	///// Constants:
+	///// The space between bins is of 10 Mpc.h^-1
 	const double max          = 200.;
 
 	const unsigned int nbBin  = int(max);
@@ -2010,14 +2010,14 @@ void Correlation::xi_delta_QSO(bool doBootstraps/*=False*/, unsigned int bootIdx
 
 	const double maxPow2      = max*max;
 
-	/// Needed to randomize the forests
+	///// Needed to randomize the forests
 	if (shuffleForest) {
 
-		/// Vectors with index of forest
+		///// Vectors with index of forest
 		std::vector<unsigned int> randomIdx(nbForest_);
 		for (unsigned int i=0; i<nbForest_; i++) {
 			randomIdx[i] = i;
-        	}
+		}
 
 		std::cout << "  Shuffle forest " << bootIdx << std::endl;
 		bool doLoop = true;
@@ -2034,16 +2034,16 @@ void Correlation::xi_delta_QSO(bool doBootstraps/*=False*/, unsigned int bootIdx
 					doLoop = true;
 					break;
 				}
-        		}
+			}
 		}
 
-		/// Copy data
+		///// Copy data
 		std::vector<double> tmp_cosDe(v_CosDe__);
 		std::vector<double> tmp_SinDe(v_SinDe__);
 		std::vector<double> tmp_ra(v_ra__);
 		std::vector<double> tmp_de(v_de__);
 
-		/// Put the new data
+		///// Put the new data
 		for (unsigned int i=0; i<nbForest_; i++) {
 			const unsigned int ii = randomIdx[i];
 			v_CosDe__[i] = tmp_cosDe[ii];
@@ -2052,14 +2052,14 @@ void Correlation::xi_delta_QSO(bool doBootstraps/*=False*/, unsigned int bootIdx
 			v_de__[i]    = tmp_de[ii];
 		}
 	}
-	/// Needed to randomize the QSO
+	///// Needed to randomize the QSO
 	if (shuffleQSO) {
 
-		/// Vectors with index of QSO
+		///// Vectors with index of QSO
 		std::vector<unsigned int> randomIdx(nbQ1__);
 		for (unsigned int i=0; i<nbQ1__; i++) {
-			randomIdx[i] = i;
-        	}
+		randomIdx[i] = i;
+		}
 
 		std::cout << "  Shuffle QSO " << bootIdx << std::endl;
 		bool doLoop = true;
@@ -2076,25 +2076,25 @@ void Correlation::xi_delta_QSO(bool doBootstraps/*=False*/, unsigned int bootIdx
 					doLoop = true;
 					break;
 				}
-        		}
+			}
 		}
 
-		/// Copy data
+		///// Copy data
 		std::vector<double> tmp_zz(v_zzQ1__);
 		std::vector<double> tmp_r(v_rQ1__);
-		/// Put the new data
+		///// Put the new data
 		for (unsigned int i=0; i<nbQ1__; i++) {
 			const unsigned int ii = randomIdx[i];
 			v_zzQ1__[i] = tmp_zz[ii];
 			v_rQ1__[i]  = tmp_r[ii];
 		}
 	}
-	/// Needed to randomize the QSO
+	///// Needed to randomize the QSO
 	if (randomQSO) {
 
 		std::cout << "  Random QSO " << bootIdx << std::endl;
 
-		/// Get the edge of the sky
+		///// Get the edge of the sky
 		double raMin = v_raQ1__[0];
 		double raMax = v_raQ1__[0];
 		double deMin = v_deQ1__[0];
@@ -2122,13 +2122,13 @@ void Correlation::xi_delta_QSO(bool doBootstraps/*=False*/, unsigned int bootIdx
 		}
 	}
 
-	/// get an array for nb of pairs for the forest
+	///// get an array for nb of pairs for the forest
 	double a_nbPairs[nbForest_];
 	for (unsigned int i=0; i<nbForest_; i++) {
-                a_nbPairs[i] = 0.;
-        }
+		a_nbPairs[i] = 0.;
+	}
 
-	/// Arrays for data
+	///// Arrays for data
 	double data2D[nbBinX][nbBinY][7];
 	double dataMu[nbBin][nbBinM][7];
 
@@ -2154,7 +2154,7 @@ void Correlation::xi_delta_QSO(bool doBootstraps/*=False*/, unsigned int bootIdx
 
 		double nbPairs = 0.;
 	
-		/// Get number of pixels in forest
+		///// Get number of pixels in forest
 		const unsigned int nbPixel = v_nbPixelDelta1__[f];
 		const double firstPixel    = v_r__[f][0];
 		const double lastPixel     = v_r__[f][nbPixel-1];
@@ -2165,39 +2165,39 @@ void Correlation::xi_delta_QSO(bool doBootstraps/*=False*/, unsigned int bootIdx
 		//const double z             = v_zz__[f];
 			
 		for (unsigned int q=0; q<nbQ1__; q++) {
-			/// Remove the correlation qso-ownForest
+			///// Remove the correlation qso-ownForest
 			//if (fabs(ra-v_raQ1__[q])<1.e-9 && fabs(dec-v_deQ1__[q])<1.e-9 ) continue;
 			if (fabs(ra-v_raQ1__[q])<C_AUTOCORRCRIT && fabs(dec-v_deQ1__[q])<C_AUTOCORRCRIT ) continue;  // && fabs(z-v_zzQ1__[q])<0.001
 
-			/// Angle between the two directions of the qso and the lya
+			///// Angle between the two directions of the qso and the lya
 			const double cosTheta = cosDe*v_CosDeQ1__[q]*cos(ra-v_raQ1__[q]) + sinDe*v_SinDeQ1__[q];
 
-			/// reject QSO with a distance too large
+			///// reject QSO with a distance too large
 			const double distTransQsoLyaPow2 = v_rQ1__[q]*v_rQ1__[q]*(1.-cosTheta*cosTheta);
 			if (distTransQsoLyaPow2 >= maxPow2) continue;
 
-			/// Parrallel distance between the qso and the lya
+			///// Parrallel distance between the qso and the lya
 			const double distParalQsoLya = v_rQ1__[q]*cosTheta;
 
-			/// Distance between the qso and the first pixel
+			///// Distance between the qso and the first pixel
 			const double distParalQsoFirstPixel = firstPixel - distParalQsoLya;
 			if ( distParalQsoFirstPixel >= max) continue;
 
-			/// Distance between the qso and the last pixel
+			///// Distance between the qso and the last pixel
 			const double distParalQsoLastPixel = lastPixel - distParalQsoLya;
 			if ( distParalQsoLastPixel <= -max) continue;
 
-			/// Transvers distance between the qso and the lya
+			///// Transvers distance between the qso and the lya
 			const double distTransQsoLya = sqrt(distTransQsoLyaPow2);
 			const unsigned int rPerpBinIdx = int( distTransQsoLya );
 			const double zQSO = v_zzQ1__[q];
 
-			/// 'true' if first pixel of forest is further than the QSO
+			///// 'true' if first pixel of forest is further than the QSO
 			const bool infPosBool = (distParalQsoFirstPixel > 0.);
-			/// 'true' if last pixel of forest is lower than the QSO
+			///// 'true' if last pixel of forest is lower than the QSO
 			const bool supPosBool = (distParalQsoLastPixel < 0.);
 
-			/// Loops over all pixels of the forest
+			///// Loops over all pixels of the forest
 			for (unsigned int i=0; i<nbPixel; i++) {
 
 				unsigned int ii = i;
@@ -2205,7 +2205,7 @@ void Correlation::xi_delta_QSO(bool doBootstraps/*=False*/, unsigned int bootIdx
 	
 				const double distP = v_r__[f][ii] - distParalQsoLya;				
 
-				/// Look at the position of the Lya forest regarding the qso
+				///// Look at the position of the Lya forest regarding the qso
 				if (fabs(distP) >= max) {
 					if (infPosBool || supPosBool) break;
 					else continue;
@@ -2232,7 +2232,7 @@ void Correlation::xi_delta_QSO(bool doBootstraps/*=False*/, unsigned int bootIdx
 					dataMu[idx][idxM][6] ++;
 				}
 
-				/// Fill the histogramm of xi(r_{perp}, r_{paral}
+				///// Fill the histogramm of xi(r_{perp}, r_{paral}
 				const unsigned int rParralBinIdx = int(distP+max);
 				data2D[rPerpBinIdx][rParralBinIdx][0] += wd;
 				data2D[rPerpBinIdx][rParralBinIdx][1] += wdd;
@@ -2242,19 +2242,19 @@ void Correlation::xi_delta_QSO(bool doBootstraps/*=False*/, unsigned int bootIdx
 				data2D[rPerpBinIdx][rParralBinIdx][5] += w;
 				data2D[rPerpBinIdx][rParralBinIdx][6] ++;
 
-				/// Get the number of pairs
+				///// Get the number of pairs
 				nbPairs += w;
 			}
 		}
 	
-		/// Put the number of pairs comming with this forest
+		///// Put the number of pairs comming with this forest
 		a_nbPairs[f] = nbPairs;
 	}
 
 
 	std::cout << "\n\n\n" << std::endl;
 
-	/// Set the prefix for different type of runs
+	///// Set the prefix for different type of runs
 	std::string prefix = "_";
 	if (doBootstraps)  prefix += "subsampling";
 	if (shuffleForest) prefix += "shuffleForest";
@@ -2270,7 +2270,7 @@ void Correlation::xi_delta_QSO(bool doBootstraps/*=False*/, unsigned int bootIdx
 	long double sumWeg = 0.;
 
 
-	/// Save the 2D cross-correlation
+	///// Save the 2D cross-correlation
 	pathToSave = pathToSave__;
 	pathToSave += "xi_delta_QSO_2D_";
 	pathToSave += forest__;
@@ -2287,8 +2287,8 @@ void Correlation::xi_delta_QSO(bool doBootstraps/*=False*/, unsigned int bootIdx
 	sumZZZ = 0.;
 	sumWeg = 0.;
 	
-	/// Set the values of data
-	/// [0] for value, [1] for error, [2] for bin center
+	///// Set the values of data
+	///// [0] for value, [1] for error, [2] for bin center
 	for (unsigned int i=0; i<nbBinX; i++) {
 		for (unsigned int j=0; j<nbBinY; j++) {
 
@@ -2315,7 +2315,7 @@ void Correlation::xi_delta_QSO(bool doBootstraps/*=False*/, unsigned int bootIdx
 	std::cout << "  < pairs per QSO >    = " << sumOne/nbQ1__    << std::endl;
 
 
-	/// Save the Mu cross-correlation
+	///// Save the Mu cross-correlation
 	pathToSave = pathToSave__;
 	pathToSave += "xi_delta_QSO_Mu_";
 	pathToSave += forest__;
@@ -2328,7 +2328,7 @@ void Correlation::xi_delta_QSO(bool doBootstraps/*=False*/, unsigned int bootIdx
 	fFile << std::scientific;
 	fFile.precision(17);
 	
-	/// Set the values of data
+	///// Set the values of data
 	for (unsigned int i=0; i<nbBin; i++) {
 		for (unsigned int j=0; j<nbBinM; j++) {
 			
@@ -2348,15 +2348,15 @@ void Correlation::xi_delta_QSO(bool doBootstraps/*=False*/, unsigned int bootIdx
 	if (!doBootstraps && !shuffleForest && !shuffleQSO && !randomQSO) {
 
 		pathToSave = pathToSave__;
-        	pathToSave += "xi_delta_QSO_nbPairsForest_";
-        	pathToSave += forest__;
-        	pathToSave += "_";
-        	pathToSave += QSO__;
-        	pathToSave += ".txt";
-        	std::cout << "\n  " << pathToSave << std::endl;
-        	fFile.open(pathToSave.c_str());
-        	fFile << std::scientific;
-        	fFile.precision(17);
+		pathToSave += "xi_delta_QSO_nbPairsForest_";
+		pathToSave += forest__;
+		pathToSave += "_";
+		pathToSave += QSO__;
+		pathToSave += ".txt";
+		std::cout << "\n  " << pathToSave << std::endl;
+		fFile.open(pathToSave.c_str());
+		fFile << std::scientific;
+		fFile.precision(17);
 
 		for (unsigned int i=0; i<nbForest_; i++) {
 
@@ -2378,28 +2378,28 @@ void Correlation::xi_delta_QSO_theta(bool doBootstraps/*=False*/, unsigned int b
 	command += commandEnd__;
 	std::cout << command << "\n" << std::endl;
 
-	/// Constants
+	///// Constants
 	const double radToDeg = 180.*M_PI;
 
-	/// QSO
+	///// QSO
 	loadDataQ1();
 	v_zzQ1__.clear();
 	v_rQ1__.clear();
-	/// Forest
-        loadDataForest(pathForest__,doBootstraps,bootIdx);
+	///// Forest
+	loadDataForest(pathForest__,doBootstraps,bootIdx);
 	v_zz__.clear();
 	v_r__.clear();
 	v_z__.clear();
 	v_lRF__.clear();
 	v_lObs__.clear();
 
-	/// Constants:
-	/// The space between bins is of 10 Mpc.h^-1
+	///// Constants:
+	///// The space between bins is of 10 Mpc.h^-1
 	const double max         = 0.1;
 	const unsigned int nbBin = 100;
 	const double inverseBinSize = nbBin/max;
 
-	/// Arrays for data
+	///// Arrays for data
 	double data[nbBin][7];
 
 	for (unsigned int i=0; i<nbBin; i++) {
@@ -2412,7 +2412,7 @@ void Correlation::xi_delta_QSO_theta(bool doBootstraps/*=False*/, unsigned int b
 
 	for (unsigned int f=0; f<nbForest_; f++) {
 
-		/// Get number of pixels in forest
+		///// Get number of pixels in forest
 		const unsigned int nbPixel = v_nbPixelDelta1__[f];
 		const double cosDe         = v_CosDe__[f];
 		const double sinDe         = v_SinDe__[f];
@@ -2421,15 +2421,15 @@ void Correlation::xi_delta_QSO_theta(bool doBootstraps/*=False*/, unsigned int b
 		
 		for (unsigned int q=0; q<nbQ1__; q++) {
 
-			/// Remove the correlation qso-ownForest
+			///// Remove the correlation qso-ownForest
 			if (fabs(ra-v_raQ1__[q])<C_AUTOCORRCRIT && fabs(dec-v_deQ1__[q])<C_AUTOCORRCRIT) continue;
 
-			/// Angle between the two directions of the qso and the lya
+			///// Angle between the two directions of the qso and the lya
 			const double theta = radToDeg*acos( cosDe*v_CosDeQ1__[q]*cos(ra-v_raQ1__[q]) + sinDe*v_SinDeQ1__[q] );
 			if (theta>max) continue;
 			const unsigned int idx  = int(theta*inverseBinSize);
 
-			/// Loops over all pixels of the forest
+			///// Loops over all pixels of the forest
 			for (unsigned int i=0; i<nbPixel; i++) {
 				
 				const double w   = v_w__[f][i];
@@ -2469,8 +2469,8 @@ void Correlation::xi_delta_QSO_theta(bool doBootstraps/*=False*/, unsigned int b
 	long double sumOne = 0.;
 	long double sumWeg = 0.;
 
-	/// Set the values of data
-	/// [0] for value, [1] for error, [2] for bin center
+	///// Set the values of data
+	///// [0] for value, [1] for error, [2] for bin center
 	for (unsigned int i=0; i<nbBin; i++) {
 
 		fFile << data[i][0];
@@ -2499,11 +2499,11 @@ void Correlation::xi_delta_QSO_lambda(bool doBootstraps/*=False*/, unsigned int 
 	if (doBootstraps)  std::cout << "  subsampling N° "     << bootIdx << std::endl;
 	if (shuffleForest) std::cout << "  shuffleForest seed " << bootIdx*10 << std::endl;
 
-	/// QSO
+	///// QSO
 	loadDataQ1();
 	if (nbQ1__==0) return;
-	/// Forest
-        loadDataForest(pathForest__,doBootstraps,bootIdx);
+	///// Forest
+	loadDataForest(pathForest__,doBootstraps,bootIdx);
 	if (doBootstraps) removeFalseCorrelations();
 	v_zz__.clear();
 	v_r__.clear();
@@ -2511,7 +2511,7 @@ void Correlation::xi_delta_QSO_lambda(bool doBootstraps/*=False*/, unsigned int 
 	v_lRF__.clear();
 	v_nb__.clear();
 
-	/// Set lambda_Obs QSO
+	///// Set lambda_Obs QSO
 	std::vector<double> v_lObsQSO(nbQ1__,0.);
 	for (unsigned int q=0; q<nbQ1__; q++) {
 		v_lObsQSO[q] = 1./( (v_zzQ1__[q]+1.)*lambdaRFLine__);
@@ -2521,7 +2521,7 @@ void Correlation::xi_delta_QSO_lambda(bool doBootstraps/*=False*/, unsigned int 
 	convert << bootIdx;
 	const std::string strBootIdx = convert.str();
 
-	/// Rapport l1/l2
+	///// Rapport l1/l2
 	const double minValue = 0.40;
 	const double maxValue = 2.30;
 	double binSize      = 1.e-03;
@@ -2531,9 +2531,9 @@ void Correlation::xi_delta_QSO_lambda(bool doBootstraps/*=False*/, unsigned int 
 	const double inv_binSize = 1./binSize;
 	std::cout << "  nbBin = " << nbBin<<std::endl;
 
-	/// Theta
+	///// Theta
 	const double minTheta = 0.;
-        const double maxTheta = 0.003;
+	const double maxTheta = 0.003;
 	const double cosThetaMax = cos(maxTheta);
 	double binSizeTheta   = 1.e-04;
 	const unsigned int nbBinM = int( (maxTheta-minTheta)/binSizeTheta);
@@ -2541,7 +2541,7 @@ void Correlation::xi_delta_QSO_lambda(bool doBootstraps/*=False*/, unsigned int 
 	const double inv_binSizeTheta = 1./binSizeTheta;
 	std::cout << "  nbBinM = " << nbBinM << std::endl;
 
-	/// Arrays for data
+	///// Arrays for data
 	double dataMu[nbBin][nbBinM][7];
 	for (unsigned int i=0; i<nbBin; i++) {
 		for (unsigned int j=0; j<nbBinM; j++) {
@@ -2555,7 +2555,7 @@ void Correlation::xi_delta_QSO_lambda(bool doBootstraps/*=False*/, unsigned int 
 
 	for (unsigned int f=0; f<nbForest_; f++) {
 	
-		/// Get number of pixels in forest
+		///// Get number of pixels in forest
 		const unsigned int nbPixel = v_nbPixelDelta1__[f];
 		const double cosDe         = v_CosDe__[f];
 		const double sinDe         = v_SinDe__[f];
@@ -2567,17 +2567,17 @@ void Correlation::xi_delta_QSO_lambda(bool doBootstraps/*=False*/, unsigned int 
 			
 		for (unsigned int q=0; q<nbQ1__; q++) {
 
-			/// Remove the correlation qso-ownForest
+			///// Remove the correlation qso-ownForest
 			if (fabs(ra-v_raQ1__[q])<1.e-10 && fabs(dec-v_deQ1__[q])<1.e-10 ) continue;
 			else if (fabs(ra-v_raQ1__[q])<C_AUTOCORRCRIT && fabs(dec-v_deQ1__[q])<C_AUTOCORRCRIT && fabs(z-v_zzQ1__[q])<0.001 ) continue;
 
-			/// Angle between the two directions of the qso and the lya
+			///// Angle between the two directions of the qso and the lya
 			const double cosTheta = cosDe*v_CosDeQ1__[q]*cos(ra-v_raQ1__[q]) + sinDe*v_SinDeQ1__[q];
 			if ( cosTheta<cosThetaMax ) continue;
 			const double theta = acos( cosTheta );
 			const unsigned int idxTheta = int( theta*inv_binSizeTheta  );
 
-			/// Transvers distance between the qso and the lya
+			///// Transvers distance between the qso and the lya
 			const double zQSO = v_zzQ1__[q];
 			const double inv_lObsQSO = v_lObsQSO[q];
 
@@ -2585,7 +2585,7 @@ void Correlation::xi_delta_QSO_lambda(bool doBootstraps/*=False*/, unsigned int 
 			if (firstPixelLambda*inv_lObsQSO>maxValue) continue;
 			else if (lastPixelLambda*inv_lObsQSO<minValue) continue;
 
-			/// Loops over all pixels of the forest
+			///// Loops over all pixels of the forest
 			for (unsigned int i=0; i<nbPixel; i++) {
 
 				const double l1Overl2 = v_lObs__[f][i]*inv_lObsQSO;
@@ -2626,8 +2626,8 @@ void Correlation::xi_delta_QSO_lambda(bool doBootstraps/*=False*/, unsigned int 
 	long double sumZZZ = 0.;
 	long double sumWeg = 0.;
 
-	/// Set the values of data
-	/// [0] for value, [1] for error, [2] for bin center
+	///// Set the values of data
+	///// [0] for value, [1] for error, [2] for bin center
 	for (unsigned int i=0; i<nbBin; i++) {
 
 		long double save0 = 0.;
@@ -2668,7 +2668,7 @@ void Correlation::xi_delta_QSO_lambda(bool doBootstraps/*=False*/, unsigned int 
 	std::cout << "  < pairs per forest > = " << sumOne/nbForest_ << std::endl;
 	std::cout << "  < pairs per QSO >    = " << sumOne/nbQ1__    << std::endl;
 
-	/// Save the 2D cross-correlation
+	///// Save the 2D cross-correlation
 	pathToSave = pathToSave__;
 	pathToSave += "xi_delta_QSO_lambda_Mu_";
 	pathToSave += forest__;
@@ -2680,7 +2680,7 @@ void Correlation::xi_delta_QSO_lambda(bool doBootstraps/*=False*/, unsigned int 
 	fFile << std::scientific;
 	fFile.precision(17);
 
-	/// Set the values of data
+	///// Set the values of data
 	for (unsigned int i=0; i<nbBin; i++) {
 		for (unsigned int j=0; j<nbBinM; j++) {
 			fFile << dataMu[i][j][0];
@@ -2704,19 +2704,19 @@ void Correlation::xi_delta_QSO_distortionMatrix(void) {
 	command += commandEnd__;
 	std::cout << command << "\n" << std::endl;
 
-	/// QSO
+	///// QSO
 	loadDataQ1();
 	if (nbQ1__==0) return;
-	/// Forest
-        loadDataForest(pathForest__);
+	///// Forest
+	loadDataForest(pathForest__);
 
-	/// Empty useless vectors
+	///// Empty useless vectors
 	v_d__.clear();
 	v_z__.clear();
 	v_lObs__.clear();
 	v_nb__.clear();
 
-	/// Set usefull vectors
+	///// Set usefull vectors
 	std::vector<double> v_invSumWeight(nbForest_,0.);
 	std::vector< std::vector< double > > v_varLambda(v_lRF__);
 
@@ -2734,7 +2734,7 @@ void Correlation::xi_delta_QSO_distortionMatrix(void) {
 		long double meanLambda = 0.;
 		long double stdLambda  = 0.;
 
-		/// Loops over all pixels of the forest
+		///// Loops over all pixels of the forest
 		for (unsigned int i=0; i<nbPixel; i++) {
 
 			const long double w = v_w__[f][i];
@@ -2784,8 +2784,8 @@ void Correlation::xi_delta_QSO_distortionMatrix(void) {
 
 	//return;
 
-	/// Constants:
-	/// The space between bins is of 10 Mpc.h^-1
+	///// Constants:
+	///// The space between bins is of 10 Mpc.h^-1
 	const double max           = 200.;
 	const double binSize       = 4.;
 	const unsigned int nbBin   = int(max/binSize);
@@ -2795,7 +2795,7 @@ void Correlation::xi_delta_QSO_distortionMatrix(void) {
 	const double maxPow2       = max*max;
 	const double fromValToIdx  = nbBin/max;
 
-	/// Arrays for distortion matrix
+	///// Arrays for distortion matrix
 	double weight2D[nbBin2D];
 	double** data2DMatrix = new double*[nbBin2D];
 	for (unsigned int i=0; i<nbBin2D; i++) {
@@ -2814,7 +2814,7 @@ void Correlation::xi_delta_QSO_distortionMatrix(void) {
 
 	for (unsigned int f=0; f<nbForest_; f++) {
 	
-		/// Get number of pixels in forest
+		///// Get number of pixels in forest
 		const unsigned int nbPixel = v_nbPixelDelta1__[f];
 		const double firstPixel    = v_r__[f][0];
 		const double lastPixel     = v_r__[f][nbPixel-1];
@@ -2828,52 +2828,49 @@ void Correlation::xi_delta_QSO_distortionMatrix(void) {
 
 		for (unsigned int q=0; q<nbQ1__; q++) {
 
-			/// Remove the correlation qso-ownForest
+			///// Remove the correlation qso-ownForest
 			if (fabs(ra-v_raQ1__[q])<1.e-10 && fabs(dec-v_deQ1__[q])<1.e-10 ) continue;
 			else if (fabs(ra-v_raQ1__[q])<C_AUTOCORRCRIT && fabs(dec-v_deQ1__[q])<C_AUTOCORRCRIT && fabs(z-v_zzQ1__[q])<0.001 ) continue;
 
-			/// Angle between the two directions of the qso and the lya
+			///// Angle between the two directions of the qso and the lya
 			const double cosTheta = cosDe*v_CosDeQ1__[q]*cos(ra-v_raQ1__[q]) + sinDe*v_SinDeQ1__[q];
 
-			/// reject QSO with a distance too large
+			///// reject QSO with a distance too large
 			const double distTransQsoLyaPow2 = v_rQ1__[q]*v_rQ1__[q]*(1.-cosTheta*cosTheta);
 			if (distTransQsoLyaPow2 >= maxPow2) continue;
 
-			/// Parrallel distance between the qso and the lya
+			///// Parrallel distance between the qso and the lya
 			const double distParalQsoLya = v_rQ1__[q]*cosTheta;
 
-			/// Distance between the qso and the first pixel
+			///// Distance between the qso and the first pixel
 			const double distParalQsoFirstPixel = firstPixel - distParalQsoLya;
 			if ( distParalQsoFirstPixel >= max) continue;
 
-			/// Distance between the qso and the last pixel
+			///// Distance between the qso and the last pixel
 			const double distParalQsoLastPixel = lastPixel - distParalQsoLya;
 			if ( distParalQsoLastPixel <= -max) continue;
 
-			/// Transvers distance between the qso and the lya
+			///// Transvers distance between the qso and the lya
 			const double distTransQsoLya = sqrt(distTransQsoLyaPow2);
 			const unsigned int rPerpBinIdx = int( distTransQsoLya*fromValToIdx );
 
-			/// 'true' if first pixel of forest is further than the QSO
+			///// 'true' if first pixel of forest is further than the QSO
 			const bool infPosBool = (distParalQsoFirstPixel > 0.);
-			/// 'true' if last pixel of forest is lower than the QSO
+			///// 'true' if last pixel of forest is lower than the QSO
 			const bool supPosBool = (distParalQsoLastPixel < 0.);
 
 
 
-			/// get the weight and mean lambda
+			///// get the weight and mean lambda
 			double xValue[5000]  = {0.};
 			double xlValue[5000] = {0.};
+			bool binTouched[5000] = {false};
 
-			/// Index of the bin
+			///// Index of the bin
 			std::vector< unsigned int > binIdx;
 			std::vector< unsigned int > fromBinsToPixels;
 
-			// Copy the 'bins_touched' logic
-			std::vector< unsigned int> bins_touched;
-			int bin_prev = -1;
-
-			/// Loops over all pixels of the forest
+			///// Loops over all pixels of the forest
 			for (unsigned int i=0; i<nbPixel; i++) {
 
 				unsigned int ii = i;
@@ -2881,7 +2878,7 @@ void Correlation::xi_delta_QSO_distortionMatrix(void) {
 	
 				const double distP = v_r__[f][ii] - distParalQsoLya;				
 
-				/// Look at the position of the Lya forest regarding the qso
+				///// Look at the position of the Lya forest regarding the qso
 				if (fabs(distP) >= max) {
 					if (infPosBool || supPosBool) break;
 					else continue;
@@ -2890,32 +2887,32 @@ void Correlation::xi_delta_QSO_distortionMatrix(void) {
 				const double w    = v_w__[f][ii];
 				const double val0 = w*invSumWeight;
 	
-				/// Fill the histogramm of xi(r_{perp}, r_{paral}
-				const int globalBin = rPerpBinIdx*nbBinY+int( (distP+max)*fromValToIdx );
+				///// Fill the histogramm of xi(r_{perp}, r_{paral}
+				const unsigned int globalBin = rPerpBinIdx*nbBinY+int( (distP+max)*fromValToIdx );
 				xValue[globalBin]  += val0;
 				xlValue[globalBin] += val0*v_varLambda[f][ii];
 
-				/// Fill array of weights
+				///// Fill array of weights
 				weight2D[globalBin] += w;
 
-				/// Keep values for the distortion matrix
+				///// Keep values for the distortion matrix
 				binIdx.push_back(globalBin);
 				fromBinsToPixels.push_back(ii);
 
-				// Copy the 'bins_touched' logic
-				if (globalBin!=bin_prev) {
-					bin_prev = globalBin;
-					bins_touched.push_back(globalBin);
-				}
+				binTouched[globalBin] = true;
 			}
 
-			/// Number of pixels with pairs 
+			///// Number of pixels with pairs 
 			const unsigned int nbPixelsWithPairs = binIdx.size();
 
-			// Copy the 'bins_touched' logic
+			///// Get a vector of not empty bins
+			std::vector< unsigned int> bins_touched;
+			for (unsigned int i=0; i<5000; i++) {
+				if (binTouched[i]) bins_touched.push_back(i);
+			}
 			const unsigned int nbBinsTouched = bins_touched.size();
 
-			/// Loops over all pixels of the forest (Fill the distortion matrix)
+			///// Loops over all pixels of the forest (Fill the distortion matrix)
 			for (unsigned int i=0; i<nbPixelsWithPairs; i++) {
 
 				const unsigned int globalBin1 = binIdx[i];
@@ -2924,7 +2921,7 @@ void Correlation::xi_delta_QSO_distortionMatrix(void) {
 				const double w    = v_w__[f][pixelIdx];
 				const double val1 = v_varLambda[f][pixelIdx];
 				
-				/// Fill the distortion matrix
+				///// Fill the distortion matrix
 				data2DMatrix[globalBin1][globalBin1] += w;
 
 				for (unsigned int j=0; j<nbBinsTouched; j++) {
@@ -2940,7 +2937,7 @@ void Correlation::xi_delta_QSO_distortionMatrix(void) {
 	std::cout << "\n\n\n" << std::endl;
 	std::ofstream fFile;
 
-	/// Save the 2D cross-correlation 
+	///// Save the 2D cross-correlation 
 	std::string pathToSave = pathToSave__;
 	pathToSave += "xi_delta_QSO_distortionMatrix_2D_";
 	pathToSave += forest__;
@@ -2952,8 +2949,8 @@ void Correlation::xi_delta_QSO_distortionMatrix(void) {
 	fFile << std::scientific;
 	fFile.precision(17);
 	
-	/// Set the values of data
-	/// [0] for value, [1] for error, [2] for bin center
+	///// Set the values of data
+	///// [0] for value, [1] for error, [2] for bin center
 	for (unsigned int i=0; i<nbBin2D; i++) {
 		for (unsigned int j=0; j<nbBin2D; j++) {
 			double value = 0.;
@@ -2973,19 +2970,19 @@ void Correlation::xi_delta_QSO_distortionMatrix_1D(void) {
 	command += commandEnd__;
 	std::cout << command << "\n" << std::endl;
 
-	/// QSO
+	///// QSO
 	loadDataQ1();
 	if (nbQ1__==0) return;
-	/// Forest
-        loadDataForest(pathForest__);
+	///// Forest
+	loadDataForest(pathForest__);
 
-	/// Empty useless vectors
+	///// Empty useless vectors
 	v_d__.clear();
 	v_z__.clear();
 	v_lObs__.clear();
 	v_nb__.clear();
 
-	/// Set usefull vectors
+	///// Set usefull vectors
 	std::vector<double> v_invSumWeight(nbForest_,0.);
 	std::vector< std::vector< double > > v_varLambda(v_lRF__);
 
@@ -2996,7 +2993,7 @@ void Correlation::xi_delta_QSO_distortionMatrix_1D(void) {
 		double meanLambda = 0.;
 		double stdLambda  = 0.;
 
-		/// Loops over all pixels of the forest
+		///// Loops over all pixels of the forest
 		for (unsigned int i=0; i<nbPixel; i++) {
 
 			const double w = v_w__[f][i];
@@ -3018,15 +3015,15 @@ void Correlation::xi_delta_QSO_distortionMatrix_1D(void) {
 
 
 
-	/// Constants:
-	/// The space between bins is of 10 Mpc.h^-1
+	///// Constants:
+	///// The space between bins is of 10 Mpc.h^-1
 	const double max           = 200.;
 	const double binSize       = 4.;
 	const unsigned int nbBin   = int(max/binSize);
 	const double maxPow2       = max*max;
 	const double fromValToIdx  = nbBin/max;
 
-	/// Arrays for distortion matrix
+	///// Arrays for distortion matrix
 	double weight[nbBin];
 	double** dataMatrix = new double*[nbBin];
 	for (unsigned int i=0; i<nbBin; i++) {
@@ -3045,7 +3042,7 @@ void Correlation::xi_delta_QSO_distortionMatrix_1D(void) {
 
 	for (unsigned int f=0; f<nbForest_; f++) {
 	
-		/// Get number of pixels in forest
+		///// Get number of pixels in forest
 		const unsigned int nbPixel = v_nbPixelDelta1__[f];
 		const double firstPixel    = v_r__[f][0];
 		const double lastPixel     = v_r__[f][nbPixel-1];
@@ -3059,48 +3056,43 @@ void Correlation::xi_delta_QSO_distortionMatrix_1D(void) {
 
 		for (unsigned int q=0; q<nbQ1__; q++) {
 
-			/// Remove the correlation qso-ownForest
+			///// Remove the correlation qso-ownForest
 			if (fabs(ra-v_raQ1__[q])<1.e-10 && fabs(dec-v_deQ1__[q])<1.e-10 ) continue;
 			else if (fabs(ra-v_raQ1__[q])<C_AUTOCORRCRIT && fabs(dec-v_deQ1__[q])<C_AUTOCORRCRIT && fabs(z-v_zzQ1__[q])<0.001 ) continue;
 
-			/// Angle between the two directions of the qso and the lya
+			///// Angle between the two directions of the qso and the lya
 			const double cosTheta = cosDe*v_CosDeQ1__[q]*cos(ra-v_raQ1__[q]) + sinDe*v_SinDeQ1__[q];
 
-			/// reject QSO with a distance too large
+			///// reject QSO with a distance too large
 			const double distTransQsoLyaPow2 = v_rQ1__[q]*v_rQ1__[q]*(1.-cosTheta*cosTheta);
 			if (distTransQsoLyaPow2 >= maxPow2) continue;
 
-			/// Parrallel distance between the qso and the lya
+			///// Parrallel distance between the qso and the lya
 			const double distParalQsoLya = v_rQ1__[q]*cosTheta;
 
-			/// Distance between the qso and the first pixel
+			///// Distance between the qso and the first pixel
 			const double distParalQsoFirstPixel = firstPixel - distParalQsoLya;
 			if ( distParalQsoFirstPixel >= max) continue;
 
-			/// Distance between the qso and the last pixel
+			///// Distance between the qso and the last pixel
 			const double distParalQsoLastPixel = lastPixel - distParalQsoLya;
 			if ( distParalQsoLastPixel <= -max) continue;
 
-			/// 'true' if first pixel of forest is further than the QSO
+			///// 'true' if first pixel of forest is further than the QSO
 			const bool infPosBool = (distParalQsoFirstPixel > 0.);
-			/// 'true' if last pixel of forest is lower than the QSO
+			///// 'true' if last pixel of forest is lower than the QSO
 			const bool supPosBool = (distParalQsoLastPixel < 0.);
 
-
-
-			/// get the weight and mean lambda
+			///// get the weight and mean lambda
 			double xValue[50]  = {0.};
 			double xlValue[50] = {0.};
+			bool binTouched[50] = {false};
 
-			/// Index of the bin
+			///// Index of the bin
 			std::vector< unsigned int > binIdx;
 			std::vector< unsigned int > fromBinsToPixels;
 
-			// Copy the 'bins_touched' logic
-			std::vector< unsigned int> bins_touched;
-			int bin_prev = -1;
-
-			/// Loops over all pixels of the forest
+			///// Loops over all pixels of the forest
 			for (unsigned int i=0; i<nbPixel; i++) {
 
 				unsigned int ii = i;
@@ -3108,7 +3100,7 @@ void Correlation::xi_delta_QSO_distortionMatrix_1D(void) {
 	
 				const double distP = v_r__[f][ii] - distParalQsoLya;				
 
-				/// Look at the position of the Lya forest regarding the qso
+				///// Look at the position of the Lya forest regarding the qso
 				if (fabs(distP) >= max) {
 					if (infPosBool || supPosBool) break;
 					else continue;
@@ -3120,32 +3112,32 @@ void Correlation::xi_delta_QSO_distortionMatrix_1D(void) {
 				const double w    = v_w__[f][ii];
 				const double val0 = w*invSumWeight;
 	
-				/// Fill the histogramm of xi(r_{perp}, r_{paral}
-				const int globalBin = int(sqrt(distTotPow2)*fromValToIdx);
+				///// Fill the histogramm of xi(r_{perp}, r_{paral}
+				const unsigned int globalBin = int(sqrt(distTotPow2)*fromValToIdx);
 				xValue[globalBin]  += val0;
 				xlValue[globalBin] += val0*v_varLambda[f][ii];
 
-				/// Fill array of weights
+				///// Fill array of weights
 				weight[globalBin] += w;
 
-				/// Keep values for the distortion matrix
+				///// Keep values for the distortion matrix
 				binIdx.push_back(globalBin);
 				fromBinsToPixels.push_back(ii);
 
-				// Copy the 'bins_touched' logic
-				if (globalBin!=bin_prev) {
-                                        bin_prev = globalBin;
-                                        bins_touched.push_back(globalBin);
-                                }
+				binTouched[globalBin] = true;
 			}
 
-			/// Number of pixels with pairs 
+			///// Number of pixels with pairs 
 			const unsigned int nbPixelsWithPairs = binIdx.size();
 
-			// Copy the 'bins_touched' logic
+			///// Get a vector of not empty bins
+			std::vector< unsigned int> bins_touched;
+			for (unsigned int i=0; i<50; i++) {
+				if (binTouched[i]) bins_touched.push_back(i);
+			}
 			const unsigned int nbBinsTouched = bins_touched.size();			
 
-			/// Loops over all pixels of the forest (Fill the distortion matrix)
+			///// Loops over all pixels of the forest (Fill the distortion matrix)
 			for (unsigned int i=0; i<nbPixelsWithPairs; i++) {
 
 				const unsigned int globalBin1 = binIdx[i];
@@ -3154,13 +3146,13 @@ void Correlation::xi_delta_QSO_distortionMatrix_1D(void) {
 				const double w    = v_w__[f][pixelIdx];
 				const double val1 = v_varLambda[f][pixelIdx];
 				
-				/// Fill the distortion matrix
+				///// Fill the distortion matrix
 				dataMatrix[globalBin1][globalBin1] += w;
 
 				for (unsigned int j=0; j<nbBinsTouched; j++) {
-                                        const unsigned int globalBin2 = bins_touched[j];
-                                        dataMatrix[globalBin2][globalBin1] -= w*( xValue[globalBin2] + val1*xlValue[globalBin2] );
-                                }
+					const unsigned int globalBin2 = bins_touched[j];
+					dataMatrix[globalBin2][globalBin1] -= w*( xValue[globalBin2] + val1*xlValue[globalBin2] );
+				}
 			}
 		}
 	}
@@ -3170,7 +3162,7 @@ void Correlation::xi_delta_QSO_distortionMatrix_1D(void) {
 	std::cout << "\n\n\n" << std::endl;
 	std::ofstream fFile;
 
-	/// Save the 2D cross-correlation 
+	///// Save the 2D cross-correlation 
 	std::string pathToSave = pathToSave__;
 	pathToSave += "xi_delta_QSO_distortionMatrix_1D_";
 	pathToSave += forest__;
@@ -3182,8 +3174,8 @@ void Correlation::xi_delta_QSO_distortionMatrix_1D(void) {
 	fFile << std::scientific;
 	fFile.precision(17);
 	
-	/// Set the values of data
-	/// [0] for value, [1] for error, [2] for bin center
+	///// Set the values of data
+	//// [0] for value, [1] for error, [2] for bin center
 	for (unsigned int i=0; i<nbBin; i++) {
 		for (unsigned int j=0; j<nbBin; j++) {
 			double value = 0.;
@@ -3198,7 +3190,7 @@ void Correlation::xi_delta_QSO_distortionMatrix_1D(void) {
 }
 void Correlation::xi_delta_QSO_Wick(unsigned int diagramIdx) {
 
-	/// Convert the diagram index to string
+	//// Convert the diagram index to string
 	std::stringstream convert;
 	convert << diagramIdx;
 	std::string strConvert = convert.str();
@@ -3210,9 +3202,9 @@ void Correlation::xi_delta_QSO_Wick(unsigned int diagramIdx) {
 	command += strConvert;
 	std::cout << command << "\n" << std::endl;
 	
-	/// QSO
+	//// QSO
 	loadDataQ1();
-	/// Forest
+	//// Forest
 	loadDataForest(pathForest__);
 	v_zz__.clear();
 	v_idx__.clear();
@@ -3223,8 +3215,8 @@ void Correlation::xi_delta_QSO_Wick(unsigned int diagramIdx) {
 
 
 
-	/// Constants:
-	/// The space between bins is of 10 Mpc.h^-1
+	//// Constants:
+	//// The space between bins is of 10 Mpc.h^-1
 	const double max          = 200.;
 
 	const unsigned int nbBin   = 50;
@@ -3232,7 +3224,7 @@ void Correlation::xi_delta_QSO_Wick(unsigned int diagramIdx) {
 	//const unsigned int nbBin2D = nbBin*nbBin*2;
 	const double maxPow2       = max*max;
 
-	/// Array with the covaraince
+	//// Array with the covaraince
 	double covVar1D[nbBin][3];
 	double cov1D[nbBin][nbBin][3];
 	for (unsigned int i=0; i<nbBin; i++) {
@@ -3255,8 +3247,8 @@ void Correlation::xi_delta_QSO_Wick(unsigned int diagramIdx) {
 		}
 	}*/
 
-	/// ------------------------------------------------------------------
-	/// Load correlation delta-delta same forest
+	//// ------------------------------------------------------------------
+	//// Load correlation delta-delta same forest
 	std::string pathToFile = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests/xi_1D_delta_delta_LYA.txt";
 	std::ifstream fileData(pathToFile.c_str());
 
@@ -3283,11 +3275,11 @@ void Correlation::xi_delta_QSO_Wick(unsigned int diagramIdx) {
 		xidd1D[i] = tmp_xidd1D[i];
 	}
 	tmp_xidd1D.clear();
-	/// ------------------------------------------------------------------
+	//// ------------------------------------------------------------------
 
 
-	/// ------------------------------------------------------------------
-	/// Load correlation delta-delta different forest
+	//// ------------------------------------------------------------------
+	//// Load correlation delta-delta different forest
 	pathToFile = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests/xi_A_delta_delta_2D_LYA.txt";
 	std::ifstream fileData2(pathToFile.c_str());
 
@@ -3321,13 +3313,13 @@ void Correlation::xi_delta_QSO_Wick(unsigned int diagramIdx) {
 
 
 
-	/// Get the covariance
-	/// ------------------------------------------------------------------
+	//// Get the covariance
+	//// ------------------------------------------------------------------
 	std::cout << "\n\n  Starting" << std::endl;
 
 	for (unsigned int f=0; f<nbForest_; f++) {
 
-		/// Get number of pixels in forest
+		//// Get number of pixels in forest
 		const unsigned int nbPixel = v_nbPixelDelta1__[f];
 		const double firstPixel    = v_r__[f][0];
 		const double lastPixel     = v_r__[f][nbPixel-1];
@@ -3337,7 +3329,7 @@ void Correlation::xi_delta_QSO_Wick(unsigned int diagramIdx) {
 		const double dec           = v_de__[f];
 
 		
-		/// For T1 + T2 + T3 + T4
+		//// For T1 + T2 + T3 + T4
 		std::vector<unsigned int> vect_idx;
 		std::vector<double> vect_www;
 		std::vector<double> vect_rrr;
@@ -3348,43 +3340,43 @@ void Correlation::xi_delta_QSO_Wick(unsigned int diagramIdx) {
 		for (unsigned int q=0; q<nbQ1__; q++) {
 
 /*			
-			/// For T1 + T2
+			//// For T1 + T2
 			std::vector<unsigned int> vect_idx;
 			std::vector<double> vect_www;
 			std::vector<double> vect_rrr;
 */
-			/// Remove the correlation qso-ownForest
+			//// Remove the correlation qso-ownForest
 			if (fabs(ra-v_raQ1__[q])<C_AUTOCORRCRIT && fabs(dec-v_deQ1__[q])<C_AUTOCORRCRIT) continue;
 
-			/// Angle between the two directions of the qso and the lya
+			//// Angle between the two directions of the qso and the lya
 			const double cosTheta = cosDe*v_CosDeQ1__[q]*cos(ra-v_raQ1__[q]) + sinDe*v_SinDeQ1__[q];
 			
-			/// reject QSO with a distance too large
+			//// reject QSO with a distance too large
 			const double distTransQsoLyaPow2 = v_rQ1__[q]*v_rQ1__[q]*(1.-cosTheta*cosTheta);
 			if (distTransQsoLyaPow2 >= maxPow2) continue;
 			
-			/// Parrallel distance between the qso and the lya
+			//// Parrallel distance between the qso and the lya
 			const double distParalQsoLya = v_rQ1__[q]*cosTheta;
 			
-			/// Distance between the qso and the first pixel
+			//// Distance between the qso and the first pixel
 			const double distParalQsoFirstPixel = firstPixel - distParalQsoLya;
 			if ( firstPixel - distParalQsoLya >= max) continue;
 			
-			/// Distance between the qso and the last pixel
+			//// Distance between the qso and the last pixel
 			const double distParalQsoLastPixel = lastPixel - distParalQsoLya;
 			if ( distParalQsoLastPixel <= -max) continue;
 
-			/// Transvers distance between the qso and the lya
+			//// Transvers distance between the qso and the lya
 			//const double distTransQsoLya = sqrt(distTransQsoLyaPow2);
 			//const unsigned int rPerpBinIdx = int( distTransQsoLya );
 			//const double zQSO = v_zzQ1__[q];
 			
-			/// 'true' if Ly\alpha forest further than qso
+			//// 'true' if Ly\alpha forest further than qso
 			const bool infPosBool = (distParalQsoFirstPixel > 0.);
 			///
 			const bool supPosBool = (distParalQsoLastPixel < 0.);
 			
-			/// Loops over all pixels of the forest
+			//// Loops over all pixels of the forest
 			for (unsigned int i=0; i<nbPixel; i++) {
 				
 				unsigned int ii = i;
@@ -3392,7 +3384,7 @@ void Correlation::xi_delta_QSO_Wick(unsigned int diagramIdx) {
 				
 				const double distP = v_r__[f][ii] - distParalQsoLya;				
 				
-				/// Look at the position of the Lya forest regarding the qso
+				//// Look at the position of the Lya forest regarding the qso
 				if (fabs(distP) >= max) {
 					if (infPosBool) break;
 					else if (supPosBool) break;
@@ -3408,20 +3400,20 @@ void Correlation::xi_delta_QSO_Wick(unsigned int diagramIdx) {
 					vect_www.push_back(w);
 					vect_rrr.push_back(v_r__[f][ii]);
 
-					/// For T1 + T2 + T3 + T4
+					//// For T1 + T2 + T3 + T4
 					vect_idxPix.push_back(ii);
 					vect_idxQSO.push_back(q);
 
-					/// Variance
+					//// Variance
 					covVar1D[idx1][0] += w*w*xidd1D[0];
 					covVar1D[idx1][1] += w*w;
 					covVar1D[idx1][2] ++;
 				}
 			}
 	
-		}  /// If T1 + T2 + T3 + T4
+		}  //// If T1 + T2 + T3 + T4
 
-			/// Calculate the covariance
+			//// Calculate the covariance
 			const unsigned int nbPairs = vect_idx.size();
 			
 			for (unsigned int i=0; i<nbPairs; i++) {
@@ -3432,12 +3424,12 @@ void Correlation::xi_delta_QSO_Wick(unsigned int diagramIdx) {
 				const double       rrr1    = vect_rrr[i];
 				const double       www1    = vect_www[i];
 
-				/// Covariance
+				//// Covariance
 				for (unsigned int j=0; j<i; j++) {
 
-					/// If T1 + T2
+					//// If T1 + T2
 					//if (idxQSO1 != vect_idxQSO[j]) continue;
-					/// If T1 + T2 + T3
+					//// If T1 + T2 + T3
 					//if (idxQSO1 != vect_idxQSO[j] && idxPix1 != vect_idxPix[j]) continue;
 
 					const unsigned int idx2 = vect_idx[j];
@@ -3457,7 +3449,7 @@ void Correlation::xi_delta_QSO_Wick(unsigned int diagramIdx) {
 	std::ofstream fFile;
 	std::string pathToSave;
 
-	/// 1D
+	//// 1D
 	pathToSave = pathToSave__;
 	pathToSave += "xi_delta_QSO_1D_Wick";
 	pathToSave += strConvert;
@@ -3467,8 +3459,8 @@ void Correlation::xi_delta_QSO_Wick(unsigned int diagramIdx) {
 	pathToSave += QSO__;
 	pathToSave += "_T1234_"; // T12  // T1234  // T124
 	std::stringstream convert2;
-        convert2 << nbForest_;
-        pathToSave += convert2.str();
+	convert2 << nbForest_;
+	pathToSave += convert2.str();
 	pathToSave += ".txt";
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
@@ -3503,9 +3495,9 @@ void Correlation::xi_delta_QSO_MockJMc(bool doBootstraps/*=False*/, unsigned int
 	command += commandEnd__;
 	std::cout << command << "\n" << std::endl;
 
-	/// QSO
+	//// QSO
 	loadDataQ1();
-	/// Forest
+	//// Forest
 	loadDataForest(pathForest__,doBootstraps,bootIdx);
 	if (doBootstraps || mocksNoNoiseNoCont) {
 		removeFalseCorrelations();
@@ -3520,7 +3512,7 @@ void Correlation::xi_delta_QSO_MockJMc(bool doBootstraps/*=False*/, unsigned int
 	convert << bootIdx;
 	const std::string strBootIdx = convert.str();
 
-	/// Set the prefix for different type of runs
+	//// Set the prefix for different type of runs
 	std::string prefix = "_";
 	if (doBootstraps)  prefix += "subsampling";
 	if (shuffleForest) prefix += "shuffleForest";
@@ -3530,48 +3522,48 @@ void Correlation::xi_delta_QSO_MockJMc(bool doBootstraps/*=False*/, unsigned int
 	prefix += strBootIdx;
 
 
-	/// Schiffle the forest
+	//// Schiffle the forest
 	if (shuffleForest) {
 
-		/// Vectors with index of forest
-                std::vector<unsigned int> randomIdx(nbForest_);
-                for (unsigned int i=0; i<nbForest_; i++) {
-                        randomIdx[i] = i;
-                }
+		//// Vectors with index of forest
+		std::vector<unsigned int> randomIdx(nbForest_);
+		for (unsigned int i=0; i<nbForest_; i++) {
+			randomIdx[i] = i;
+		}
+		
+		std::cout << "  Shuffle forest " << bootIdx << std::endl;
+		bool doLoop = true;
+		unsigned int nbLoop = 0;
+		std::srand (bootIdx*10);
+		while (doLoop) {
+			doLoop = false;
+			nbLoop ++;
+			std::cout << "  nbLoop = " << nbLoop << std::endl;
+			std::random_shuffle ( randomIdx.begin(), randomIdx.end() );
+			for (unsigned int i=0; i<nbForest_; i++) {
+				if (i==randomIdx[i]) {
+					std::cout << nbLoop << " " << i << std::endl;
+					doLoop = true;
+					break;
+				}
+			}
+		}
 
-                std::cout << "  Shuffle forest " << bootIdx << std::endl;
-                bool doLoop = true;
-                unsigned int nbLoop = 0;
-                std::srand (bootIdx*10);
-                while (doLoop) {
-                        doLoop = false;
-                        nbLoop ++;
-                        std::cout << "  nbLoop = " << nbLoop << std::endl;
-                        std::random_shuffle ( randomIdx.begin(), randomIdx.end() );
-                        for (unsigned int i=0; i<nbForest_; i++) {
-                                if (i==randomIdx[i]) {
-                                        std::cout << nbLoop << " " << i << std::endl;
-                                        doLoop = true;
-                                        break;
-                                }
-                        }
-                }
-
-		/// Copy data
-                std::vector<double> tmp_ra(v_ra__);
-                std::vector<double> tmp_de(v_de__);
-
-		/// Put the new data
-                for (unsigned int i=0; i<nbForest_; i++) {
-                        const unsigned int ii = randomIdx[i];
-                        v_ra__[i]    = tmp_ra[ii];
-                        v_de__[i]    = tmp_de[ii];
-                }
-        }
+		//// Copy data
+		std::vector<double> tmp_ra(v_ra__);
+		std::vector<double> tmp_de(v_de__);
+		
+		//// Put the new data
+		for (unsigned int i=0; i<nbForest_; i++) {
+			const unsigned int ii = randomIdx[i];
+			v_ra__[i]    = tmp_ra[ii];
+			v_de__[i]    = tmp_de[ii];
+		}
+	}
 
 
-	/// Constants:
-	/// The space between bins is of 10 Mpc.h^-1
+	//// Constants:
+	//// The space between bins is of 10 Mpc.h^-1
 	const double max          =  200.; // 200.;
 
 	const unsigned int nbBin  = int(max);
@@ -3580,14 +3572,14 @@ void Correlation::xi_delta_QSO_MockJMc(bool doBootstraps/*=False*/, unsigned int
 	const unsigned int nbBinM = 100.;
 
 	const double maxPow2      = max*max;
-	/// get an array for nb of pairs for the forest
+	//// get an array for nb of pairs for the forest
 	double a_nbPairs[nbForest_];
 	for (unsigned int i=0; i<nbForest_; i++) {
-                a_nbPairs[i] = 0.;
-        }
+		a_nbPairs[i] = 0.;
+	}
 
 
-	/// Arrays for data
+	//// Arrays for data
 	double dataMu[nbBin][nbBinM][7];
 	double data2D[nbBinX][nbBinY][7];
 
@@ -3607,7 +3599,7 @@ void Correlation::xi_delta_QSO_MockJMc(bool doBootstraps/*=False*/, unsigned int
 	}
 
 
-	/// Vectors of randomized positions in cell
+	//// Vectors of randomized positions in cell
 	std::vector<double> v_raRandForest;
 	std::vector<double> v_deRandForest;
 	std::vector<double> v_raRandQSO;
@@ -3616,7 +3608,7 @@ void Correlation::xi_delta_QSO_MockJMc(bool doBootstraps/*=False*/, unsigned int
 
 		std::srand (42);
 
-		/// Forest
+		//// Forest
 		v_raRandForest.resize(nbForest_,0.);
 		v_deRandForest.resize(nbForest_,0.);
 		for (unsigned int i=0; i<nbForest_; i++) {
@@ -3624,7 +3616,7 @@ void Correlation::xi_delta_QSO_MockJMc(bool doBootstraps/*=False*/, unsigned int
 			v_deRandForest[i] = v_de__[i] + sizeCell__*(1.*rand()/RAND_MAX-0.5);
 		}
 
-		/// QSO
+		//// QSO
 		v_raRandQSO.resize(nbQ1__,0.);
 		v_deRandQSO.resize(nbQ1__,0.);
 		for (unsigned int i=0; i<nbQ1__; i++) {
@@ -3653,7 +3645,7 @@ void Correlation::xi_delta_QSO_MockJMc(bool doBootstraps/*=False*/, unsigned int
 
 		double nbPairs = 0.;
 
-		/// Get attributs of forest
+		//// Get attributs of forest
 		const unsigned int nbPixel = v_nbPixelDelta1__[f];
 		const double firstPixel    = v_r__[f][0];
 		const double lastPixel     = v_r__[f][nbPixel-1];
@@ -3663,7 +3655,7 @@ void Correlation::xi_delta_QSO_MockJMc(bool doBootstraps/*=False*/, unsigned int
 		
 		double x1 = x;
 		double y1 = y;
-		/// If random position in the cell
+		//// If random position in the cell
 		if (randomPositionOfQSOInCellNotBeforeCorrelation__) {
 			x1 = v_raRandForest[f];
 		 	y1 = v_deRandForest[f];
@@ -3675,34 +3667,34 @@ void Correlation::xi_delta_QSO_MockJMc(bool doBootstraps/*=False*/, unsigned int
 			double y2 = v_deQ1__[q];
 			const double z2 = v_zzQ1__[q];
 
-			/// Not in the same line of sight
+			//// Not in the same line of sight
 			if (x==x2 && y==y2) continue;
 
-			/// If random position in the cell
+			//// If random position in the cell
 			if (randomPositionOfQSOInCellNotBeforeCorrelation__) {
 				x2 = v_raRandQSO[q];
 				y2 = v_deRandQSO[q];
 			}
 			
-			/// Get the r_perp distance at the poxer of two
+			//// Get the r_perp distance at the poxer of two
 			const double distTransQsoLyaPow2 = (x1-x2)*(x1-x2) + (y1-y2)*(y1-y2);
 			if (distTransQsoLyaPow2 >= maxPow2) continue;
 
-			/// distance of QSO
+			//// distance of QSO
 			const double rQSO = v_rQ1__[q];
 			
-			/// Distance between the qso and the first pixel
+			//// Distance between the qso and the first pixel
 			if ( firstPixel-rQSO >= max) continue;
 			
-			/// Distance between the qso and the last pixel
+			//// Distance between the qso and the last pixel
 			if ( lastPixel-rQSO <= -max) continue;
 
-			/// Transvers distance between the qso and the lya
+			//// Transvers distance between the qso and the lya
 			const double distTransQsoLya = sqrt(distTransQsoLyaPow2);
 			const unsigned int rPerpBinIdx = int( distTransQsoLya );
 			const double zQSO = z2;
 			
-			/// Loops over all pixels of the forest
+			//// Loops over all pixels of the forest
 			for (unsigned int i=0; i<nbPixel; i++) {
 
 				const double distP = v_r__[f][i] - rQSO;
@@ -3731,7 +3723,7 @@ void Correlation::xi_delta_QSO_MockJMc(bool doBootstraps/*=False*/, unsigned int
 					dataMu[idx][idxM][6] ++;
 				}
 	
-				/// Fill the histogramm of xi(r_{perp}, r_{paral}
+				//// Fill the histogramm of xi(r_{perp}, r_{paral}
 				const unsigned int rParralBinIdx = int(distP+max);
 
 				data2D[rPerpBinIdx][rParralBinIdx][0] += wd;
@@ -3742,12 +3734,12 @@ void Correlation::xi_delta_QSO_MockJMc(bool doBootstraps/*=False*/, unsigned int
 				data2D[rPerpBinIdx][rParralBinIdx][5] += w;
 				data2D[rPerpBinIdx][rParralBinIdx][6] ++;
 
-				/// Get the number of pairs
+				//// Get the number of pairs
 				nbPairs += w;
 			}
 		}
 
-		/// Put the number of pairs comming with this forest
+		//// Put the number of pairs comming with this forest
 		a_nbPairs[f] = nbPairs;
 	}
 
@@ -3762,7 +3754,7 @@ void Correlation::xi_delta_QSO_MockJMc(bool doBootstraps/*=False*/, unsigned int
 	long double sumWeg = 0.;
 	long double sumOne = 0.;
 
-	/// Save the 2D cross-correlation
+	//// Save the 2D cross-correlation
 	pathToSave = pathToSave__;
 	pathToSave += "xi_delta_QSO_2D_";
 	pathToSave += forest__;
@@ -3779,8 +3771,8 @@ void Correlation::xi_delta_QSO_MockJMc(bool doBootstraps/*=False*/, unsigned int
 	sumWeg = 0.;
 	sumOne = 0.;
 	
-	/// Set the values of data
-	/// [0] for value, [1] for error, [2] for bin center
+	//// Set the values of data
+	//// [0] for value, [1] for error, [2] for bin center
 	for (unsigned int i=0; i<nbBinX; i++) {
 		for (unsigned int j=0; j<nbBinY; j++) {
 			
@@ -3807,7 +3799,7 @@ void Correlation::xi_delta_QSO_MockJMc(bool doBootstraps/*=False*/, unsigned int
 	std::cout << "  < pairs per QSO >    = " << sumOne/nbQ1__    << std::endl;
 
 
-	/// Save the Mu cross-correlation
+	//// Save the Mu cross-correlation
 	pathToSave = pathToSave__;
 	pathToSave += "xi_delta_QSO_Mu_";
 	pathToSave += forest__;
@@ -3820,7 +3812,7 @@ void Correlation::xi_delta_QSO_MockJMc(bool doBootstraps/*=False*/, unsigned int
 	fFile << std::scientific;
 	fFile.precision(17);
 	
-	/// Set the values of data
+	//// Set the values of data
 	for (unsigned int i=0; i<nbBin; i++) {
 		for (unsigned int j=0; j<nbBinM; j++) {
 			
@@ -3838,17 +3830,17 @@ void Correlation::xi_delta_QSO_MockJMc(bool doBootstraps/*=False*/, unsigned int
 
 	
 	if (!doBootstraps && !shuffleForest && !shuffleQSO && !randomQSO) {
-
+		
 		pathToSave = pathToSave__;
-        	pathToSave += "xi_delta_QSO_nbPairsForest_";
-        	pathToSave += forest__;
-        	pathToSave += "_";
-        	pathToSave += QSO__;
-        	pathToSave += ".txt";
-        	std::cout << "\n  " << pathToSave << std::endl;
-        	fFile.open(pathToSave.c_str());
-        	fFile << std::scientific;
-        	fFile.precision(17);
+		pathToSave += "xi_delta_QSO_nbPairsForest_";
+		pathToSave += forest__;
+		pathToSave += "_";
+		pathToSave += QSO__;
+		pathToSave += ".txt";
+		std::cout << "\n  " << pathToSave << std::endl;
+		fFile.open(pathToSave.c_str());
+		fFile << std::scientific;
+		fFile.precision(17);
 
 		for (unsigned int i=0; i<nbForest_; i++) {
 
@@ -3870,13 +3862,13 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix(void) {
 	command += commandEnd__;
 	std::cout << command << "\n" << std::endl;
 
-	/// QSO
+	//// QSO
 	loadDataQ1();
 	if (nbQ1__==0) return;
-	/// Forest
+	//// Forest
 	loadDataForest(pathForest__);
 
-	/// Empty useless vectors
+	//// Empty useless vectors
 	v_CosDe__.clear();
 	v_SinDe__.clear();
 	v_d__.clear();
@@ -3884,7 +3876,7 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix(void) {
 	v_lObs__.clear();
 	v_nb__.clear();
 
-	/// Set usefull vectors
+	//// Set usefull vectors
 	std::vector<double> v_invSumWeight(nbForest_,0.);
 	std::vector< std::vector< double > > v_varLambda(v_lRF__);
 
@@ -3895,7 +3887,7 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix(void) {
 		double meanLambda = 0.;
 		double stdLambda  = 0.;
 
-		/// Loops over all pixels of the forest
+		//// Loops over all pixels of the forest
 		for (unsigned int i=0; i<nbPixel; i++) {
 
 			const double w = v_w__[f][i];
@@ -3916,7 +3908,7 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix(void) {
 	}
 	
 	
-	/// Vectors of randomized positions in cell
+	//// Vectors of randomized positions in cell
 	std::vector<double> v_raRandForest;
 	std::vector<double> v_deRandForest;
 	std::vector<double> v_raRandQSO;
@@ -3925,7 +3917,7 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix(void) {
 
 		std::srand (42);
 
-		/// Forest
+		//// Forest
 		v_raRandForest.resize(nbForest_,0.);
 		v_deRandForest.resize(nbForest_,0.);
 		for (unsigned int i=0; i<nbForest_; i++) {
@@ -3933,7 +3925,7 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix(void) {
 			v_deRandForest[i] = v_de__[i] + sizeCell__*(1.*rand()/RAND_MAX-0.5);
 		}
 
-		/// QSO
+		//// QSO
 		v_raRandQSO.resize(nbQ1__,0.);
 		v_deRandQSO.resize(nbQ1__,0.);
 		for (unsigned int i=0; i<nbQ1__; i++) {
@@ -3944,8 +3936,8 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix(void) {
 
 
 
-	/// Constants:
-	/// The space between bins is of 10 Mpc.h^-1
+	//// Constants:
+	//// The space between bins is of 10 Mpc.h^-1
 	const double max           = 200.;
 	const double binSize       = 4.;
 	const unsigned int nbBin   = int(max/binSize);
@@ -3955,7 +3947,7 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix(void) {
 	const double maxPow2       = max*max;
 	const double fromValToIdx  = nbBin/max;
 
-	/// Arrays for distortion matrix
+	//// Arrays for distortion matrix
 	double weight[nbBin2D];
 	double** dataMatrix = new double*[nbBin2D];
 	for (unsigned int i=0; i<nbBin2D; i++) {
@@ -3974,7 +3966,7 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix(void) {
 
 	for (unsigned int f=0; f<nbForest_; f++) {
 
-		/// Get attributs of forest
+		//// Get attributs of forest
 		const unsigned int nbPixel = v_nbPixelDelta1__[f];
 		const double firstPixel    = v_r__[f][0];
 		const double lastPixel     = v_r__[f][nbPixel-1];
@@ -3983,7 +3975,7 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix(void) {
 		
 		double x1 = x;
 		double y1 = y;
-		/// If random position in the cell
+		//// If random position in the cell
 		if (randomPositionOfQSOInCellNotBeforeCorrelation__) {
 			x1 = v_raRandForest[f];
 		 	y1 = v_deRandForest[f];
@@ -3995,44 +3987,42 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix(void) {
 			double x2 = v_raQ1__[q];
 			double y2 = v_deQ1__[q];
 
-			/// Not in the same line of sight
+			//// Not in the same line of sight
 			if (x==x2 && y==y2) continue;
 
-			/// If random position in the cell
+			//// If random position in the cell
 			if (randomPositionOfQSOInCellNotBeforeCorrelation__) {
 				x2 = v_raRandQSO[q];
 				y2 = v_deRandQSO[q];
 			}
 			
-			/// Get the r_perp distance at the poxer of two
+			//// Get the r_perp distance at the poxer of two
 			const double distTransQsoLyaPow2 = (x1-x2)*(x1-x2) + (y1-y2)*(y1-y2);
 			if (distTransQsoLyaPow2 >= maxPow2) continue;
 
-			/// distance of QSO
+			//// distance of QSO
 			const double rQSO = v_rQ1__[q];
 			
-			/// Distance between the qso and the first pixel
+			//// Distance between the qso and the first pixel
 			if ( firstPixel-rQSO >= max) continue;
 			
-			/// Distance between the qso and the last pixel
+			//// Distance between the qso and the last pixel
 			if ( lastPixel-rQSO <= -max) continue;
 
-			/// Transvers distance between the qso and the lya
+			//// Transvers distance between the qso and the lya
 			const double distTransQsoLya = sqrt(distTransQsoLyaPow2);
 			const unsigned int rPerpBinIdx = int( distTransQsoLya*fromValToIdx );
 			
-			/// get the weight and mean lambda
+			//// get the weight and mean lambda
 			double xValue[5000]  = {0.};
 			double xlValue[5000] = {0.};
+			bool binTouched[5000] = {false};
 
-			/// Index of the bin
+			//// Index of the bin
 			std::vector< unsigned int > binIdx;
 			std::vector< unsigned int > fromBinsToPixels;
-		
-			std::vector< unsigned int> bins_touched;
-                        int bin_prev = -1;
 	
-			/// Loops over all pixels of the forest
+			//// Loops over all pixels of the forest
 			for (unsigned int i=0; i<nbPixel; i++) {
 
 				const double distP = v_r__[f][i] - rQSO;
@@ -4041,31 +4031,32 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix(void) {
 				const double w    = v_w__[f][i];
 				const double val0 = w*invSumWeight;
 	
-				/// Fill the histogramm of xi(r_{perp}, r_{paral}
-				const int globalBin = rPerpBinIdx*nbBinY + int( (distP+max)*fromValToIdx );
+				//// Fill the histogramm of xi(r_{perp}, r_{paral}
+				const unsigned int globalBin = rPerpBinIdx*nbBinY + int( (distP+max)*fromValToIdx );
 				xValue[globalBin]  += val0;
 				xlValue[globalBin] += val0*v_varLambda[f][i];
 
-				/// Fill array of weights
+				//// Fill array of weights
 				weight[globalBin] += w;
 
-				/// Keep values for the distortion matrix
+				//// Keep values for the distortion matrix
 				binIdx.push_back(globalBin);
 				fromBinsToPixels.push_back(i);
 
-				if (globalBin!=bin_prev) {
-                                        bin_prev = globalBin;
-                                        bins_touched.push_back(globalBin);
-                                }
+				binTouched[globalBin] = true;
 			}
 
-			/// Number of pixels with pairs 
+			//// Number of pixels with pairs 
 			const unsigned int nbPixelsWithPairs = binIdx.size();
 
-			// Copy the 'bins_touched' logic
+			//// Get a vector of not empty bins
+			std::vector< unsigned int> bins_touched;
+			for (unsigned int i=0; i<5000; i++) {
+				if (binTouched[i]) bins_touched.push_back(i);
+			}
 			const unsigned int nbBinsTouched = bins_touched.size();
 
-			/// Loops over all pixels of the forest (Fill the distortion matrix)
+			//// Loops over all pixels of the forest (Fill the distortion matrix)
 			for (unsigned int i=0; i<nbPixelsWithPairs; i++) {
 
 				const unsigned int globalBin1 = binIdx[i];
@@ -4074,13 +4065,13 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix(void) {
 				const double w    = v_w__[f][pixelIdx];
 				const double val1 = v_varLambda[f][pixelIdx];
 				
-				/// Fill the distortion matrix
+				//// Fill the distortion matrix
 				dataMatrix[globalBin1][globalBin1] += w;
 
 				for (unsigned int j=0; j<nbBinsTouched; j++) {
-                                        const unsigned int globalBin2 = bins_touched[j];
-                                        dataMatrix[globalBin2][globalBin1] -= w*( xValue[globalBin2] + val1*xlValue[globalBin2] );
-                                }
+					const unsigned int globalBin2 = bins_touched[j];
+					dataMatrix[globalBin2][globalBin1] -= w*( xValue[globalBin2] + val1*xlValue[globalBin2] );
+				}
 			}
 		}
 	}
@@ -4090,7 +4081,7 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix(void) {
 	std::cout << "\n\n\n" << std::endl;
 	std::ofstream fFile;
 
-	/// Save the 2D cross-correlation 
+	//// Save the 2D cross-correlation 
 	std::string pathToSave = pathToSave__;
 	pathToSave += "xi_delta_QSO_distortionMatrix_2D_";
 	pathToSave += forest__;
@@ -4102,8 +4093,8 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix(void) {
 	fFile << std::scientific;
 	fFile.precision(17);
 	
-	/// Set the values of data
-	/// [0] for value, [1] for error, [2] for bin center
+	//// Set the values of data
+	//// [0] for value, [1] for error, [2] for bin center
 	for (unsigned int i=0; i<nbBin2D; i++) {
 		for (unsigned int j=0; j<nbBin2D; j++) {
 			double value = 0.;
@@ -4123,13 +4114,13 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix_1D(void) {
 	command += commandEnd__;
 	std::cout << command << "\n" << std::endl;
 
-	/// QSO
+	//// QSO
 	loadDataQ1();
 	if (nbQ1__==0) return;
-	/// Forest
+	//// Forest
 	loadDataForest(pathForest__);
 
-	/// Empty useless vectors
+	//// Empty useless vectors
 	v_CosDe__.clear();
 	v_SinDe__.clear();
 	v_d__.clear();
@@ -4137,7 +4128,7 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix_1D(void) {
 	v_lObs__.clear();
 	v_nb__.clear();
 
-	/// Set usefull vectors
+	//// Set usefull vectors
 	std::vector<double> v_invSumWeight(nbForest_,0.);
 	std::vector< std::vector< double > > v_varLambda(v_lRF__);
 
@@ -4148,7 +4139,7 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix_1D(void) {
 		double meanLambda = 0.;
 		double stdLambda  = 0.;
 
-		/// Loops over all pixels of the forest
+		//// Loops over all pixels of the forest
 		for (unsigned int i=0; i<nbPixel; i++) {
 
 			const double w = v_w__[f][i];
@@ -4169,7 +4160,7 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix_1D(void) {
 	}
 	
 	
-	/// Vectors of randomized positions in cell
+	//// Vectors of randomized positions in cell
 	std::vector<double> v_raRandForest;
 	std::vector<double> v_deRandForest;
 	std::vector<double> v_raRandQSO;
@@ -4178,7 +4169,7 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix_1D(void) {
 
 		std::srand (42);
 
-		/// Forest
+		//// Forest
 		v_raRandForest.resize(nbForest_,0.);
 		v_deRandForest.resize(nbForest_,0.);
 		for (unsigned int i=0; i<nbForest_; i++) {
@@ -4186,7 +4177,7 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix_1D(void) {
 			v_deRandForest[i] = v_de__[i] + sizeCell__*(1.*rand()/RAND_MAX-0.5);
 		}
 
-		/// QSO
+		//// QSO
 		v_raRandQSO.resize(nbQ1__,0.);
 		v_deRandQSO.resize(nbQ1__,0.);
 		for (unsigned int i=0; i<nbQ1__; i++) {
@@ -4197,15 +4188,15 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix_1D(void) {
 
 
 
-	/// Constants:
-	/// The space between bins is of 10 Mpc.h^-1
+	//// Constants:
+	//// The space between bins is of 10 Mpc.h^-1
 	const double max           = 200.;
 	const double binSize       = 4.;
 	const unsigned int nbBin   = int(max/binSize);
 	const double maxPow2       = max*max;
 	const double fromValToIdx  = nbBin/max;
 
-	/// Arrays for distortion matrix
+	//// Arrays for distortion matrix
 	double weight[nbBin];
 	double** dataMatrix = new double*[nbBin];
 	for (unsigned int i=0; i<nbBin; i++) {
@@ -4224,7 +4215,7 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix_1D(void) {
 
 	for (unsigned int f=0; f<nbForest_; f++) {
 
-		/// Get attributs of forest
+		//// Get attributs of forest
 		const unsigned int nbPixel = v_nbPixelDelta1__[f];
 		const double firstPixel    = v_r__[f][0];
 		const double lastPixel     = v_r__[f][nbPixel-1];
@@ -4233,7 +4224,7 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix_1D(void) {
 		
 		double x1 = x;
 		double y1 = y;
-		/// If random position in the cell
+		//// If random position in the cell
 		if (randomPositionOfQSOInCellNotBeforeCorrelation__) {
 			x1 = v_raRandForest[f];
 		 	y1 = v_deRandForest[f];
@@ -4245,37 +4236,38 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix_1D(void) {
 			double x2 = v_raQ1__[q];
 			double y2 = v_deQ1__[q];
 
-			/// Not in the same line of sight
+			//// Not in the same line of sight
 			if (x==x2 && y==y2) continue;
 
-			/// If random position in the cell
+			//// If random position in the cell
 			if (randomPositionOfQSOInCellNotBeforeCorrelation__) {
 				x2 = v_raRandQSO[q];
 				y2 = v_deRandQSO[q];
 			}
 			
-			/// Get the r_perp distance at the poxer of two
+			//// Get the r_perp distance at the poxer of two
 			const double distTransQsoLyaPow2 = (x1-x2)*(x1-x2) + (y1-y2)*(y1-y2);
 			if (distTransQsoLyaPow2 >= maxPow2) continue;
 
-			/// distance of QSO
+			//// distance of QSO
 			const double rQSO = v_rQ1__[q];
 			
-			/// Distance between the qso and the first pixel
+			//// Distance between the qso and the first pixel
 			if ( firstPixel-rQSO >= max) continue;
 			
-			/// Distance between the qso and the last pixel
+			//// Distance between the qso and the last pixel
 			if ( lastPixel-rQSO <= -max) continue;
 			
-			/// get the weight and mean lambda
+			//// get the weight and mean lambda
 			double xValue[50]  = {0.};
 			double xlValue[50] = {0.};
+			bool binTouched[50] = {false};
 
-			/// Index of the bin
+			//// Index of the bin
 			std::vector< unsigned int > binIdx;
 			std::vector< unsigned int > fromBinsToPixels;
 			
-			/// Loops over all pixels of the forest
+			//// Loops over all pixels of the forest
 			for (unsigned int i=0; i<nbPixel; i++) {
 
 				const double distP = v_r__[f][i] - rQSO;
@@ -4286,23 +4278,32 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix_1D(void) {
 				const double w    = v_w__[f][i];
 				const double val0 = w*invSumWeight;
 	
-				/// Fill the histogramm of xi(r_{perp}, r_{paral}
+				//// Fill the histogramm of xi(r_{perp}, r_{paral}
 				const unsigned int globalBin = int(sqrt(distTotPow2)*fromValToIdx);
 				xValue[globalBin]  += val0;
 				xlValue[globalBin] += val0*v_varLambda[f][i];
 
-				/// Fill array of weights
+				//// Fill array of weights
 				weight[globalBin] += w;
 
-				/// Keep values for the distortion matrix
+				//// Keep values for the distortion matrix
 				binIdx.push_back(globalBin);
 				fromBinsToPixels.push_back(i);
+				
+				binTouched[globalBin] = true;
 			}
 
-			/// Number of pixels with pairs 
+			//// Number of pixels with pairs 
 			const unsigned int nbPixelsWithPairs = binIdx.size();
+			
+			//// Get a vector of not empty bins
+			std::vector< unsigned int> bins_touched;
+			for (unsigned int i=0; i<50; i++) {
+				if (binTouched[i]) bins_touched.push_back(i);
+			}
+			const unsigned int nbBinsTouched = bins_touched.size();
 
-			/// Loops over all pixels of the forest (Fill the distortion matrix)
+			//// Loops over all pixels of the forest (Fill the distortion matrix)
 			for (unsigned int i=0; i<nbPixelsWithPairs; i++) {
 
 				const unsigned int globalBin1 = binIdx[i];
@@ -4311,12 +4312,12 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix_1D(void) {
 				const double w    = v_w__[f][pixelIdx];
 				const double val1 = v_varLambda[f][pixelIdx];
 				
-				/// Fill the distortion matrix
+				//// Fill the distortion matrix
 				dataMatrix[globalBin1][globalBin1] += w;
 
-				for (unsigned int j=0; j<nbPixelsWithPairs; j++) {
-					const unsigned int globalBin2 = binIdx[j];
-					dataMatrix[globalBin1][globalBin2] -= w*( xValue[globalBin2] + val1*xlValue[globalBin2] );
+				for (unsigned int j=0; j<nbBinsTouched; j++) {
+					const unsigned int globalBin2 = bins_touched[j];
+					data2DMatrix[globalBin2][globalBin1] -= w*( xValue[globalBin2] + val1*xlValue[globalBin2] );
 				}
 			}
 		}
@@ -4327,7 +4328,7 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix_1D(void) {
 	std::cout << "\n\n\n" << std::endl;
 	std::ofstream fFile;
 
-	/// Save the 2D cross-correlation 
+	//// Save the 2D cross-correlation 
 	std::string pathToSave = pathToSave__;
 	pathToSave += "xi_delta_QSO_distortionMatrix_1D_";
 	pathToSave += forest__;
@@ -4339,8 +4340,8 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix_1D(void) {
 	fFile << std::scientific;
 	fFile.precision(17);
 	
-	/// Set the values of data
-	/// [0] for value, [1] for error, [2] for bin center
+	//// Set the values of data
+	//// [0] for value, [1] for error, [2] for bin center
 	for (unsigned int i=0; i<nbBin; i++) {
 		for (unsigned int j=0; j<nbBin; j++) {
 			double value = 0.;
@@ -4366,13 +4367,13 @@ void Correlation::xi_QSO_QSO(bool doBootstraps/*=false*/, unsigned int bootIdx/*
 	const std::string strBootIdx = convert.str();
 
 
-	/// Constants:
+	//// Constants:
 	const double max          = 200.;
 	const unsigned int nbBin  = int(max);
 	const double maxPow2      = max*max;
 	const unsigned int nbBinM = 50;
 
-	/// Arrays for data
+	//// Arrays for data
 	double dataMu[nbBin][nbBinM][4];
 	double data2D[nbBin][nbBin][4];
 	for (unsigned int i=0; i<nbBin; i++) {
@@ -4402,26 +4403,26 @@ void Correlation::xi_QSO_QSO(bool doBootstraps/*=false*/, unsigned int bootIdx/*
 
 		for (unsigned int q2=0; q2<q1; q2++) {
 
-			/// Angle between the two directions of the qso and the lya
+			//// Angle between the two directions of the qso and the lya
 			const double cosTheta = cosDe1*v_CosDeQ1__[q2]*cos(ra1-v_raQ1__[q2]) + sinDe1*v_SinDeQ1__[q2];
 			
-			/// Transvers distance between the qso and the lya
+			//// Transvers distance between the qso and the lya
 			const double distTransQsoQsoPow2 = rr1*rr1*(1.-cosTheta*cosTheta);
 			if (distTransQsoQsoPow2 >= maxPow2) continue;
 
 
-			/// Parrallel distance between the qso and the lya
+			//// Parrallel distance between the qso and the lya
 			const double rPara = fabs(rr1*cosTheta-v_rQ1__[q2]);
 			if (rPara >= max) continue;
 			const unsigned int idxPara = int(rPara);
 
-			/// Transvers distance between the qso and the lya
+			//// Transvers distance between the qso and the lya
 			const double rPerp   = sqrt(distTransQsoQsoPow2);
 			const unsigned int idxPerp = int(rPerp);
 
 			const double distTotPow2 = distTransQsoQsoPow2 + rPara*rPara;
 
-			/// 1D
+			//// 1D
 			if (distTotPow2<maxPow2) {
 				const double distTot    = sqrt(distTotPow2);
 				const double mu         = rPara/distTot;
@@ -4434,7 +4435,7 @@ void Correlation::xi_QSO_QSO(bool doBootstraps/*=false*/, unsigned int bootIdx/*
 				dataMu[idx][idxM][3] += zz1+v_zzQ1__[q2];
 			}
 
-			/// 2D
+			//// 2D
 			data2D[idxPerp][idxPara][0] ++;
 			data2D[idxPerp][idxPara][1] += rPerp;
 			data2D[idxPerp][idxPara][2] += rPara;
@@ -4451,9 +4452,9 @@ void Correlation::xi_QSO_QSO(bool doBootstraps/*=false*/, unsigned int bootIdx/*
 	pathToSave += "xi_QSO_QSO_1D_";
 	pathToSave += QSO__;
 	if (randomQSO) {
-                pathToSave += "_randomQSO_";
-                pathToSave += strBootIdx;;
-        }
+		pathToSave += "_randomQSO_";
+		pathToSave += strBootIdx;;
+	}
 	pathToSave += ".txt";
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
@@ -4463,7 +4464,7 @@ void Correlation::xi_QSO_QSO(bool doBootstraps/*=false*/, unsigned int bootIdx/*
 	long double sumOne = 0.;
 	long double meanZ = 0.;
 
-	/// Set the values of data
+	//// Set the values of data
 	for (unsigned int i=0; i<nbBin; i++) {
 
 		long double save0 = 0.;
@@ -4489,19 +4490,19 @@ void Correlation::xi_QSO_QSO(bool doBootstraps/*=false*/, unsigned int bootIdx/*
 	}
 	fFile.close();
 
-	/// Get mean redshift of pairs
+	//// Get mean redshift of pairs
 	std::cout << "  < z >           = " << meanZ/sumOne << " +- " << 0. << std::endl;
 	std::cout << "  number of pairs = " << sumOne          << std::endl;
 
 
-	/// 2D
+	//// 2D
 	pathToSave = pathToSave__;
 	pathToSave += "xi_QSO_QSO_2D_";
 	pathToSave += QSO__;
 	if (randomQSO) {
-                pathToSave += "_randomQSO_";
-                pathToSave += strBootIdx;;
-        }
+		pathToSave += "_randomQSO_";
+		pathToSave += strBootIdx;;
+	}
 	pathToSave += ".txt";
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
@@ -4511,7 +4512,7 @@ void Correlation::xi_QSO_QSO(bool doBootstraps/*=false*/, unsigned int bootIdx/*
 	sumOne = 0.;
 	meanZ  = 0.;
 
-	/// Set the values of data
+	//// Set the values of data
 	for (unsigned int i=0; i<nbBin; i++) {
 		for (unsigned int j=0; j<nbBin; j++) {
 			fFile << data2D[i][j][0];
@@ -4526,7 +4527,7 @@ void Correlation::xi_QSO_QSO(bool doBootstraps/*=false*/, unsigned int bootIdx/*
 	}
 	fFile.close();
 
-	/// Get mean redshift of pairs
+	//// Get mean redshift of pairs
 	std::cout << "  < z >           = " << meanZ/sumOne << " +- " << 0. << std::endl;
 	std::cout << "  number of pairs = " << sumOne          << std::endl;
 
@@ -4536,16 +4537,16 @@ void Correlation::xi_QSO_QSO(bool doBootstraps/*=false*/, unsigned int bootIdx/*
 	pathToSave += "xi_QSO_QSO_Mu_";
 	pathToSave += QSO__;
 	if (randomQSO) {
-                pathToSave += "_randomQSO_";
-                pathToSave += strBootIdx;;
-        }
+		pathToSave += "_randomQSO_";
+		pathToSave += strBootIdx;;
+	}
 	pathToSave += ".txt";
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
 	fFile << std::scientific;
 	fFile.precision(17);
 
-	/// Set the values of data
+	//// Set the values of data
 	for (unsigned int i=0; i<nbBin; i++) {
 		for (unsigned int j=0; j<nbBinM; j++) {
 			fFile << dataMu[i][j][0];
@@ -4568,7 +4569,7 @@ void Correlation::xi_QSO_QSO_MockJMc(bool doBootstraps/*=false*/, unsigned int b
 
 	loadDataQ1();
 
-	/// If doing with random
+	//// If doing with random
 
 	std::stringstream convert;
 	convert << bootIdx;
@@ -4583,11 +4584,11 @@ void Correlation::xi_QSO_QSO_MockJMc(bool doBootstraps/*=false*/, unsigned int b
 		std::cout << "  Random QSO " << bootIdx << std::endl;
 		std::srand (bootIdx*10);
 
-		/// number of qso
+		//// number of qso
 		unsigned int nbQSO = 0;
 		while (nbQSO<nbQ1__) {
 
-			/// Pick a QSO on the grid
+			//// Pick a QSO on the grid
 			double x = 0.;
 			double y = 0.;
 			if (randomPositionOfQSOInCell__) {
@@ -4603,7 +4604,7 @@ void Correlation::xi_QSO_QSO_MockJMc(bool doBootstraps/*=false*/, unsigned int b
 
 			bool cont = false;
 
-			/// Pick a new one if already picked
+			//// Pick a new one if already picked
 			for (unsigned int i=0; i<nbQSO; i++) {
 				if (v_raQ1__[i]==x && v_deQ1__[i]==y && v_rQ1__[i]==r) {
 					cont = true;
@@ -4628,13 +4629,13 @@ void Correlation::xi_QSO_QSO_MockJMc(bool doBootstraps/*=false*/, unsigned int b
 	}
 
 
-	/// Constants:
+	//// Constants:
 	const double max          = 200.;
 	const unsigned int nbBin  = int(max);
 	const double maxPow2      = max*max;
 	const unsigned int nbBinM = 50;
 
-	/// Arrays for data
+	//// Arrays for data
 	double dataMu[nbBin][nbBinM][4];
 	double data2D[nbBin][nbBin][4];
 	for (unsigned int i=0; i<nbBin; i++) {
@@ -4663,22 +4664,22 @@ void Correlation::xi_QSO_QSO_MockJMc(bool doBootstraps/*=false*/, unsigned int b
 
 		for (unsigned int q2=0; q2<q1; q2++) {
 
-			/// s_perp
+			//// s_perp
 			const double rPerpPow2 = (x1-v_raQ1__[q2])*(x1-v_raQ1__[q2]) + (y1-v_deQ1__[q2])*(y1-v_deQ1__[q2]);
 			if (rPerpPow2>=maxPow2) continue;
 
-			/// s_paral
+			//// s_paral
 			const double rParaPow2 = (r1-v_rQ1__[q2])*(r1-v_rQ1__[q2]);
 			if (rParaPow2>=maxPow2) continue;
 
-			/// |s|
+			//// |s|
 			const double distTotPow2 = rPerpPow2+rParaPow2;
 			const double rPerp = sqrt(rPerpPow2);
 			const double rPara = sqrt(rParaPow2);
 			const unsigned int idxPerp = int( rPerp );
 			const unsigned int idxPara = int( rPara );
 
-			/// 1D
+			//// 1D
 			if (distTotPow2<maxPow2) {
 				const double distTot    = sqrt(distTotPow2);
 				const double mu         = rPara/distTot;
@@ -4693,7 +4694,7 @@ void Correlation::xi_QSO_QSO_MockJMc(bool doBootstraps/*=false*/, unsigned int b
 				dataMu[idx][idxM][3] += z1+v_zzQ1__[q2];
 			}
 
-			/// 2D
+			//// 2D
 			data2D[idxPerp][idxPara][0] ++;
 			data2D[idxPerp][idxPara][1] +=rPerp;
 			data2D[idxPerp][idxPara][2] +=rPara;
@@ -4710,9 +4711,9 @@ void Correlation::xi_QSO_QSO_MockJMc(bool doBootstraps/*=false*/, unsigned int b
 	pathToSave += "xi_QSO_QSO_1D_";
 	pathToSave += QSO__;
 	if (randomQSO) {
-                pathToSave += "_RR_";
-                pathToSave += strBootIdx;
-        }
+		pathToSave += "_RR_";
+		pathToSave += strBootIdx;
+	}
 	else {
 		pathToSave += "_DD";
 	}
@@ -4725,7 +4726,7 @@ void Correlation::xi_QSO_QSO_MockJMc(bool doBootstraps/*=false*/, unsigned int b
 	long double sumOne = 0.;
 	long double meanZ = 0.;
 
-	/// Set the values of data
+	//// Set the values of data
 	for (unsigned int i=0; i<nbBin; i++) {
 
 		long double save0 = 0.;
@@ -4751,19 +4752,19 @@ void Correlation::xi_QSO_QSO_MockJMc(bool doBootstraps/*=false*/, unsigned int b
 	}
 	fFile.close();
 
-	/// Get mean redshift of pairs
+	//// Get mean redshift of pairs
 	std::cout << "  < z >           = " << meanZ/sumOne << " +- " << 0. << std::endl;
 	std::cout << "  number of pairs = " << sumOne          << std::endl;
 
 
-	/// 2D
+	//// 2D
 	pathToSave = pathToSave__;
 	pathToSave += "xi_QSO_QSO_2D_";
 	pathToSave += QSO__;
 	if (randomQSO) {
-                pathToSave += "_RR_";
-                pathToSave += strBootIdx;
-        }
+		pathToSave += "_RR_";
+		pathToSave += strBootIdx;
+	}
 	else {
 		pathToSave += "_DD";
 	}
@@ -4776,7 +4777,7 @@ void Correlation::xi_QSO_QSO_MockJMc(bool doBootstraps/*=false*/, unsigned int b
 	sumOne = 0.;
 	meanZ  = 0.;
 
-	/// Set the values of data
+	//// Set the values of data
 	for (unsigned int i=0; i<nbBin; i++) {
 		for (unsigned int j=0; j<nbBin; j++) {
 			fFile << data2D[i][j][0];
@@ -4791,7 +4792,7 @@ void Correlation::xi_QSO_QSO_MockJMc(bool doBootstraps/*=false*/, unsigned int b
 	}
 	fFile.close();
 
-	/// Get mean redshift of pairs
+	//// Get mean redshift of pairs
 	std::cout << "  < z >           = " << meanZ/sumOne << " +- " << 0. << std::endl;
 	std::cout << "  number of pairs = " << sumOne          << std::endl;
 
@@ -4801,9 +4802,9 @@ void Correlation::xi_QSO_QSO_MockJMc(bool doBootstraps/*=false*/, unsigned int b
 	pathToSave += "xi_QSO_QSO_Mu_";
 	pathToSave += QSO__;
 	if (randomQSO) {
-                pathToSave += "_RR_";
-                pathToSave += strBootIdx;
-        }
+		pathToSave += "_RR_";
+		pathToSave += strBootIdx;
+	}
 	else {
 		pathToSave += "_DD";
 	}
@@ -4813,7 +4814,7 @@ void Correlation::xi_QSO_QSO_MockJMc(bool doBootstraps/*=false*/, unsigned int b
 	fFile << std::scientific;
 	fFile.precision(17);
 
-	/// Set the values of data
+	//// Set the values of data
 	for (unsigned int i=0; i<nbBin; i++) {
 		for (unsigned int j=0; j<nbBinM; j++) {
 			fFile << dataMu[i][j][0];
@@ -4826,10 +4827,10 @@ void Correlation::xi_QSO_QSO_MockJMc(bool doBootstraps/*=false*/, unsigned int b
 	fFile.close();
 
 
-	/// Doing the correlation random - data
+	//// Doing the correlation random - data
 	if (randomQSO) {
 	
-		/// Reset values to zero
+		//// Reset values to zero
 		for (unsigned int i=0; i<nbBin; i++) {
 			for (unsigned int j=0; j<nbBinM; j++) {
 				for (unsigned int k=0; k<4; k++) {
@@ -4845,47 +4846,47 @@ void Correlation::xi_QSO_QSO_MockJMc(bool doBootstraps/*=false*/, unsigned int b
 			}
 		}
 	
-		/// get a data
+		//// get a data
 		for (unsigned int q1=0; q1<nbQ1__; q1++) {
-	                const double x1 = dataX[q1];
-	                const double y1 = dataY[q1];
-	                const double r1 = dataR[q1];
-	                const double z1 = dataZ[q1];
-
-			/// Get a random
-	                for (unsigned int q2=0; q2<nbQ1__; q2++) {
-
-				/// s_perp
+			const double x1 = dataX[q1];
+			const double y1 = dataY[q1];
+			const double r1 = dataR[q1];
+			const double z1 = dataZ[q1];
+			
+			//// Get a random
+			for (unsigned int q2=0; q2<nbQ1__; q2++) {
+			
+				//// s_perp
 				const double rPerpPow2 = (x1-v_raQ1__[q2])*(x1-v_raQ1__[q2]) + (y1-v_deQ1__[q2])*(y1-v_deQ1__[q2]);
 				if (rPerpPow2>=maxPow2) continue;
-
-				/// s_paral
+				
+				//// s_paral
 				const double rParaPow2 = (r1-v_rQ1__[q2])*(r1-v_rQ1__[q2]);
 				if (rParaPow2>=maxPow2) continue;
-
-				/// |s|
+				
+				//// |s|
 				const double distTotPow2 = rPerpPow2+rParaPow2;
 				const double rPerp = sqrt(rPerpPow2);
 				const double rPara = sqrt(rParaPow2);
 				const unsigned int idxPerp = int( rPerp );
 				const unsigned int idxPara = int( rPara );
-
-				/// 1D
+				
+				//// 1D
 				if (distTotPow2<maxPow2) {
-					const double distTot    = sqrt(distTotPow2);
+				const double distTot    = sqrt(distTotPow2);
 					const double mu         = rPara/distTot;
 					const unsigned int idx  = int(distTot);
-
+					
 					unsigned int idxM = 49;
 					if (rPara != distTot) idxM = int(50.*mu);
-
+					
 					dataMu[idx][idxM][0] ++;
 					dataMu[idx][idxM][1] += distTot;
 					dataMu[idx][idxM][2] += mu;
 					dataMu[idx][idxM][3] += z1+v_zzQ1__[q2];
 				}
-
-				/// 2D
+				
+				//// 2D
 				data2D[idxPerp][idxPara][0] ++;
 				data2D[idxPerp][idxPara][1] +=rPerp;
 				data2D[idxPerp][idxPara][2] +=rPara;
@@ -4893,22 +4894,22 @@ void Correlation::xi_QSO_QSO_MockJMc(bool doBootstraps/*=false*/, unsigned int b
 			}
 		}
 
-		/// 1D
+		//// 1D
 		pathToSave = pathToSave__;
 		pathToSave += "xi_QSO_QSO_1D_";
 		pathToSave += QSO__;
-                pathToSave += "_DR_";
+		pathToSave += "_DR_";
 		pathToSave += strBootIdx;
-	        pathToSave += ".txt";
+		pathToSave += ".txt";
 		std::cout << "\n  " << pathToSave << std::endl;
 		fFile.open(pathToSave.c_str());
 		fFile << std::scientific;
 		fFile.precision(17);
 
 		long double sumOne = 0.;
-        	long double meanZ  = 0.;
+		long double meanZ  = 0.;
 
-		/// Set the values of data
+		//// Set the values of data
 		for (unsigned int i=0; i<nbBin; i++) {
 
 			long double save0 = 0.;
@@ -4935,10 +4936,10 @@ void Correlation::xi_QSO_QSO_MockJMc(bool doBootstraps/*=false*/, unsigned int b
 		fFile.close();
 
 		std::cout << "  < z >           = " << meanZ/sumOne << " +- " << 0. << std::endl;
-	        std::cout << "  number of pairs = " << sumOne          << std::endl;
+		std::cout << "  number of pairs = " << sumOne          << std::endl;
 
 
-		/// 2D
+		//// 2D
 		pathToSave = pathToSave__;
 		pathToSave += "xi_QSO_QSO_2D_";
 		pathToSave += QSO__;
@@ -4953,7 +4954,7 @@ void Correlation::xi_QSO_QSO_MockJMc(bool doBootstraps/*=false*/, unsigned int b
 		sumOne = 0.;
 		meanZ  = 0.;
 
-		/// Set the values of data
+		//// Set the values of data
 		for (unsigned int i=0; i<nbBin; i++) {
 			for (unsigned int j=0; j<nbBin; j++) {
 				fFile << data2D[i][j][0];
@@ -4968,7 +4969,7 @@ void Correlation::xi_QSO_QSO_MockJMc(bool doBootstraps/*=false*/, unsigned int b
 		}
 		fFile.close();
 
-		/// Get mean redshift of pairs
+		//// Get mean redshift of pairs
 		std::cout << "  < z >           = " << meanZ/sumOne << " +- " << 0. << std::endl;
 		std::cout << "  number of pairs = " << sumOne          << std::endl;
 
@@ -4977,14 +4978,14 @@ void Correlation::xi_QSO_QSO_MockJMc(bool doBootstraps/*=false*/, unsigned int b
 		pathToSave += "xi_QSO_QSO_Mu_";
 		pathToSave += QSO__;
 		pathToSave += "_DR_";
-                pathToSave += strBootIdx;
+		pathToSave += strBootIdx;
 		pathToSave += ".txt";
 		std::cout << "\n  " << pathToSave << std::endl;
 		fFile.open(pathToSave.c_str());
 		fFile << std::scientific;
 		fFile.precision(17);
 
-		/// Set the values of data
+		//// Set the values of data
 		for (unsigned int i=0; i<nbBin; i++) {
 			for (unsigned int j=0; j<nbBinM; j++) {
 				fFile << dataMu[i][j][0];
@@ -5008,8 +5009,8 @@ void Correlation::xi_Q1_Q2(void) {
 	loadDataQ1();
 	loadDataQ2();
 
-	/// Constants:
-	/// The space between bins is of 10 Mpc.h^-1
+	//// Constants:
+	//// The space between bins is of 10 Mpc.h^-1
 	const double max          = 160.;
 
 	const unsigned int nbBin  = int(max);
@@ -5018,7 +5019,7 @@ void Correlation::xi_Q1_Q2(void) {
 
 	const double maxPow2 = max*max;
 	
-	/// Arrays for data
+	//// Arrays for data
 	double meanZZ[2] = {};
 	double data1D_0[nbBin];
 	double data1D_1[nbBin];
@@ -5046,20 +5047,20 @@ void Correlation::xi_Q1_Q2(void) {
 
 		for (unsigned int q2=0; q2<nbQ2__; q2++) {
 
-			/// Angle between the two directions of the qso and the lya
+			//// Angle between the two directions of the qso and the lya
 			double cosTheta = cosDe1*v_CosDeQ2__[q2]*cos(ra1-v_raQ2__[q2]) + sinDe1*v_SinDeQ2__[q2];
 			if (fabs(1.-cosTheta)<1.e-10) cosTheta=1.;
 			
-			/// Transvers distance between the qso and the lya
+			//// Transvers distance between the qso and the lya
 			const double distTransQsoQsoPow2 = r1*r1*(1.-cosTheta*cosTheta);
 			if (distTransQsoQsoPow2 >= maxPow2) continue;
 
-			/// Parrallel distance between the qso and the lya
+			//// Parrallel distance between the qso and the lya
 			const double distParalQsoQso = r1*cosTheta-v_rQ2__[q2];
 			if (fabs(distParalQsoQso) >= max) continue;
 			const unsigned int rParralBinIdx = int(max+distParalQsoQso);
 
-			/// Transvers distance between the qso and the lya
+			//// Transvers distance between the qso and the lya
 			const double distTransQsoQso   = sqrt(distTransQsoQsoPow2);
 			const unsigned int rPerpBinIdx = int( distTransQsoQso);
 
@@ -5076,7 +5077,7 @@ void Correlation::xi_Q1_Q2(void) {
 				meanZZ[1] += tmp_meanZZ*tmp_meanZZ;
 			}
 				
-			/// Fill the histogramm of xi(r_{perp}, r_{paral}
+			//// Fill the histogramm of xi(r_{perp}, r_{paral}
 			data2D[rPerpBinIdx][rParralBinIdx][0] ++;
 			data2D[rPerpBinIdx][rParralBinIdx][1] += distTransQsoQso;
 			data2D[rPerpBinIdx][rParralBinIdx][2] += distParalQsoQso;
@@ -5102,8 +5103,8 @@ void Correlation::xi_Q1_Q2(void) {
 
 	long double sumOne = 0.;
 
-	/// Set the values of data
-	/// [0] for value, [1] for error, [2] for bin center
+	//// Set the values of data
+	//// [0] for value, [1] for error, [2] for bin center
 	for (unsigned int i=0; i<nbBin; i++) {
 		if (data1D_0[i]!=0.) {
 			const long double save0 = data1D_0[i];
@@ -5124,7 +5125,7 @@ void Correlation::xi_Q1_Q2(void) {
 
 
 
-	/// Get mean redshift of pairs
+	//// Get mean redshift of pairs
 	meanZZ[0] = meanZZ[0]/(2.*sumOne);
 	meanZZ[1] = sqrt( (meanZZ[1]/(4.*sumOne) - meanZZ[0]*meanZZ[0])/sumOne);
 	std::cout << "  < z >           = " << meanZZ[0] << " +- " << meanZZ[1] << std::endl;
@@ -5134,7 +5135,7 @@ void Correlation::xi_Q1_Q2(void) {
 	sumOne = 0.;
 
 	
-	/// Save the 2D cross-correlation
+	//// Save the 2D cross-correlation
 	std::string pathToSave = pathToSave__;
 	pathToSave += "xi_Q1_Q2_2D_";
 	pathToSave += QSO__;
@@ -5146,8 +5147,8 @@ void Correlation::xi_Q1_Q2(void) {
 	fFile << std::scientific;
 	fFile.precision(17);
 	
-	/// Set the values of data
-	/// [0] for value, [1] for error, [2] for bin center
+	//// Set the values of data
+	//// [0] for value, [1] for error, [2] for bin center
 	for (unsigned int i=0; i<nbBinX; i++) {
 		for (unsigned int j=0; j<nbBinY; j++) {
 			if (data2D[i][j][0]!=0.) {
@@ -5202,7 +5203,7 @@ void Correlation::xi_Q1_Q2(void) {
 
 void Correlation::loadDataQ1(void) {
 
-	/// Create the conversion table from redshift to distance
+	//// Create the conversion table from redshift to distance
 	Cosmology* cosmo = new Cosmology(C_H, C_OMEGAM, C_OMEGAB);
 	TH1D* hConvertRedshDist = cosmo->createHistoConvertRedshDist(C_NBBINREDSH, C_ZEXTREMABINCONVERT0, C_ZEXTREMABINCONVERT1);
 
@@ -5218,13 +5219,13 @@ void Correlation::loadDataQ1(void) {
 	std::cout << "\n\n  ------ load Data Q1 ------" << std::endl;
 
 
-	/// Constants
+	//// Constants
 	if (randomPositionOfQSOInCell__) std::srand(42);
 
 	const TString TSfitsnameSpec = pathQ1__;
 	std::cout << "  pathToFits = " << pathQ1__ << std::endl;
 
-	/// Variables for FITS
+	//// Variables for FITS
 	int sta = 0;
 	long nrows = 0;
 
@@ -5236,12 +5237,12 @@ void Correlation::loadDataQ1(void) {
 	std::cout << "  number of        Q1    = " << nrows << std::endl;
 	std::cout << "  number of loaded Q1    = " << nbQ1__ << std::endl;
 
-	/// Variables for data in FITS
+	//// Variables for data in FITS
 	double ra = 0.;
 	double de = 0.;
 	double zz = 0.;
 
-	/// Load data
+	//// Load data
 	for (unsigned int i=0; i<nbQ1__; i++) {
 		fits_read_col(fitsptrSpec,TDOUBLE, 1,i+1,1,1,NULL,&ra, NULL,&sta);
 		fits_read_col(fitsptrSpec,TDOUBLE, 2,i+1,1,1,NULL,&de, NULL,&sta);
@@ -5250,12 +5251,12 @@ void Correlation::loadDataQ1(void) {
 		if ( !mockBox__ && ra==0. && de==0. ) continue;
 		if ( !mockBox__ && (zz<minRedshiftQSO || zz>maxRedshiftQSO) ) continue;
 
-		/// If not dealing with Jean-Marc's simulations
+		//// If not dealing with Jean-Marc's simulations
 		if (!mockJMC__ && !mockBox__) {
 			ra *= C_DEGTORAD;
 			de *= C_DEGTORAD;
 		}
-		/// If find a random position of the QSO or forest in the cell
+		//// If find a random position of the QSO or forest in the cell
 		if (randomPositionOfQSOInCell__) {
 			const double randPositionRA = sizeCell__*(1.*rand()/RAND_MAX-0.5);
 			ra += randPositionRA;
@@ -5263,7 +5264,7 @@ void Correlation::loadDataQ1(void) {
 			de += randPositionDE;
 		}
 
-		/// Store the data
+		//// Store the data
 		v_raQ1__.push_back(ra);
 		v_deQ1__.push_back(de);
 		v_CosDeQ1__.push_back(cos(de));
@@ -5282,7 +5283,7 @@ void Correlation::loadDataQ1(void) {
 }
 void Correlation::loadDataQ2(void) {
 
-	/// Create the conversion table from redshift to distance
+	//// Create the conversion table from redshift to distance
 	Cosmology* cosmo = new Cosmology(C_H, C_OMEGAM, C_OMEGAB);
 	TH1D* hConvertRedshDist = cosmo->createHistoConvertRedshDist(C_NBBINREDSH, C_ZEXTREMABINCONVERT0, C_ZEXTREMABINCONVERT1);
 	delete cosmo;
@@ -5295,7 +5296,7 @@ void Correlation::loadDataQ2(void) {
 	const TString TSfitsnameSpec = pathQ2__;
 	std::cout << "  pathToFits = " << pathQ2__ << std::endl;
 
-	/// Variables for FITS
+	//// Variables for FITS
 	int sta = 0;
 	long nrows = 0;
 
@@ -5307,12 +5308,12 @@ void Correlation::loadDataQ2(void) {
 	std::cout << "  number of        Q2    = " << nrows << std::endl;
 	std::cout << "  number of loaded Q2    = " << nbQ2__ << std::endl;
 
-	/// Variables for data in FITS
+	//// Variables for data in FITS
 	double ra = 0.;
 	double de = 0.;
 	double zz = 0.;
 
-	/// Load data
+	//// Load data
 	for (unsigned int i=0; i<nbQ2__; i++) {
 		fits_read_col(fitsptrSpec,TDOUBLE, 1,i+1,1,1,NULL,&ra, NULL,&sta);
 		fits_read_col(fitsptrSpec,TDOUBLE, 2,i+1,1,1,NULL,&de, NULL,&sta);
@@ -5321,7 +5322,7 @@ void Correlation::loadDataQ2(void) {
 		ra *= C_DEGTORAD;
 		de *= C_DEGTORAD;
 
-		/// Store the data
+		//// Store the data
 		v_raQ2__.push_back(ra);
 		v_deQ2__.push_back(de);
 		v_CosDeQ2__.push_back(cos(de));
@@ -5341,7 +5342,7 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 
 	std::cout << "\n\n  ------ load Data Forest ------" << std::endl;
 
-	/// Create the conversion table from redshift to distance
+	//// Create the conversion table from redshift to distance
 	Cosmology* cosmo = new Cosmology(C_H, C_OMEGAM, C_OMEGAB);
 	TH1D* hConvertRedshDist = cosmo->createHistoConvertRedshDist(C_NBBINREDSH, C_ZEXTREMABINCONVERT0, C_ZEXTREMABINCONVERT1);
 
@@ -5351,18 +5352,18 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 	delete cosmo;
 
 
-	/// Constants
+	//// Constants
 	if (randomPositionOfQSOInCell__) std::srand(42);
 
 
-	/// Constants
+	//// Constants
 	//const double coefRandPositionCell = sizeCell__/RAND_MAX;
 	double isReobsFlag = -100.;
 
 	const TString TSfitsnameSpec = pathToFits;
 	std::cout << "  pathToFits = " << pathToFits << std::endl;
 
-	/// Variables for FITS
+	//// Variables for FITS
 	int sta = 0;
 	long nrows = 0;
 
@@ -5377,15 +5378,15 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 
 
 	unsigned int regionMap[nrows];
-	/// If doing bootstrap, geting the array to know if in the given region
+	//// If doing bootstrap, geting the array to know if in the given region
 	if (doBootstraps) {
 
-		/// Init the values
+		//// Init the values
 		for (unsigned int i=0; i<nrows; i++) {
 			regionMap[i] = 100000;
 		}
 
-		/// For the cross-correlation
+		//// For the cross-correlation
 		std::string pathToSave = pathToSave__;
 		pathToSave += "xi_delta_QSO_nbPairsForest_";
 		pathToSave += forest__;
@@ -5401,12 +5402,12 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 	}
 
 
-	/// Load data
+	//// Load data
 	for (unsigned int i=0; i<nbForest_; i++) {
 
 		if (doBootstraps && regionMap[i]!=bootIdx) continue;
 
-		/// Variables for data in FITS
+		//// Variables for data in FITS
 		double ra = 0.;
 		double de = 0.;
 		double zz = 0.;
@@ -5420,7 +5421,7 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 		double NORM_FLUX_IVAR[nbBinRFMax__];
 		double FLUX_DLA[nbBinRFMax__];
 
-		/// Vector with data
+		//// Vector with data
 		double meanForestLambdaRF = 0.;
 		bool templateHasNegative = false;
 		std::vector< double > v_tmp_r;
@@ -5448,16 +5449,16 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 
 		if (!mocksNoNoiseNoCont && ( (alpha2 == alphaStart__ && beta2 == 0.) || (fabs(alpha2)>=maxAlpha__-0.5) || (fabs(beta2)>=maxBeta__-0.05) ) ) continue;
 		
-		/// If a reobs
+		//// If a reobs
 		if (alpha1==isReobsFlag) continue;
 
-		/// For Nicolas's estimator
+		//// For Nicolas's estimator
 		double meanNeeded[5] = {0.};
 
 		for (unsigned int j=0; j<nbBinRFMax__; j++) {
 			if (DELTA_WEIGHT[j]>0. && NORM_FLUX_IVAR[j]>0. && FLUX_DLA[j]>=C_DLACORR && LAMBDA_RF[j]>=lambdaRFMin__ && LAMBDA_RF[j]<lambdaRFMax__ && LAMBDA_OBS[j]>=lambdaObsMin__ && LAMBDA_OBS[j]<lambdaObsMax__) {
 
-				/// Remove veto lines
+				//// Remove veto lines
 				bool isLine = false;
 				if (doVetoLines__) {
 					for (unsigned int k=0; k<nbVetoLines__; k++) {
@@ -5478,10 +5479,10 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 				v_tmp_lRF.push_back(LAMBDA_RF[j]);
 				v_tmp_lObs.push_back(LAMBDA_OBS[j]);
 
-				/// Get if the template is even one time negative
+				//// Get if the template is even one time negative
 				if ( alpha2+beta2*(LAMBDA_RF[j]-meanForestLambdaRF) <= 0.) templateHasNegative = true;
 
-				/// For Nicolas's estimator
+				//// For Nicolas's estimator
 				if (nicolasEstimator__) {
 					meanNeeded[0] += DELTA_WEIGHT[j]*DELTA[j];
 					meanNeeded[1] += DELTA_WEIGHT[j]*LAMBDA_RF[j];
@@ -5495,10 +5496,10 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 		const unsigned int tmp_nb = v_tmp_r.size();
 		if (tmp_nb<nbBinRFMin__ || templateHasNegative ) continue;
 
-		/// Set array for the number a pixel is taken inside a pair
+		//// Set array for the number a pixel is taken inside a pair
 		std::vector< unsigned int > v_tmp_nb(tmp_nb,0);
 
-		/// For Nicolas's estimator
+		//// For Nicolas's estimator
 		if (nicolasEstimator__) {
 			const double meanDelta   = meanNeeded[0]/meanNeeded[4];
 			const double meanLambda  = meanNeeded[1]/meanNeeded[4];
@@ -5510,12 +5511,12 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 			}
 		}
 
-		/// If not dealing with Jean-Marc's simulations
+		//// If not dealing with Jean-Marc's simulations
 		if (!mockJMC__) {
 			ra *= C_DEGTORAD;
 			de *= C_DEGTORAD;
 		}
-		/// If find a random position of the QSO or forest in the cell
+		//// If find a random position of the QSO or forest in the cell
 		if (randomPositionOfQSOInCell__) {
 			const double randPositionRA = sizeCell__*(1.*rand()/RAND_MAX-0.5);
 			ra += randPositionRA;
@@ -5553,7 +5554,7 @@ void Correlation::loadDataDelta2(int dataNeeded/*=100*/) {
 
 	std::cout << "\n\n  ------ load Data Forest 2 ------" << std::endl;
 
-	/// Create the conversion table from redshift to distance
+	//// Create the conversion table from redshift to distance
 	Cosmology* cosmo = new Cosmology(C_H, C_OMEGAM, C_OMEGAB);
 	TH1D* hConvertRedshDist = cosmo->createHistoConvertRedshDist(C_NBBINREDSH, C_ZEXTREMABINCONVERT0, C_ZEXTREMABINCONVERT1);
 
@@ -5565,7 +5566,7 @@ void Correlation::loadDataDelta2(int dataNeeded/*=100*/) {
 	const TString TSfitsnameSpec = pathDelta2__;
 	std::cout << "  pathToFits = " << pathDelta2__ << std::endl;
 
-	/// Variables for FITS
+	//// Variables for FITS
 	int sta = 0;
 	long nrows = 0;
 
@@ -5577,10 +5578,10 @@ void Correlation::loadDataDelta2(int dataNeeded/*=100*/) {
 	std::cout << "  number of        forest = " << nrows << std::endl;
 	std::cout << "  number of loaded forest = " << nbForest2__ << std::endl;
 
-	/// Load data
+	//// Load data
 	for (unsigned int i=0; i<nbForest2__; i++) {
 
-		/// Variables for data in FITS
+		//// Variables for data in FITS
 		double ra = 0.;
 		double de = 0.;
 		double zz = 0.;
@@ -5594,7 +5595,7 @@ void Correlation::loadDataDelta2(int dataNeeded/*=100*/) {
 		double DELTA[nbBinRFMaxDelta2__];
 		double DELTA_WEIGHT[nbBinRFMaxDelta2__];
 
-		/// Vector with data
+		//// Vector with data
 		double meanForestLambdaRF = 0.;
 		bool templateHasNegative = false;
 		std::vector< double > v_tmp_r;
@@ -5607,9 +5608,9 @@ void Correlation::loadDataDelta2(int dataNeeded/*=100*/) {
 		fits_read_col(fitsptrSpec,TDOUBLE, 4,i+1,1,1,NULL,&ra,   NULL,&sta);
 		fits_read_col(fitsptrSpec,TDOUBLE, 5,i+1,1,1,NULL,&de,   NULL,&sta);
 		fits_read_col(fitsptrSpec,TDOUBLE, 6,i+1,1,1,NULL,&zz,   NULL,&sta);
-                fits_read_col(fitsptrSpec,TDOUBLE, 8, i+1,1,1,NULL,&meanForestLambdaRF,   NULL,&sta);
-                fits_read_col(fitsptrSpec,TDOUBLE, 11,i+1,1,1,NULL,&alpha2,               NULL,&sta);
-                fits_read_col(fitsptrSpec,TDOUBLE, 12,i+1,1,1,NULL,&beta2,                NULL,&sta);
+		fits_read_col(fitsptrSpec,TDOUBLE, 8, i+1,1,1,NULL,&meanForestLambdaRF,   NULL,&sta);
+		fits_read_col(fitsptrSpec,TDOUBLE, 11,i+1,1,1,NULL,&alpha2,               NULL,&sta);
+		fits_read_col(fitsptrSpec,TDOUBLE, 12,i+1,1,1,NULL,&beta2,                NULL,&sta);
 
 		fits_read_col(fitsptrSpec,TDOUBLE, 13,i+1,1,nbBinRFMaxDelta2__,NULL, &LAMBDA_OBS,      NULL,&sta);
 		fits_read_col(fitsptrSpec,TDOUBLE, 14,i+1,1,nbBinRFMaxDelta2__,NULL, &LAMBDA_RF,       NULL,&sta);
@@ -5624,7 +5625,7 @@ void Correlation::loadDataDelta2(int dataNeeded/*=100*/) {
 		for (unsigned int j=0; j<nbBinRFMaxDelta2__; j++) {
 			if (DELTA_WEIGHT[j]>0. && NORM_FLUX_IVAR[j]>0. && FLUX_DLA[j]>=C_DLACORR && LAMBDA_RF[j]>=lambdaRFMinDelta2__ && LAMBDA_RF[j]<lambdaRFMaxDelta2__ && LAMBDA_OBS[j]>=lambdaObsMin__ && LAMBDA_OBS[j]<lambdaObsMax__) {
 
-				/// Remove veto lines
+				//// Remove veto lines
 				bool isLine = false;
 				if (doVetoLines__) {
 					for (unsigned int k=0; k<nbVetoLines__; k++) {
@@ -5636,7 +5637,7 @@ void Correlation::loadDataDelta2(int dataNeeded/*=100*/) {
 				}
 				if (isLine) continue;
 
-				/// Get if the template is even one time negative
+				//// Get if the template is even one time negative
 				if ( alpha2+beta2*(LAMBDA_RF[j]-meanForestLambdaRF) <= 0.) templateHasNegative = true;
 
 				const double zi = LAMBDA_OBS[j]/lambdaRFLineDelta2__ -1.;
@@ -5694,7 +5695,7 @@ void Correlation::removeFalseCorrelations(bool firstPass/*=true*/) {
 	const unsigned int nbLoop = 50;
 
 	
-	/// Remove <delta> vs. lambda_OBS
+	//// Remove <delta> vs. lambda_OBS
 	const unsigned int nbBin = nbBinlambdaObs__;
 	const double min = lambdaObsMin__;
 	const double max = lambdaObsMax__;
@@ -5706,7 +5707,7 @@ void Correlation::removeFalseCorrelations(bool firstPass/*=true*/) {
 	*/
 	TH1D* histo = new TH1D("histo","",nbBin,min,max);
 
-	/// Start the loop
+	//// Start the loop
 	for (unsigned int lp=0; lp<nbLoop; lp++) {
 
 		double data[nbBin][4];
@@ -5716,7 +5717,7 @@ void Correlation::removeFalseCorrelations(bool firstPass/*=true*/) {
 			}
 		}
 
-		/// Find < delta >
+		//// Find < delta >
 		for (unsigned int f=0; f<nbForest_; f++) {
 
 			const unsigned int nb = v_nbPixelDelta1__[f];	
@@ -5742,7 +5743,7 @@ void Correlation::removeFalseCorrelations(bool firstPass/*=true*/) {
 
 		long double mean0[2] = {};
 
-		/// Put it into an histo
+		//// Put it into an histo
 		for (unsigned int i=0; i<nbBin; i++) {
 
 			histo->SetBinContent(i+1,0.);
@@ -5828,7 +5829,7 @@ void Correlation::removeFalseCorrelations(bool firstPass/*=true*/) {
 			}
 		}
 
-		/// Remove the correlation
+		//// Remove the correlation
 		for (unsigned int f=0; f<nbForest_; f++) {
 			
 			const unsigned int nb = v_nbPixelDelta1__[f];	
