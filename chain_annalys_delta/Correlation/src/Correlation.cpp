@@ -122,7 +122,7 @@ Correlation::Correlation(int argc, char **argv) {
 	// command
 
 	///// 0: correlation, 1: mockCatalogue, 2: bootstraps, 3: Wick, 4: mockChunck, 5: mockSimul
-	unsigned int idxCommand[6] = {};
+	unsigned int idxCommand[6] = {0};
 	for (unsigned int i=0; i<6; i++) {
 		std::string string = argv[i+1];
 		idxCommand[i] = atoi(string.c_str());
@@ -212,35 +212,51 @@ Correlation::Correlation(int argc, char **argv) {
 	commandEnd__ += " ";
 	commandEnd__ += QSO2__;
 	std::cout << "  " << commandEnd__ << std::endl;
+	
+	const unsigned int command = idxCommand[0];
 
-	if      (idxCommand[0] == 0)  xi_1D_delta_delta();
-	else if (idxCommand[0] == 1)  xi_1DlRF_delta_delta();
-	else if (idxCommand[0] == 2)  xi_1D_delta_delta2();
-	else if (idxCommand[0] == 3)  xi_A_delta_delta();
-	else if (idxCommand[0] == 4)  xi_delta_delta2();
-	else if (idxCommand[0] == 5)  xi_delta_QSO(doBootstraps__,idxCommand[2]);
-	else if (idxCommand[0] == 6)  xi_QSO_QSO(doBootstraps__,idxCommand[2]);
-	else if (idxCommand[0] == 7)  xi_Q1_Q2();
-	else if (idxCommand[0] == 8)  xi_1DlRF_delta_delta2();
-	else if (idxCommand[0] == 9)  xi_delta_QSO_Wick(idxCommand[3]);
-	else if (idxCommand[0] == 10) xi_delta_QSO_MockJMc(doBootstraps__,idxCommand[2]);
-	else if (idxCommand[0] == 11) xi_A_delta_delta_MockJMc();
-	else if (idxCommand[0] == 12) xi_QSO_QSO_MockJMc(doBootstraps__,idxCommand[2]);
-	else if (idxCommand[0] == 13) xi_delta_QSO_theta(doBootstraps__,idxCommand[2]);
-	else if (idxCommand[0] == 14) xi_1DlRFDevide_delta_delta();
-	else if (idxCommand[0] == 15) xi_delta_QSO_lambda(doBootstraps__,idxCommand[2]);
-	else if (idxCommand[0] == 16) xi_A_delta_delta_lambda();
-	else if (idxCommand[0] == 17) xi_A_delta_delta2_lambda();
-	else if (idxCommand[0] == 18) xi_delta_QSO_distortionMatrix();
-	else if (idxCommand[0] == 19) xi_delta_QSO_distortionMatrix_1D();
-	else if (idxCommand[0] == 20) xi_delta_QSO_MockJMc_distortionMatrix();
-	else if (idxCommand[0] == 21) xi_delta_QSO_MockJMc_distortionMatrix_1D();
+	//
+	if      (command == 0)  xi_1D_delta_delta();
+	else if (command == 1)  xi_1DlRF_delta_delta();
+	else if (command == 2)  xi_1DlRFDevide_delta_delta();
+	else if (command == 3)  xi_1D_delta_delta2();
+	else if (command == 4)  xi_1DlRF_delta_delta2();
+	//
+	else if (command == 5)  xi_A_delta_delta();
+	else if (command == 6)  xi_A_delta_delta_lambda();
+	else if (command == 7)  xi_delta_delta2();
+	else if (command == 8)  xi_A_delta_delta2_lambda();
+	//
+	else if (command == 9)  xi_delta_QSO(doBootstraps__,idxCommand[2]);
+	else if (command == 10) xi_delta_QSO_theta(doBootstraps__,idxCommand[2]);
+	else if (command == 11) xi_delta_QSO_lambda(doBootstraps__,idxCommand[2]);
+	else if (command == 12) xi_delta_QSO_distortionMatrix();
+	else if (command == 13) xi_delta_QSO_distortionMatrix_1D();
+	else if (command == 14) xi_delta_QSO_Wick(idxCommand[3]);
+	//
+	else if (command == 15) xi_QSO_QSO(doBootstraps__,idxCommand[2]);
+	else if (command == 16) xi_Q1_Q2();
+	//
+	else if (command == 17) xi_A_delta_delta_MockJMc();
+	else if (command == 18) xi_delta_QSO_MockJMc(doBootstraps__,idxCommand[2]);
+	else if (command == 19) xi_delta_QSO_MockJMc_distortionMatrix();
+	else if (command == 20) xi_delta_QSO_MockJMc_distortionMatrix_1D();
+	else if (command == 21) xi_QSO_QSO_MockJMc(doBootstraps__,idxCommand[2]);
 
 	std::cout << "\n\n\n\n" << std::endl;
 }
 Correlation::~Correlation(void) {	
 }
 
+
+
+
+
+// ---------------------------------------------------------------------
+//
+//		1D, same forest - same forest correlation
+//
+// ---------------------------------------------------------------------
 void Correlation::xi_1D_delta_delta(void) {
 
 	/*
@@ -894,6 +910,16 @@ void Correlation::xi_1DlRF_delta_delta2(void) {
 	
 	return;
 }
+
+
+
+
+
+// ---------------------------------------------------------------------
+//
+//		3D, forest 1 - forest 2 correlation
+//
+// ---------------------------------------------------------------------
 void Correlation::xi_A_delta_delta(void) {
 
 	std::cout << "\n\n\n\n  ------ xi_A_delta_delta ------" << std::endl;
@@ -1278,290 +1304,6 @@ void Correlation::xi_A_delta_delta_lambda(void) {
 	fFile.close();
 
 	std::cout << "  number of pairs      = " << sumOne          << std::endl;
-
-
-	return;
-}
-void Correlation::xi_A_delta_delta_MockJMc(void) {
-
-	std::cout << "\n\n\n\n  ------ xi_A_delta_delta_MockJMc ------" << std::endl;
-	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_A_delta_delta.py";
-	command += commandEnd__;
-	std::cout << command << "\n" << std::endl;
-
-	loadDataForest(pathForest__);
-	if (mocksNoNoiseNoCont) {
-		removeFalseCorrelations();
-	}
-	v_CosDe__.clear();
-	v_SinDe__.clear();
-	v_zz__.clear();
-	v_idx__.clear();
-	v_lRF__.clear();
-	v_lObs__.clear();
-
-
-
-	std::cout << "  Starting" << std::endl;
-
-	///// Constants:
-	const unsigned int max = 200.;
-	const unsigned int nbBin = int(max);
-	const unsigned int nbBinM = 50.;
-
-	const double maxPow2      = max*max;
-
-	///// Arrays for data
-	double dataMu[nbBin][nbBinM][7];
-	double data2D[nbBin][nbBin][7];
-	for (unsigned int i=0; i<nbBin; i++) {
-		for (unsigned int j=0; j<nbBinM; j++) {
-			for (unsigned int k=0; k<7; k++) {
-				dataMu[i][j][k] = 0.;
-			}
-		}
-	}
-	for (unsigned int i=0; i<nbBin; i++) {
-		for (unsigned int j=0; j<nbBin; j++) {
-			for (unsigned int k=0; k<7; k++) {
-				data2D[i][j][k] = 0.;
-			}
-		}
-	}
-	
-
-	///// Vectors of randomized positions in cell
-	std::vector<double> v_raRandForest;
-	std::vector<double> v_deRandForest;
-	if (randomPositionOfQSOInCellNotBeforeCorrelation__) {
-
-		std::srand (42);
-
-		v_raRandForest.resize(nbForest_,0.);
-		v_deRandForest.resize(nbForest_,0.);
-
-		for (unsigned int i=0; i<nbForest_; i++) {
-			v_raRandForest[i] = v_ra__[i] + sizeCell__*(1.*rand()/RAND_MAX-0.5);
-			v_deRandForest[i] = v_de__[i] + sizeCell__*(1.*rand()/RAND_MAX-0.5);
-		}
-	}
-	
-	for (unsigned int f1=0; f1<nbForest_; f1++) {
-		const unsigned int nb1  = v_nbPixelDelta1__[f1];
-		const double x1         = v_ra__[f1];
-		const double y1         = v_de__[f1];
-		const double fpix1      = v_r__[f1][0];
-		const double lPix1      = v_r__[f1][nb1-1];
-
-		double x11 = x1;
-		double y11 = y1;
-		///// If random position in the cell
-		if (randomPositionOfQSOInCellNotBeforeCorrelation__) {
-			x11 = v_raRandForest[f1];
-			y11 = v_deRandForest[f1];
-		}
-
-		for (unsigned int f2=0; f2<f1; f2++) {
-
-			const double x2 = v_ra__[f2];
-			const double y2 = v_de__[f2];
-
-			///// Not in the same line of sight
-			if (x1==x2 && y1==y2) continue;
-
-			double x22 = x2;
-			double y22 = y2;
-			///// If random position in the cell
-			if (randomPositionOfQSOInCellNotBeforeCorrelation__) {
-				x22 = v_raRandForest[f2];
-				y22 = v_deRandForest[f2];
-			}
-
-			///// If r_perp is too high
-			const double distTransPow2 = (x11-x22)*(x11-x22) + (y11-y22)*(y11-y22);
-			if (distTransPow2 >= maxPow2) continue;
-
-			///// If forests too far from one another
-			const unsigned int nb2 = v_nbPixelDelta1__[f2];
-			const double fpix2 = v_r__[f2][0];
-			const double lPix2 = v_r__[f2][nb2-1];
-			const double minLastPixel = std::min(lPix1,lPix2);
-			if (minLastPixel==lPix1 && fpix2>lPix1 && fpix2-lPix1>=max ) continue;
-			if (minLastPixel==lPix2 && fpix1>lPix2 && fpix1-lPix2>=max ) continue;
-
-			///// Transvers distance
-			const double rPerp = sqrt(distTransPow2);
-			const unsigned int rPerpBinIdx = int( rPerp );
-
-			for (unsigned int i1=0; i1<nb1; i1++) {
-
-				const double r1 = v_r__[f1][i1];
-				const double w1 = v_w__[f1][i1];
-				const double d1 = v_d__[f1][i1];
-				const double z1 = v_z__[f1][i1];
-
-				for (unsigned int i2=0; i2<nb2; i2++) {
-
-					const double rParral = fabs(v_r__[f2][i2]-r1);
-					if (rParral>=max) continue;
-					const double distTotPow2 = distTransPow2 + rParral*rParral;
-
-					const double w1w2     = w1*v_w__[f2][i2];
-					const double d1d2     = d1*v_d__[f2][i2];
-					const double w1w2z1z2 = w1w2*(z1+v_z__[f2][i2]);
-
-					if (distTotPow2 < maxPow2) {
-						const double distTot    = sqrt(distTotPow2);
-						const double mu         = rParral/distTot;
-						const unsigned int idx  = int(distTot);
-						const unsigned int idxM = int(mu*50.);
-
-						dataMu[idx][idxM][0] += w1w2*d1d2;
-						dataMu[idx][idxM][1] += w1w2*d1d2*d1d2;
-						dataMu[idx][idxM][2] += w1w2*distTot;
-						dataMu[idx][idxM][3] += w1w2*mu;
-						dataMu[idx][idxM][4] += w1w2z1z2;
-						dataMu[idx][idxM][5] += w1w2;
-						dataMu[idx][idxM][6] ++;
-					}
-					
-					///// Fill the histogramm of xi(r_{perp}, r_{paral}
-					const unsigned int rParralBinIdx = int(rParral);
-					data2D[rPerpBinIdx][rParralBinIdx][0] += w1w2*d1d2;
-					data2D[rPerpBinIdx][rParralBinIdx][1] += w1w2*d1d2*d1d2;
-					data2D[rPerpBinIdx][rParralBinIdx][2] += w1w2*rPerp;
-					data2D[rPerpBinIdx][rParralBinIdx][3] += w1w2*rParral;
-					data2D[rPerpBinIdx][rParralBinIdx][4] += w1w2z1z2;
-					data2D[rPerpBinIdx][rParralBinIdx][5] += w1w2;
-					data2D[rPerpBinIdx][rParralBinIdx][6] ++;
-				}
-			}
-		}
-	}
-
-
-
-
-
-
-	std::ofstream fFile;
-	std::string tmp_pathToSave = pathToSave__;
-	tmp_pathToSave += "xi_A_delta_delta_1D_";
-	tmp_pathToSave += forest__;
-	tmp_pathToSave += ".txt";
-	std::cout << "\n  " << tmp_pathToSave << std::endl;
-	fFile.open(tmp_pathToSave.c_str());
-	fFile << std::scientific;
-	fFile.precision(17);
-
-	long double sumZZZ = 0.;
-	long double sumWeg = 0.;
-	long double sumOne = 0.;
-
-	///// Set the values of data
-	///// [0] for value, [1] for error, [2] for bin center
-	for (unsigned int i=0; i<nbBin; i++) {
-
-		long double save0 = 0.;
-		long double save1 = 0.;
-		long double save2 = 0.;
-		long double save3 = 0.;
-		long double save4 = 0.;
-		long double save5 = 0.;
-		long double save6 = 0.;
-
-		for (unsigned int j=0; j<nbBinM; j++) {
-			save0 += dataMu[i][j][0];
-			save1 += dataMu[i][j][1];
-			save2 += dataMu[i][j][2];
-			save3 += dataMu[i][j][3];
-			save4 += dataMu[i][j][4];
-			save5 += dataMu[i][j][5];
-			save6 += dataMu[i][j][6];
-		}
-
-		fFile << save0;
-		fFile << " " << save1;
-		fFile << " " << save2;
-		fFile << " " << save3;
-		fFile << " " << save4/2.;
-		fFile << " " << save5;
-		fFile << " " << save6;
-		fFile << std::endl;
-
-		sumZZZ += save4/2.;
-		sumWeg += save5;
-		sumOne += save6;
-	}
-	fFile.close();
-
-	std::cout << "  number of pairs      = " << sumOne          << std::endl;
-	std::cout << "  < pairs per forest > = " << sumOne/nbForest_ << std::endl;
-	sumOne = 0.;
-
-	///// Save the 2D cross-correlation
-	std::string pathToSave = pathToSave__;
-	pathToSave += "xi_A_delta_delta_2D_";
-	pathToSave += forest__;
-	pathToSave += ".txt";
-	std::cout << "\n  " << pathToSave << std::endl;
-	fFile.open(pathToSave.c_str());
-	fFile << std::scientific;
-	fFile.precision(17);
-
-	sumZZZ = 0.;
-	sumWeg = 0.;
-	sumOne = 0.;
-	
-	///// Set the values of data
-	///// [0] for value, [1] for error, [2] for bin center
-	for (unsigned int i=0; i<nbBin; i++) {
-		for (unsigned int j=0; j<nbBin; j++) {
-			fFile << data2D[i][j][0];
-			fFile << " " << data2D[i][j][1];
-			fFile << " " << data2D[i][j][2];
-			fFile << " " << data2D[i][j][3];
-			fFile << " " << data2D[i][j][4]/2.;
-			fFile << " " << data2D[i][j][5];
-			fFile << " " << data2D[i][j][6];
-			fFile << std::endl;
-
-			sumZZZ += data2D[i][j][4]/2.;
-			sumWeg += data2D[i][j][5];
-			sumOne += data2D[i][j][6];
-		}
-	}
-	fFile.close();
-
-
-	std::cout << "  < z >                = " << sumZZZ/sumWeg << std::endl;
-	std::cout << "  number of pairs      = " << sumOne          << std::endl;
-	std::cout << "  < pairs per forest > = " << sumOne/nbForest_ << std::endl;
-
-
-	///// Mu
-	pathToSave = pathToSave__;
-	pathToSave += "xi_A_delta_delta_Mu_";
-	pathToSave += forest__;
-	pathToSave += ".txt";
-	std::cout << "\n  " << pathToSave << std::endl;
-	fFile.open(pathToSave.c_str());
-	fFile << std::scientific;
-	fFile.precision(17);
-
-	for (unsigned int i=0; i<nbBin; i++) {
-		for (unsigned int j=0; j<nbBinM; j++) {
-			fFile << dataMu[i][j][0];
-			fFile << " " << dataMu[i][j][1];
-			fFile << " " << dataMu[i][j][2];
-			fFile << " " << dataMu[i][j][3];
-			fFile << " " << dataMu[i][j][4]/2.;
-			fFile << " " << dataMu[i][j][5];
-			fFile << " " << dataMu[i][j][6];
-			fFile << std::endl;
-		}
-	}
-	fFile.close();
 
 
 	return;
@@ -1973,6 +1715,14 @@ void Correlation::xi_A_delta_delta2_lambda(void) {
 
 	return;
 }
+
+
+
+// ---------------------------------------------------------------------
+//
+//		3D QSO - forest correlation
+//
+// ---------------------------------------------------------------------
 void Correlation::xi_delta_QSO(bool doBootstraps/*=False*/, unsigned int bootIdx/*=0*/) {
 
 	std::cout << "\n\n\n\n  ------ xi_delta_QSO ------" << std::endl;
@@ -3488,6 +3238,694 @@ void Correlation::xi_delta_QSO_Wick(unsigned int diagramIdx) {
 	
 	return;
 }
+
+
+
+// ---------------------------------------------------------------------
+//
+//		3D QSO 1 - QSO 2 correlation
+//
+// ---------------------------------------------------------------------
+void Correlation::xi_QSO_QSO(bool doBootstraps/*=false*/, unsigned int bootIdx/*=0*/) {
+
+	std::cout << "\n\n\n\n  ------ xi_QSO_QSO ------" << std::endl;
+	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_Q_Q.py";
+	command += commandEnd__;
+	std::cout << command << "\n" << std::endl;
+	loadDataQ1();
+
+	std::stringstream convert;
+	convert << bootIdx;
+	const std::string strBootIdx = convert.str();
+
+
+	//// Constants:
+	const double max          = 200.;
+	const unsigned int nbBin  = int(max);
+	const double maxPow2      = max*max;
+	const unsigned int nbBinM = 50;
+
+	//// Arrays for data
+	double dataMu[nbBin][nbBinM][4];
+	double data2D[nbBin][nbBin][4];
+	for (unsigned int i=0; i<nbBin; i++) {
+		for (unsigned int j=0; j<nbBinM; j++) {
+			for (unsigned int k=0; k<4; k++) {
+				dataMu[i][j][k] = 0.;
+			}
+		}
+	}
+	for (unsigned int i=0; i<nbBin; i++) {
+		for (unsigned int j=0; j<nbBin; j++) {
+			for (unsigned int k=0; k<4; k++) {
+				data2D[i][j][k] = 0.;
+			}
+		}
+	}
+
+	std::cout << "\n\n  Starting" << std::endl;
+
+	for (unsigned int q1=0; q1<nbQ1__; q1++) {
+		
+		const double ra1 = v_raQ1__[q1];
+		const double cosDe1 = v_CosDeQ1__[q1];
+		const double sinDe1 = v_SinDeQ1__[q1];
+		const double zz1 = v_zzQ1__[q1];
+		const double rr1 = v_rQ1__[q1];
+
+		for (unsigned int q2=0; q2<q1; q2++) {
+
+			//// Angle between the two directions of the qso and the lya
+			const double cosTheta = cosDe1*v_CosDeQ1__[q2]*cos(ra1-v_raQ1__[q2]) + sinDe1*v_SinDeQ1__[q2];
+			
+			//// Transvers distance between the qso and the lya
+			const double distTransQsoQsoPow2 = rr1*rr1*(1.-cosTheta*cosTheta);
+			if (distTransQsoQsoPow2 >= maxPow2) continue;
+
+
+			//// Parrallel distance between the qso and the lya
+			const double rPara = fabs(rr1*cosTheta-v_rQ1__[q2]);
+			if (rPara >= max) continue;
+			const unsigned int idxPara = int(rPara);
+
+			//// Transvers distance between the qso and the lya
+			const double rPerp   = sqrt(distTransQsoQsoPow2);
+			const unsigned int idxPerp = int(rPerp);
+
+			const double distTotPow2 = distTransQsoQsoPow2 + rPara*rPara;
+
+			//// 1D
+			if (distTotPow2<maxPow2) {
+				const double distTot    = sqrt(distTotPow2);
+				const double mu         = rPara/distTot;
+				const unsigned int idx  = int(distTot);
+				const unsigned int idxM = int(50.*mu);
+
+				dataMu[idx][idxM][0] ++;
+				dataMu[idx][idxM][1] += distTot;
+				dataMu[idx][idxM][2] += mu;
+				dataMu[idx][idxM][3] += zz1+v_zzQ1__[q2];
+			}
+
+			//// 2D
+			data2D[idxPerp][idxPara][0] ++;
+			data2D[idxPerp][idxPara][1] += rPerp;
+			data2D[idxPerp][idxPara][2] += rPara;
+			data2D[idxPerp][idxPara][3] += zz1+v_zzQ1__[q2];
+		}
+	}
+	
+
+
+
+	// 1D
+	std::ofstream fFile;
+	std::string pathToSave = pathToSave__;
+	pathToSave += "xi_QSO_QSO_1D_";
+	pathToSave += QSO__;
+	if (randomQSO) {
+		pathToSave += "_randomQSO_";
+		pathToSave += strBootIdx;;
+	}
+	pathToSave += ".txt";
+	std::cout << "\n  " << pathToSave << std::endl;
+	fFile.open(pathToSave.c_str());
+	fFile << std::scientific;
+	fFile.precision(17);
+
+	long double sumOne = 0.;
+	long double meanZ = 0.;
+
+	//// Set the values of data
+	for (unsigned int i=0; i<nbBin; i++) {
+
+		long double save0 = 0.;
+		long double save1 = 0.;
+		long double save2 = 0.;
+		long double save3 = 0.;
+
+		for (unsigned int j=0; j<nbBinM; j++) {
+			save0 += dataMu[i][j][0];
+			save1 += dataMu[i][j][1];
+			save2 += dataMu[i][j][2];
+			save3 += dataMu[i][j][3];
+		}
+
+		fFile << save0;
+		fFile << " " << save1;
+		fFile << " " << save2;
+		fFile << " " << save3/2.;
+		fFile << std::endl;
+
+		sumOne += save0;
+		meanZ  += save3/2.;
+	}
+	fFile.close();
+
+	//// Get mean redshift of pairs
+	std::cout << "  < z >           = " << meanZ/sumOne << " +- " << 0. << std::endl;
+	std::cout << "  number of pairs = " << sumOne          << std::endl;
+
+
+	//// 2D
+	pathToSave = pathToSave__;
+	pathToSave += "xi_QSO_QSO_2D_";
+	pathToSave += QSO__;
+	if (randomQSO) {
+		pathToSave += "_randomQSO_";
+		pathToSave += strBootIdx;;
+	}
+	pathToSave += ".txt";
+	std::cout << "\n  " << pathToSave << std::endl;
+	fFile.open(pathToSave.c_str());
+	fFile << std::scientific;
+	fFile.precision(17);
+
+	sumOne = 0.;
+	meanZ  = 0.;
+
+	//// Set the values of data
+	for (unsigned int i=0; i<nbBin; i++) {
+		for (unsigned int j=0; j<nbBin; j++) {
+			fFile << data2D[i][j][0];
+			fFile << " " << data2D[i][j][1];
+			fFile << " " << data2D[i][j][2];
+			fFile << " " << data2D[i][j][3]/2.;
+			fFile << std::endl;
+
+			sumOne += data2D[i][j][0];
+			meanZ  += data2D[i][j][3]/2.;
+		}
+	}
+	fFile.close();
+
+	//// Get mean redshift of pairs
+	std::cout << "  < z >           = " << meanZ/sumOne << " +- " << 0. << std::endl;
+	std::cout << "  number of pairs = " << sumOne          << std::endl;
+
+
+	// Mu
+	pathToSave = pathToSave__;
+	pathToSave += "xi_QSO_QSO_Mu_";
+	pathToSave += QSO__;
+	if (randomQSO) {
+		pathToSave += "_randomQSO_";
+		pathToSave += strBootIdx;;
+	}
+	pathToSave += ".txt";
+	std::cout << "\n  " << pathToSave << std::endl;
+	fFile.open(pathToSave.c_str());
+	fFile << std::scientific;
+	fFile.precision(17);
+
+	//// Set the values of data
+	for (unsigned int i=0; i<nbBin; i++) {
+		for (unsigned int j=0; j<nbBinM; j++) {
+			fFile << dataMu[i][j][0];
+			fFile << " " << dataMu[i][j][1];
+			fFile << " " << dataMu[i][j][2];
+			fFile << " " << dataMu[i][j][3]/2.;
+			fFile << std::endl;
+		}
+	}
+	fFile.close();
+
+	return;
+}
+void Correlation::xi_Q1_Q2(void) {
+
+	std::cout << "\n\n\n\n  ------ xi_Q1_Q2 ------" << std::endl;
+	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_Q1_Q2.py";
+	command += commandEnd__;
+	std::cout << command << "\n" << std::endl;
+	loadDataQ1();
+	loadDataQ2();
+
+	//// Constants:
+	//// The space between bins is of 10 Mpc.h^-1
+	const double max          = 160.;
+
+	const unsigned int nbBin  = int(max);
+	const unsigned int nbBinX = nbBin;
+	const unsigned int nbBinY = 2*nbBin;
+
+	const double maxPow2 = max*max;
+	
+	//// Arrays for data
+	double meanZZ[2] = {};
+	double data1D_0[nbBin];
+	double data1D_1[nbBin];
+	for (unsigned int i=0; i<nbBin; i++) {
+		data1D_0[i] = 0.;
+		data1D_1[i] = 0.;
+	}
+
+	long double data2D[nbBinX][nbBinY][3];
+	for (unsigned int i=0; i<nbBinX; i++) {
+		for (unsigned int j=0; j<nbBinY; j++) {
+			data2D[i][j][0] = 0.;
+			data2D[i][j][1] = 0.;
+			data2D[i][j][2] = 0.;
+		}
+	}
+
+	for (unsigned int q1=0; q1<nbQ1__; q1++) {
+		
+		const double cosDe1 = v_CosDeQ1__[q1];
+		const double sinDe1 = v_SinDeQ1__[q1];
+		const double ra1    = v_raQ1__[q1];
+		const double r1    = v_rQ1__[q1];
+		const double z1    = v_zzQ1__[q1];
+
+		for (unsigned int q2=0; q2<nbQ2__; q2++) {
+
+			//// Angle between the two directions of the qso and the lya
+			double cosTheta = cosDe1*v_CosDeQ2__[q2]*cos(ra1-v_raQ2__[q2]) + sinDe1*v_SinDeQ2__[q2];
+			if (fabs(1.-cosTheta)<1.e-10) cosTheta=1.;
+			
+			//// Transvers distance between the qso and the lya
+			const double distTransQsoQsoPow2 = r1*r1*(1.-cosTheta*cosTheta);
+			if (distTransQsoQsoPow2 >= maxPow2) continue;
+
+			//// Parrallel distance between the qso and the lya
+			const double distParalQsoQso = r1*cosTheta-v_rQ2__[q2];
+			if (fabs(distParalQsoQso) >= max) continue;
+			const unsigned int rParralBinIdx = int(max+distParalQsoQso);
+
+			//// Transvers distance between the qso and the lya
+			const double distTransQsoQso   = sqrt(distTransQsoQsoPow2);
+			const unsigned int rPerpBinIdx = int( distTransQsoQso);
+
+			const double distTotPow2 = distTransQsoQsoPow2 + distParalQsoQso*distParalQsoQso;
+
+			if (distTotPow2 < maxPow2) {
+				const double distTot = sqrt(distTotPow2);
+				const unsigned int idx = int(distTot);
+				data1D_0[idx] ++;
+				data1D_1[idx] += distTot;
+
+				const double tmp_meanZZ = z1+v_zzQ2__[q2];
+				meanZZ[0] += tmp_meanZZ;
+				meanZZ[1] += tmp_meanZZ*tmp_meanZZ;
+			}
+				
+			//// Fill the histogramm of xi(r_{perp}, r_{paral}
+			data2D[rPerpBinIdx][rParralBinIdx][0] ++;
+			data2D[rPerpBinIdx][rParralBinIdx][1] += distTransQsoQso;
+			data2D[rPerpBinIdx][rParralBinIdx][2] += distParalQsoQso;
+
+		}
+	}
+	
+
+
+
+
+	std::ofstream fFile;
+	std::string tmp_pathToSave = pathToSave__;
+	tmp_pathToSave += "xi_Q1_Q2_1D_";
+	tmp_pathToSave += QSO__;
+	tmp_pathToSave += "_";
+	tmp_pathToSave += QSO2__;
+	tmp_pathToSave += ".txt";
+	std::cout << "\n  " << tmp_pathToSave << std::endl;
+	fFile.open(tmp_pathToSave.c_str());
+	fFile << std::scientific;
+	fFile.precision(17);
+
+	long double sumOne = 0.;
+
+	//// Set the values of data
+	//// [0] for value, [1] for error, [2] for bin center
+	for (unsigned int i=0; i<nbBin; i++) {
+		if (data1D_0[i]!=0.) {
+			const long double save0 = data1D_0[i];
+			const long double save1 = data1D_1[i];
+
+			data1D_1[i] /= data1D_0[i];
+
+			fFile << data1D_1[i];
+			fFile << " " << data1D_0[i];
+			fFile << " " << save0;
+			fFile << " " << save1;
+			fFile << " " << std::endl;
+
+			sumOne += save0;
+		}
+	}
+	fFile.close();
+
+
+
+	//// Get mean redshift of pairs
+	meanZZ[0] = meanZZ[0]/(2.*sumOne);
+	meanZZ[1] = sqrt( (meanZZ[1]/(4.*sumOne) - meanZZ[0]*meanZZ[0])/sumOne);
+	std::cout << "  < z >           = " << meanZZ[0] << " +- " << meanZZ[1] << std::endl;
+	std::cout << "  number of pairs = " << sumOne          << std::endl;
+
+
+	sumOne = 0.;
+
+	
+	//// Save the 2D cross-correlation
+	std::string pathToSave = pathToSave__;
+	pathToSave += "xi_Q1_Q2_2D_";
+	pathToSave += QSO__;
+	pathToSave += "_";
+	pathToSave += QSO2__;
+	pathToSave += ".txt";
+	std::cout << "\n  " << pathToSave << std::endl;
+	fFile.open(pathToSave.c_str());
+	fFile << std::scientific;
+	fFile.precision(17);
+	
+	//// Set the values of data
+	//// [0] for value, [1] for error, [2] for bin center
+	for (unsigned int i=0; i<nbBinX; i++) {
+		for (unsigned int j=0; j<nbBinY; j++) {
+			if (data2D[i][j][0]!=0.) {
+				const long double save0 = data2D[i][j][0];
+				const long double save1 = data2D[i][j][1];
+				const long double save2 = data2D[i][j][2];
+
+				data2D[i][j][1] /= data2D[i][j][0];
+				data2D[i][j][2] /= data2D[i][j][0];
+
+				fFile << i*nbBinY + j;
+				fFile << " " << data2D[i][j][1];
+				fFile << " " << data2D[i][j][2];
+				fFile << " " << data2D[i][j][0];
+				fFile << " " << save0;
+				fFile << " " << save1;
+				fFile << " " << save2;
+				fFile << " " << std::endl;
+
+				sumOne += save0;
+			}
+		}
+	}
+	fFile.close();
+	
+
+	std::cout << "  number of pairs      = " << sumOne          << std::endl;
+	
+
+	return;
+}
+
+
+
+
+// ---------------------------------------------------------------------
+//
+//		Correlation function for Jean-Marc Le Goff
+//			(i.e. mocks in euclidean geometry)
+//
+// ---------------------------------------------------------------------
+void Correlation::xi_A_delta_delta_MockJMc(void) {
+
+	std::cout << "\n\n\n\n  ------ xi_A_delta_delta_MockJMc ------" << std::endl;
+	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_A_delta_delta.py";
+	command += commandEnd__;
+	std::cout << command << "\n" << std::endl;
+
+	loadDataForest(pathForest__);
+	if (mocksNoNoiseNoCont) {
+		removeFalseCorrelations();
+	}
+	v_CosDe__.clear();
+	v_SinDe__.clear();
+	v_zz__.clear();
+	v_idx__.clear();
+	v_lRF__.clear();
+	v_lObs__.clear();
+
+
+
+	std::cout << "  Starting" << std::endl;
+
+	///// Constants:
+	const unsigned int max = 200.;
+	const unsigned int nbBin = int(max);
+	const unsigned int nbBinM = 50.;
+
+	const double maxPow2      = max*max;
+
+	///// Arrays for data
+	double dataMu[nbBin][nbBinM][7];
+	double data2D[nbBin][nbBin][7];
+	for (unsigned int i=0; i<nbBin; i++) {
+		for (unsigned int j=0; j<nbBinM; j++) {
+			for (unsigned int k=0; k<7; k++) {
+				dataMu[i][j][k] = 0.;
+			}
+		}
+	}
+	for (unsigned int i=0; i<nbBin; i++) {
+		for (unsigned int j=0; j<nbBin; j++) {
+			for (unsigned int k=0; k<7; k++) {
+				data2D[i][j][k] = 0.;
+			}
+		}
+	}
+	
+
+	///// Vectors of randomized positions in cell
+	std::vector<double> v_raRandForest;
+	std::vector<double> v_deRandForest;
+	if (randomPositionOfQSOInCellNotBeforeCorrelation__) {
+
+		std::srand (42);
+
+		v_raRandForest.resize(nbForest_,0.);
+		v_deRandForest.resize(nbForest_,0.);
+
+		for (unsigned int i=0; i<nbForest_; i++) {
+			v_raRandForest[i] = v_ra__[i] + sizeCell__*(1.*rand()/RAND_MAX-0.5);
+			v_deRandForest[i] = v_de__[i] + sizeCell__*(1.*rand()/RAND_MAX-0.5);
+		}
+	}
+	
+	for (unsigned int f1=0; f1<nbForest_; f1++) {
+		const unsigned int nb1  = v_nbPixelDelta1__[f1];
+		const double x1         = v_ra__[f1];
+		const double y1         = v_de__[f1];
+		const double fpix1      = v_r__[f1][0];
+		const double lPix1      = v_r__[f1][nb1-1];
+
+		double x11 = x1;
+		double y11 = y1;
+		///// If random position in the cell
+		if (randomPositionOfQSOInCellNotBeforeCorrelation__) {
+			x11 = v_raRandForest[f1];
+			y11 = v_deRandForest[f1];
+		}
+
+		for (unsigned int f2=0; f2<f1; f2++) {
+
+			const double x2 = v_ra__[f2];
+			const double y2 = v_de__[f2];
+
+			///// Not in the same line of sight
+			if (x1==x2 && y1==y2) continue;
+
+			double x22 = x2;
+			double y22 = y2;
+			///// If random position in the cell
+			if (randomPositionOfQSOInCellNotBeforeCorrelation__) {
+				x22 = v_raRandForest[f2];
+				y22 = v_deRandForest[f2];
+			}
+
+			///// If r_perp is too high
+			const double distTransPow2 = (x11-x22)*(x11-x22) + (y11-y22)*(y11-y22);
+			if (distTransPow2 >= maxPow2) continue;
+
+			///// If forests too far from one another
+			const unsigned int nb2 = v_nbPixelDelta1__[f2];
+			const double fpix2 = v_r__[f2][0];
+			const double lPix2 = v_r__[f2][nb2-1];
+			const double minLastPixel = std::min(lPix1,lPix2);
+			if (minLastPixel==lPix1 && fpix2>lPix1 && fpix2-lPix1>=max ) continue;
+			if (minLastPixel==lPix2 && fpix1>lPix2 && fpix1-lPix2>=max ) continue;
+
+			///// Transvers distance
+			const double rPerp = sqrt(distTransPow2);
+			const unsigned int rPerpBinIdx = int( rPerp );
+
+			for (unsigned int i1=0; i1<nb1; i1++) {
+
+				const double r1 = v_r__[f1][i1];
+				const double w1 = v_w__[f1][i1];
+				const double d1 = v_d__[f1][i1];
+				const double z1 = v_z__[f1][i1];
+
+				for (unsigned int i2=0; i2<nb2; i2++) {
+
+					const double rParral = fabs(v_r__[f2][i2]-r1);
+					if (rParral>=max) continue;
+					const double distTotPow2 = distTransPow2 + rParral*rParral;
+
+					const double w1w2     = w1*v_w__[f2][i2];
+					const double d1d2     = d1*v_d__[f2][i2];
+					const double w1w2z1z2 = w1w2*(z1+v_z__[f2][i2]);
+
+					if (distTotPow2 < maxPow2) {
+						const double distTot    = sqrt(distTotPow2);
+						const double mu         = rParral/distTot;
+						const unsigned int idx  = int(distTot);
+						const unsigned int idxM = int(mu*50.);
+
+						dataMu[idx][idxM][0] += w1w2*d1d2;
+						dataMu[idx][idxM][1] += w1w2*d1d2*d1d2;
+						dataMu[idx][idxM][2] += w1w2*distTot;
+						dataMu[idx][idxM][3] += w1w2*mu;
+						dataMu[idx][idxM][4] += w1w2z1z2;
+						dataMu[idx][idxM][5] += w1w2;
+						dataMu[idx][idxM][6] ++;
+					}
+					
+					///// Fill the histogramm of xi(r_{perp}, r_{paral}
+					const unsigned int rParralBinIdx = int(rParral);
+					data2D[rPerpBinIdx][rParralBinIdx][0] += w1w2*d1d2;
+					data2D[rPerpBinIdx][rParralBinIdx][1] += w1w2*d1d2*d1d2;
+					data2D[rPerpBinIdx][rParralBinIdx][2] += w1w2*rPerp;
+					data2D[rPerpBinIdx][rParralBinIdx][3] += w1w2*rParral;
+					data2D[rPerpBinIdx][rParralBinIdx][4] += w1w2z1z2;
+					data2D[rPerpBinIdx][rParralBinIdx][5] += w1w2;
+					data2D[rPerpBinIdx][rParralBinIdx][6] ++;
+				}
+			}
+		}
+	}
+
+
+
+
+
+
+	std::ofstream fFile;
+	std::string tmp_pathToSave = pathToSave__;
+	tmp_pathToSave += "xi_A_delta_delta_1D_";
+	tmp_pathToSave += forest__;
+	tmp_pathToSave += ".txt";
+	std::cout << "\n  " << tmp_pathToSave << std::endl;
+	fFile.open(tmp_pathToSave.c_str());
+	fFile << std::scientific;
+	fFile.precision(17);
+
+	long double sumZZZ = 0.;
+	long double sumWeg = 0.;
+	long double sumOne = 0.;
+
+	///// Set the values of data
+	///// [0] for value, [1] for error, [2] for bin center
+	for (unsigned int i=0; i<nbBin; i++) {
+
+		long double save0 = 0.;
+		long double save1 = 0.;
+		long double save2 = 0.;
+		long double save3 = 0.;
+		long double save4 = 0.;
+		long double save5 = 0.;
+		long double save6 = 0.;
+
+		for (unsigned int j=0; j<nbBinM; j++) {
+			save0 += dataMu[i][j][0];
+			save1 += dataMu[i][j][1];
+			save2 += dataMu[i][j][2];
+			save3 += dataMu[i][j][3];
+			save4 += dataMu[i][j][4];
+			save5 += dataMu[i][j][5];
+			save6 += dataMu[i][j][6];
+		}
+
+		fFile << save0;
+		fFile << " " << save1;
+		fFile << " " << save2;
+		fFile << " " << save3;
+		fFile << " " << save4/2.;
+		fFile << " " << save5;
+		fFile << " " << save6;
+		fFile << std::endl;
+
+		sumZZZ += save4/2.;
+		sumWeg += save5;
+		sumOne += save6;
+	}
+	fFile.close();
+
+	std::cout << "  number of pairs      = " << sumOne          << std::endl;
+	std::cout << "  < pairs per forest > = " << sumOne/nbForest_ << std::endl;
+	sumOne = 0.;
+
+	///// Save the 2D cross-correlation
+	std::string pathToSave = pathToSave__;
+	pathToSave += "xi_A_delta_delta_2D_";
+	pathToSave += forest__;
+	pathToSave += ".txt";
+	std::cout << "\n  " << pathToSave << std::endl;
+	fFile.open(pathToSave.c_str());
+	fFile << std::scientific;
+	fFile.precision(17);
+
+	sumZZZ = 0.;
+	sumWeg = 0.;
+	sumOne = 0.;
+	
+	///// Set the values of data
+	///// [0] for value, [1] for error, [2] for bin center
+	for (unsigned int i=0; i<nbBin; i++) {
+		for (unsigned int j=0; j<nbBin; j++) {
+			fFile << data2D[i][j][0];
+			fFile << " " << data2D[i][j][1];
+			fFile << " " << data2D[i][j][2];
+			fFile << " " << data2D[i][j][3];
+			fFile << " " << data2D[i][j][4]/2.;
+			fFile << " " << data2D[i][j][5];
+			fFile << " " << data2D[i][j][6];
+			fFile << std::endl;
+
+			sumZZZ += data2D[i][j][4]/2.;
+			sumWeg += data2D[i][j][5];
+			sumOne += data2D[i][j][6];
+		}
+	}
+	fFile.close();
+
+
+	std::cout << "  < z >                = " << sumZZZ/sumWeg << std::endl;
+	std::cout << "  number of pairs      = " << sumOne          << std::endl;
+	std::cout << "  < pairs per forest > = " << sumOne/nbForest_ << std::endl;
+
+
+	///// Mu
+	pathToSave = pathToSave__;
+	pathToSave += "xi_A_delta_delta_Mu_";
+	pathToSave += forest__;
+	pathToSave += ".txt";
+	std::cout << "\n  " << pathToSave << std::endl;
+	fFile.open(pathToSave.c_str());
+	fFile << std::scientific;
+	fFile.precision(17);
+
+	for (unsigned int i=0; i<nbBin; i++) {
+		for (unsigned int j=0; j<nbBinM; j++) {
+			fFile << dataMu[i][j][0];
+			fFile << " " << dataMu[i][j][1];
+			fFile << " " << dataMu[i][j][2];
+			fFile << " " << dataMu[i][j][3];
+			fFile << " " << dataMu[i][j][4]/2.;
+			fFile << " " << dataMu[i][j][5];
+			fFile << " " << dataMu[i][j][6];
+			fFile << std::endl;
+		}
+	}
+	fFile.close();
+
+
+	return;
+}
 void Correlation::xi_delta_QSO_MockJMc(bool doBootstraps/*=False*/, unsigned int bootIdx/*=0*/) {
 
 	std::cout << "\n\n\n\n  ------ xi_delta_QSO_MockJMc ------" << std::endl;
@@ -4354,212 +4792,6 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix_1D(void) {
 
 	return;
 }
-void Correlation::xi_QSO_QSO(bool doBootstraps/*=false*/, unsigned int bootIdx/*=0*/) {
-
-	std::cout << "\n\n\n\n  ------ xi_QSO_QSO ------" << std::endl;
-	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_Q_Q.py";
-	command += commandEnd__;
-	std::cout << command << "\n" << std::endl;
-	loadDataQ1();
-
-	std::stringstream convert;
-	convert << bootIdx;
-	const std::string strBootIdx = convert.str();
-
-
-	//// Constants:
-	const double max          = 200.;
-	const unsigned int nbBin  = int(max);
-	const double maxPow2      = max*max;
-	const unsigned int nbBinM = 50;
-
-	//// Arrays for data
-	double dataMu[nbBin][nbBinM][4];
-	double data2D[nbBin][nbBin][4];
-	for (unsigned int i=0; i<nbBin; i++) {
-		for (unsigned int j=0; j<nbBinM; j++) {
-			for (unsigned int k=0; k<4; k++) {
-				dataMu[i][j][k] = 0.;
-			}
-		}
-	}
-	for (unsigned int i=0; i<nbBin; i++) {
-		for (unsigned int j=0; j<nbBin; j++) {
-			for (unsigned int k=0; k<4; k++) {
-				data2D[i][j][k] = 0.;
-			}
-		}
-	}
-
-	std::cout << "\n\n  Starting" << std::endl;
-
-	for (unsigned int q1=0; q1<nbQ1__; q1++) {
-		
-		const double ra1 = v_raQ1__[q1];
-		const double cosDe1 = v_CosDeQ1__[q1];
-		const double sinDe1 = v_SinDeQ1__[q1];
-		const double zz1 = v_zzQ1__[q1];
-		const double rr1 = v_rQ1__[q1];
-
-		for (unsigned int q2=0; q2<q1; q2++) {
-
-			//// Angle between the two directions of the qso and the lya
-			const double cosTheta = cosDe1*v_CosDeQ1__[q2]*cos(ra1-v_raQ1__[q2]) + sinDe1*v_SinDeQ1__[q2];
-			
-			//// Transvers distance between the qso and the lya
-			const double distTransQsoQsoPow2 = rr1*rr1*(1.-cosTheta*cosTheta);
-			if (distTransQsoQsoPow2 >= maxPow2) continue;
-
-
-			//// Parrallel distance between the qso and the lya
-			const double rPara = fabs(rr1*cosTheta-v_rQ1__[q2]);
-			if (rPara >= max) continue;
-			const unsigned int idxPara = int(rPara);
-
-			//// Transvers distance between the qso and the lya
-			const double rPerp   = sqrt(distTransQsoQsoPow2);
-			const unsigned int idxPerp = int(rPerp);
-
-			const double distTotPow2 = distTransQsoQsoPow2 + rPara*rPara;
-
-			//// 1D
-			if (distTotPow2<maxPow2) {
-				const double distTot    = sqrt(distTotPow2);
-				const double mu         = rPara/distTot;
-				const unsigned int idx  = int(distTot);
-				const unsigned int idxM = int(50.*mu);
-
-				dataMu[idx][idxM][0] ++;
-				dataMu[idx][idxM][1] += distTot;
-				dataMu[idx][idxM][2] += mu;
-				dataMu[idx][idxM][3] += zz1+v_zzQ1__[q2];
-			}
-
-			//// 2D
-			data2D[idxPerp][idxPara][0] ++;
-			data2D[idxPerp][idxPara][1] += rPerp;
-			data2D[idxPerp][idxPara][2] += rPara;
-			data2D[idxPerp][idxPara][3] += zz1+v_zzQ1__[q2];
-		}
-	}
-	
-
-
-
-	// 1D
-	std::ofstream fFile;
-	std::string pathToSave = pathToSave__;
-	pathToSave += "xi_QSO_QSO_1D_";
-	pathToSave += QSO__;
-	if (randomQSO) {
-		pathToSave += "_randomQSO_";
-		pathToSave += strBootIdx;;
-	}
-	pathToSave += ".txt";
-	std::cout << "\n  " << pathToSave << std::endl;
-	fFile.open(pathToSave.c_str());
-	fFile << std::scientific;
-	fFile.precision(17);
-
-	long double sumOne = 0.;
-	long double meanZ = 0.;
-
-	//// Set the values of data
-	for (unsigned int i=0; i<nbBin; i++) {
-
-		long double save0 = 0.;
-		long double save1 = 0.;
-		long double save2 = 0.;
-		long double save3 = 0.;
-
-		for (unsigned int j=0; j<nbBinM; j++) {
-			save0 += dataMu[i][j][0];
-			save1 += dataMu[i][j][1];
-			save2 += dataMu[i][j][2];
-			save3 += dataMu[i][j][3];
-		}
-
-		fFile << save0;
-		fFile << " " << save1;
-		fFile << " " << save2;
-		fFile << " " << save3/2.;
-		fFile << std::endl;
-
-		sumOne += save0;
-		meanZ  += save3/2.;
-	}
-	fFile.close();
-
-	//// Get mean redshift of pairs
-	std::cout << "  < z >           = " << meanZ/sumOne << " +- " << 0. << std::endl;
-	std::cout << "  number of pairs = " << sumOne          << std::endl;
-
-
-	//// 2D
-	pathToSave = pathToSave__;
-	pathToSave += "xi_QSO_QSO_2D_";
-	pathToSave += QSO__;
-	if (randomQSO) {
-		pathToSave += "_randomQSO_";
-		pathToSave += strBootIdx;;
-	}
-	pathToSave += ".txt";
-	std::cout << "\n  " << pathToSave << std::endl;
-	fFile.open(pathToSave.c_str());
-	fFile << std::scientific;
-	fFile.precision(17);
-
-	sumOne = 0.;
-	meanZ  = 0.;
-
-	//// Set the values of data
-	for (unsigned int i=0; i<nbBin; i++) {
-		for (unsigned int j=0; j<nbBin; j++) {
-			fFile << data2D[i][j][0];
-			fFile << " " << data2D[i][j][1];
-			fFile << " " << data2D[i][j][2];
-			fFile << " " << data2D[i][j][3]/2.;
-			fFile << std::endl;
-
-			sumOne += data2D[i][j][0];
-			meanZ  += data2D[i][j][3]/2.;
-		}
-	}
-	fFile.close();
-
-	//// Get mean redshift of pairs
-	std::cout << "  < z >           = " << meanZ/sumOne << " +- " << 0. << std::endl;
-	std::cout << "  number of pairs = " << sumOne          << std::endl;
-
-
-	// Mu
-	pathToSave = pathToSave__;
-	pathToSave += "xi_QSO_QSO_Mu_";
-	pathToSave += QSO__;
-	if (randomQSO) {
-		pathToSave += "_randomQSO_";
-		pathToSave += strBootIdx;;
-	}
-	pathToSave += ".txt";
-	std::cout << "\n  " << pathToSave << std::endl;
-	fFile.open(pathToSave.c_str());
-	fFile << std::scientific;
-	fFile.precision(17);
-
-	//// Set the values of data
-	for (unsigned int i=0; i<nbBin; i++) {
-		for (unsigned int j=0; j<nbBinM; j++) {
-			fFile << dataMu[i][j][0];
-			fFile << " " << dataMu[i][j][1];
-			fFile << " " << dataMu[i][j][2];
-			fFile << " " << dataMu[i][j][3]/2.;
-			fFile << std::endl;
-		}
-	}
-	fFile.close();
-
-	return;
-}
 void Correlation::xi_QSO_QSO_MockJMc(bool doBootstraps/*=false*/, unsigned int bootIdx/*=0*/) {
 
 	std::cout << "\n\n\n\n  ------ xi_QSO_QSO_MockJMc ------" << std::endl;
@@ -5000,186 +5232,6 @@ void Correlation::xi_QSO_QSO_MockJMc(bool doBootstraps/*=false*/, unsigned int b
 
 	return;
 }
-void Correlation::xi_Q1_Q2(void) {
-
-	std::cout << "\n\n\n\n  ------ xi_Q1_Q2 ------" << std::endl;
-	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_Q1_Q2.py";
-	command += commandEnd__;
-	std::cout << command << "\n" << std::endl;
-	loadDataQ1();
-	loadDataQ2();
-
-	//// Constants:
-	//// The space between bins is of 10 Mpc.h^-1
-	const double max          = 160.;
-
-	const unsigned int nbBin  = int(max);
-	const unsigned int nbBinX = nbBin;
-	const unsigned int nbBinY = 2*nbBin;
-
-	const double maxPow2 = max*max;
-	
-	//// Arrays for data
-	double meanZZ[2] = {};
-	double data1D_0[nbBin];
-	double data1D_1[nbBin];
-	for (unsigned int i=0; i<nbBin; i++) {
-		data1D_0[i] = 0.;
-		data1D_1[i] = 0.;
-	}
-
-	long double data2D[nbBinX][nbBinY][3];
-	for (unsigned int i=0; i<nbBinX; i++) {
-		for (unsigned int j=0; j<nbBinY; j++) {
-			data2D[i][j][0] = 0.;
-			data2D[i][j][1] = 0.;
-			data2D[i][j][2] = 0.;
-		}
-	}
-
-	for (unsigned int q1=0; q1<nbQ1__; q1++) {
-		
-		const double cosDe1 = v_CosDeQ1__[q1];
-		const double sinDe1 = v_SinDeQ1__[q1];
-		const double ra1    = v_raQ1__[q1];
-		const double r1    = v_rQ1__[q1];
-		const double z1    = v_zzQ1__[q1];
-
-		for (unsigned int q2=0; q2<nbQ2__; q2++) {
-
-			//// Angle between the two directions of the qso and the lya
-			double cosTheta = cosDe1*v_CosDeQ2__[q2]*cos(ra1-v_raQ2__[q2]) + sinDe1*v_SinDeQ2__[q2];
-			if (fabs(1.-cosTheta)<1.e-10) cosTheta=1.;
-			
-			//// Transvers distance between the qso and the lya
-			const double distTransQsoQsoPow2 = r1*r1*(1.-cosTheta*cosTheta);
-			if (distTransQsoQsoPow2 >= maxPow2) continue;
-
-			//// Parrallel distance between the qso and the lya
-			const double distParalQsoQso = r1*cosTheta-v_rQ2__[q2];
-			if (fabs(distParalQsoQso) >= max) continue;
-			const unsigned int rParralBinIdx = int(max+distParalQsoQso);
-
-			//// Transvers distance between the qso and the lya
-			const double distTransQsoQso   = sqrt(distTransQsoQsoPow2);
-			const unsigned int rPerpBinIdx = int( distTransQsoQso);
-
-			const double distTotPow2 = distTransQsoQsoPow2 + distParalQsoQso*distParalQsoQso;
-
-			if (distTotPow2 < maxPow2) {
-				const double distTot = sqrt(distTotPow2);
-				const unsigned int idx = int(distTot);
-				data1D_0[idx] ++;
-				data1D_1[idx] += distTot;
-
-				const double tmp_meanZZ = z1+v_zzQ2__[q2];
-				meanZZ[0] += tmp_meanZZ;
-				meanZZ[1] += tmp_meanZZ*tmp_meanZZ;
-			}
-				
-			//// Fill the histogramm of xi(r_{perp}, r_{paral}
-			data2D[rPerpBinIdx][rParralBinIdx][0] ++;
-			data2D[rPerpBinIdx][rParralBinIdx][1] += distTransQsoQso;
-			data2D[rPerpBinIdx][rParralBinIdx][2] += distParalQsoQso;
-
-		}
-	}
-	
-
-
-
-
-	std::ofstream fFile;
-	std::string tmp_pathToSave = pathToSave__;
-	tmp_pathToSave += "xi_Q1_Q2_1D_";
-	tmp_pathToSave += QSO__;
-	tmp_pathToSave += "_";
-	tmp_pathToSave += QSO2__;
-	tmp_pathToSave += ".txt";
-	std::cout << "\n  " << tmp_pathToSave << std::endl;
-	fFile.open(tmp_pathToSave.c_str());
-	fFile << std::scientific;
-	fFile.precision(17);
-
-	long double sumOne = 0.;
-
-	//// Set the values of data
-	//// [0] for value, [1] for error, [2] for bin center
-	for (unsigned int i=0; i<nbBin; i++) {
-		if (data1D_0[i]!=0.) {
-			const long double save0 = data1D_0[i];
-			const long double save1 = data1D_1[i];
-
-			data1D_1[i] /= data1D_0[i];
-
-			fFile << data1D_1[i];
-			fFile << " " << data1D_0[i];
-			fFile << " " << save0;
-			fFile << " " << save1;
-			fFile << " " << std::endl;
-
-			sumOne += save0;
-		}
-	}
-	fFile.close();
-
-
-
-	//// Get mean redshift of pairs
-	meanZZ[0] = meanZZ[0]/(2.*sumOne);
-	meanZZ[1] = sqrt( (meanZZ[1]/(4.*sumOne) - meanZZ[0]*meanZZ[0])/sumOne);
-	std::cout << "  < z >           = " << meanZZ[0] << " +- " << meanZZ[1] << std::endl;
-	std::cout << "  number of pairs = " << sumOne          << std::endl;
-
-
-	sumOne = 0.;
-
-	
-	//// Save the 2D cross-correlation
-	std::string pathToSave = pathToSave__;
-	pathToSave += "xi_Q1_Q2_2D_";
-	pathToSave += QSO__;
-	pathToSave += "_";
-	pathToSave += QSO2__;
-	pathToSave += ".txt";
-	std::cout << "\n  " << pathToSave << std::endl;
-	fFile.open(pathToSave.c_str());
-	fFile << std::scientific;
-	fFile.precision(17);
-	
-	//// Set the values of data
-	//// [0] for value, [1] for error, [2] for bin center
-	for (unsigned int i=0; i<nbBinX; i++) {
-		for (unsigned int j=0; j<nbBinY; j++) {
-			if (data2D[i][j][0]!=0.) {
-				const long double save0 = data2D[i][j][0];
-				const long double save1 = data2D[i][j][1];
-				const long double save2 = data2D[i][j][2];
-
-				data2D[i][j][1] /= data2D[i][j][0];
-				data2D[i][j][2] /= data2D[i][j][0];
-
-				fFile << i*nbBinY + j;
-				fFile << " " << data2D[i][j][1];
-				fFile << " " << data2D[i][j][2];
-				fFile << " " << data2D[i][j][0];
-				fFile << " " << save0;
-				fFile << " " << save1;
-				fFile << " " << save2;
-				fFile << " " << std::endl;
-
-				sumOne += save0;
-			}
-		}
-	}
-	fFile.close();
-	
-
-	std::cout << "  number of pairs      = " << sumOne          << std::endl;
-	
-
-	return;
-}
 
 
 
@@ -5192,15 +5244,11 @@ void Correlation::xi_Q1_Q2(void) {
 
 
 
-
-
-
-
-
-
-
-
-
+// ---------------------------------------------------------------------
+//
+//		Load data
+//
+// ---------------------------------------------------------------------
 void Correlation::loadDataQ1(void) {
 
 	//// Create the conversion table from redshift to distance
@@ -5682,6 +5730,16 @@ void Correlation::loadDataDelta2(int dataNeeded/*=100*/) {
 
 	return;
 }
+
+
+
+
+
+// ---------------------------------------------------------------------
+//
+//		Change data
+//
+// ---------------------------------------------------------------------
 void Correlation::removeFalseCorrelations(bool firstPass/*=true*/) {
 	/*
 
