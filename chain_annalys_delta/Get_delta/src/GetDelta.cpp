@@ -51,15 +51,15 @@ const unsigned int nbBinPowErrorDelta__ = 20*int(log10(maxPowErrorDelta__) - log
 
 
 //// Global variables
-extern void Chi2(int &npar, double *gin, double &f, double *par, int iflag);
-double ProbPixel(double cont,double flux, double sig, double zpix, unsigned int idxPixel);
+extern void Chi2_method1(int &npar, double *gin, double &f, double *par, int iflag);
+extern void Chi2_method2(int &npar, double *gin, double &f, double *par, int iflag);
+double ProbPixel(double cont,double flux, double sig, unsigned int idxPixel);
 TH2D* hFluxPDF__;
 TMinuit *mygMinuit;
 double LambdaMeth2[nbBinRFMax__];
 double FluxMeth2[nbBinRFMax__];
 double FluxErrMeth2[nbBinRFMax__];
 double FluxMeanMeth2[nbBinRFMax__];
-double zHIMeth2[nbBinRFMax__];
 unsigned int NbPixMeth2;
 double LambdaMeanMeth2;
 double a_PDF[nbBinsFlux__][nbBinRFMax__];
@@ -70,6 +70,7 @@ std::string pathMoreForHist__ = "";
 //// Flags
 unsigned int stepDefinition = 2;
 unsigned int stepAnnalyse   = 0;
+unsigned int methodIndex__ = 2
 const bool doVetoLines__          = false;
 const bool setDLA__               = false;
 const bool cutNotFittedSpectra__  = true;
@@ -851,10 +852,13 @@ void GetDelta::fitForests(unsigned int begin, unsigned int end) {
 	//// Constants
 	const double sizeBinsZ = (maxRedshift__-minRedshift__)/nbBinsRedshift__;
 
-	//// Vectors with the alpha and beta
+	//// Vectors with the alpha, beta, chi^{2}
 	std::vector<double> v_alpha(end-begin);
 	std::vector<double> v_beta(end-begin);
 	std::vector<double> v_chi2(end-begin);
+	std::vector<double> v_alphaErr(end-begin);
+	std::vector<double> v_betaErr(end-begin);
+	std::vector<int> v_iflag(end-begin);
 
 	//// Arrays with bin center of X axis of 'hFluxPDF__'
 	double binCenterX[nbBinsFlux__];
@@ -862,33 +866,33 @@ void GetDelta::fitForests(unsigned int begin, unsigned int end) {
 		binCenterX[i] = hFluxPDF__->GetXaxis()->GetBinCenter(i+1);
 	}
 
+	const unsigned int nbForest = v_zz__.size();
+	if (nbForest==0) return;
 
-	for (unsigned int f=0; f<v_zz__.size(); f++) {
+	for (unsigned int f=0; f<nbForest; f++) {
 
 		//  start minimization
-		int iflag;
-		double arglist[10];
+		int iflag = 0;
+		double arglist[10] = {0.};
 
 		// fill arrays
-		NbPixMeth2 = 0;
 		LambdaMeanMeth2 = v_meanForestLambdaRF__[f];
-
 		const unsigned int nb = v_nbPixel__[f];
+		NbPixMeth2 = 0;
 
 		for (unsigned int p=0; p<nb; p++) {
 			if (v_LAMBDA_RF__[f][p] >= lambdaRFMin__ && v_LAMBDA_RF__[f][p] < lambdaRFMax__) {
 
-				double zpix = v_ZZZ__[f][p];
+				
 				FluxMeth2[NbPixMeth2]     = v_NORM_FLUX__[f][p];
-				double err = 1./sqrt(v_NORM_FLUX_IVAR__[f][p]);
-				FluxErrMeth2[NbPixMeth2]  = err;
+				FluxErrMeth2[NbPixMeth2]  = 1./sqrt(v_NORM_FLUX_IVAR__[f][p]);
 				LambdaMeth2[NbPixMeth2]   = v_LAMBDA_RF__[f][p];
 				FluxMeanMeth2[NbPixMeth2] = v_TEMPLATE__[f][p];
-				zHIMeth2[NbPixMeth2]      = zpix;
 
+				double zpix = v_ZZZ__[f][p];
 				if (zpix < minRedshift__)       zpix = minRedshift__+sizeBinsZ;
 				else if (zpix >= maxRedshift__) zpix = maxRedshift__-sizeBinsZ;
-  
+
 				for (unsigned int idp=0; idp<nbBinsFlux__; idp++) {
 					a_PDF[idp][NbPixMeth2] = hFluxPDF__->Interpolate(binCenterX[idp],zpix);
 				}
@@ -904,15 +908,16 @@ void GetDelta::fitForests(unsigned int begin, unsigned int end) {
 		arglist[0] = 1000.;
 		arglist[1] = 0.1;
 		mygMinuit->mnexcm("MIGRAD", arglist,2, iflag);
-		double err;
+		double err[2]   = {0.};
 		double param[2] = {0.};
-		for (int ivar=0; ivar<2; ivar++) mygMinuit->GetParameter(ivar,param[ivar],err);
+		for (unsigned int ivar=0; ivar<2; ivar++) mygMinuit->GetParameter(ivar,param[ivar],err[ivar]);
 		v_alpha[f] = param[0];
 		v_beta[f]  = param[1];
 		v_chi2[f]  = mygMinuit->fAmin;
+		v_alphaErr[f] = err[0];
+		v_betaErr[f]  = err[1];
+		v_iflag[f] = iflag
 	}
-
-	if (v_zz__.size()==0) return;
 	
 	//// alpha_beta
 	std::ofstream fFile;
@@ -939,22 +944,39 @@ void GetDelta::fitForests(unsigned int begin, unsigned int end) {
 
 	std::cout << "  pathToSave = " << pathToSave << std::endl;
 
-	//// Delta vs. lambda_RF
-	for (unsigned int i=0; i<v_zz__.size(); i++) {
+	//// index  alpha  beta  chi^{2}  error_alpha   error_beta   iflag
+	for (unsigned int i=0; i<nbForest; i++) {
 		fFile << i+begin;
 		fFile << " " << v_alpha[i];
 		fFile << " " << v_beta[i];
 		fFile << " " << v_chi2[i];
+		fFile << " " << v_alphaErr[i];
+		fFile << " " << v_betaErr[i];
+		fFile << " " << v_iflag[i];
 		fFile << std::endl;
 	}
 	fFile.close();
 
-
-
-
 	return;
 }
-/*double ProbPixel(double cont,double flux, double sig, double zpix, unsigned int idxPixel) {
+extern void Chi2_method1(int &npar, double *gin, double &f, double *par, int iflag) {
+
+	f = 0.;
+	for (unsigned int i=0; i<NbPixMeth2; i++) {
+		const double cont = (par[0]+par[1]*(LambdaMeth2[i]-LambdaMeanMeth2))*FluxMeanMeth2[i];
+		const double tmp = (FluxMeth2[i]-cont)/FluxErrMeth2[i];
+		f += tmp*tmp;
+	}
+}
+extern void Chi2_method2(int &npar, double *gin, double &f, double *par, int iflag) {
+
+	f = 0.;
+	for (unsigned int i=0; i<NbPixMeth2; i++) {
+		const double cont = (par[0]+par[1]*(LambdaMeth2[i]-LambdaMeanMeth2))*FluxMeanMeth2[i];
+		f += -2.*ProbPixel(cont,FluxMeth2[i],FluxErrMeth2[i],i);
+	}
+}
+double ProbPixel(double cont,double flux, double sig, unsigned int idxPixel) {
 	
 	const double dF = 1./nbBinsFlux__;
 	double prb = 0.;
@@ -970,28 +992,6 @@ void GetDelta::fitForests(unsigned int begin, unsigned int end) {
 	}
 	return log( prb*dF );
 }
-extern void Chi2(int &npar, double *gin, double &f, double *par, int iflag) {
-
-	f = 0.;
-	for (unsigned int i=0; i<NbPixMeth2; i++) {
-		const double cont = (par[0]+par[1]*(LambdaMeth2[i]-LambdaMeanMeth2))*FluxMeanMeth2[i];
-		const double flux = FluxMeth2[i];
-		const double sig  = FluxErrMeth2[i];
-		const double zpix = zHIMeth2[i];
-		f += -2.*ProbPixel(cont,flux,sig,zpix,i);
-	}
-}*/
-extern void Chi2(int &npar, double *gin, double &f, double *par, int iflag) {
-
-	f = 0.;
-	for (unsigned int i=0; i<NbPixMeth2; i++) {
-		const double cont = (par[0]+par[1]*(LambdaMeth2[i]-LambdaMeanMeth2))*FluxMeanMeth2[i];
-		const double flux = FluxMeth2[i];
-		const double sig  = FluxErrMeth2[i];
-		const double tmp = (flux-cont)/sig;
-		f += tmp*tmp;
-	}
-}
 void GetDelta::initFitCont(void) {
 
 
@@ -999,10 +999,11 @@ void GetDelta::initFitCont(void) {
 
 	mygMinuit = new TMinuit(10);
 	mygMinuit->Clear();
-	mygMinuit->SetFCN(Chi2);
+	if (methodIndex__==1) mygMinuit->SetFCN(Chi2_method1);
+	else if (methodIndex__==2) mygMinuit->SetFCN(Chi2_method2);
 
-	int iflag;
-	double arglist[10];
+	int iflag = 0;
+	double arglist[10] = {0.};
 	arglist[0] = 1.;
 	mygMinuit->mnexcm("SET ERR", arglist, 1, iflag);
 
