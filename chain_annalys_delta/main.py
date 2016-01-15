@@ -36,10 +36,10 @@ nbSpectra = 300000
 def main():
 
 	stepIdx = 2
-	forest = 'LYA'
-	alphaStart__ = 1.3
+	forest = 'SIIV'
+	alphaStart__ = 1.
 	reObs = False
-	method = '_method1'
+	method = '' #'_method1'
 
 	print
 	print "------ Start ------"

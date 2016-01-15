@@ -71,7 +71,7 @@ std::string pathMoreForHist__ = "";
 const unsigned int stepDefinition = 2;
 const unsigned int stepAnnalyse   = 0;
 const unsigned int methodIndex__ = 1;
-const bool doVetoLines__          = true;
+const bool doVetoLines__          = false;
 const bool setDLA__               = false;
 const bool cutNotFittedSpectra__  = true;
 const bool putReobsTogether__     = false;
@@ -87,7 +87,7 @@ GetDelta::GetDelta(int argc, char** argv) {
 		pathForest__   = "/home/gpfs/manip/mnt/bao/hdumasde/Data/";
 		pathForest__  += forest__;
 //		pathForest__  += "/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits";
-		pathForest__  += "/FitsFile_DR12_Guy/DR12_primery/DR12_primery_method1.fits";
+		pathForest__  += "/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits";
 //		pathForest__  += "/FitsFile_DR12_Guy/DR12_reObs/DR12_reObs.fits";
 //		pathForest__  += "/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits";
 

@@ -26,7 +26,7 @@ maxTheta_ = 0.003;
 nbBinM__ = 30;
 
 
-path1__ = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_test_PDFMocksJMC/'
+path1__ = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
 
 ### Parameters
 forest__ = sys.argv[1]
@@ -296,7 +296,7 @@ def plotWe():
 
 
 
-xi1D_, xiMu_, xiWe_ = loadData('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_test_PDFMocksJMC/xi_delta_QSO_lambda_Mu_'+forest__+'_'+qso__+'.txt')
+xi1D_, xiMu_, xiWe_ = loadData('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/xi_delta_QSO_lambda_Mu_'+forest__+'_'+qso__+'.txt')
 
 plotXi()
 plotMu()

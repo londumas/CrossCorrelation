@@ -35,7 +35,7 @@ nbBin2D__  = nbBinX2D__*nbBinY2D__
 ### Mu
 nbBinM__ = 25;
 
-
+pathToCamb_ = '/home/gpfs/manip/mnt0607/bao/hdumasde/Data/CAMB/CAMB_2_4/xi-z2.4.dat'
 path1__ = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_test_PDFMocksJMC/'
 
 ### Parameters
@@ -1267,13 +1267,13 @@ def saveMeanCov():
 
 '''
 ### Simulation
-path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests6/'
-saveListReal(80,path+'xi_delta_QSO_Mu_LYA_QSO_subsampling_',path+'xi_delta_QSO_2D_LYA_QSO_subsampling_',path+'subSampling_LYA_QSO_',True)
-cov = numpy.load('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests6/subSampling_LYA_QSO_cov_1D.npy')
+path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
+#saveListReal(10,path+'xi_delta_QSO_Mu_LYA_QSO_subsampling_',path+'xi_delta_QSO_2D_LYA_QSO_subsampling_',path+'subSampling_LYA_QSO_',True)
+cov = numpy.load('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/subSampling_LYA_QSO_cov_1D.npy')
 cor = myTools.getCorrelationMatrix(cov)
 myTools.plot2D(cor)
+a = myTools.plotCovar([cor],['a'])
 '''
-
 
 
 '''
@@ -1301,7 +1301,7 @@ myTools.plot2D(a)
 '''
 
 #prepareForBAOFIT()
-xi1D_, xi2D_, xiMu_, xiWe_ = loadData('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests6_eBOSS/xi_delta_QSO_Mu_'+forest1__+'_'+qso1__+'.txt','/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests6_eBOSS/xi_delta_QSO_2D_'+forest1__+'_'+qso1__+'.txt')
+xi1D_, xi2D_, xiMu_, xiWe_ = loadData('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/xi_delta_QSO_Mu_'+forest1__+'_'+qso1__+'.txt','/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/xi_delta_QSO_2D_'+forest1__+'_'+qso1__+'.txt')
 '''
 path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests5/xi_delta_QSO_distortionMatrix_1D_LYA_QSO.txt'
 data = numpy.loadtxt(path)
@@ -1324,8 +1324,7 @@ replaceValueByMean()
 plotXi(0)
 plotXi(1)
 plotXi(2)
-pathToCamb = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/CAMB_2_4/xi-z2.4.dat'
-fitCamb(xi1D_,pathToCamb,0)
+fitCamb(xi1D_,pathToCamb_,0)
 plotXi2D(0)
 plotXi2D(1)
 plotXi2D(2)

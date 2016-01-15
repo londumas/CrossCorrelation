@@ -231,11 +231,11 @@ def meanDelta():
 	#lambdaRFMin__      = 1410.
 	#lambdaRFMax__      = 1530.
 
-	path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest+'/FitsFile_DR12_Guy/DR12_primery/DR12_primery_method1.fits'
+	path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest+'/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits'
 	#path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_reObs/DR12_reObs.fits'
 	#path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits'
 
-	cat = pyfits.open(path, memmap=True)[1].data[:10000]
+	cat = pyfits.open(path, memmap=True)[1].data[:50000]
 
 	cat = cat[ numpy.logical_and( numpy.logical_and(  numpy.logical_and( cat['ALPHA_2']!=alphaStart__, cat['BETA_2']!=0.),  numpy.abs(cat['ALPHA_2'])<=39.5 ), numpy.abs(cat['BETA_2'])<=0.25 ) ]
 	#cat = cat[ numpy.logical_or( numpy.logical_or(  numpy.logical_or( cat['ALPHA_2']==alphaStart__, cat['BETA_2']==0.),  numpy.abs(cat['ALPHA_2'])>=39.5 ), numpy.abs(cat['BETA_2'])>=0.25 ) ]
@@ -328,6 +328,12 @@ def meanDelta():
 	plt.ylabel(r'$z$', fontsize=40)
 	myTools.deal_with_plot(False,False,True)
 	plt.show()
+	### |<delta>| vs. nbPixel
+	plt.errorbar(cat['NB_PIXEL'],numpy.abs(meanDelta),fmt='o')
+	plt.xlabel(r'$nb \, pixel$', fontsize=40)
+	plt.ylabel(r'$|< \delta >|$', fontsize=40)
+	myTools.deal_with_plot(False,False,True)
+	plt.show()
 	### alpha vs. |<delta>|
 	plt.errorbar(numpy.abs(meanDelta),cat['ALPHA_2'],fmt='o')
 	plt.xlabel(r'$|< \delta >|$', fontsize=40)
@@ -403,7 +409,7 @@ def meanDelta():
 
 
 		#myTools.plotOnSpectra_plate(el['PLATE'], el['MJD'], el['FIBERID'])
-		#myTools.plotOnSpectra_spec(el['PLATE'], el['MJD'], el['FIBERID'],el['Z_VI'])
+		myTools.plotOnSpectra_spec(el['PLATE'], el['MJD'], el['FIBERID'],el['Z_VI'])
 
 		plt.errorbar(el['LAMBDA_RF'][cut],el['NORM_FLUX'][cut],yerr=numpy.power(el['NORM_FLUX_IVAR'][cut],-0.5),label='$Data$')
 		plt.plot(el['LAMBDA_RF'][cut],numpy.power(el['NORM_FLUX_IVAR'][cut],-0.5),label='flux err')

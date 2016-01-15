@@ -16,7 +16,7 @@ from const_delta import *
 chunckNb = 1
 simulNb  = 1
 
-forest__ = 'LYA'
+forest__ = 'SIIV'
 #lambdaRFMin__      = 1410.
 #lambdaRFMax__      = 1530.
 

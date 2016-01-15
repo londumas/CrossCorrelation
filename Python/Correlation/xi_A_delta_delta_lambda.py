@@ -290,7 +290,7 @@ def plotWe(rescale):
 
 	plt.show()
 
-xi1D_, xiMu_, xiWe_ = loadData('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests/xi_A_delta_delta_lambda_Mu_'+forest__+'.txt')
+xi1D_, xiMu_, xiWe_ = loadData('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/xi_A_delta_delta_lambda_Mu_'+forest__+'.txt')
 
 plotXi()
 plotMu()

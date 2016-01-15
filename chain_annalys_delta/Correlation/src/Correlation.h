@@ -125,25 +125,10 @@ class Correlation
 
 const double lambdaObsMin__   = 3600.; //3547.;  //3600.; //
 const double lambdaObsMax__   = 7235.; //10326.;  //7235.; //
-
 const double maxAlpha__   = 40.;
 const double maxBeta__  =  0.3;
-
 const double maxCorrelation__ = 200.;
 const double isReobsFlag__ = -100.;
-
-
-/// If LYA
-const std::string forest__      = "LYA";
-const double lambdaRFLine__     = 1215.67;
-const double lambdaRFMin__      = 1040.;
-const double lambdaRFMax__      = 1200.;
-const unsigned int nbBinRFMax__ = 647;
-const double alphaStart__       = 1.3;
-
-/// If LYA_JMC
-//const unsigned int nbBinRFMax__ = 645;
-
 const unsigned int sizeGridX__   = 2560;
 const unsigned int sizeGridY__   = 1920;
 const unsigned int sizeGridZ__   = 512;
@@ -152,7 +137,35 @@ const double sizeCell__         = 4.5*0.71;  //3.195; // in Mpc.h^-1 ( = 4.5*0.7
 
 
 
+/*
+/// If LYB
+const std::string forest__      = "LYB";
+const double lambdaRFLine__     = 1025.72;
+const double lambdaRFMin__      = 800.;
+const double lambdaRFMax__      = 1020.;
+const unsigned int nbBinRFMax__ = 1085;
+const double alphaStart__       = 1.;
+*/
 
+/// If LYA
+const std::string forest__      = "LYA";
+const double lambdaRFLine__     = 1215.67;
+const double lambdaRFMin__      = 1040.;
+const double lambdaRFMax__      = 1200.;
+const unsigned int nbBinRFMax__ = 647;
+const double alphaStart__       = 1.3;
+/// If LYA_JMC
+//const unsigned int nbBinRFMax__ = 645;
+
+/*
+/// If SIIV
+const std::string forest__      = "SIIV";
+const double lambdaRFLine__     = 1402.77291;
+const double lambdaRFMin__      = 1286.;
+const double lambdaRFMax__      = 1380.;
+const unsigned int nbBinRFMax__ = 326;
+const double alphaStart__       = 1.;
+*/
 /*
 /// If CIV
 const std::string forest__      = "CIV";
@@ -171,30 +184,23 @@ const double lambdaRFMax__   = 2790.;
 const unsigned int nbBinRFMax__ = 2414;
 const double alphaStart__       = 1.;
 */
+
+
+
+
+
+
+
 /*
-/// If LYB
-const std::string forest__      = "LYB";
-const double lambdaRFLine__     = 1025.72;
-const double lambdaRFMin__      = 800.;
-const double lambdaRFMax__      = 1020.;
-const unsigned int nbBinRFMax__ = 1085;
-const double alphaStart__       = 1.;
+/// For Delta 2 (LYB)
+const std::string forest2__  = "LYB";
+const double lambdaRFLineDelta2__  = 1025.72;
+const double lambdaRFMinDelta2__   = 800.;
+const double lambdaRFMaxDelta2__   = 1020.;
+const unsigned int nbBinRFMaxDelta2__ = 1080;
+const std::string pathDelta2__ = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYB/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits";
+const double alphaStart2__       = 1.;
 */
-/*
-/// If SIIV
-const std::string forest__      = "SIIV";
-const double lambdaRFLine__     = 1402.77291;
-const double lambdaRFMin__      = 1286.;
-const double lambdaRFMax__      = 1380.;
-const unsigned int nbBinRFMax__ = 326;
-const double alphaStart__       = 1.;
-*/
-
-
-
-
-
-
 /*
 /// For Delta 2 (LYA)
 const std::string forest2__      = "LYA";
@@ -206,6 +212,15 @@ const std::string pathDelta2__ = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/Fit
 const double alphaStart2__       = 1.3;
 */
 
+/// For Delta 2 (SIIV)
+const std::string forest2__           = "SIIV";
+const double lambdaRFLineDelta2__     = 1402.77291;
+const double lambdaRFMinDelta2__      = 1286.;
+const double lambdaRFMaxDelta2__      = 1380.;
+const unsigned int nbBinRFMaxDelta2__ = 326;
+const std::string pathDelta2__ = "/home/gpfs/manip/mnt/bao/hdumasde/Data/SIIV/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits";
+const double alphaStart2__       = 1.;
+/*
 /// For Delta 2 (CIV)
 const std::string forest2__  = "CIV";
 const double lambdaRFLineDelta2__  = 1550.77845;
@@ -214,7 +229,7 @@ const double lambdaRFMaxDelta2__   = 1530.;
 const unsigned int nbBinRFMaxDelta2__ = 373;
 const std::string pathDelta2__ = "/home/gpfs/manip/mnt/bao/hdumasde/Data/CIV/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits";
 const double alphaStart2__       = 1.;
-
+*/
 /*
 /// For Delta 2 (MGII)
 const std::string forest2__  = "MGII";
@@ -225,30 +240,17 @@ const unsigned int nbBinRFMaxDelta2__ = 2414;
 const std::string pathDelta2__ = "/home/gpfs/manip/mnt/bao/hdumasde/Data/MGII/FitsFile_DR12/DR12_primery/DR12_primery.fits";
 const double alphaStart2__       = 1.;
 */
-/*
-/// For Delta 2 (LYB)
-const std::string forest2__  = "LYB";
-const double lambdaRFLineDelta2__  = 1025.72;
-const double lambdaRFMinDelta2__   = 800.;
-const double lambdaRFMaxDelta2__   = 1020.;
-const unsigned int nbBinRFMaxDelta2__ = 1080;
-const std::string pathDelta2__ = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYB/FitsFile_DR12_testNoCutLambdaOBS_Guy/DR12_primery/DR12_primery.fits";
-const double alphaStart2__       = 1.;
-*/
-/*
-/// For Delta 2 (SIIV)
-const std::string forest2__           = "SIIV";
-const double lambdaRFLineDelta2__     = 1402.77291;
-const double lambdaRFMinDelta2__      = 1286.;
-const double lambdaRFMaxDelta2__      = 1380.;
-const unsigned int nbBinRFMaxDelta2__ = 326;
-const std::string pathDelta2__ = "/home/gpfs/manip/mnt/bao/hdumasde/Data/SIIV/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits";
-const double alphaStart2__       = 1.;
-*/
+
+
 
 /// For Q2
-const std::string QSO2__  = "DLA";
-const std::string pathQ2__      = "/home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/DLA_all.fits";
+const std::string QSO2__   = "aaa";
+const std::string pathQ2__ = "";
+
+
+
+
+
 #endif
 
 

@@ -25,6 +25,19 @@
 #define GETDELTA_H
 
 
+/*
+/// If LYB
+const std::string forest__  = "LYB";
+const double lambdaRFLine__  = 1025.72;
+const double lambdaRFMin__   = 800.;
+const double lambdaRFMax__   = 1020.;
+const unsigned int nbBinRFMax__ = 1085;
+const double alphaStart__ = 1.;
+#define C_NBBINZ 12
+#define C_ZEXTREMA0 2.
+#define C_ZEXTREMA1 4.5
+*/
+/*
 /// If LYA
 const std::string forest__  = "LYA";
 const double lambdaRFLine__  = 1215.67;
@@ -35,10 +48,22 @@ const double alphaStart__ = 1.3;
 #define C_NBBINZ 12
 #define C_ZEXTREMA0 2.
 #define C_ZEXTREMA1 4.5
-
+*/
 /// If LYA_JMC
 //const unsigned int nbBinRFMax__ = 645;
 
+/*
+/// If SIIV
+const std::string forest__  = "SIIV";
+const double lambdaRFLine__  = 1402.77291;
+const double lambdaRFMin__   = 1286.;
+const double lambdaRFMax__   = 1380.;
+const unsigned int nbBinRFMax__ = 326;
+const double alphaStart__ = 1.;
+#define C_NBBINZ 9
+#define C_ZEXTREMA0 1.4
+#define C_ZEXTREMA1 3.4
+*/
 /*
 /// If CIV
 const std::string forest__   = "CIV";
@@ -63,30 +88,8 @@ const double alphaStart__ = 1.;
 #define C_ZEXTREMA0 0.4
 #define C_ZEXTREMA1 1.7
 */
-/*
-/// If LYB
-const std::string forest__  = "LYB";
-const double lambdaRFLine__  = 1025.72;
-const double lambdaRFMin__   = 800.;
-const double lambdaRFMax__   = 1020.;
-const unsigned int nbBinRFMax__ = 1085;
-const double alphaStart__ = 1.;
-#define C_NBBINZ 12
-#define C_ZEXTREMA0 2.
-#define C_ZEXTREMA1 4.5
-*/
-/*
-/// If SIIV
-const std::string forest__  = "SIIV";
-const double lambdaRFLine__  = 1402.77291;
-const double lambdaRFMin__   = 1286.;
-const double lambdaRFMax__   = 1380.;
-const unsigned int nbBinRFMax__ = 326;
-const double alphaStart__ = 1.;
-#define C_NBBINZ 9
-#define C_ZEXTREMA0 1.4
-#define C_ZEXTREMA1 3.4
-*/
+
+
 
 
 const double C_BINSIZEZ = (C_ZEXTREMA1-C_ZEXTREMA0)/C_NBBINZ;
@@ -100,8 +103,8 @@ const double maxFlux__ = 1.000001;
 const unsigned int nbBinsFlux__ = 100;
 
 
-const double lambdaObsMin__   = 3600.; //3547.; //
-const double lambdaObsMax__   = 7235.; //10326.; //
+const double lambdaObsMin__   = 3547.; //3600.; //3547.; //
+const double lambdaObsMax__   = 10326.; //7235.; //10326.; //
  
 /// Value allowing to put a roof to the error on a flux
 //const double capForError__ = 0.19;

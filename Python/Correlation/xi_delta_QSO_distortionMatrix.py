@@ -477,13 +477,13 @@ def fitCamb(data,pathToFile,mulpol=0):
 
 
 
-path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests5/xi_delta_QSO_distortionMatrix_2D_LYA_QSO.txt'
+path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/xi_delta_QSO_distortionMatrix_2D_LYA_QSO.txt'
 print path
 data = numpy.loadtxt(path)
 print data
 print numpy.diag(data)
 myTools.plot2D(data)
-#a = myTools.plotCovar([data],['a'])
+a = myTools.plotCovar([data],['a'])
 
 
 

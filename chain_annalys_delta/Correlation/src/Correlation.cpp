@@ -105,13 +105,13 @@ const bool shuffleQSO     = false;
 const bool shuffleForest  = false;
 const bool randomQSO      = false;
 const bool randomForest   = false;
-const bool doBootstraps__ = false;
+const bool doBootstraps__ = true;
 
 const bool doVetoLines__ = true;
 const bool nicolasEstimator__ = false;
 
 
-std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests6_eBOSS/";
+std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/";
 
 Correlation::Correlation(int argc, char **argv) {
 
@@ -141,8 +141,8 @@ Correlation::Correlation(int argc, char **argv) {
 	if (!mocks && !mockJMC__) {
 		pathForest__  = "/home/gpfs/manip/mnt/bao/hdumasde/Data/";
 		pathForest__  += forest__;
-//		pathForest__  += "/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits";
-		pathForest__  += "/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits";
+		pathForest__  += "/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits";
+//		pathForest__  += "/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits";
 	}
 	else if (mocks) {
 		pathForest__   = "/home/gpfs/manip/mnt0607/bao/hdumasde/MockV4/M3_0_";
@@ -3254,20 +3254,20 @@ void Correlation::xi_QSO_QSO(bool doBootstraps/*=false*/, unsigned int bootIdx/*
 
 		for (unsigned int q2=0; q2<q1; q2++) {
 
-			//// Angle between the two directions of the qso and the lya
+			//// Angle between the two directions of thes QSOs
 			const double cosTheta = cosDe1*v_CosDeQ1__[q2]*cos(ra1-v_raQ1__[q2]) + sinDe1*v_SinDeQ1__[q2];
 			
-			//// Transvers distance between the qso and the lya
+			//// Transvers distance between the two QSOs
 			const double distTransQsoQsoPow2 = rr1*rr1*(1.-cosTheta*cosTheta);
 			if (distTransQsoQsoPow2 >= maxPow2) continue;
 
 
-			//// Parrallel distance between the qso and the lya
+			//// Parrallel distance between the two QSOs
 			const double rPara = fabs(rr1*cosTheta-v_rQ1__[q2]);
 			if (rPara >= max) continue;
 			const unsigned int idxPara = int(rPara);
 
-			//// Transvers distance between the qso and the lya
+			//// Transvers distance between the two QSOs
 			const double rPerp   = sqrt(distTransQsoQsoPow2);
 			const unsigned int idxPerp = int(rPerp);
 
@@ -5270,10 +5270,12 @@ void Correlation::loadDataQ1(void) {
 	TH1D* hConvertRedshDist = cosmo->createHistoConvertRedshDist(C_NBBINREDSH, C_ZEXTREMABINCONVERT0, C_ZEXTREMABINCONVERT1);
 
 	bool selectWindowRedshift = true;
-	if (idxCommand_[0]==15 || idxCommand_[0]==16 || idxCommand_[0]==21 || mockBox__) selectWindowRedshift = false;
-	// Get min_z, max_z according to pixels positions
 	double array[2] = {0.};
-	cosmo->FindMinMaxRedsift(maxCorrelation__, lambdaObsMin__, lambdaObsMax__, lambdaRFLine__, array);
+	// Get min_z, max_z according to pixels positions
+	if (idxCommand_[0]==15 || idxCommand_[0]==16 || idxCommand_[0]==21 || mockBox__) {
+		selectWindowRedshift = false;
+	}
+	else cosmo->FindMinMaxRedsift(maxCorrelation__, lambdaObsMin__, lambdaObsMax__, lambdaRFLine__, array);
 	const double minRedshiftQSO = array[0];
 	const double maxRedshiftQSO = array[1];
 
@@ -5795,24 +5797,19 @@ void Correlation::loadDataDelta2(int dataNeeded/*=100*/) {
 //
 // ---------------------------------------------------------------------
 void Correlation::removeFalseCorrelations(bool firstPass/*=true*/) {
-	/*
-
-	Has to be used for calculation of covariance matrices
-
-	*/
 
 	std::cout << "\n\n\n  ------ removeFalseCorrelations ------ " << std::endl;
 
-
+	//// Constants
 	const unsigned int nbLoop = 50;
 
-	
 	//// Remove <delta> vs. lambda_OBS
 	const unsigned int nbBin = nbBinlambdaObs__;
 	const double min = lambdaObsMin__;
 	const double max = lambdaObsMax__;
 	
 	/*
+	//// Remove <delta> vs. lambda_RF
 	const unsigned int nbBin = int(lambdaRFMax__-lambdaRFMin__)+6;
 	const double min = lambdaRFMin__-3.;
 	const double max = lambdaRFMax__+3.;
@@ -5853,21 +5850,22 @@ void Correlation::removeFalseCorrelations(bool firstPass/*=true*/) {
 			}
 		}
 
-		long double mean0[2] = {};
+		long double mean0[2] = {0.};
 
 		//// Put it into an histo
 		for (unsigned int i=0; i<nbBin; i++) {
 
-			histo->SetBinContent(i+1,0.);
-			histo->SetBinError(i+1,0.);
-
-			if (data[i][3]==0.) continue;
+			if (data[i][3]==0.) {
+				histo->SetBinContent(i+1,0.);
+				histo->SetBinError(i+1,0.);
+				continue;
+			}
 
 			mean0[0] += data[i][0];
 			mean0[1] += data[i][1];
 
-			double mean = data[i][0]/data[i][1];
-			double err  = sqrt( (data[i][2]/data[i][1]-mean*mean)/data[i][3] );
+			const double mean = data[i][0]/data[i][1];
+			const double err  = sqrt( (data[i][2]/data[i][1]-mean*mean)/data[i][3] );
 			
 			histo->SetBinContent(i+1,mean);
 			histo->SetBinError(i+1,err);
