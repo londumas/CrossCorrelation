@@ -24,22 +24,22 @@
 #ifndef GETDELTA_H
 #define GETDELTA_H
 
-/*
+
 /// If LYA
 const std::string forest__  = "LYA";
 const double lambdaRFLine__  = 1215.67;
 const double lambdaRFMin__   = 1040.;
 const double lambdaRFMax__   = 1200.;
 const unsigned int nbBinRFMax__   = 647;
-const double alphaStart__ = 1.;
+const double alphaStart__ = 1.3;
 #define C_NBBINZ 12
 #define C_ZEXTREMA0 2.
 #define C_ZEXTREMA1 4.5
-*/
+
 /// If LYA_JMC
 //const unsigned int nbBinRFMax__ = 645;
 
-
+/*
 /// If CIV
 const std::string forest__   = "CIV";
 const double lambdaRFLine__  = 1550.77845;
@@ -50,7 +50,7 @@ const double alphaStart__ = 1.;
 #define C_NBBINZ 9
 #define C_ZEXTREMA0 1.4
 #define C_ZEXTREMA1 3.2
-
+*/
 /*
 /// If MGII
 const std::string forest__  = "MGII";
@@ -100,8 +100,8 @@ const double maxFlux__ = 1.000001;
 const unsigned int nbBinsFlux__ = 100;
 
 
-const double lambdaObsMin__   = 3547.;  //3600.; //
-const double lambdaObsMax__   = 10326.;  //7235.; //
+const double lambdaObsMin__   = 3600.; //3547.; //
+const double lambdaObsMax__   = 7235.; //10326.; //
  
 /// Value allowing to put a roof to the error on a flux
 //const double capForError__ = 0.19;

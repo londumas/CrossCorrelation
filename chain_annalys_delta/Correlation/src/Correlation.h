@@ -139,7 +139,7 @@ const double lambdaRFLine__     = 1215.67;
 const double lambdaRFMin__      = 1040.;
 const double lambdaRFMax__      = 1200.;
 const unsigned int nbBinRFMax__ = 647;
-const double alphaStart__       = 1.;
+const double alphaStart__       = 1.3;
 
 /// If LYA_JMC
 //const unsigned int nbBinRFMax__ = 645;

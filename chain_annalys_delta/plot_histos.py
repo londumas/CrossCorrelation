@@ -16,7 +16,9 @@ from const_delta import *
 chunckNb = 1
 simulNb  = 1
 
-forest__ = 'CIV'
+forest__ = 'LYA'
+#lambdaRFMin__      = 1410.
+#lambdaRFMax__      = 1530.
 
 ###
 #path = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_histos/"
@@ -30,7 +32,7 @@ for i in range (0,chunckNb):
 	for j in range(0,simulNb):
 		mockNumber = '' #'_'+str(i)+'_'+str(j)
 
-		data = numpy.loadtxt('/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_histos_test_PDFMocksJMC/hDeltaVsLambdaObs_LYA.txt')
+		data = numpy.loadtxt('/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_histos/hDeltaVsLambdaObs_LYA.txt')
                 plt.errorbar(data[:,0]+3600.5, data[:,1], label=r'$DR12$',color='red')
 
 		data = numpy.loadtxt(path+'hDeltaVsLambdaObs_LYA'+mockNumber+'.txt')

@@ -800,7 +800,7 @@ def fitCamb(data,pathToFile,mulpol=0):
 	b1b2_init = -0.2 #numpy.mean(yyy[ (xxx<maxForGues) ]/yyy_Camb[ (xxx<maxForGues) ])
 	print '  b1b2_init = ', b1b2_init
 
-	
+	'''
 	### Show result
 	for i in range(0,3):
 
@@ -811,7 +811,7 @@ def fitCamb(data,pathToFile,mulpol=0):
 		plt.plot(xxx,coef*b1b2_init*yyy_Camb,marker='o')
 		myTools.deal_with_plot(False,False,False)
 		plt.show()
-	
+	'''
 
 	### Define the fit function
 	def chi2(b1b2,roof):
@@ -1260,6 +1260,22 @@ def saveMeanCov():
 	tmpcov1D /= 100
 	numpy.save('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Results_RandomPosInCell/xi_delta_QSO_result_cov_2D_meanSubSampling.npy',tmpcov1D)
 
+
+
+
+
+
+'''
+### Simulation
+path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests6/'
+saveListReal(80,path+'xi_delta_QSO_Mu_LYA_QSO_subsampling_',path+'xi_delta_QSO_2D_LYA_QSO_subsampling_',path+'subSampling_LYA_QSO_',True)
+cov = numpy.load('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests6/subSampling_LYA_QSO_cov_1D.npy')
+cor = myTools.getCorrelationMatrix(cov)
+myTools.plot2D(cor)
+'''
+
+
+
 '''
 saveListRealMocks(10,10,True)
 cov = numpy.load('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Results_NicolasDistortionWithDistortion/xi_delta_QSO_result_cov_1D.npy')
@@ -1285,7 +1301,7 @@ myTools.plot2D(a)
 '''
 
 #prepareForBAOFIT()
-xi1D_, xi2D_, xiMu_, xiWe_ = loadData('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests6/xi_delta_QSO_Mu_'+forest1__+'_'+qso1__+'.txt','/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests6/xi_delta_QSO_2D_'+forest1__+'_'+qso1__+'.txt')
+xi1D_, xi2D_, xiMu_, xiWe_ = loadData('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests6_eBOSS/xi_delta_QSO_Mu_'+forest1__+'_'+qso1__+'.txt','/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests6_eBOSS/xi_delta_QSO_2D_'+forest1__+'_'+qso1__+'.txt')
 '''
 path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests5/xi_delta_QSO_distortionMatrix_1D_LYA_QSO.txt'
 data = numpy.loadtxt(path)
@@ -1305,14 +1321,11 @@ result_Multipol_ = plotMultipol(xiMu_)
 replaceValueByMean()
 '''
 
-#plotXi(0)
-#plotXi(1)
+plotXi(0)
+plotXi(1)
 plotXi(2)
-
-'''
 pathToCamb = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/CAMB_2_4/xi-z2.4.dat'
 fitCamb(xi1D_,pathToCamb,0)
-
 plotXi2D(0)
 plotXi2D(1)
 plotXi2D(2)
@@ -1321,7 +1334,6 @@ plotMu(1)
 plotMu(2)
 plotWe(0)
 plotWe(1)
-'''
 plotWe(2)
 
 

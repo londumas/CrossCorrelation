@@ -17,16 +17,16 @@ def main():
 	### For mocks
 	
 	### mock catalogue
-	for i in range(0,10):
+	for i in range(0,1):
 		### mock catalogue
-		for j in range(0,10):
+		for j in range(0,1):
 
 			### for region
-			for k in range(0,1):
+			for k in range(0,80):
 				tmp_command = "echo \" \n ------ Start ------ \n \" " 
 				subprocess.call(tmp_command, shell=True)
 
-				tmp_command = "clubatch \"time ; hostname ; " + commandProd + ' 20 0 ' + str(k) + ' 0 ' + str(i) + " " + str(j) + "\""
+				tmp_command = "clubatch \"time ; hostname ; " + commandProd + ' 9 0 ' + str(k) + ' 0 ' + str(i) + " " + str(j) + "\""
 				subprocess.call(tmp_command, shell=True)
 
 				tmp_command = "echo " + tmp_command

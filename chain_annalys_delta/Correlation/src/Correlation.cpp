@@ -107,10 +107,11 @@ const bool randomQSO      = false;
 const bool randomForest   = false;
 const bool doBootstraps__ = false;
 
-const bool nicolasEstimator__ = false;
 const bool doVetoLines__ = true;
+const bool nicolasEstimator__ = false;
 
-std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests6/";
+
+std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests6_eBOSS/";
 
 Correlation::Correlation(int argc, char **argv) {
 
@@ -140,11 +141,8 @@ Correlation::Correlation(int argc, char **argv) {
 	if (!mocks && !mockJMC__) {
 		pathForest__  = "/home/gpfs/manip/mnt/bao/hdumasde/Data/";
 		pathForest__  += forest__;
-//		pathForest__  += "/FitsFile_DR12_testNoCutLambdaOBS_Guy/DR12_primery/DR12_primery.fits";
-		pathForest__  += "/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits";
-//		pathForest__  += "/FitsFile_DR12_Guy/DR12_primery/DR12_primery_test_PDFMocksJMC_meanLambda_testNoCap.fits";
-//		pathForest__  += "/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits";
-//pathForest__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/chain_annalys_delta/Get_delta/src/DR12_primery_test_1000.fits";
+//		pathForest__  += "/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits";
+		pathForest__  += "/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits";
 	}
 	else if (mocks) {
 		pathForest__   = "/home/gpfs/manip/mnt0607/bao/hdumasde/MockV4/M3_0_";
