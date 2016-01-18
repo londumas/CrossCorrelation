@@ -540,27 +540,26 @@ def plotXi(rescale):
 	yyy = xi1D_[:,1]
 	yer = xi1D_[:,2]
 
-	cut = (yer!=0.)
+	cut = (yer>0.)
+	if (xxx[cut].size==0):
+		continue
 	xxx = xxx[ cut ]
 	yyy = yyy[ cut ]
 	yer = yer[ cut ]
-
-
+	coef = numpy.power(xxx,rescale)
+	plt.errorbar(xxx, coef*yyy, yerr=coef*yer, fmt='o')
 
 	if (rescale==0):
-		plt.errorbar(xxx, yyy, yerr=yer, fmt='o')
 		plt.ylabel(r'$\xi^{qf} (|s|)$', fontsize=40)
 	if (rescale==1):
-		plt.errorbar(xxx, xxx*yyy, yerr=xxx*yer, fmt='o')
 		plt.ylabel(r'$|s|.\xi^{qf} (|s|) \, [h^{-1}.Mpc]$', fontsize=40)
 	if (rescale==2):
-		plt.errorbar(xxx, xxx*xxx*yyy, yerr=xxx*xxx*yer, fmt='o')
 		plt.ylabel(r'$|s|^{2}.\xi^{qf} (|s|) \, [(h^{-1}.Mpc)^{2}]$', fontsize=40)
 	
 	plt.title(r'$\delta_{'+forest1__+'} \, - \, '+qso1__+'$', fontsize=40)
 	plt.xlabel(r'$|s| \, [h^{-1}.Mpc]$', fontsize=40)
+	plt.xlim([ numpy.amin(xxx)-10., numpy.amax(xxx)+10. ])
 	myTools.deal_with_plot(False,False,False)
-	plt.xlim([ numpy.min(xxx)-10., numpy.max(xxx)+10. ])
 	plt.show()
 def plotXi2D(rescale):
 
@@ -570,7 +569,6 @@ def plotXi2D(rescale):
 	yer = numpy.transpose(xi2D_[:,:,2])
 
 	yyy[ (yer==0.) ]  = float('nan')
-	#yyy[ (xxx<=40.) ] = float('nan')
 
 	fig = plt.figure()
 	ax = fig.add_subplot(111)
@@ -641,13 +639,11 @@ def plotMu(rescale):
 	plt.show()
 def plotWe(rescale):
 
-	a = ['0.8 < |\mu|', '0.5 < |\mu| \leq 0.8', '|\mu| \leq 0.5']
+	label = ['0.8 < |\mu|', '0.5 < |\mu| \leq 0.8', '|\mu| \leq 0.5']
 
 	for i in range(0,3):
 
-		###
-		cut = (xiWe_[:,i,2]!=0.)
-
+		cut = (xiWe_[:,i,2]>0.)
 		if (xiWe_[:,i,0][cut].size==0):
 			continue
 
@@ -655,8 +651,6 @@ def plotWe(rescale):
 		yyy = xiWe_[:,i,1][cut]
 		yer = xiWe_[:,i,2][cut]
 		coef = numpy.power(xxx,rescale)
-		
-
 		plt.errorbar(xxx, coef*yyy, yerr=coef*yer, fmt='o', label=r'$'+a[i]+'$')
 	
 		if (rescale==0):
@@ -671,8 +665,8 @@ def plotWe(rescale):
 	
 	plt.title(r'$\delta_{'+forest1__+'} \, - \, '+qso1__+'$', fontsize=40)
 	plt.xlabel(r'$|s| \, [h^{-1}.Mpc]$', fontsize=40)
+	plt.xlim([ numpy.amin(xxx)-10., numpy.amax(xxx)+10. ])
 	myTools.deal_with_plot(False,False,False)
-	plt.xlim([ numpy.min(xxx)-10., numpy.max(xxx)+10. ])
 	plt.show()
 def plotMultipol(xi):
 	'''
@@ -774,7 +768,7 @@ def plotMultipol(xi):
 			plt.show()
 
 	return result_xi
-def fitCamb(data,pathToFile,mulpol=0):
+def fitCamb(data,pathToCAMB,mulpol=0):
 	'''
 
 	'''
@@ -783,10 +777,10 @@ def fitCamb(data,pathToFile,mulpol=0):
 	startFit   = 20.
 	endFit     = 60.
 	maxForGues = 200.
+	roof = False
 	idx=1
 	if (mulpol==2):
 		idx = 2
-
 
 	### Get the data
 	cut = numpy.logical_and( (data[:,0]>=startFit),(data[:,0]<endFit) )
@@ -795,8 +789,8 @@ def fitCamb(data,pathToFile,mulpol=0):
 	yer = data[:,2][cut]
 
 	### Get Camb
-	data_camb = numpy.loadtxt(pathToFile)
-	yyy_Camb = numpy.interp(xxx,data_camb[1:,0],data_camb[1:,idx])
+	data_camb = numpy.loadtxt(pathToCAMB)
+	yyy_Camb  = numpy.interp(xxx,data_camb[1:,0],data_camb[1:,idx])
 
 	b1b2_init = -0.2 #numpy.mean(yyy[ (xxx<maxForGues) ]/yyy_Camb[ (xxx<maxForGues) ])
 	print '  b1b2_init = ', b1b2_init
@@ -814,14 +808,14 @@ def fitCamb(data,pathToFile,mulpol=0):
 		plt.show()
 	'''
 
-	### Define the fit function
+	### Define the chi^{2} for the fit
 	def chi2(b1b2,roof):
 		fit = yyy_Camb*b1b2+roof
 		return numpy.sum( numpy.power( (yyy-fit)/yer ,2.) )
 
 	### Init and perform the fit
 	
-	m = Minuit(chi2, b1b2=b1b2_init,error_b1b2=0.1, roof=0.,error_roof=0.1,print_level=-1, errordef=0.01,fix_roof=True) 	
+	m = Minuit(chi2, b1b2=b1b2_init,error_b1b2=0.1, roof=0.,error_roof=0.1,print_level=-1, errordef=0.01,fix_roof=not roof) 	
 	m.migrad()
 
 	### Get result
@@ -832,9 +826,7 @@ def fitCamb(data,pathToFile,mulpol=0):
 
 	### Print chi^2
 	print '  DoF   = ', yyy.size, ' - ', 1
-	print '  chi^2 = ', numpy.sum( numpy.power( (yyy-yyy_Camb*b1b2-roof)/yer ,2.) )
-
-
+	print '  chi^2 = ', numpy.sum( numpy.power( (yyy - (yyy_Camb*b1b2+roof) )/yer ,2.) )
 
 	### Get the data
 	xxx = data[:,0]
@@ -867,8 +859,8 @@ def fitCamb(data,pathToFile,mulpol=0):
 		
 		plt.title(r'', fontsize=40)
 		plt.xlabel(r'$|s| \, [h^{-1}.Mpc]$', fontsize=40)
+		plt.xlim([ numpy.amin(xxx)-10., numpy.amax(xxx)+10. ])
 		myTools.deal_with_plot(False,False,False)
-		plt.xlim([ numpy.min(xxx)-10., numpy.max(xxx)+10. ])
 		plt.show()
 	
 	return b1b2

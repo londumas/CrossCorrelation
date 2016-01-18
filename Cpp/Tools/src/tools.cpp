@@ -1,6 +1,6 @@
 //===================================================================================
 //
-//         FILE: GetDelta.cpp
+//         FILE: tools.cpp
 //
 //        USAGE: 
 //
@@ -17,16 +17,16 @@
 //     REVISION: ---
 //===================================================================================
 
-#include "GetDelta.h"
+#include "tools.h"
 #include "../../../Root/Library/RootHistoFunctions.h"
 #include "../../../Cpp/Library/mathFunctions.h"
 #include "../../../Constants/globalValues.h"
 
 #include <fstream>
-#include <iostream> // std::cout
+#include <iostream>	// std::cout
 #include <sstream>	//stringstream
-#include <stdlib.h>     /* atoi */
-#include <unistd.h> //getopt
+#include <stdlib.h>	//atoi
+#include <unistd.h>	//getopt
 
 
 /// ROOT
@@ -38,7 +38,7 @@
 #include "TMath.h"
 
 
-GetDelta::GetDelta(int argc, char** argv) {
+Tools::Tools(int argc, char** argv) {
 
 	//get_Ra_Dec_DLA();
 	get_Catalogue();
@@ -46,11 +46,10 @@ GetDelta::GetDelta(int argc, char** argv) {
 	//get_weigted_covar_matrix();
 
 }
-GetDelta::~GetDelta(void) {	
+Tools::~Tools(void) {	
 }
 
-void GetDelta::get_Ra_Dec_DLA(void)
-{
+void Tools::get_Ra_Dec_DLA(void) {
 
 	std::string fitsnameSpec = "/home/gpfs/manip/mnt/bao/hdumasde/Data/Catalogue/DR12Q_v2_10.fits";
 
@@ -175,8 +174,7 @@ void GetDelta::get_Ra_Dec_DLA(void)
 
 	return;
 }
-void GetDelta::get_Catalogue(void)
-{
+void Tools::get_Catalogue(void) {
 	/// Path to save
 	std::string pathToSave = "/home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/QSO_DR7_DR12_EBOSS_2016_01_08.fits";
 	/// Number of catalogues
@@ -361,8 +359,7 @@ void GetDelta::get_Catalogue(void)
 
 	std::cout << "  nbFinal = " << nbFinal << std::endl;
 }
-void GetDelta::get_flux_vs_lambdaObs(void)
-{
+void Tools::get_flux_vs_lambdaObs(void) {
 
 	/// Constants 
 	const unsigned int nbBinRFMax = 4844;
@@ -492,8 +489,7 @@ void GetDelta::get_flux_vs_lambdaObs(void)
 	R_plot1D(hDeltaVsLambdaRF, "#lambda_{R.F.} (A)", "", "hDeltaVsLambdaRF");
 	R_plot1D(hDeltaVsLambdaObs, "#lambda_{Obs.} (A)", "", "hDeltaVsLambdaObs");
 }
-void GetDelta::get_weigted_covar_matrix(void)
-{
+void Tools::get_weigted_covar_matrix(void) {
 
 	/// Constants
 	const unsigned int nbBoot = 2000;

@@ -27,6 +27,8 @@
 *.out
 *.app
 
+# PYTHON library
+*.pyc
 
 # Jobs launched
 time.e*
@@ -37,6 +39,8 @@ python.e*
 python.o*
 echo.e*
 echo.o*
+
+# Job failed
 core.*
 
 # Data files

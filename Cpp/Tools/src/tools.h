@@ -1,10 +1,10 @@
 //===================================================================================
 //
-//         FILE: CrossCorrelation.h
+//         FILE: tools.h
 //
 //        USAGE: ---
 //
-//  DESCRIPTION: Do the cross correlation between Lya forest and Qso
+//  DESCRIPTION: 
 //
 //      OPTIONS: ---
 // REQUIREMENTS: ---
@@ -17,10 +17,10 @@
 //     REVISION: ---
 //===================================================================================
 
-#ifndef GETDELTA_H
-#define GETDELTA_H
+#ifndef TOOLS_H
+#define TOOLS_H
 
-class GetDelta
+class Tools
 {
 	private:
 
@@ -30,8 +30,8 @@ class GetDelta
 		void get_weigted_covar_matrix(void);
 
 	public:
-		GetDelta(int argc, char** argv);
-		~GetDelta();
+		Tools(int argc, char** argv);
+		~Tools();
 };
 
 
