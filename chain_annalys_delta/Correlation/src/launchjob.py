@@ -22,7 +22,7 @@ def main():
 		for j in range(0,1):
 
 			### for region
-			for k in range(0,80):
+			for k in range(0,100):
 				tmp_command = "echo \" \n ------ Start ------ \n \" " 
 				subprocess.call(tmp_command, shell=True)
 
@@ -34,7 +34,7 @@ def main():
 				tmp_command = "echo " + time.ctime()
 				subprocess.call(tmp_command, shell=True)
 
-				time.sleep(5)
+				time.sleep(30)
                 	        myTools.isReadyForNewJobs(50, 430,'time')
 		time.sleep(120)
 	

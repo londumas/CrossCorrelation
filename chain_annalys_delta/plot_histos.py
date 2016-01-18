@@ -16,10 +16,22 @@ from const_delta import *
 chunckNb = 1
 simulNb  = 1
 
-forest__ = 'SIIV'
-#lambdaRFMin__      = 1410.
-#lambdaRFMax__      = 1530.
-
+forest__ = 'LYA'
+if (forest__ == 'LYB'):
+	lambdaRFMin__      = 800.
+	lambdaRFMax__      = 1020.
+elif (forest__ == 'LYA'):
+	lambdaRFMin__      = 1040.
+	lambdaRFMax__      = 1200.
+elif (forest__ == 'SIIV'):
+	lambdaRFMin__      = 1286.
+	lambdaRFMax__      = 1380.
+elif (forest__ == 'CIV'):
+	lambdaRFMin__      = 1410.
+	lambdaRFMax__      = 1530.
+elif (forest__ == 'MGII'):
+	lambdaRFMin__      = 1570.
+	lambdaRFMax__      = 2790.
 ###
 #path = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_histos/"
 path = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/"
@@ -33,24 +45,27 @@ for i in range (0,chunckNb):
 		mockNumber = '' #'_'+str(i)+'_'+str(j)
 
 		data = numpy.loadtxt('/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_histos/hDeltaVsLambdaObs_LYA.txt')
-                plt.errorbar(data[:,0]+3600.5, data[:,1], label=r'$DR12$',color='red')
+                plt.errorbar(data[:,0]+3600.5, data[:,1], label=r'$DR12$')
 
 		data = numpy.loadtxt(path+'hDeltaVsLambdaObs_LYA'+mockNumber+'.txt')
-		plt.errorbar(data[:,0]+3600.5, data[:,1], label=r'$eBOSS$',color='blue')
+		plt.errorbar(data[:,0]+3600.5, data[:,1], label=r'$DR12$')
 
 		data = numpy.loadtxt('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/calibration_flux_using_CIV_forest.txt')
-		plt.errorbar(data[:,0]+3547.5, data[:,1], label=r'$CIV \, forest \, backup$',color='red')
+		plt.errorbar(data[:,0]+3547.5, data[:,1], label=r'$CIV \, forest \, backup$')
 
-		data = numpy.loadtxt(path+'hDeltaVsLambdaObs_CIV'+mockNumber+'.txt')
-		plt.errorbar(data[:,0]+3547.5, data[:,1], label=r'$CIV \, forest$',color='green')
+		#data = numpy.loadtxt(path+'hDeltaVsLambdaObs_CIV'+mockNumber+'.txt')
+		#plt.errorbar(data[:,0]+3547.5, data[:,1], label=r'$CIV \, forest$',color='green')
+
+		#data = numpy.loadtxt(path+'hDeltaVsLambdaObs_SIIV'+mockNumber+'.txt')
+		#plt.errorbar(data[:,0]+3547.5, data[:,1], label=r'$SIIV \, forest$')
 
 		#data = numpy.loadtxt(path+'hDeltaVsLambdaObs_SIIV.txt')
                 #plt.errorbar(data[:,0]+3547.5, data[:,1], label=r'$CIV \, forest$',color='black')
 
-		#data = numpy.loadtxt('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/hDeltaVsLambdaObs_LYA_JMC.txt')
-		#plt.errorbar(data[:,1][ data[:,2]!=0. ], data[:,2][ data[:,2]!=0. ], label=r'$simulation$',color='green')
+		data = numpy.loadtxt('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/hDeltaVsLambdaObs_LYA_JMC.txt')
+		plt.errorbar(data[:,1][ data[:,2]!=0. ], data[:,2][ data[:,2]!=0. ], label=r'$simulation$')
 		#data = numpy.loadtxt('/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_histos_test_PDFMocksJMC/hDeltaVsLambdaObs_LYA.txt')
-		#plt.errorbar(data[:,0]+3600.5, data[:,1], label=r'$DR12$',color='red')
+		#plt.errorbar(data[:,0]+3600.5, data[:,1], label=r'$simulation2$')
 
 		'''
 		yMin    = numpy.amin(0.)
@@ -143,6 +158,7 @@ for i in range (0,chunckNb):
 		plt.errorbar(data[:,0], data[:,1], fmt='o', label=r'$'+str(i)+' \, '+str(j)+'$')
 		print numpy.amin( data[:,0] )
 
+		'''
 		yMin    = numpy.min(data[:-1,1])
 		yMax    = numpy.max(data[:-1,1])
 		for i in range(0,skyLinesNames__.size):
@@ -152,6 +168,7 @@ for i in range (0,chunckNb):
 			yLi = [yMin,yMax]
 			plt.plot(xLi,yLi,color='green')
 			plt.text(line, yMax, skyLinesNames__[i], rotation='vertical', fontsize=20)
+		'''
 
 plt.title(r'$Residual$', fontsize=40)
 plt.xlabel(r'$\lambda_{Obs.} \, [\AA]$', fontsize=40)
@@ -166,6 +183,7 @@ for i in range (0,chunckNb):
 		data = numpy.loadtxt(path+'hDeltaVsLambdaObs_'+forest__+mockNumber+'.txt')
 		plt.errorbar(data[:,0]+3600., data[:,1], marker='o', label=r'$'+str(i)+' \, '+str(j)+'$')
 
+		'''
 		yMin    = 0.
 		yMax    = 1.
 		for i in range(0,skyLinesNames__.size):
@@ -175,7 +193,7 @@ for i in range (0,chunckNb):
 			yLi = [yMin,yMax]
 			plt.plot(xLi,yLi,color='green')
 			plt.text(line, yMax, skyLinesNames__[i], rotation='vertical', fontsize=20)
-
+		'''
 
 #plt.title(r'$hDeltaVsLambdaObs$', fontsize=40)
 plt.xlabel(r'$\lambda_{Obs.} \, [\AA]$', fontsize=40)

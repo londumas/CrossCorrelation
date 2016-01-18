@@ -19,7 +19,7 @@ import sys
 import myTools
 from myTools import Get_TProfile
 from const_delta import *
-
+import const
 
 nbRegion = 80
 
@@ -467,11 +467,10 @@ def fitCamb(data,pathToFile,mulpol=0):
 path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
 xi1D_, xi2D_, xiMu_, xiWe_ = loadData(path+'xi_A_delta_delta2_Mu_'+forest1+'_'+forest2+'.txt',path+'xi_A_delta_delta2_2D_'+forest1+'_'+forest2+'.txt')
 
-pathToCamb = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/CAMB_2_4/xi-z2.4.dat'
-fitCamb(xi1D_,pathToCamb,0)
 plot_Xi_1D(0)
 plot_Xi_1D(1)
 plot_Xi_1D(2)
+fitCamb(xi1D_,const.pathToCamb__,0)
 plot_Xi_2D(0)
 plot_Xi_2D(1)
 plot_Xi_2D(2)

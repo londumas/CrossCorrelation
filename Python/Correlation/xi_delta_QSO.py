@@ -5,6 +5,7 @@
 
 import myTools
 from const_delta import *
+import const
 
 import subprocess
 import time
@@ -305,7 +306,7 @@ decoupled   = yes
 custom-grid = yes
 pixelize = yes
 dist-matrix = yes
-dist-matrix-order = 5000
+dist-matrix-order = """+str(nbBinX2D__*nbBinY2D__)+"""
 
 # Parameter setup
 model-config = value[beta]=               """+param[0] +""";
@@ -360,7 +361,7 @@ axis3-bins = {""" + stringRedshift + """}
 ### Analysis Options #########################################
 
 # Cuts to apply before fitting
-rmin = 40
+rmin = 30
 rmax = 180
 
 # Generate a second set of outputs with the additive distortion turned off
@@ -780,7 +781,7 @@ def fitCamb(data,pathToFile,mulpol=0):
 
 	### Constants
 	startFit   = 20.
-	endFit     = 200.
+	endFit     = 60.
 	maxForGues = 200.
 	idx=1
 	if (mulpol==2):
@@ -1040,6 +1041,8 @@ def prepareForBAOFIT():
 	param = numpy.asarray( [1.6,-0.336,0.9,0.,0.,3.25,0.962524,3.26,1.966,1.,1.,1.,1.,0.,0.,0.,0.,0.,0.] )
 	doBootstraps = False
 	nbRegions    = 80
+	forest = 'LYA'
+	QSO = 'QSO'
 
 	'''
 	### Create the .ini file (for simulation)
@@ -1059,16 +1062,15 @@ def prepareForBAOFIT():
 	'''
 	
 	### For data
-	rowPath = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests_DR12_nicolas/'
-	path    = rowPath + '/xi_delta_QSO_'
-	cov     = numpy.load('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests_test_PDFMocksJMC_meanLambda_testNoCap/shuffleForest_LYA_QSO_cov_2D.npy')
+	rowPath = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator_method1/'
+	path    = rowPath + '/xi_delta_QS0_'
+	cov     = numpy.load('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/subSampling_'+forest+'_'+QSO+'_cov_2D.npy')
 	cor     = numpy.load('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Results_RandomPosInCell/xi_delta_QSO_result_cor_2D_allSubSamplingFromFit.npy')
-	#inputFile    = rowPath + '/xi_delta_QSO_2D_LYA_QSO.txt'
-	inputFile    = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests_DR12_nicolas/xi_delta_QSO_2D_LYA_QSO.txt'
-	pathToDistortionMatrix = rowPath + '/xi_delta_QSO_distortionMatrix_2D_LYA_QSO.txt'
-	pathToOutFit = rowPath + 'BaoFit_q_f/'
-	pathToData   = rowPath + 'BaoFit_q_f/'
-	pathToIni    = rowPath + 'BaoFit_q_f/'
+	inputFile    = rowPath + 'xi_delta_QSO_2D_'+forest+'_'+QSO+'.txt'
+	pathToDistortionMatrix = rowPath + '/xi_delta_QSO_distortionMatrix_2D_'+forest+'_'+QSO+'.txt'
+	pathToOutFit = rowPath + 'BaoFit_q_f__'+forest+'__'+QSO+'/'
+	pathToData   = rowPath + 'BaoFit_q_f__'+forest+'__'+QSO+'/'
+	pathToIni    = rowPath + 'BaoFit_q_f__'+forest+'__'+QSO+'/'
 
 	if (doBootstraps):
 		pathToOutFit += 'Bootstraps/boot_'+str(wickIdx__).zfill(4)+'/'
@@ -1101,6 +1103,7 @@ def prepareForBAOFIT():
 	### Create the 'bao2D.grid' file
 	createIni2(inputFile, pathToOutFit, pathToData,pathToIni,'2D',param)
 
+	'''
 	### Correlation
 	correlation = numpy.zeros( shape=(nbBin2D__,2) )
 	indexMatrix = numpy.arange(nbBin2D__)
@@ -1108,8 +1111,7 @@ def prepareForBAOFIT():
 	correlation[:,1] = xi2D_[:,:,1].flatten()
 	cutCorrelation = (correlation[:,1]!=0.)
 	numpy.savetxt( pathToData + '/bao2D.data',zip(correlation[:,0][cutCorrelation],correlation[:,1][cutCorrelation]),fmt='%u %1.20e')
-
-	'''
+	
 	### Covariance matrix
 	cov = myTools.getCovarianceMatrix(cor,numpy.diag(cov))
 	covarianceMatrix = numpy.zeros( shape=(nbBin2D__*nbBin2D__,3) )
@@ -1127,7 +1129,8 @@ def prepareForBAOFIT():
 		print '  size it should have', nbBin2D__*(nbBin2D__+1.)/2.
 		return
 	numpy.savetxt( pathToData + '/bao2D.cov',zip(covarianceMatrix[:,0][cutCovarMatrix],covarianceMatrix[:,1][cutCovarMatrix],covarianceMatrix[:,2][cutCovarMatrix]),fmt='%u %u %1.20e')
-
+	
+	
 	### Distortion matrix
 	dmatData = numpy.loadtxt(pathToDistortionMatrix)
 	distortionMatrix = numpy.zeros( shape=(nbBin2D__*nbBin2D__,3) )
@@ -1193,19 +1196,20 @@ def plotCovarDifferentMethod():
 
 	'''
 
-	dim = '2D'
+	dim = '1D'
 
-	listPath = [    '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/subsampling_LYA_QSO_cov_'+dim+'.npy',
-			'/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/shuffleQSO_LYA_QSO_cov_'+dim+'.npy',
-			'/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/randomQSO_LYA_QSO_cov_'+dim+'.npy',
-			'/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/shuffleForest_LYA_QSO_cov_'+dim+'.npy',
+	path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
+	listPath = [    path+'subSampling_LYA_QSO_cov_'+dim+'.npy',
+			path+'shuffleQSO_LYA_QSO_cov_'+dim+'.npy',
+			path+'randomQSO_LYA_QSO_cov_'+dim+'.npy',
+			path+'shuffleForest_LYA_QSO_cov_'+dim+'.npy',
 			'/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Results_RandomPosInCell/xi_delta_QSO_result_cov_'+dim+'.npy',
 			'/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Results_RandomPosInCell/xi_delta_QSO_result_cov_'+dim+'_meanSubSampling.npy',
 			]
-	listPath2 = [   '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/subsampling_LYA_QSO_'+dim+'.npy',
-			'/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/shuffleQSO_LYA_QSO_'+dim+'.npy',
-			'/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/randomQSO_LYA_QSO_'+dim+'.npy',
-			'/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/shuffleForest_LYA_QSO_'+dim+'.npy',
+	listPath2 = [   path+'subSampling_LYA_QSO_'+dim+'.npy',
+			path+'shuffleQSO_LYA_QSO_'+dim+'.npy',
+			path+'randomQSO_LYA_QSO_'+dim+'.npy',
+			path+'shuffleForest_LYA_QSO_'+dim+'.npy',
 			'/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Results_RandomPosInCell/xi_delta_QSO_result_'+dim+'.npy',
 			]
 	listName = ['Data \, subsampling',
@@ -1260,21 +1264,29 @@ def saveMeanCov():
 	tmpcov1D /= 100
 	numpy.save('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Results_RandomPosInCell/xi_delta_QSO_result_cov_2D_meanSubSampling.npy',tmpcov1D)
 
-
-
-
-
+'''
+dim = 'Mu'
+path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
+listPath = [    path+'shuffleQSO_LYA_QSO_cov_'+dim+'.npy',
+		path+'randomQSO_LYA_QSO_cov_'+dim+'.npy',
+		path+'shuffleForest_LYA_QSO_cov_'+dim+'.npy' ]
+cov  = [ numpy.load(i) for i in listPath ]
+cov  = [ i/100. for i in cov ]
+[ numpy.save(listPath[i],cov[i]) for i in range(0,3) ]
+'''
+#plotCovarDifferentMethod()
 
 '''
 ### Simulation
+nb = 100
+keyWord = 'shuffleQSO'
 path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
-#saveListReal(10,path+'xi_delta_QSO_Mu_LYA_QSO_subsampling_',path+'xi_delta_QSO_2D_LYA_QSO_subsampling_',path+'subSampling_LYA_QSO_',True)
-cov = numpy.load('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/subSampling_LYA_QSO_cov_1D.npy')
+saveListReal(nb,path+'xi_delta_QSO_Mu_LYA_QSO_'+keyWord+'_',path+'xi_delta_QSO_2D_LYA_QSO_'+keyWord+'_',path+keyWord+'_LYA_QSO_',True)
+cov = numpy.load('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'+keyWord+'_LYA_QSO_cov_1D.npy')
 cor = myTools.getCorrelationMatrix(cov)
 myTools.plot2D(cor)
 a = myTools.plotCovar([cor],['a'])
 '''
-
 
 '''
 saveListRealMocks(10,10,True)
@@ -1300,7 +1312,7 @@ a = myTools.plotCovar([cor],['a'])
 myTools.plot2D(a)
 '''
 
-#prepareForBAOFIT()
+#prepareForBAOFIT() 
 xi1D_, xi2D_, xiMu_, xiWe_ = loadData('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/xi_delta_QSO_Mu_'+forest1__+'_'+qso1__+'.txt','/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/xi_delta_QSO_2D_'+forest1__+'_'+qso1__+'.txt')
 '''
 path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Tests5/xi_delta_QSO_distortionMatrix_1D_LYA_QSO.txt'
@@ -1324,7 +1336,7 @@ replaceValueByMean()
 plotXi(0)
 plotXi(1)
 plotXi(2)
-fitCamb(xi1D_,pathToCamb_,0)
+fitCamb(xi1D_,const.pathToCamb__,0)
 plotXi2D(0)
 plotXi2D(1)
 plotXi2D(2)

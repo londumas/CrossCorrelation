@@ -19,7 +19,7 @@ import sys
 import myTools
 from myTools import Get_TProfile
 from const_delta import *
-
+import const
 
 nbRegion = 80
 
@@ -611,13 +611,13 @@ def saveListRealMocks(ni,nj):
 
 
 
-
-xi1D_, xi2D_, xiMu_, xiWe_ = loadData('//home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/eBOSS/xi_A_delta_delta_Mu_'+forest__+'.txt','/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/eBOSS/xi_A_delta_delta_2D_'+forest__+'.txt')
+path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
+xi1D_, xi2D_, xiMu_, xiWe_ = loadData(path+'xi_A_delta_delta_Mu_'+forest__+'.txt',path+'xi_A_delta_delta_2D_'+forest__+'.txt')
 
 plotXi(0)
 plotXi(1)
 plotXi(2)
-print fitCamb(xi1D_,'/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/CAMB_2_4/xi-z2.4.dat')
+print fitCamb(xi1D_,const.pathToCamb__)
 plotXi2D(0)
 plotXi2D(1)
 plotXi2D(2)
@@ -684,7 +684,7 @@ for rescale in range(0,3):
 plotXi(0)
 plotXi(1)
 plotXi(2)
-print fitCamb(xi1D_,'/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/CAMB_2_4/xi-z2.4.dat')
+print fitCamb(xi1D_,const.pathToCamb__)
 plotXi2D(0)
 plotXi2D(1)
 plotXi2D(2)
@@ -783,9 +783,9 @@ myTools.plotCovar([cov],['a'],50,50)
 
 
 #xi1D_, xi2D_, xiMu_, xiWe_ = loadData('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_primery_correctedBadFit3/xi_A_delta_delta_Mu_LYA.txt','/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_primery_correctedBadFit3/xi_A_delta_delta_2D_LYA.txt')
-xi1D_, xi2D_, xiMu_, xiWe_ = loadData('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Box_000/Simu_000/Results/xi_A_delta_delta_Mu_LYA.txt','/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Box_000/Simu_000/Results/xi_A_delta_delta_2D_LYA.txt')
+#xi1D_, xi2D_, xiMu_, xiWe_ = loadData('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Box_000/Simu_000/Results/xi_A_delta_delta_Mu_LYA.txt','/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Box_000/Simu_000/Results/xi_A_delta_delta_2D_LYA.txt')
 
-
+'''
 xi1DD, xi2DD, xiMuDD, xiWeDD = loadData('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_primery_correctedBadFit3/xi_A_delta_delta_Mu_LYA.txt','/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_primery_correctedBadFit3/xi_A_delta_delta_2D_LYA.txt')
 result_Multipol_DD = plotMultipol(xiMuDD)
 
@@ -812,7 +812,10 @@ result_Multipol[:,:,2] = numpy.var(numpy.load(rawPath+'xi_A_delta_delta_result_M
 
 xiWe_[:,:,1] = numpy.mean(numpy.load(rawPath+'xi_A_delta_delta_result_We.npy'),axis=2)
 xiWe_[:,:,2] = numpy.var(numpy.load(rawPath+'xi_A_delta_delta_result_We.npy'),axis=2)/numpy.sqrt(100.)
+'''
 
+path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
+xi1D_, xi2D_, xiMu_, xiWe_ = loadData(path+'xi_A_delta_delta_Mu_SIIV.txt',path+'xi_A_delta_delta_2D_SIIV.txt')
 
 plotXi(0)
 plotXi(1)

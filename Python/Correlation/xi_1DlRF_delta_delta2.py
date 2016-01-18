@@ -66,7 +66,7 @@ def plot():
 	yMax    = numpy.amax(yyy)
 	for i in range(0,len(lines1)):
 		for j in range(0,len(lines2)):
-			if (names1[i][:4]!='SiIV' and names1[j][:4]!='SiIV'): continue
+			#if (names1[i][:4]!='SiIV' and names1[j][:4]!='SiIV'): continue
 			line = lines1[i]/lines2[j]
 			if (line<xMin or line>xMax): continue
 			xLi = [line,line]

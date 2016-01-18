@@ -33,7 +33,7 @@ from const_delta import *
 
 location__     = 'ICLUST'   ### "HOME" or "ICLUST"
 pipeline__     = 'Guy'     ### "DR12" or 'Guy' or 'Margala' or "MOCK" or 'eBOSS'
-reObs__        = True      ### False or True
+reObs__        = False      ### False or True
 dataFitsType__ = 'spec'     ### What type of FITS file will we use: 'spPlate' or 'spec'
 
 
@@ -55,8 +55,8 @@ def make_all_Fits(iStart=0,iEnd=-1):
 	data, plate_list = numpy.load('/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/chain_annalys_delta/Run/list_'+forest__+'.npy') #Get_Catalogue()
 
 	### Get the flux vs. lambda_Obs
-	removeSkyLines = scipy.loadtxt('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/calibration_flux_using_CIV_forest.txt')
-	removeSkyLines = interpolate.interp1d(numpy.log10(3547.5+removeSkyLines[:,0]),removeSkyLines[:,1],bounds_error=False,fill_value=1)
+	#removeSkyLines = scipy.loadtxt('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/calibration_flux_using_CIV_forest.txt')
+	#removeSkyLines = interpolate.interp1d(numpy.log10(3547.5+removeSkyLines[:,0]),removeSkyLines[:,1],bounds_error=False,fill_value=1)
 
 	sizeMax = data[:,0].size
 
@@ -150,9 +150,18 @@ def make_all_Fits(iStart=0,iEnd=-1):
 			cat = cat[ numpy.logical_and( numpy.logical_and( (cat["IVAR"]>0.), (cat["AND_MASK"]<bit16__)), (numpy.isfinite(cat["FLUX"])) ) ]
 
 			### Get the devident coef to correct for sky residuals
-			coef = removeSkyLines(cat["LOGLAM"])
-			cat['FLUX'] /= coef
-			cat['IVAR'] *= coef*coef
+			#coef = removeSkyLines(cat["LOGLAM"])
+
+			'''
+			plt.errorbar(cat["LOGLAM"],cat['FLUX'])
+			plt.errorbar(cat["LOGLAM"],cat['FLUX']/coef)
+			plt.errorbar(cat["LOGLAM"],coef)
+			myTools.deal_with_plot(False,False,False)
+			plt.show()
+			'''
+
+			#cat['FLUX'] /= coef
+			#cat['IVAR'] *= coef*coef
 			
 			### Get the normalisation factor
 			try:
@@ -196,7 +205,7 @@ def make_all_Fits(iStart=0,iEnd=-1):
 			plt.errorbar(numpy.power(10., el["LAMBDA_OBS"][el["FLUX_IVAR"]>0.])/(1.+el['Z_VI']),el["FLUX_IVAR"][el["FLUX_IVAR"]>0.])
 			print numpy.min( el["LAMBDA_OBS"][el["FLUX_IVAR"]>0.]), numpy.amax(el["LAMBDA_OBS"][el["FLUX_IVAR"]>0.])
 			print numpy.min( numpy.power(10., el["LAMBDA_OBS"][el["FLUX_IVAR"]>0.]))/(1.+el['Z_VI']), numpy.amax( numpy.power(10., el["LAMBDA_OBS"][el["FLUX_IVAR"]>0.]))/(1.+el['Z_VI'])
-			myTools.deal_with_plot(False,False,True)
+			myTools.deal_with_plot(False,False,False)
 			plt.show()
 			'''
 
@@ -237,8 +246,8 @@ def make_all_Fits(iStart=0,iEnd=-1):
 
 def Merge_Files():
 	
-	path   = "/home/gpfs/manip/mnt/bao/hdumasde/Data/" + forest__ + "/FitsFile_DR12_Guy/DR12_reObs/DR12_reObs.fits"
-	folder = "/home/gpfs/manip/mnt/bao/hdumasde/Data/" + forest__ + "/FitsFile_DR12_Guy/DR12_reObs/"
+	path   = "/home/gpfs/manip/mnt/bao/hdumasde/Data/" + forest__ + "/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits"
+	folder = "/home/gpfs/manip/mnt/bao/hdumasde/Data/" + forest__ + "/FitsFile_DR12_Guy/DR12_primery/"
 	#path   = "/home/gpfs/manip/mnt/bao/hdumasde/MockV4/M3_0_0/000/mock.fits"
 	#folder = "/home/gpfs/manip/mnt/bao/hdumasde/MockV4/M3_0_0/000/"
 	print path
@@ -419,13 +428,13 @@ def Merge_Files():
 	cat_tbhdu = tbhdu.data
 	tbhdu = pyfits.BinTableHDU(data=cat_tbhdu)
 
-	
+	'''
 	## Map
 	plt.plot(cat_tbhdu["RA"], cat_tbhdu["DEC"], linestyle="", marker="o")
 	plt.show()
 	###
 	from myTools import Get_TProfile
-	flux      = cat_tbhdu["NORM_FLUX"][ cat_tbhdu['NORM_FLUX_IVAR'] >0.]
+	flux      = cat_tbhdu["NORM_FLUX"][ cat_tbhdu['NORM_FLUX_IVAR'] >0.]/alphaStart__
 	lambdaRF  = cat_tbhdu["LAMBDA_RF"][ cat_tbhdu['NORM_FLUX_IVAR'] >0.]
 	lambdaObs = cat_tbhdu["LAMBDA_OBS"][ cat_tbhdu['NORM_FLUX_IVAR'] >0.]
 	weight    = numpy.ones(flux.size)
@@ -438,7 +447,7 @@ def Merge_Files():
 	plt.errorbar(xxx, yyy, yerr=eyyy, marker="o")
 	myTools.deal_with_plot(False, False, False)
 	plt.show()
-	
+	'''
 	tbhdu.update()
 	tbhdu.writeto(path, clobber=True)
 
@@ -545,8 +554,8 @@ def Get_Catalogue():
 		print "  We keep BAL_FLAG_VI == 0 , the size is : " + str(cat.size)
 		cat = cat[ cat["Z_VI"]>minRedshift__]
 		print "  We keep Z_VI > " + str(minRedshift__) + "  , the size is      : " + str(cat.size)
-		#cat = cat[ cat["Z_VI"]<=maxRedshift__]
-		#print "  We keep Z_VI <= " + str(maxRedshift__) + "  , the size is      : " + str(cat.size)
+		cat = cat[ cat["Z_VI"]<=maxRedshift__]
+		print "  We keep Z_VI <= " + str(maxRedshift__) + "  , the size is      : " + str(cat.size)
 		print "  Don't do:::  We keep Z_VI <= " + str(maxRedshift__) + "  , the size is      : " + str(cat[ cat["Z_VI"]<=maxRedshift__].size)
 
 		if (dataFitsType__=='spPlate'):
@@ -708,8 +717,8 @@ if (len(sys.argv)>=5):
 	chunckNb__ = int(sys.argv[3])
 	simulNb__  = int(sys.argv[4])
 
-cat = Get_Catalogue()
+#cat = Get_Catalogue()
 #numpy.save('list_'+forest__,cat)
 
 #make_all_Fits(iStart,iEnd)
-#Merge_Files()
+Merge_Files()

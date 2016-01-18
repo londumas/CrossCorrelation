@@ -146,7 +146,7 @@ const double lambdaRFMax__      = 1020.;
 const unsigned int nbBinRFMax__ = 1085;
 const double alphaStart__       = 1.;
 */
-
+/*
 /// If LYA
 const std::string forest__      = "LYA";
 const double lambdaRFLine__     = 1215.67;
@@ -156,20 +156,20 @@ const unsigned int nbBinRFMax__ = 647;
 const double alphaStart__       = 1.3;
 /// If LYA_JMC
 //const unsigned int nbBinRFMax__ = 645;
+*/
 
-/*
 /// If SIIV
 const std::string forest__      = "SIIV";
-const double lambdaRFLine__     = 1402.77291;
+const double lambdaRFLine__     = 1393.76018;
 const double lambdaRFMin__      = 1286.;
 const double lambdaRFMax__      = 1380.;
 const unsigned int nbBinRFMax__ = 326;
 const double alphaStart__       = 1.;
-*/
+
 /*
 /// If CIV
 const std::string forest__      = "CIV";
-const double lambdaRFLine__     = 1550.77845;
+const double lambdaRFLine__     = 1548.2049;
 const double lambdaRFMin__      = 1410.;
 const double lambdaRFMax__      = 1530.;
 const unsigned int nbBinRFMax__ = 373;
@@ -211,25 +211,26 @@ const unsigned int nbBinRFMaxDelta2__ = 647;
 const std::string pathDelta2__ = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits";
 const double alphaStart2__       = 1.3;
 */
-
+/*
 /// For Delta 2 (SIIV)
 const std::string forest2__           = "SIIV";
-const double lambdaRFLineDelta2__     = 1402.77291;
+const double lambdaRFLineDelta2__     = 1393.76018;
 const double lambdaRFMinDelta2__      = 1286.;
 const double lambdaRFMaxDelta2__      = 1380.;
 const unsigned int nbBinRFMaxDelta2__ = 326;
 const std::string pathDelta2__ = "/home/gpfs/manip/mnt/bao/hdumasde/Data/SIIV/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits";
 const double alphaStart2__       = 1.;
-/*
+*/
+
 /// For Delta 2 (CIV)
 const std::string forest2__  = "CIV";
-const double lambdaRFLineDelta2__  = 1550.77845;
+const double lambdaRFLineDelta2__  = 1548.2049;
 const double lambdaRFMinDelta2__   = 1410.;
 const double lambdaRFMaxDelta2__   = 1530.;
 const unsigned int nbBinRFMaxDelta2__ = 373;
 const std::string pathDelta2__ = "/home/gpfs/manip/mnt/bao/hdumasde/Data/CIV/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits";
 const double alphaStart2__       = 1.;
-*/
+
 /*
 /// For Delta 2 (MGII)
 const std::string forest2__  = "MGII";

@@ -70,8 +70,8 @@ std::string pathMoreForHist__ = "";
 //// Flags
 const unsigned int stepDefinition = 2;
 const unsigned int stepAnnalyse   = 0;
-const unsigned int methodIndex__ = 1;
-const bool doVetoLines__          = false;
+const unsigned int methodIndex__ = 2;
+const bool doVetoLines__          = true;
 const bool setDLA__               = false;
 const bool cutNotFittedSpectra__  = true;
 const bool putReobsTogether__     = false;
@@ -86,7 +86,6 @@ GetDelta::GetDelta(int argc, char** argv) {
 	if (!mocksColab__ && !mockJMC__) {
 		pathForest__   = "/home/gpfs/manip/mnt/bao/hdumasde/Data/";
 		pathForest__  += forest__;
-//		pathForest__  += "/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits";
 		pathForest__  += "/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits";
 //		pathForest__  += "/FitsFile_DR12_Guy/DR12_reObs/DR12_reObs.fits";
 //		pathForest__  += "/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits";
@@ -120,7 +119,7 @@ GetDelta::GetDelta(int argc, char** argv) {
 			pathForest__ += box;
 			pathForest__ += "/Simu_00";
 			pathForest__ += sim;
-			pathForest__ += "/Data/delta.fits";
+			pathForest__ += "/TESTS/Data/delta.fits";
 		}
 	}
 
@@ -519,7 +518,7 @@ void GetDelta::getHisto(unsigned int loopIdx) {
 
 			double mean = deltaVSLambdaRF[i][0]/deltaVSLambdaRF[i][1];
 			double err  = sqrt( (deltaVSLambdaRF[i][2]/deltaVSLambdaRF[i][1]-mean*mean)/deltaVSLambdaRF[i][3] );
-			if (stepDefinition == 0) {
+			if (stepDefinition==0 && loopIdx==0) {
 				mean = 0.;
 				err  = 0.001;
 			}
@@ -573,7 +572,7 @@ void GetDelta::getHisto(unsigned int loopIdx) {
 
 			double mean = deltaVSLambdaObs[i][0]/deltaVSLambdaObs[i][1];
 			double err  = sqrt( (deltaVSLambdaObs[i][2]/deltaVSLambdaObs[i][1]-mean*mean)/deltaVSLambdaObs[i][3] );
-			if (stepDefinition == 0) {
+			if (stepDefinition==0 && loopIdx==0) {
 				mean = 0.;
 				err  = 0.001;
 			}

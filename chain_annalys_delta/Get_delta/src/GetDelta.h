@@ -37,7 +37,7 @@ const double alphaStart__ = 1.;
 #define C_ZEXTREMA0 2.
 #define C_ZEXTREMA1 4.5
 */
-/*
+
 /// If LYA
 const std::string forest__  = "LYA";
 const double lambdaRFLine__  = 1215.67;
@@ -48,14 +48,14 @@ const double alphaStart__ = 1.3;
 #define C_NBBINZ 12
 #define C_ZEXTREMA0 2.
 #define C_ZEXTREMA1 4.5
-*/
+
 /// If LYA_JMC
 //const unsigned int nbBinRFMax__ = 645;
 
 /*
 /// If SIIV
 const std::string forest__  = "SIIV";
-const double lambdaRFLine__  = 1402.77291;
+const double lambdaRFLine__  = 1393.76018;
 const double lambdaRFMin__   = 1286.;
 const double lambdaRFMax__   = 1380.;
 const unsigned int nbBinRFMax__ = 326;
@@ -67,7 +67,7 @@ const double alphaStart__ = 1.;
 /*
 /// If CIV
 const std::string forest__   = "CIV";
-const double lambdaRFLine__  = 1550.77845;
+const double lambdaRFLine__  = 1548.2049;
 const double lambdaRFMin__   = 1410.;
 const double lambdaRFMax__   = 1530.;
 const unsigned int nbBinRFMax__   = 373;
@@ -103,8 +103,8 @@ const double maxFlux__ = 1.000001;
 const unsigned int nbBinsFlux__ = 100;
 
 
-const double lambdaObsMin__   = 3547.; //3600.; //3547.; //
-const double lambdaObsMax__   = 10326.; //7235.; //10326.; //
+const double lambdaObsMin__   = 3600.; //3547.; //
+const double lambdaObsMax__   = 7235.; //10326.; //
  
 /// Value allowing to put a roof to the error on a flux
 //const double capForError__ = 0.19;

@@ -35,9 +35,9 @@ nbSpectra = 300000
 
 def main():
 
-	stepIdx = 2
-	forest = 'SIIV'
-	alphaStart__ = 1.
+	stepIdx = 1
+	forest = 'LYA'
+	alphaStart__ = 1.3
 	reObs = False
 	method = '' #'_method1'
 
@@ -216,8 +216,10 @@ def main():
 		
 		
 		### Put the new alpha and beta in fits file
-		path     = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest+'/FitsFile_DR12_Guy/DR12_primery/DR12_primery'+method+'.fits'
-		#path     = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_reObs/DR12_reObs.fits'
+		if (not reObs):
+			path     = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest+'/FitsFile_DR12_Guy/DR12_primery/DR12_primery'+method+'.fits'
+		else:
+			path     = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_reObs/DR12_reObs.fits'
 		#path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest+'/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits'
 
 		file_cat = pyfits.open(path,mode='update')

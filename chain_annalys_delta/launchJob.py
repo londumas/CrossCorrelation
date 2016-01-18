@@ -15,7 +15,7 @@ import myTools
 
 #commandProd     = "/home/gpfs/manip/mnt/bao/hdumasde/CrossCorrelation_StartingAgainFrom1347/CrossCorrelation/bin/ReadSpectra"
 #commandProd     = "python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/Python/creatFitsFile.py"
-commandProd     = "python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/chain_annalys_delta/creat_Fits_File_eBOSS.py"
+commandProd     = "python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/chain_annalys_delta/creat_Fits_File.py"
 #commandProd     = "python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/Python/All_Spectrum/get_all_spectrum.py"
 #commandProd     = "/home/gpfs/manip/mnt0607/bao/hdumasde/Code/chain_annalys_delta/Get_delta/bin/main.exe"
 

@@ -6,14 +6,13 @@
 import numpy
 import cosmolopy.distance as cosmology
 
-
-forest__ = 'LYA'
-#forest__ = 'CIV'
-#forest__ = 'MGII'
 #forest__ = 'LYB'
+#forest__ = 'LYA'
 #forest__ = 'SIIV'
+#forest__ = 'CIV'
+forest__ = 'MGII'
 
-takeNormaZone__ = True
+takeNormaZone__ = False
 
 
 
@@ -72,7 +71,17 @@ LYB_lines_names   = numpy.append( LYA_lines_names, numpy.array(['LYB']))
 LYB_lines         = numpy.append( LYA_lines, numpy.array([1025.7223]))
 
 
-if (forest__ == 'LYA'):
+if (forest__ == 'LYB'):
+	lambdaRFLine__     = 1025.7223
+	lambdaRFMin__      = 800.
+	lambdaRFMax__      = 1020.
+	lambdaRFNormaMin__ = 1050.
+	lambdaRFNormaMax__ = 1060.
+	nbBinRFMax__       = 1085
+	correlationLines     = LYA_lines
+	correlationLinesName = LYA_lines_names
+	alphaStart__         = 1.
+elif (forest__ == 'LYA'):
 	lambdaRFLine__     = 1215.67
 	lambdaRFMin__      = 1040.
 	lambdaRFMax__      = 1200.
@@ -82,8 +91,18 @@ if (forest__ == 'LYA'):
 	correlationLines     = LYA_lines
 	correlationLinesName = LYA_lines_names
 	alphaStart__         = 1.3
+elif (forest__ == 'SIIV'):
+	lambdaRFLine__     = 1393.76018
+	lambdaRFMin__      = 1286.
+	lambdaRFMax__      = 1380.
+	lambdaRFNormaMin__ = 1415.
+	lambdaRFNormaMax__ = 1425.
+	nbBinRFMax__       = 326
+	correlationLines     = SIIV_lines
+	correlationLinesName = SIIV_lines_names
+	alphaStart__         = 1.
 elif (forest__ == 'CIV'):
-	lambdaRFLine__     = 1550.77845
+	lambdaRFLine__     = 1548.2049
 	lambdaRFMin__      = 1410.
 	lambdaRFMax__      = 1530.
 	lambdaRFNormaMin__ = 1600.
@@ -102,26 +121,8 @@ elif (forest__ == 'MGII'):
 	correlationLines     = MGII_lines
 	correlationLinesName = MGII_lines_names
 	alphaStart__         = 1.
-elif (forest__ == 'LYB'):
-	lambdaRFLine__     = 1025.7223
-	lambdaRFMin__      = 800.
-	lambdaRFMax__      = 1020.
-	lambdaRFNormaMin__ = 1050.
-	lambdaRFNormaMax__ = 1060.
-	nbBinRFMax__       = 1085
-	correlationLines     = LYA_lines
-	correlationLinesName = LYA_lines_names
-	alphaStart__         = 1.
-elif (forest__ == 'SIIV'):
-	lambdaRFLine__     = 1402.77291
-	lambdaRFMin__      = 1286.
-	lambdaRFMax__      = 1380.
-	lambdaRFNormaMin__ = 1415.
-	lambdaRFNormaMax__ = 1425.
-	nbBinRFMax__       = 326
-	correlationLines     = SIIV_lines
-	correlationLinesName = SIIV_lines_names
-	alphaStart__         = 1.
+
+
 
 ### Rest Frame wavelenght range for data
 

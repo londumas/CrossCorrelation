@@ -105,7 +105,7 @@ const bool shuffleQSO     = false;
 const bool shuffleForest  = false;
 const bool randomQSO      = false;
 const bool randomForest   = false;
-const bool doBootstraps__ = true;
+const bool doBootstraps__ = false;
 
 const bool doVetoLines__ = true;
 const bool nicolasEstimator__ = false;
@@ -1832,19 +1832,13 @@ void Correlation::xi_delta_QSO(bool doBootstraps/*=False*/, unsigned int bootIdx
 	///// Needed to randomize the QSO
 	if (randomQSO) {
 
-		std::cout << "  Random QSO " << bootIdx << std::endl;
+		std::cout << "\n\n  Random QSO " << bootIdx << std::endl;
 
 		///// Get the edge of the sky
-		double raMin = v_raQ1__[0];
-		double raMax = v_raQ1__[0];
-		double deMin = v_deQ1__[0];
-		double deMax = v_deQ1__[0];
-		for (unsigned int i=1; i<nbQ1__; i++) {
-			raMin = std::min(raMin,v_raQ1__[i]);
-			raMax = std::max(raMax,v_raQ1__[i]);
-			deMin = std::min(deMin,v_deQ1__[i]);
-			deMax = std::max(deMax,v_deQ1__[i]);
-		}
+		double raMin = *std::min_element(v_raQ1__.begin(), v_raQ1__.end());
+		double raMax = *std::max_element(v_raQ1__.begin(), v_raQ1__.end());
+		double deMin = *std::min_element(v_deQ1__.begin(), v_deQ1__.end());
+		double deMax = *std::max_element(v_deQ1__.begin(), v_deQ1__.end());
 		raMin = raMin*0.99;
 		raMax = std::min(raMax*1.01,2.*M_PI);
 		deMin = std::max(deMin*1.01,-M_PI);
@@ -1852,9 +1846,11 @@ void Correlation::xi_delta_QSO(bool doBootstraps/*=False*/, unsigned int bootIdx
 		std::cout << "  " << raMin << " " << raMax << " " << deMin << " " << deMax << std::endl;
 
 		std::srand (bootIdx*10);
+		const double coefRA = 1./(raMax-raMin);
+		const double coefDE = 1./(deMax-deMin);
 		for (unsigned int i=0; i<nbQ1__; i++) {
-			const float ra = (float)rand()/(float)(RAND_MAX/(raMax-raMin)) +raMin;
-			const float de = (float)rand()/(float)(RAND_MAX/(deMax-deMin)) +deMin;
+			const float ra = (float)rand()/(float)(RAND_MAX*coefRA) +raMin;
+			const float de = (float)rand()/(float)(RAND_MAX*coefDE) +deMin;
 			v_raQ1__[i]    = ra;
 			v_deQ1__[i]    = de;
 			v_CosDeQ1__[i] = cos(de);

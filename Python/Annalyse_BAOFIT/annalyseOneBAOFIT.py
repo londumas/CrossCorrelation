@@ -13,8 +13,8 @@ from scipy import interpolate
 type__        = '2D'
 #path__        = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/noNoisenoCont/Box_000/Simu_000/Results/BaoFit_q_f/bao' + type__ + ''
 #pathData__    = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/noNoisenoCont/Box_000/Simu_000/Results/BaoFit_q_f/bao' + type__
-path__        = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/BaoFit_q_f/bao' + type__ + ''  ##_scanAlphaParal  scanAlphaPerp ##SmalScan  #middleScan
-pathData__    = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/BaoFit_q_f/bao' + type__
+path__        = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/BACKUP_2015_01_15/FitsFile_DR12_Guy/BaoFit_q_f/bao' + type__ + ''  ##_scanAlphaParal  scanAlphaPerp ##SmalScan  #middleScan
+pathData__    = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/BACKUP_2015_01_15/FitsFile_DR12_Guy/BaoFit_q_f/bao' + type__
 
 nbParam__ = 30
 nbBin__   = 5000
@@ -443,8 +443,8 @@ def getChiScan():
 	'''
 	
 	### Constants
-	sizeX = 50
-	sizeY = 50
+	sizeX = 100
+	sizeY = 100
 	name = '.scan.dat'
 	
 	### Create a file in /tmp with the scan minus the two first lines
@@ -485,21 +485,23 @@ def getChiScan():
 	edge = [0.5, 1.5, 0.5, 1.5]
 
 	### Get best fit plus bootstrap
-	nbBoot = 500
+	nbBoot = 10000
 	bestFit  = numpy.zeros( shape=(2,nbBoot+1) )
 	chi2Boot = numpy.zeros( shape=(nbBoot+1) )
 	bestFit[0,0] = alphaPerp_bestFit
 	bestFit[1,0] = alphaPara_bestFit
 	chi2Boot[0]  = chi2_bestFit
 	for i in range(0,nbBoot):
-		if (i==105 or i==145 or i==181 or i==426 or i==467 or i==482 or i==498): continue
-		data     = numpy.loadtxt('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/BaoFit_q_f/Bootstraps/boot_'+str(i).zfill(4)+'/bao2D.save.pars')
-		dataChi2 = numpy.loadtxt('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/BaoFit_q_f/Bootstraps/boot_'+str(i).zfill(4)+'/bao2D.fit.chisq')
-		bestFit[0,i+1] = data[12,1]
-		bestFit[1,i+1] = data[11,1]
-		chi2Boot[i+1]  = dataChi2[0]
-		#print '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/BaoFit_q_f/Bootstraps/boot_'+str(i).zfill(4)+'/bao2D.save.pars'
-		#print bestFit[0,i+1], bestFit[1,i+1]
+		try:
+			data     = numpy.loadtxt('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/BACKUP_2015_01_15/FitsFile_DR12_Guy/BaoFit_q_f/Bootstraps/boot_'+str(i).zfill(4)+'/bao2D.save.pars')
+			dataChi2 = numpy.loadtxt('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/BACKUP_2015_01_15/FitsFile_DR12_Guy/BaoFit_q_f/Bootstraps/boot_'+str(i).zfill(4)+'/bao2D.fit.chisq')
+			bestFit[0,i+1] = data[12,1]
+			bestFit[1,i+1] = data[11,1]
+			chi2Boot[i+1]  = dataChi2[0]
+			#print '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/BaoFit_q_f/Bootstraps/boot_'+str(i).zfill(4)+'/bao2D.save.pars'
+			#print bestFit[0,i+1], bestFit[1,i+1]
+		except Exception:
+			print i
 
 
 	### Get the delta of chi^2
@@ -609,7 +611,7 @@ def getChiScanToyMC():
 
 	### Create a file in /tmp with the scan minus the two first lines
 	idx = 0
-	f     = open('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/BaoFit_q_f/toymc/bao2D.toymc.dat')
+	f     = open('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/BACKUP_2015_01_15/FitsFile_DR12_Guy/BaoFit_q_f/toymc/bao2D.toymc.dat')
 	tmp_f = open('/tmp/scan.txt','w')
 	for line in f:
 		if (idx>=2): tmp_f.write(line)
@@ -764,7 +766,7 @@ def plotChi2Scan(data, edge=None, contour=False, bestFit=None, xTitle='-',yTitle
 	
 	if (bestFit[0,:].size > 1):
 		for i in range(0,bestFit[0,1:].size):
-			plt.scatter(bestFit[0,i+1],bestFit[1,i+1],marker='+',color='black',linewidths=5, hold='on')
+			plt.scatter(bestFit[0,i+1],bestFit[1,i+1],marker='+',color='white',linewidths=5, hold='on')
 
 	if (bestFit[0,:].size > 0):
 		plt.scatter(bestFit[0,0],bestFit[1,0], marker='+',color='red',linewidths=10, hold='on')
@@ -786,7 +788,7 @@ for i in range(0,10):
 
 getResults()
 #getChiScan1D()
-getChiScanToyMC()
+#getChiScanToyMC()
 printResults()
 getChiScan()
 plotDataAndFit_1D()
