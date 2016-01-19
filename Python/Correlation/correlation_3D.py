@@ -14,13 +14,11 @@ dic_constants = {
 	'minXi': 0.,
 	'maxXi': 200.,
 	'nbBin': 50,
-	'minM': -1.,
-	'maxM': 1.,
 	'nbBinM': 25,
 	'nb_Sub_Sampling': 80,
 	'size_bin_calcul_s': 1.,
 	'size_bin_calcul_m': 0.02,
-	'correlation': '3D_q_f',
+	'correlation': 'q_f',
 	'path_To_Txt_File': ['NOTHING','NOTHING'] }
 
 
@@ -30,25 +28,26 @@ class Correlation_3D:
 		"""
 		
 		correlationType:
-			- '3D_q_q'
-			- '3D_q_f' (default)
-			- '3D_f_f'
-			- '3D_f_f2'
+			- 'q_q'
+			- 'q_f' (default)
+			- 'f_f'
+			- 'f_f2'
 	
 		"""
 		
 		### Correlation type
 		self._correlation = dic_constants['correlation']
-		if (self._correlation=='3D_q_q'):
+		if (self._correlation=='q_q'):
 			self._label = '\\xi^{qq}'
-		elif (self._correlation=='3D_q_f'):
+		elif (self._correlation=='q_f'):
 			self._label = '\\xi^{qf}'
-		elif (self._correlation=='3D_f_f'):
+		elif (self._correlation=='f_f'):
 			self._label = '\\xi^{ff}'
-		elif (self._correlation=='3D_f_f2'):
+		elif (self._correlation=='f_f2'):
 			self._label = '\\xi^{ff}'
-		elif (self._correlation=='1D_f_f'):
-			self._label = '\\xi^{ff}'
+		else:
+			print "  Correlation_3D::__init__::  ERROR:  'correlation' is incorrect "
+			return
 
 		### 1D
 		self._min1D   = float(dic_constants['minXi'])
@@ -66,22 +65,22 @@ class Correlation_3D:
 		self._maxY2D   = self._max1D
 		self._nbBinY2D = self._nbBin1D
 		self._nbBinY2D_calcul = self._binSize_calcul
-		if (self._correlation=='3D_q_f' or self._correlation=='3D_f_f2'):
-			self._minY2D    = -self._max1D
+		if (self._correlation=='q_f' or self._correlation=='f_f2'):
+			self._minY2D    = -self._maxY2D
 			self._nbBinY2D *= 2
 			self._nbBinY2D_calcul *= 2
 		self._nbBin2D  = self._nbBinX2D*self._nbBinY2D
 		
 		### Mu
-		self._minM = dic_constants['minM']
-		self._maxM = dic_constants['maxM']
+		self._minM = 0.
+		self._maxM = 1.
+		if (self._correlation=='q_f' or self._correlation=='f_f2'):
+			self._minM = -self._maxM
 		self._nbBinM = dic_constants['nbBinM']
 		self._nbBinM_calcul = int( (self._maxM-self._minM)/dic_constants['size_bin_calcul_m'] )
 			
 		### Sub sampling
 		self.nb_Sub_Sampling = int(dic_constants['nb_Sub_Sampling'])
-
-
 
 		### Correlations data
 		self._xi2D = numpy.zeros(shape=(self._nbBinX2D,self._nbBinY2D,3))
@@ -153,15 +152,22 @@ class Correlation_3D:
 				tmp_save3[idX][idY] += save3[i]
 				tmp_save5[idX][idY] += save5[i]
 				tmp_save6[idX][idY] += save6[i]
-			
-			
+
 				### for wedges
-				if (iY<10 or iY>90):
-					idY = 0
-				elif ( (iY>=10 and iY<25) or (iY<=90 and iY>75) ):
-					idY = 1
-				else:
-					idY = 2
+				if (self._correlation=='q_f' or self._correlation=='f_f2'):
+					if (iY<10 or iY>90):
+						idY = 0
+					elif ( (iY>=10 and iY<25) or (iY<=90 and iY>75) ):
+						idY = 1
+					else:
+						idY = 2
+				elif (self._correlation=='q_q' or self._correlation=='f_f'):
+					if (iY>40):
+						idY = 0
+					elif (iY>25 and iY<=40):
+						idY = 1
+					else:
+						idY = 2
 	
 				tmp_save00[idX][idY] += save0[i]
 				tmp_save11[idX][idY] += save1[i]
@@ -278,7 +284,12 @@ class Correlation_3D:
 		
 		return
 	def plot_2d(self, x_power=0):
-	
+
+		origin='lower'
+		extent=[self._minX2D, self._maxX2D, self._minY2D, self._maxY2D]
+		if (self._correlation=='q_f'):
+			origin='upper'
+			extent=[self._minX2D, self._maxX2D, self._maxY2D, self._minY2D]
 	
 		xxx = numpy.transpose(self._xi2D[:,:,0])
 		yyy = numpy.transpose(self._xi2D[:,:,1])
@@ -294,9 +305,8 @@ class Correlation_3D:
 		ax = fig.add_subplot(111)
 		ax.set_xticks([ i for i in numpy.arange(self._minX2D-50., self._maxX2D+50., 50.) ])
 		ax.set_yticks([ i for i in numpy.arange(self._minY2D-50., self._maxY2D+50., 50.) ])
-		extent=[self._minX2D, self._maxX2D, self._maxY2D, self._minY2D]
-	
-		plt.imshow(coef*yyy, origin='upper',extent=extent, interpolation='None')
+
+		plt.imshow(coef*yyy, origin=origin,extent=extent, interpolation='None')
 		cbar = plt.colorbar()
 	
 		if (x_power==0):
@@ -318,8 +328,8 @@ class Correlation_3D:
 		cbar.formatter.set_powerlimits((0, 0))
 		cbar.update_ticks()
 	
-		plt.xlim([ self._minX2D, self._maxX2D ])
-		plt.ylim([ self._maxY2D, self._minY2D ])
+		#plt.xlim([ self._minX2D, self._maxX2D ])
+		#plt.ylim([ self._maxY2D, self._minY2D ])
 	
 		plt.show()
 		
@@ -402,12 +412,21 @@ class Correlation_3D:
 		return
 		
 		
-		
-
-path1D = '/home/helion/Documents/Thèse/Code/CrossCorrelation/Results/xi_delta_QSO_Mu_LYA_QSO.txt'
-path2D = '/home/helion/Documents/Thèse/Code/CrossCorrelation/Results/xi_delta_QSO_2D_LYA_QSO.txt'
+'''	
+path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
+path1D = path + 'xi_A_delta_delta_Mu_LYA.txt'
+path2D = path + 'xi_A_delta_delta_2D_LYA.txt'
 dic_constants['path_To_Txt_File'][0] = path1D
 dic_constants['path_To_Txt_File'][1] = path2D
+dic_constants['correlation'] = 'f_f'
+'''
+path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
+path1D = path + 'xi_delta_QSO_Mu_LYA_QSO.txt'
+path2D = path + 'xi_delta_QSO_2D_LYA_QSO.txt'
+dic_constants['path_To_Txt_File'][0] = path1D
+dic_constants['path_To_Txt_File'][1] = path2D
+dic_constants['correlation'] = 'q_f'
+
 corr = Correlation_3D(dic_constants) 	
 
 corr.plot_1d(0)

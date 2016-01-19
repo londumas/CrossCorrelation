@@ -39,6 +39,8 @@ python.e*
 python.o*
 echo.e*
 echo.o*
+cp.o*
+cp.e*
 
 # Job failed
 core.*
