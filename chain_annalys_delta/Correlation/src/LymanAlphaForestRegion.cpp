@@ -28,7 +28,7 @@
 #include <sstream>	//stringstream
 #include <cmath>
 
-LymanForest::LymanForest(std::string pathToFile, unsigned int nbRegions, double raSeperationTwoRegions, bool euclidean/*=false*/) {
+LymanForest::LymanForest(std::vector< std::vector<double> > forests, unsigned int nbRegions, double raSeperationTwoRegions, bool euclidean/*=false*/) {
 	
 	raSeperationTwoRegions_ = raSeperationTwoRegions;
 	euclidean_ = euclidean;
@@ -53,15 +53,42 @@ LymanForest::LymanForest(std::string pathToFile, unsigned int nbRegions, double 
 	nbPairs_   = 0.;
 	nbForests_ = 0;
 
-	// Load the list from 'pathToFile'
-	LoadForest(pathToFile);
+	// Load the list from 'forests'
+	LoadForest(forests);
 	
 	// Devide the sky into 'nbRegion_' regions
 	DevideInRegions();
 	
 	// Print the information on the screen
 	PrintData();
+}
+LymanForest::LymanForest(std::string pathToLoad, unsigned int nbRegions, double raSeperationTwoRegions, bool euclidean/*=false*/) {
 
+	raSeperationTwoRegions_ = raSeperationTwoRegions;
+	euclidean_ = euclidean;
+
+	if (nbRegions < 1) {
+		std::cout << "  ERROR: LymanForest::LymanForest: nbRegions < 1" <<std::endl;
+		return;
+	}
+	nbRegion_ = nbRegions;
+
+	std::cout << "\n  nbRegion_ = " << nbRegion_ << std::endl;
+	std::cout << "  raSeperationTwoRegions_ = " << raSeperationTwoRegions_ << std::endl;
+	std::cout << "  euclidean_ = " << euclidean_ << std::endl;
+
+	ra_ = std::vector <std::vector <double> >(nbRegion_);
+	de_ = std::vector <std::vector <double> >(nbRegion_);
+	pa_ = std::vector <std::vector <double> >(nbRegion_);
+	id_ = std::vector <std::vector <unsigned int> >(nbRegion_);
+
+	co_ = std::vector <std::vector <double> >(nbRegion_, std::vector <double>(4,0.) );
+
+	nbPairs_   = 0.;
+	nbForests_ = 0;
+
+	// Load the list from 'pathToLoad'
+	LoadForestFromMap(pathToLoad);
 }
 LymanForest::~LymanForest() {
 	ra_.clear();
@@ -71,28 +98,22 @@ LymanForest::~LymanForest() {
 	co_.clear();
 }
 
-void LymanForest::LoadForest(std::string pathToFile) {
+void LymanForest::LoadForest(std::vector< std::vector<double> > forests) {
 	
 	std::cout << "\n\n\n" <<  std::endl;
 	std::cout << "***************************************************" <<  std::endl;
-	std::cout << "  Read Lya list from : " << std::endl;
-	std::cout << "  " << pathToFile << std::endl;
 	
-	unsigned int idx = 0;
-	double ra = 0.;
-	double de = 0.;
-	double nbPairs = 0.;
+	const unsigned int nbForest = forests[0].size();
 
-	std::ifstream fileData(pathToFile.c_str());
-	while (fileData) {
-		fileData>>idx>>ra>>de>>nbPairs;
-		if (fileData==0) break;
+	for (unsigned int i=0; i<nbForest; i++) {
+
+		double ra = forests[1][i];
 
 		if (ra < M_PI/2. && !euclidean_) ra += 2.*M_PI;
-		id_[0].push_back( idx );
+		id_[0].push_back( forests[0][i] );
 		ra_[0].push_back( ra );
-		de_[0].push_back( de );
-		pa_[0].push_back( nbPairs );
+		de_[0].push_back( forests[2][i] );
+		pa_[0].push_back( forests[3][i] );
 		
 		if (nbForests_ == 0) {
 			co_[0][0] = ra_[0][0];
@@ -101,16 +122,14 @@ void LymanForest::LoadForest(std::string pathToFile) {
 			co_[0][3] = de_[0][0];
 		}
 		else {
-			co_[0][0] = std::min(co_[0][0], ra);
-			co_[0][1] = std::max(co_[0][1], ra);
-			co_[0][2] = std::min(co_[0][2], de);
-			co_[0][3] = std::max(co_[0][3], de);
+			co_[0][0] = std::min(co_[0][0], ra );
+			co_[0][1] = std::max(co_[0][1], ra );
+			co_[0][2] = std::min(co_[0][2], forests[2][i] );
+			co_[0][3] = std::max(co_[0][3], forests[2][i] );
 		}
-		nbPairs_ += nbPairs;
-		nbForests_++;
-
+		nbPairs_ += forests[3][i];
+		nbForests_ ++;
 	}
-	fileData.close();
 
 	if (nbRegion_ > nbForests_) {
 		std::cout << "  ERROR: LymanForest::LoadForest: nbRegions > nbForest" <<std::endl;
@@ -121,6 +140,69 @@ void LymanForest::LoadForest(std::string pathToFile) {
 	maxRa_ = co_[0][1];
 	minDe_ = co_[0][2];
 	maxDe_ = co_[0][3];
+}
+void LymanForest::LoadForestFromMap(std::string pathToLoad) {
+	
+	std::cout << "\n\n\n" <<  std::endl;
+	std::cout << "***************************************************" <<  std::endl;
+	std::cout << "  Read Lya list from : " << std::endl;
+	std::cout << "  " << pathToLoad << std::endl;
+
+	std::ifstream fileData(pathToLoad.c_str());
+	while (fileData) {
+
+		unsigned int id = 0;
+		unsigned int re = 0;
+		double ra = 0.;
+		double de = 0.;
+		double nbPairs = 0.;
+
+		fileData>>id>>re>>ra>>de>>nbPairs;
+		if (fileData==0) break;
+
+		if (re>nbRegion_) std::cout << "  LymanForest::LoadForestFromMap::  ERROR:  re>nbRegion_, re = " << re << "  , nbRegion_ = " << nbRegion_ << std::endl;
+
+		if (ra < M_PI/2. && !euclidean_) ra += 2.*M_PI;
+		id_[re].push_back( id );
+		ra_[re].push_back( ra );
+		de_[re].push_back( de );
+		pa_[re].push_back( nbPairs );
+
+		if (nbForests_==0) {
+			minRa_ = ra;
+			maxRa_ = ra;
+			minDe_ = de;
+			maxDe_ = de;
+		}
+		else {
+			minRa_ = std::min(minRa_, ra);
+			maxRa_ = std::max(maxRa_, ra);
+			minDe_ = std::min(minDe_, de);
+			maxDe_ = std::max(maxDe_, de);
+		}
+
+		if (id_[re].size() == 0) {
+			co_[re][0] = ra;
+			co_[re][1] = ra;
+			co_[re][2] = de;
+			co_[re][3] = de;
+		}
+		else {
+			co_[re][0] = std::min(co_[re][0], ra);
+			co_[re][1] = std::max(co_[re][1], ra);
+			co_[re][2] = std::min(co_[re][2], de);
+			co_[re][3] = std::max(co_[re][3], de);
+		}
+
+		nbPairs_ += nbPairs;
+		nbForests_++;
+	}
+	fileData.close();
+
+	if (nbRegion_ > nbForests_) {
+		std::cout << "  ERROR: LymanForest::LoadForest: nbRegions > nbForest" <<std::endl;
+		return;
+	}
 }
 void LymanForest::DevideInRegions(void) {
 	
@@ -548,6 +630,18 @@ void LymanForest::GetCoordRegion(int regionIdx, double* array) {
 	}
 	
 }
+void LymanForest::PrintRegionDetail(int regionIdx) {
+
+	if (regionIdx<0 || (unsigned int)(regionIdx)>=nbRegion_) std::cout << "  LymanForest::PrintRegionDetail:: ERROR: regionIdx<0 || regionIdx>=nbRegion_" << std::endl;
+
+	double nbPairs = 0;	
+	for (unsigned int i=0; i<ra_[regionIdx].size(); i++) {
+		nbPairs += pa_[regionIdx][i];
+	}
+	std::cout << "  Region N°" << regionIdx << " , nb forest = " << ra_[regionIdx].size() << " , nb pairs pixel-qso = " << nbPairs << std::endl;
+
+	return;
+}
 void LymanForest::GetRegionArray(unsigned int* array) {
 	
 	for (unsigned int i=0; i<nbRegion_; i++) {
@@ -578,7 +672,8 @@ void LymanForest::SaveRegionMap(std::string pathToSave) {
 			//if (ra > piTimes2) ra -= piTimes2;
 			//ra *= radToDeg;
 
-			fFile << i;
+			fFile << id_[i][j];
+			fFile << " " << i;
 			fFile << " " << ra_[i][j]*radToDeg;
 			fFile << " " << de_[i][j]*radToDeg;
 			fFile << " " << pa_[i][j];

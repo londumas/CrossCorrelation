@@ -6,8 +6,12 @@
 #
 #
 
+### Python lib
 import numpy
 import matplotlib.pyplot as plt
+
+### Perso lib
+import myTools
 
 
 dic_constants = {
@@ -19,7 +23,11 @@ dic_constants = {
 	'size_bin_calcul_s': 1.,
 	'size_bin_calcul_m': 0.02,
 	'correlation': 'q_f',
-	'path_To_Txt_File': ['NOTHING','NOTHING'] }
+	'path_to_txt_file_folder': 'NOTHING',
+	'f1': 'LYA',
+	'f2': 'LYA', 
+	'q1': 'QSO',
+	'q2': 'QSO' }
 
 
 class Correlation_3D:
@@ -34,20 +42,42 @@ class Correlation_3D:
 			- 'f_f2'
 	
 		"""
+
+		### folder wher data are
+		self._path_to_txt_file_folder = dic_constants['path_to_txt_file_folder']
+
+		### forest and QSO name
+		self._f1 = dic_constants['f1']
+		self._f2 = dic_constants['f2']
+		self._q1 = dic_constants['q1']
+		self._q2 = dic_constants['q2']
 		
 		### Correlation type
 		self._correlation = dic_constants['correlation']
 		if (self._correlation=='q_q'):
 			self._label = '\\xi^{qq}'
+			self._title = self._q1
+			path1D = self._path_to_txt_file_folder + 'xi_QSO_QSO_Mu_'+self._q1+'.txt'
+			path2D = self._path_to_txt_file_folder + 'xi_QSO_QSO_2D_'+self._q1+'.txt'
 		elif (self._correlation=='q_f'):
 			self._label = '\\xi^{qf}'
+			self._title = '\delta_{'+self._f1+'} \, - \, '+self._q1
+			path1D = self._path_to_txt_file_folder + 'xi_delta_QSO_Mu_'+self._f1+'_'+self._q1+'.txt'
+			path2D = self._path_to_txt_file_folder + 'xi_delta_QSO_2D_'+self._f1+'_'+self._q1+'.txt'
 		elif (self._correlation=='f_f'):
 			self._label = '\\xi^{ff}'
+			self._title = '\delta_{'+self._f1+'}'
+			path1D = self._path_to_txt_file_folder + 'xi_A_delta_delta_Mu_'+self._f1+'.txt'
+			path2D = self._path_to_txt_file_folder + 'xi_A_delta_delta_2D_'+self._f1+'.txt'
 		elif (self._correlation=='f_f2'):
 			self._label = '\\xi^{ff}'
+			self._title = '\delta_{'+self._f1+'} \, - \, \delta_{'+self._f2+'}'
+			path1D = self._path_to_txt_file_folder + 'xi_A_delta_delta2_Mu_'+self._f1+'_'+self._f2+'.txt'
+			path2D = self._path_to_txt_file_folder + 'xi_A_delta_delta2_2D_'+self._f1+'_'+self._f2+'.txt'
 		else:
 			print "  Correlation_3D::__init__::  ERROR:  'correlation' is incorrect "
 			return
+
 
 		### 1D
 		self._min1D   = float(dic_constants['minXi'])
@@ -87,7 +117,7 @@ class Correlation_3D:
 		self._xiMu = numpy.zeros(shape=(self._nbBin1D,self._nbBinM,4))
 		self._xiWe = numpy.zeros(shape=(self._nbBin1D,3,3))
 		self._xi1D = numpy.zeros(shape=(self._nbBin1D,3))
-		self.fill_data(dic_constants['path_To_Txt_File'][0],dic_constants['path_To_Txt_File'][1])
+		self.fill_data(path1D, path2D)
 		
 		return
 	
@@ -106,7 +136,6 @@ class Correlation_3D:
 		if (selection==0 or selection==1):
 			### Mu
 			data = numpy.loadtxt(path1D)
-			print path1D
 	
 			save0 = data[:,0]
 			save1 = data[:,1]
@@ -183,32 +212,22 @@ class Correlation_3D:
 				tmp_save333[idX] += save3[i]
 				tmp_save555[idX] += save5[i]
 				tmp_save666[idX] += save6[i]
-		
-			self._xiMu[:,:,0] = tmp_save2/tmp_save5
-			self._xiMu[:,:,1] = tmp_save3/tmp_save5
-			self._xiMu[:,:,2] = tmp_save0/tmp_save5
-			self._xiMu[:,:,3] = numpy.sqrt( (tmp_save1/tmp_save5 - self._xiMu[:,:,2]*self._xiMu[:,:,2])/tmp_save6)
-			cut = (tmp_save5==0.)
-			self._xiMu[:,:,0][cut] = 0.
-			self._xiMu[:,:,1][cut] = 0.
-			self._xiMu[:,:,2][cut] = 0.
-			self._xiMu[:,:,3][cut] = 0.
+
+			cut = (tmp_save5!=0.)
+			self._xiMu[:,:,0][cut] = tmp_save2[cut]/tmp_save5[cut]
+			self._xiMu[:,:,1][cut] = tmp_save3[cut]/tmp_save5[cut]
+			self._xiMu[:,:,2][cut] = tmp_save0[cut]/tmp_save5[cut]
+			self._xiMu[:,:,3][cut] = numpy.sqrt( (tmp_save1[cut]/tmp_save5[cut] - self._xiMu[:,:,2][cut]*self._xiMu[:,:,2][cut])/tmp_save6[cut])
+
+			cut = (tmp_save55!=0.)
+			self._xiWe[:,:,0][cut] = tmp_save22[cut]/tmp_save55[cut]
+			self._xiWe[:,:,1][cut] = tmp_save00[cut]/tmp_save55[cut]
+			self._xiWe[:,:,2][cut] = numpy.sqrt( (tmp_save11[cut]/tmp_save55[cut] - self._xiWe[:,:,1][cut]*self._xiWe[:,:,1][cut])/tmp_save66[cut] )
 	
-			self._xiWe[:,:,0] = tmp_save22/tmp_save55
-			self._xiWe[:,:,1] = tmp_save00/tmp_save55
-			self._xiWe[:,:,2] = numpy.sqrt( (tmp_save11/tmp_save55 - self._xiWe[:,:,1]*self._xiWe[:,:,1])/tmp_save66 )
-			cut = (tmp_save55==0.)
-			self._xiWe[:,:,0][cut] = 0.
-			self._xiWe[:,:,1][cut] = 0.
-			self._xiWe[:,:,2][cut] = 0.
-	
-			self._xi1D[:,0] = tmp_save222/tmp_save555
-			self._xi1D[:,1] = tmp_save000/tmp_save555
-			self._xi1D[:,2] = numpy.sqrt( (tmp_save111/tmp_save555 - self._xi1D[:,1]*self._xi1D[:,1])/tmp_save666 )
-			cut = (tmp_save555==0.)
-			self._xi1D[:,0][cut] = 0.
-			self._xi1D[:,1][cut] = 0.
-			self._xi1D[:,2][cut] = 0.
+			cut = (tmp_save555!=0.)
+			self._xi1D[:,0][cut] = tmp_save222[cut]/tmp_save555[cut]
+			self._xi1D[:,1][cut] = tmp_save000[cut]/tmp_save555[cut]
+			self._xi1D[:,2][cut] = numpy.sqrt( (tmp_save111[cut]/tmp_save555[cut] - self._xi1D[:,1][cut]*self._xi1D[:,1][cut])/tmp_save666[cut] )
 			
 			
 	
@@ -243,14 +262,12 @@ class Correlation_3D:
 				tmp_save3[idX][idY] += save3[i]
 				tmp_save5[idX][idY] += save5[i]
 				tmp_save6[idX][idY] += save6[i]
-				
-			self._xi2D[:,:,0] = numpy.sqrt( (tmp_save2/tmp_save5)**2. + (tmp_save3/tmp_save5)**2. )
-			self._xi2D[:,:,1] = tmp_save0 / tmp_save5
-			self._xi2D[:,:,2] = numpy.sqrt( (tmp_save1/tmp_save5 - self._xi2D[:,:,1]*self._xi2D[:,:,1])/tmp_save6 )
-			cut = (tmp_save5 == 0.)
-			self._xi2D[:,:,0][cut] = 0.
-			self._xi2D[:,:,1][cut] = 0.
-			self._xi2D[:,:,2][cut] = 0.
+
+			cut = (tmp_save5!=0.)
+			self._xi2D[:,:,0][cut] = numpy.sqrt( (tmp_save2[cut]/tmp_save5[cut])**2. + (tmp_save3[cut]/tmp_save5[cut])**2. )
+			self._xi2D[:,:,1][cut] = tmp_save0[cut] / tmp_save5[cut]
+			self._xi2D[:,:,2][cut] = numpy.sqrt( (tmp_save1[cut]/tmp_save5[cut] - self._xi2D[:,:,1][cut]*self._xi2D[:,:,1][cut])/tmp_save6[cut] )
+
 
 		return
 	def plot_1d(self, x_power=0):
@@ -276,10 +293,10 @@ class Correlation_3D:
 		if (x_power==2):
 			plt.ylabel(r'$|s|^{2}.'+self._label+' (|s|) \, [(h^{-1}.Mpc)^{2}]$', fontsize=40)
 		
-		#plt.title(r'$\delta_{'+forest1__+'} \, - \, '+qso1__+'$', fontsize=40)
+		plt.title(r'$'+self._title+'$', fontsize=40)
 		plt.xlabel(r'$|s| \, [h^{-1}.Mpc]$', fontsize=40)
 		plt.xlim([ numpy.amin(xxx)-10., numpy.amax(xxx)+10. ])
-		#myTools.deal_with_plot(False,False,False)
+		myTools.deal_with_plot(False,False,False)
 		plt.show()
 		
 		return
@@ -287,7 +304,7 @@ class Correlation_3D:
 
 		origin='lower'
 		extent=[self._minX2D, self._maxX2D, self._minY2D, self._maxY2D]
-		if (self._correlation=='q_f'):
+		if (self._correlation=='q_f' or self._correlation=='f_f2'):
 			origin='upper'
 			extent=[self._minX2D, self._maxX2D, self._maxY2D, self._minY2D]
 	
@@ -321,15 +338,12 @@ class Correlation_3D:
 		#plt.plot( [0.,200.],[0.,200.],color='white',linewidth=2 )
 		#plt.plot( [0.,200.],[0.,-200.],color='white',linewidth=2 )
 	
-		#plt.title(r'$\delta_{'+forest1__+'} \, - \, '+qso1__+'$', fontsize=40)
+		plt.title(r'$'+self._title+'$', fontsize=40)
 		plt.xlabel(r'$s_{\perp} \, [h^{-1} Mpc]$', fontsize=40)
 		plt.ylabel(r'$s_{\parallel} \, [h^{-1} Mpc]$', fontsize=40)
 		plt.grid(True)
 		cbar.formatter.set_powerlimits((0, 0))
 		cbar.update_ticks()
-	
-		#plt.xlim([ self._minX2D, self._maxX2D ])
-		#plt.ylim([ self._maxY2D, self._minY2D ])
 	
 		plt.show()
 		
@@ -367,7 +381,7 @@ class Correlation_3D:
 		plt.imshow(coef*yyy, origin='lower', interpolation='None',extent=extent,aspect='auto')
 		cbar = plt.colorbar()
 		cbar.set_label(r'$'+a+self._label+'\, (|s|, \mu) \, '+b+'$',size=40)
-		#plt.title(r'$\delta_{'+forest1__+'} \, - \, '+qso1__+'$', fontsize=40)
+		plt.title(r'$'+self._title+'$', fontsize=40)
 		plt.xlabel(r'$\mu$', fontsize=40)
 		plt.ylabel(r'$|s| \, [h^{-1} Mpc]$', fontsize=40)
 		plt.grid(True)
@@ -403,32 +417,70 @@ class Correlation_3D:
 				plt.ylabel(r'$|s|^{2}.'+self._label+' (|s|) \, [(h^{-1}.Mpc)^{2}]$', fontsize=40)
 				plt.legend(fontsize=30, frameon=False, numpoints=1,ncol=2, loc=2)
 		
-		#plt.title(r'$\delta_{'+forest1__+'} \, - \, '+qso1__+'$', fontsize=40)
+		plt.title(r'$'+self._title+'$', fontsize=40)
 		plt.xlabel(r'$|s| \, [h^{-1}.Mpc]$', fontsize=40)
 		plt.xlim([ numpy.amin(xxx)-10., numpy.amax(xxx)+10. ])
-		#myTools.deal_with_plot(False,False,False)
+		myTools.deal_with_plot(False,False,False)
 		plt.show()
 		
 		return
+	def plot_map_sub_sampling(self):
+	
+		path = self._path_to_txt_file_folder
+
+		if (self._correlation=='q_q'):
+			path += 'xi_QSO_QSO_map_'+self._q1+'.txt'
+		elif (self._correlation=='q_f'):
+			path += 'xi_delta_QSO_map_'+self._f1+'_'+self._q1+'.txt'
+		elif (self._correlation=='f_f'):
+			path += 'xi_A_delta_delta_map_'+self._f1+'.txt'
+		elif (self._correlation=='f_f2'):
+			path += 'xi_A_delta_delta2_map_'+self._f1+'_'+self._f2+'.txt'
+	
+		data = numpy.loadtxt(path)
+		re = data[:,1].astype(int)
+		ra = data[:,2]
+		de = data[:,3]
+
+		### Test if number region == self.nb_Sub_Sampling
+		if (numpy.amax(re)+1 != self.nb_Sub_Sampling):
+			print "  Correlation_3D::plot_map_sub_sampling::  ERROR:  numpy.amax(re)+1 != self.nb_Sub_Sampling"
+			return
+	
+		for i in numpy.arange(0,self.nb_Sub_Sampling):
+			cut = (re==i)
+			plt.errorbar(ra[cut], de[cut], fmt="o")
+	
+		#plt.xlim([0,360.])
+		#plt.ylim([-90.,90.])
+		plt.ticklabel_format(style='sci', axis='z', scilimits=(0,0))
+		plt.xlabel(r'$R.A. (\degree)$')
+		plt.ylabel(r'$Dec. (\degree)$')
+		myTools.deal_with_plot(False,False,True)
+		plt.show()
+	
+		return
 		
-		
-'''	
-path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
-path1D = path + 'xi_A_delta_delta_Mu_LYA.txt'
-path2D = path + 'xi_A_delta_delta_2D_LYA.txt'
-dic_constants['path_To_Txt_File'][0] = path1D
-dic_constants['path_To_Txt_File'][1] = path2D
-dic_constants['correlation'] = 'f_f'
+path_to_txt_file_folder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/TESTS/'
+dic_constants = {
+	'minXi': 0.,
+	'maxXi': 200.,
+	'nbBin': 50,
+	'nbBinM': 25,
+	'nb_Sub_Sampling': 80,
+	'size_bin_calcul_s': 1.,
+	'size_bin_calcul_m': 0.02,
+	'correlation': 'q_f',
+	'path_to_txt_file_folder': path_to_txt_file_folder,
+	'f1': 'LYA',
+	'f2': 'LYA', 
+	'q1': 'QSO',
+	'q2': 'QSO'}
+
+
+corr = Correlation_3D(dic_constants)
+corr.plot_map_sub_sampling()
 '''
-path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
-path1D = path + 'xi_delta_QSO_Mu_LYA_QSO.txt'
-path2D = path + 'xi_delta_QSO_2D_LYA_QSO.txt'
-dic_constants['path_To_Txt_File'][0] = path1D
-dic_constants['path_To_Txt_File'][1] = path2D
-dic_constants['correlation'] = 'q_f'
-
-corr = Correlation_3D(dic_constants) 	
-
 corr.plot_1d(0)
 corr.plot_1d(1)
 corr.plot_1d(2)
@@ -441,7 +493,7 @@ corr.plot_We(2)
 corr.plot_Mu(0)
 corr.plot_Mu(1)
 corr.plot_Mu(2)
-		
+'''
 		
 		
 	

@@ -111,7 +111,7 @@ const bool doVetoLines__ = true;
 const bool nicolasEstimator__ = false;
 
 
-std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/";
+std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/TESTS/";
 
 Correlation::Correlation(int argc, char **argv) {
 
@@ -1986,7 +1986,7 @@ void Correlation::xi_delta_QSO(bool doBootstraps/*=False*/, unsigned int bootIdx
 		a_nbPairs[f] = nbPairs;
 	}
 
-
+	std::cout << "\n\n  Finishing" << std::endl;
 	std::cout << "\n\n\n" << std::endl;
 
 	///// Set the prefix for different type of runs
@@ -2082,27 +2082,31 @@ void Correlation::xi_delta_QSO(bool doBootstraps/*=False*/, unsigned int bootIdx
 	
 	if (!doBootstraps && !shuffleForest && !shuffleQSO && !randomQSO) {
 
+		std::vector< std::vector< double > > forests;
+		std::vector< double > tmp_forests_id;
+		std::vector< double > tmp_forests_pa;
+		
+		for (unsigned int i=0; i<nbForest_; i++) {
+			tmp_forests_id.push_back( v_idx__[i] );
+			tmp_forests_pa.push_back( a_nbPairs[i] );
+		}
+		forests.push_back(tmp_forests_id);
+		forests.push_back(v_ra__);
+		forests.push_back(v_de__);
+		forests.push_back(tmp_forests_pa);
+		
+
+		/// find the index of each forest among the C_NBSUBSAMPLES sub-samples
+		LymanForest* lymanForestObject = new LymanForest(forests, C_NBSUBSAMPLES, C_RA_SEPERATION_NGC_SGC, mockJMC__);
 		pathToSave = pathToSave__;
-		pathToSave += "xi_delta_QSO_nbPairsForest_";
+		pathToSave += "xi_delta_QSO_map_";
 		pathToSave += forest__;
 		pathToSave += "_";
 		pathToSave += QSO__;
 		pathToSave += ".txt";
-		std::cout << "\n  " << pathToSave << std::endl;
-		fFile.open(pathToSave.c_str());
-		fFile << std::scientific;
-		fFile.precision(17);
-
-		for (unsigned int i=0; i<nbForest_; i++) {
-
-			fFile << v_idx__[i];
-			fFile << " " << v_ra__[i];
-			fFile << " " << v_de__[i];
-			fFile << " " << a_nbPairs[i];
-			fFile << std::endl;
-		}
+		lymanForestObject->SaveRegionMap(pathToSave);
+		delete lymanForestObject;
 	}
-	fFile.close();
 
 	return;
 }
@@ -5427,8 +5431,6 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 	std::cout << "  number of        forest = " << nrows << std::endl;
 	std::cout << "  number of loaded forest = " << nbForest_ << std::endl;
 
-
-
 	unsigned int regionMap[nrows];
 	//// If doing sub-sampling, geting the array to know if the forest is in the given region
 	if (doBootstraps) {
@@ -5439,18 +5441,18 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 		}
 
 		//// For the cross-correlation
-		std::string pathToSave = pathToSave__;
-		pathToSave += "xi_delta_QSO_nbPairsForest_";
-		pathToSave += forest__;
-		pathToSave += "_";
-		pathToSave += QSO__;
-		pathToSave += ".txt";
+		std::string pathToLoad = pathToSave__;
+		pathToLoad += "xi_delta_QSO_map_";
+		pathToLoad += forest__;
+		pathToLoad += "_";
+		pathToLoad += QSO__;
+		pathToLoad += ".txt";
 
-		LymanForest* lymanForestObject = new LymanForest(pathToSave, C_NBSUBSAMPLES, C_RA_SEPERATION_NGC_SGC, mockJMC__);
-		//lymanForestObject->SaveRegionMap("map.txt");
-		//return;
+		LymanForest* lymanForestObject = new LymanForest(pathToLoad, C_NBSUBSAMPLES, C_RA_SEPERATION_NGC_SGC, mockJMC__);
 		lymanForestObject->GetRegionArray(regionMap);
+		lymanForestObject->PrintRegionDetail(bootIdx);
 		delete lymanForestObject;
+		std::cout << "\n\n" << std::endl;
 	}
 
 	double meanDelta[3] = {0.};

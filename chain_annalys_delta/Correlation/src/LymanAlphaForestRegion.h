@@ -68,7 +68,9 @@ class LymanForest
 		// Load forest from a given Ascii file:
 		//		- std::string pathToFile: path to file with the following
 		// structure: idx  ra  de  nbPairs			
-		void LoadForest(std::string pathToFile);
+		void LoadForest(std::vector< std::vector<double> > forests);
+
+		void LoadForestFromMap(std::string pathToLoad);
 		
 		// Performs the devision of the sky into regions
 		void DevideInRegions(void);
@@ -84,7 +86,10 @@ class LymanForest
 		//		- This double gives the value of RA that separates NGC and SGC
 		//		 (see private variable definition)
 		//		- bool euclidean=false: true if eucldeen coordinate, false if spherical
-		LymanForest(std::string pathToFile, unsigned int nbRegions, double raSeperationTwoRegions, bool euclidean=false);
+		LymanForest(std::vector< std::vector<double> > forests, unsigned int nbRegions, double raSeperationTwoRegions, bool euclidean=false);
+
+
+		LymanForest(std::string pathToLoad, unsigned int nbRegions, double raSeperationTwoRegions, bool euclidean=false);
 
 		// Class destructor:
 		~LymanForest();
@@ -94,6 +99,9 @@ class LymanForest
 		//		- int regionIdx: region to get the coordinate of
 		//		- double* array: array of size 4 with: minRA, maxRA, minDec, maxDec
 		void GetCoordRegion(int regionIdx, double* array);
+
+		//
+		void PrintRegionDetail(int regionIdx);
 		
 		// Fill an array of size superior to the number of forest in the
 		//	all survey with the list of region's index of forests
@@ -110,5 +118,14 @@ class LymanForest
 };
 
 #endif
+
+
+
+
+
+
+
+
+
 
 
