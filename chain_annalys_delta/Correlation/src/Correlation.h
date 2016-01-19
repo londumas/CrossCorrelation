@@ -211,7 +211,7 @@ const unsigned int nbBinRFMaxDelta2__ = 647;
 const std::string pathDelta2__ = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits";
 const double alphaStart2__       = 1.3;
 */
-/*
+
 /// For Delta 2 (SIIV)
 const std::string forest2__           = "SIIV";
 const double lambdaRFLineDelta2__     = 1393.76018;
@@ -220,8 +220,8 @@ const double lambdaRFMaxDelta2__      = 1380.;
 const unsigned int nbBinRFMaxDelta2__ = 326;
 const std::string pathDelta2__ = "/home/gpfs/manip/mnt/bao/hdumasde/Data/SIIV/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits";
 const double alphaStart2__       = 1.;
-*/
 
+/*
 /// For Delta 2 (CIV)
 const std::string forest2__  = "CIV";
 const double lambdaRFLineDelta2__  = 1548.2049;
@@ -230,7 +230,7 @@ const double lambdaRFMaxDelta2__   = 1530.;
 const unsigned int nbBinRFMaxDelta2__ = 373;
 const std::string pathDelta2__ = "/home/gpfs/manip/mnt/bao/hdumasde/Data/CIV/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits";
 const double alphaStart2__       = 1.;
-
+*/
 /*
 /// For Delta 2 (MGII)
 const std::string forest2__  = "MGII";

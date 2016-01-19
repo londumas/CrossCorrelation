@@ -108,10 +108,10 @@ const bool randomForest   = false;
 const bool doBootstraps__ = false;
 
 const bool doVetoLines__ = true;
-const bool nicolasEstimator__ = false;
+const bool nicolasEstimator__ = true;
 
 
-std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/";
+std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator/";
 
 Correlation::Correlation(int argc, char **argv) {
 

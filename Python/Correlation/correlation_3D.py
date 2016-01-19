@@ -335,6 +335,20 @@ class Correlation_3D:
 		self._xi2D[:,:,2] = myTools.convert1DTo2D(numpy.sqrt( numpy.diag(numpy.load(pathToLoad)) ),self._nbBinX2D, self._nbBinY2D)
 
 		return
+	def apply_distortion_matrix(self):
+
+		### 1d
+		path = self._path_to_txt_file_folder + self._prefix + '_distortionMatrix_1D_'+ self._middlefix + '.txt'
+		matrix = numpy.loadtxt(path)
+		self._xi1D[:,1] = numpy.dot(matrix,self._xi1D[:,1])
+		### 2d
+		path = self._path_to_txt_file_folder + self._prefix + '_distortionMatrix_2D_'+ self._middlefix + '.txt'
+                matrix = numpy.loadtxt(path)
+		corr = myTools.convert2DTo1D(self._xi2D[:,:,1], self._nbBinX2D, self._nbBinY2D)
+		corr = numpy.dot(matrix,corr)
+		self._xi2D[:,:,1] = myTools.convert1DTo2D(corr, self._nbBinX2D, self._nbBinY2D)
+	
+		return
 	def get_multipol(self):
 
 		### Plot or not
@@ -688,6 +702,13 @@ class Correlation_3D:
 		myTools.plot2D(cor)
 
 		return
+        def plot_distortion_matrix(self):
+
+                path = self._path_to_txt_file_folder + self._prefix + '_distortionMatrix_1D_'+ self._middlefix + '.txt'
+                matrix = numpy.loadtxt(path)
+                myTools.plot2D(matrix)
+
+                return
 	def plot_map_sub_sampling(self):
 	
 		pathToLoad = self._path_to_txt_file_folder + self._prefix + '_map_'+ self._middlefix + '.txt'
@@ -723,7 +744,7 @@ class Correlation_3D:
 
 
 
-path_to_txt_file_folder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/TESTS/'
+path_to_txt_file_folder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
 dic_constants = {
 	'minXi': 0.,
 	'maxXi': 200.,
@@ -741,12 +762,13 @@ dic_constants = {
 
 
 corr = Correlation_3D(dic_constants)
-
-corr.set_error_on_covar_matrix('subsampling')
-corr.fit_CAMB()
-corr.plot_1d(0)
-corr.plot_1d(1)
-corr.plot_1d(2)
+#corr.plot_distortion_matrix()
+corr.apply_distortion_matrix()
+#corr.set_error_on_covar_matrix('subsampling')
+#corr.fit_CAMB()
+#corr.plot_1d(0)
+#corr.plot_1d(1)
+#corr.plot_1d(2)
 corr.plot_2d(0)
 corr.plot_2d(1)
 corr.plot_2d(2)
