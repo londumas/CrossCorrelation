@@ -541,8 +541,6 @@ def plotXi(rescale):
 	yer = xi1D_[:,2]
 
 	cut = (yer>0.)
-	if (xxx[cut].size==0):
-		continue
 	xxx = xxx[ cut ]
 	yyy = yyy[ cut ]
 	yer = yer[ cut ]
@@ -676,7 +674,7 @@ def plotMultipol(xi):
 	'''
 
 	### Plot or not
-	plot = False
+	plot = True
 
 	### Get the data
 	xxx = xi[:,:,0]
@@ -1325,6 +1323,7 @@ result_Multipol_ = plotMultipol(xiMu_)
 replaceValueByMean()
 '''
 
+plotMultipol(xiMu_)
 plotXi(0)
 plotXi(1)
 plotXi(2)

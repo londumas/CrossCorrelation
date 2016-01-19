@@ -114,7 +114,7 @@ def saveListRealMocks(ni,nj):
 	return
 
 
-path__ = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
+path__ = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/TESTS/'
 xxx, yyy, yer = plot()
 path__ = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
 xxx3, yyy3, yer3 = plot()

@@ -111,7 +111,7 @@ const bool doVetoLines__ = true;
 const bool nicolasEstimator__ = false;
 
 
-std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/TESTS/";
+std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/";
 
 Correlation::Correlation(int argc, char **argv) {
 

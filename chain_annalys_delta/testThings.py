@@ -228,14 +228,27 @@ def meanDelta():
 
 	forest = 'LYA'
 	alphaStart__ = 1.3
-	#lambdaRFMin__      = 1410.
-	#lambdaRFMax__      = 1530.
+	if (forest == 'LYB'):
+		lambdaRFMin__      = 800.
+		lambdaRFMax__      = 1020.
+	elif (forest == 'LYA'):
+		lambdaRFMin__      = 1040.
+		lambdaRFMax__      = 1200.
+	elif (forest == 'SIIV'):
+		lambdaRFMin__      = 1286.
+		lambdaRFMax__      = 1380.
+	elif (forest == 'CIV'):
+		lambdaRFMin__      = 1410.
+		lambdaRFMax__      = 1530.
+	elif (forest == 'MGII'):
+		lambdaRFMin__      = 1570.
+		lambdaRFMax__      = 2790.
 
-	path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest+'/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits'
+	path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest+'/FitsFile_DR12_Guy/DR12_primery_with_Latest_CIV_Forest/DR12_primery.fits'
 	#path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_reObs/DR12_reObs.fits'
 	#path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits'
 
-	cat = pyfits.open(path, memmap=True)[1].data[:50000]
+	cat = pyfits.open(path, memmap=True)[1].data
 
 	cat = cat[ numpy.logical_and( numpy.logical_and(  numpy.logical_and( cat['ALPHA_2']!=alphaStart__, cat['BETA_2']!=0.),  numpy.abs(cat['ALPHA_2'])<=39.5 ), numpy.abs(cat['BETA_2'])<=0.25 ) ]
 	#cat = cat[ numpy.logical_or( numpy.logical_or(  numpy.logical_or( cat['ALPHA_2']==alphaStart__, cat['BETA_2']==0.),  numpy.abs(cat['ALPHA_2'])>=39.5 ), numpy.abs(cat['BETA_2'])>=0.25 ) ]
@@ -260,7 +273,7 @@ def meanDelta():
 	cat['DELTA_WEIGHT'][ (cat['LAMBDA_RF']<lambdaRFMin__) ] = 0.
 	cat['DELTA_WEIGHT'][ (cat['LAMBDA_RF']>lambdaRFMax__) ] = 0.
 	
-
+	print cat.size
 	cut_noForestPixel = numpy.logical_and(cat['DELTA_WEIGHT']>0., numpy.logical_and( (cat['LAMBDA_RF']>=lambdaRFMin__) , (cat['LAMBDA_RF']<lambdaRFMax__) )).astype(int)
 	len_forest = numpy.sum(cut_noForestPixel,axis=1)
 	cat = cat[ (len_forest>=nbBinRFMin__) ]

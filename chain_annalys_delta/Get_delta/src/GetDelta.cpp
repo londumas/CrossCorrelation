@@ -47,7 +47,7 @@ const unsigned int nbBinlambdaObs__  = int(lambdaObsMax__-lambdaObsMin__);
 const double onePlusZ0__ = 1.+z0__;
 const double halfGama__  = gama__/2.;
 const unsigned int nbBinPowErrorDelta__ = 20*int(log10(maxPowErrorDelta__) - log10(minPowErrorDelta__));
-
+const double dF_ = 1./nbBinsFlux__;
 
 
 //// Global variables
@@ -86,7 +86,7 @@ GetDelta::GetDelta(int argc, char** argv) {
 	if (!mocksColab__ && !mockJMC__) {
 		pathForest__   = "/home/gpfs/manip/mnt/bao/hdumasde/Data/";
 		pathForest__  += forest__;
-		pathForest__  += "/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits";
+		pathForest__  += "/FitsFile_DR12_Guy/DR12_primery_with_Latest_CIV_Forest/DR12_primery.fits";
 //		pathForest__  += "/FitsFile_DR12_Guy/DR12_reObs/DR12_reObs.fits";
 //		pathForest__  += "/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits";
 
@@ -882,10 +882,10 @@ void GetDelta::fitForests(unsigned int begin, unsigned int end) {
 		for (unsigned int p=0; p<nb; p++) {
 			if (v_LAMBDA_RF__[f][p] >= lambdaRFMin__ && v_LAMBDA_RF__[f][p] < lambdaRFMax__) {
 
-				FluxMeth2[NbPixMeth2]     = v_NORM_FLUX__[f][p];
-				FluxErrMeth2[NbPixMeth2]  = 1./sqrt(v_NORM_FLUX_IVAR__[f][p]);
 				LambdaMeth2[NbPixMeth2]   = v_LAMBDA_RF__[f][p];
-				FluxMeanMeth2[NbPixMeth2] = v_TEMPLATE__[f][p];
+				FluxErrMeth2[NbPixMeth2]  = 1./sqrt(v_NORM_FLUX_IVAR__[f][p]);
+				FluxMeth2[NbPixMeth2]     = v_NORM_FLUX__[f][p]/FluxErrMeth2[NbPixMeth2];
+				FluxMeanMeth2[NbPixMeth2] = v_TEMPLATE__[f][p]/FluxErrMeth2[NbPixMeth2];
 
 				if (methodIndex__==2) {
 					double zpix = v_ZZZ__[f][p];
@@ -967,8 +967,7 @@ extern void Chi2_method1(int &npar, double *gin, double &f, double *par, int ifl
 
 	f = 0.;
 	for (unsigned int i=0; i<NbPixMeth2; i++) {
-		const double cont = (par[0]+par[1]*(LambdaMeth2[i]-LambdaMeanMeth2))*FluxMeanMeth2[i];
-		const double tmp = (FluxMeth2[i]-cont)/FluxErrMeth2[i];
+		const double tmp = FluxMeth2[i]-(par[0]+par[1]*(LambdaMeth2[i]-LambdaMeanMeth2))*FluxMeanMeth2[i];
 		f += tmp*tmp;
 	}
 }
@@ -977,24 +976,22 @@ extern void Chi2_method2(int &npar, double *gin, double &f, double *par, int ifl
 	f = 0.;
 	for (unsigned int i=0; i<NbPixMeth2; i++) {
 		const double cont = (par[0]+par[1]*(LambdaMeth2[i]-LambdaMeanMeth2))*FluxMeanMeth2[i];
-		f += -2.*ProbPixel(cont,FluxMeth2[i],FluxErrMeth2[i],i);
+		f += -2.*log( ProbPixel(cont,FluxMeth2[i],FluxErrMeth2[i],i));
 	}
 }
 double ProbPixel(double cont,double flux, double sig, unsigned int idxPixel) {
 	
-	const double dF = 1./nbBinsFlux__;
-	double prb = 0.;
-	cont *= dF/sig;
-	flux /= sig;
-	//const double fact1 = -0.5/(sig*sqrt(2.*M_PI));
-	const double fact1 = -0.5/sqrt(2.*M_PI);
+	cont *= dF_;
 
+	const double fact1 = 1./(sig*sqrt(2.*M_PI));
+
+	double prb = 0.;
 	for (unsigned int i=0; i<nbBinsFlux__; i++) {
 		const double F   = i+0.5;
 		const double PDF = a_PDF[i][idxPixel];
-		prb += exp( fact1*pow(cont*F-flux,2.) )*PDF;
+		prb += exp( -0.5*pow(cont*F-flux,2.) )*PDF;
 	}
-	return log( prb*dF );
+	return fact1*prb*dF_;
 }
 void GetDelta::initFitCont(void) {
 

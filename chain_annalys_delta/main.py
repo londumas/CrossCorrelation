@@ -217,7 +217,8 @@ def main():
 		
 		### Put the new alpha and beta in fits file
 		if (not reObs):
-			path     = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest+'/FitsFile_DR12_Guy/DR12_primery/DR12_primery'+method+'.fits'
+			#path     = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest+'/FitsFile_DR12_Guy/DR12_primery/DR12_primery'+method+'.fits'
+			path     = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest+'/FitsFile_DR12_Guy/DR12_primery_with_Latest_CIV_Forest/DR12_primery'+method+'.fits'
 		else:
 			path     = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_reObs/DR12_reObs.fits'
 		#path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest+'/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits'

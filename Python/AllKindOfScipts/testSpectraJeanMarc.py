@@ -15,7 +15,7 @@ lambdaRFForHist = []
 fluxForHist = []
 
 ### File Jean-Marc, there are 47 spectra
-cat = pyfits.open('/home/usr201/mnt/hdumasde/spectra-780-0.fits')
+cat = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation/TESTS/spectra-780-0.fits')
 
 ### Print header, data, ...
 print cat[0].header
