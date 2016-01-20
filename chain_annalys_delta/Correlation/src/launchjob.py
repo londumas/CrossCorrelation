@@ -34,7 +34,7 @@ def main():
 				tmp_command = "echo " + time.ctime()
 				subprocess.call(tmp_command, shell=True)
 
-				time.sleep(2)
+				time.sleep(30)
                 	        myTools.isReadyForNewJobs(50, 430,'time')
 		time.sleep(120)
 	

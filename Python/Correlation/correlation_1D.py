@@ -1,0 +1,272 @@
+# -*- coding: utf-8 -*-
+#
+# created by Hélion du Mas des Bourboux
+# < helion.du-mas-des-bourboux@cea.fr >
+#
+#  /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/correlation_3D.py
+#
+
+### Python lib
+import subprocess
+import numpy
+import matplotlib.pyplot as plt
+from iminuit import Minuit
+
+### Perso lib
+import myTools
+import const
+import const_delta
+
+class Correlation_1D:
+	
+	def __init__(self, dic=None):
+		"""
+		correlationType:
+			- 'f_f_r'
+			- 'f_f_lRF'
+			- 'f_f_lRF_devide' (default)
+			- 'f_f2_r'
+			- 'f_f2_lRF'
+			- 'f_f2_lRF_devide'
+		"""
+		
+		if (dic==None):
+			dic = {
+			'correlation': 'f_f_lRF_devide',
+			'path_to_txt_file_folder': 'NOTHING',
+			'f1': 'LYA',
+			'f2': 'LYA',
+			'nb_Sub_Sampling': 80,
+			}
+
+		### folder wher data are
+		self._path_to_txt_file_folder = dic['path_to_txt_file_folder']
+
+		### forest and QSO name
+		self._f1 = dic['f1']
+		self._f2 = dic['f2']
+
+		### Get lines
+		if   (self._f1=='LYB'):
+			self._lines1 = const_delta.LYB_lines
+			self._name_line1 = const_delta.LYB_lines_names
+		elif (self._f1=='LYA'):
+			self._lines1 = const_delta.LYA_lines
+			self._name_line1 = const_delta.LYA_lines_names
+		elif (self._f1=='SIIV'):
+			self._lines1 = const_delta.SIIV_lines
+			self._name_line1 = const_delta.SIIV_lines_names
+		elif (self._f1=='CIV'):
+			self._lines1 = const_delta.CIV_lines
+			self._name_line1 = const_delta.CIV_lines_names
+		elif (self._f1=='MGII'):
+			self._lines1 = const_delta.MGII_lines
+			self._name_line1 = const_delta.MGII_lines_names
+	
+		if   (self._f2=='LYB'):
+			self._lines2 = const_delta.LYB_lines
+			self._name_line2 = const_delta.LYB_lines_names
+		elif (self._f2=='LYA'):
+			self._lines2 = const_delta.LYA_lines
+			self._name_line2 = const_delta.LYA_lines_names
+		elif (self._f2=='SIIV'):
+			self._lines2 = const_delta.SIIV_lines
+			self._name_line2 = const_delta.SIIV_lines_names
+		elif (self._f2=='CIV'):
+			self._lines2 = const_delta.CIV_lines
+			self._name_line2 = const_delta.CIV_lines_names
+		elif (self._f2=='MGII'):
+			self._lines2 = const_delta.MGII_lines
+			self._name_line2 = const_delta.MGII_lines_names
+		
+		### Correlation type
+		self._correlation = dic['correlation']
+		if (self._correlation=='f_f_r'):
+			self._xTitle = '|s| \, [h^{-1}.Mpc]'
+			self._yTitle = '\\xi (|s|)'
+			self._title = '\delta_{'+self._f1+'}'
+			self._prefix = 'xi_1D_delta_delta'
+			self._middlefix = self._f1
+			self._lines2 = self._lines1
+			self._name_line2 = self._name_line1
+		elif (self._correlation=='f_f_lRF'):
+			self._xTitle = '\Delta \lambda_{R.F.} \, [\AA]'
+			self._yTitle = '\\xi(\Delta \lambda_{R.F.})'
+			self._title = '\delta_{'+self._f1+'}'
+			self._prefix = 'xi_1DlRF_delta_delta'
+			self._middlefix = self._f1
+			self._lines2 = self._lines1
+			self._name_line2 = self._name_line1
+		elif (self._correlation=='f_f_lRF_devide'):
+			self._xTitle = '\lambda_{1}/\lambda_{2}'
+			self._yTitle = '\\xi(\lambda_{1}/\lambda_{2})'
+			self._title = '\delta_{'+self._f1+'}'
+			self._prefix = 'xi_1DlRFDevide_delta_delta'
+			self._middlefix = self._f1
+			self._lines2 = self._lines1
+			self._name_line2 = self._name_line1
+		elif (self._correlation=='f_f2_r'):
+			self._xTitle = '|s| \, [h^{-1}.Mpc]'
+			self._yTitle = '\\xi (|s|)'
+			self._title = '\delta_{'+self._f1+'} \, - \, \delta_{'+self._f2+'}'
+			self._prefix = 'xi_1D_delta_delta2'
+			self._middlefix = self._f1 + '_' + self._f2
+		elif (self._correlation=='f_f2_lRF'):
+			self._xTitle = '\Delta \lambda_{R.F.} \, [\AA]'
+			self._yTitle = '\\xi(\Delta \lambda_{R.F.})'
+			self._title = '\delta_{'+self._f1+'} \, - \, \delta_{'+self._f2+'}'
+			self._prefix = 'xi_1DlRF_delta_delta2'
+			self._middlefix = self._f1 + '_' + self._f2
+		elif (self._correlation=='f_f2_lRF_devide'):
+			self._xTitle = '\lambda_{1}/\lambda_{2}'
+			self._yTitle = '\\xi(\lambda_{1}/\lambda_{2})'
+			self._title = '\delta_{'+self._f1+'} \, - \, \delta_{'+self._f2+'}'
+			self._prefix = 'xi_1DlRFDevide_delta_delta2'
+			self._middlefix = self._f1 + '_' + self._f2
+
+		path = self._path_to_txt_file_folder + self._prefix + '_' + self._middlefix + '.txt'
+
+		### Get data
+		self._nbBin, self._xi = self.fill_data(path)
+
+
+		
+		return
+
+	def fill_data(self, path):
+
+		data = numpy.loadtxt(path)
+		cut = (data[:,5]>1.)
+
+		nbBin = data[:,2][ cut ].size
+		xi = numpy.zeros(shape=(nbBin,3))
+
+		xi[:,0] = data[:,2][cut]/data[:,4][cut]
+		xi[:,1] = data[:,0][cut]/data[:,4][cut]
+		xi[:,2] = numpy.sqrt( (data[:,1][cut]/data[:,4][cut] -xi[:,1]**2. )/data[:,5][cut]  )
+	
+		return nbBin, xi
+
+	def plot(self, with_lines=False, verbose=False):
+
+		xxx = self._xi[:,0]
+		yyy = self._xi[:,1]
+		yer = self._xi[:,2]
+		plt.errorbar(xxx, yyy, yerr=yer, marker='o')
+
+		if (with_lines):
+
+			xMin = numpy.amin(xxx)
+			xMax = numpy.amax(xxx)
+			yMin = numpy.amin(yyy)
+			yMax = numpy.amax(yyy)
+			yLi = [yMin,yMax]
+			nbLines1 = self._lines1.size
+
+			for i in range(0,nbLines1):
+
+				if (self._correlation=='f_f_r' or self._correlation=='f_f_lRF' or self._correlation=='f_f_lRF_devide'):
+					nbLines2 = i
+				else:
+					nbLines2 = self._lines2.size
+
+				for j in range(0,nbLines2):
+					if (self._correlation=='f_f_r' or self._correlation=='f_f2_r'):
+						continue
+					elif (self._correlation=='f_f_lRF' or self._correlation=='f_f2_lRF'):
+						line = abs(self._lines1[i]-self._lines2[j])
+						if (line==0. or line>xMax): continue
+					elif (self._correlation=='f_f_lRF_devide' or self._correlation=='f_f2_lRF_devide'):
+						line = self._lines2[j]/self._lines1[i]
+						if (line<xMin or line>xMax): line = 1./line
+						if (line<xMin or line>xMax): continue
+					if (verbose): print ' ||  ', self._name_line1[i] ,' - ', self._name_line2[j], ' || ', line, ' || ', self._lines1[i], ' || ', self._lines2[j], ' || '
+
+					xLi = [line,line]
+					name = self._name_line1[i]+' - ' + self._name_line2[j]
+					plt.plot(xLi,yLi,color='green')
+					plt.text(line, yMax, name, rotation='vertical', fontsize=20)
+
+
+		plt.title(r'$'+self._title+'$', fontsize=40)
+		plt.xlabel(r'$'+self._xTitle+'$', fontsize=40)
+		plt.ylabel(r'$'+self._yTitle+'$', fontsize=40)
+
+		if (self._correlation=='f_f_r' or self._correlation=='f_f2_r' or self._correlation=='f_f_lRF' or self._correlation=='f_f_lRF'):
+			plt.xlim([ numpy.min(xxx)-10., numpy.max(xxx)+10. ])
+		if (self._correlation=='f_f_lRF_devide' or self._correlation=='f_f2_lRF_devide'):
+			plt.xlim([ 0.99*numpy.min(xxx), 1.01*numpy.max(xxx) ])
+
+		myTools.deal_with_plot(False,False,False)
+		plt.show()
+
+		return
+
+
+
+
+
+
+path_to_txt_file_folder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
+listCorr = ['f_f_r','f_f_lRF','f_f_lRF_devide','f_f2_r','f_f2_lRF_devide']
+
+for el in listCorr:
+	dic_class = {
+		'correlation': el,
+		'path_to_txt_file_folder': path_to_txt_file_folder,
+		'f1': 'LYA',
+		'f2': 'SIIV',
+		'nb_Sub_Sampling': 80,
+	}
+	corr = Correlation_1D(dic_class)
+	corr.plot(True)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

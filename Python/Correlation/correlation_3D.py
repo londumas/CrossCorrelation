@@ -3,7 +3,7 @@
 # created by Hélion du Mas des Bourboux
 # < helion.du-mas-des-bourboux@cea.fr >
 #
-#
+#  /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/correlation_3D.py
 #
 
 ### Python lib
@@ -19,7 +19,7 @@ import const
 
 class Correlation_3D:
 	
-	def __init__(self, dic_class=None):
+	def __init__(self, dic=None):
 		"""
 		
 		correlationType:
@@ -30,8 +30,8 @@ class Correlation_3D:
 	
 		"""
 		
-		if (dic_class==None):
-			dic_constants = {
+		if (dic==None):
+			dic = {
 			'minXi': 0.,
 			'maxXi': 200.,
 			'nbBin': 50,
@@ -48,16 +48,16 @@ class Correlation_3D:
 			}
 
 		### folder wher data are
-		self._path_to_txt_file_folder = dic_constants['path_to_txt_file_folder']
+		self._path_to_txt_file_folder = dic['path_to_txt_file_folder']
 
 		### forest and QSO name
-		self._f1 = dic_constants['f1']
-		self._f2 = dic_constants['f2']
-		self._q1 = dic_constants['q1']
-		self._q2 = dic_constants['q2']
+		self._f1 = dic['f1']
+		self._f2 = dic['f2']
+		self._q1 = dic['q1']
+		self._q2 = dic['q2']
 		
 		### Correlation type
-		self._correlation = dic_constants['correlation']
+		self._correlation = dic['correlation']
 		if (self._correlation=='q_q'):
 			self._label = '\\xi^{qq}'
 			self._title = self._q1
@@ -85,11 +85,11 @@ class Correlation_3D:
 		path2D = self._path_to_txt_file_folder + self._prefix + '_2D_' + self._middlefix + '.txt'
 
 		### 1D
-		self._min1D   = float(dic_constants['minXi'])
-		self._max1D   = float(dic_constants['maxXi'])
-		self._nbBin1D = int(dic_constants['nbBin'])
+		self._min1D   = float(dic['minXi'])
+		self._max1D   = float(dic['maxXi'])
+		self._nbBin1D = int(dic['nbBin'])
 		self._binSize = (self._max1D-self._min1D)/self._nbBin1D
-		self._binSize_calcul = int( (self._max1D-self._min1D)/dic_constants['size_bin_calcul_s'] )
+		self._binSize_calcul = int( (self._max1D-self._min1D)/dic['size_bin_calcul_s'] )
 		
 		### 2D (X)
 		self._minX2D   = self._min1D
@@ -111,11 +111,11 @@ class Correlation_3D:
 		self._maxM = 1.
 		if (self._correlation=='q_f' or self._correlation=='f_f2'):
 			self._minM = -self._maxM
-		self._nbBinM = dic_constants['nbBinM']
-		self._nbBinM_calcul = int( (self._maxM-self._minM)/dic_constants['size_bin_calcul_m'] )
+		self._nbBinM = dic['nbBinM']
+		self._nbBinM_calcul = int( (self._maxM-self._minM)/dic['size_bin_calcul_m'] )
 			
 		### Sub sampling
-		self.nb_Sub_Sampling = int(dic_constants['nb_Sub_Sampling'])
+		self.nb_Sub_Sampling = int(dic['nb_Sub_Sampling'])
 
 		### Correlations data
 		self._xiMu, self._xiWe, self._xi1D, self._xi2D = self.fill_data(path1D, path2D)
@@ -354,7 +354,7 @@ class Correlation_3D:
 		self._xi2D[:,:,1] = myTools.convert1DTo2D(corr, self._nbBinX2D, self._nbBinY2D)
 	
 		return
-	def get_multipol(self, dic=Null):
+	def get_multipol(self, dic=None):
 
 		### Plot or not
 		plot = False
@@ -460,14 +460,14 @@ class Correlation_3D:
 				'end_fit'     : 70.,
 				'b' : -1.,
 				'roof' : 0.,
-				'fix_roof_nul' : True
-				'guess_b' : False
+				'fix_roof_nul' : True,
+				'guess_b' : False,
 				'min_for_guess' : 20.,
-				'max_for_guess' : 50.,
+				'max_for_guess' : 50.
 			}
 		
 		### Get the data
-		cut = numpy.logical_and( (self._xi1D[:,0]>=dic['start_fit']),(self._xi1D[:,0]<dic['end']) )
+		cut = numpy.logical_and( (self._xi1D[:,0]>=dic['start_fit']),(self._xi1D[:,0]<dic['end_fit']) )
 		xxx = self._xi1D[:,0][cut]
 		yyy = self._xi1D[:,1][cut]
 		yer = self._xi1D[:,2][cut]
@@ -497,7 +497,7 @@ class Correlation_3D:
 	
 		### Get result
 		dic['b'] = m.values[ 'b' ]
-		dic['roof = m.values[ 'roof' ]
+		dic['roof'] = m.values[ 'roof' ]
 		print '  b = ', dic['b']
 		print '  roof = ', dic['roof']
 	
@@ -672,10 +672,10 @@ class Correlation_3D:
 				'end_fit'     : 70.,
 				'b' : -1.,
 				'roof' : 0.,
-				'fix_roof_nul' : True
-				'guess_b' : False
+				'fix_roof_nul' : True,
+				'guess_b' : False,
 				'min_for_guess' : 20.,
-				'max_for_guess' : 50.,
+				'max_for_guess' : 50.
 			}
 
 		### Get the data
@@ -725,6 +725,7 @@ class Correlation_3D:
 		myTools.plot2D(cov)
 		cor = myTools.getCorrelationMatrix(cov)
 		myTools.plot2D(cor)
+		myTools.plotCovar([cov],[realisation_type])
 
 		return
 	def plot_distortion_matrix(self, dim='1D'):
@@ -778,20 +779,21 @@ dic_class = {
 	'nb_Sub_Sampling': 80,
 	'size_bin_calcul_s': 1.,
 	'size_bin_calcul_m': 0.02,
-	'correlation': 'q_f',
+	'correlation': 'f_f2',
 	'path_to_txt_file_folder': path_to_txt_file_folder,
-	'f1': 'SIIV',
+	'f1': 'LYA',
 	'f2': 'CIV', 
 	'q1': 'QSO',
-	'q2': 'QSO'}
+	'q2': 'QSO'
+}
 dic_CAMB = {
 	'mulpol_index' : 0,
 	'start_fit'   : 20.,
 	'end_fit'     : 70.,
 	'b' : -1.,
 	'roof' : 0.,
-	'fix_roof_nul' : True
-	'guess_b' : False
+	'fix_roof_nul' : True,
+	'guess_b' : False,
 	'min_for_guess' : 20.,
 	'max_for_guess' : 50.,
 }
@@ -813,15 +815,15 @@ corr.plot_Mu(0)
 corr.plot_Mu(1)
 corr.plot_Mu(2)
 
+'''
 corr.plot_map_sub_sampling()
 corr.plot_distortion_matrix()
 corr.apply_distortion_matrix()
-
-
+corr.plot_cov_cor_matrix('subsampling','1D')
 corr.save_list_realisation('subsampling', 80)		
 corr.plot_cov_cor_matrix('subsampling','1D')
 corr.set_error_on_covar_matrix('subsampling')
-
+'''
 
 
 

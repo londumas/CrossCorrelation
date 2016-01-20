@@ -108,10 +108,10 @@ const bool randomForest   = false;
 const bool doBootstraps__ = false;
 
 const bool doVetoLines__ = true;
-const bool nicolasEstimator__ = true;
+const bool nicolasEstimator__ = false;
 
 
-std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator/";
+std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/";
 
 Correlation::Correlation(int argc, char **argv) {
 
@@ -208,7 +208,7 @@ Correlation::Correlation(int argc, char **argv) {
 	else if (command == 1)  xi_1DlRF_delta_delta();
 	else if (command == 2)  xi_1DlRFDevide_delta_delta();
 	else if (command == 3)  xi_1D_delta_delta2();
-	else if (command == 4)  xi_1DlRF_delta_delta2();
+	else if (command == 4)  xi_1DlRFDevide_delta_delta2();
 	//
 	else if (command == 5)  xi_A_delta_delta();
 	else if (command == 6)  xi_A_delta_delta_lambda();
@@ -538,8 +538,8 @@ void Correlation::xi_1DlRFDevide_delta_delta(void) {
 
 			///// Compute the xi1D
 			data[0][0] += w1w1*d1d1;
-			data[0][2] += w1w1;
 			data[0][1] += w1w1*d1d1*d1d1;
+			data[0][2] += w1w1;
 			data[0][3] += w1w1*z1z1;
 			data[0][4] += w1w1;
 			data[0][5] ++;
@@ -553,8 +553,6 @@ void Correlation::xi_1DlRFDevide_delta_delta(void) {
 
 				///// Find bin index
 				const unsigned int idx = 1 + int( (l1l2-1.)*inv_binSize );
-
-if (idx>=nbBins) std::cout << idx << std::endl;
 
 				///// Compute the xi1D
 				data[idx][0] += w1w2*d1d2;
@@ -633,18 +631,11 @@ void Correlation::xi_1D_delta_delta2(void) {
 	const unsigned int nbBins = 2*int(max);
 
 	///// Arrays for data
-	double meanZZ[2] = {};
-	double data_0[nbBins];
-	double data_1[nbBins];
-	double data_2[nbBins];
-	double data_3[nbBins];
-	double data_4[nbBins];
+	double data[nbBins][6];
 	for (unsigned int i=0; i<nbBins; i++) {
-		data_0[i] = 0.;
-		data_1[i] = 0.;
-		data_2[i] = 0.;
-		data_3[i] = 0.;
-		data_4[i] = 0.;
+		for (unsigned int j=0; j<6; j++) {
+			data[i][j] = 0.;
+		}
 	}
 
 	for (unsigned int f1=0; f1<nbForest_; f1++) {
@@ -676,17 +667,14 @@ void Correlation::xi_1D_delta_delta2(void) {
 	
 					///// Find bin index
 					const unsigned int idx = int(max+r1r2);
-	
+
 					///// Compute the xi1D
-					data_0[idx] += w1w2*d1d2;
-					data_1[idx] += w1w2*d1d2*d1d2;
-					data_2[idx] += w1w2*r1r2;
-					data_3[idx] += w1w2;
-					data_4[idx] ++;
-	
-					///// Mean redshift of pairs
-					meanZZ[0] += w1w2*z1z2;
-					meanZZ[1] += w1w2*z1z2*z1z2;
+					data[idx][0] += w1w2*d1d2;
+					data[idx][1] += w1w2*d1d2*d1d2;
+					data[idx][2] += w1w2*r1r2;
+					data[idx][3] += w1w2*z1z2;
+					data[idx][4] += w1w2;
+					data[idx][5] ++;
 				}
 			}
 		}
@@ -707,48 +695,31 @@ void Correlation::xi_1D_delta_delta2(void) {
 	fFile.precision(17);
 
 	long double sumOne = 0.;
+	long double sumZZZ = 0.;
 	long double sumWeg = 0.;
 
 	///// Set the values of data
-	///// [0] for value, [1] for error, [2] for bin center
 	for (unsigned int i=0; i<nbBins; i++) {
-		if (data_4[i]!=0.) {
-			const long double save0 = data_0[i];
-			const long double save1 = data_1[i];
-			const long double save2 = data_2[i];
-			const long double save3 = data_3[i];
-			const long double save4 = data_4[i];
+		fFile << data[i][0];
+		fFile << " " << data[i][1];
+		fFile << " " << data[i][2];
+		fFile << " " << data[i][3]/2.;
+		fFile << " " << data[i][4];
+		fFile << " " << data[i][5];
+		fFile << std::endl;
 
-			data_0[i] /= data_3[i];
-			data_1[i]  = sqrt( (data_1[i]/data_3[i] - data_0[i]*data_0[i])/data_4[i] );
-			data_2[i] /= data_3[i];
-
-			fFile << data_2[i];
-			fFile << " " << data_0[i];
-			fFile << " " << data_1[i];
-			fFile << " " << save0;
-			fFile << " " << save1;
-			fFile << " " << save2;
-			fFile << " " << save3;
-			fFile << " " << save4;
-			fFile << " " << std::endl;
-
-			sumOne += save4;
-			sumWeg += save3;
-		}
+		sumOne += data[i][5];
+		sumZZZ += data[i][3]/2.;
+		sumWeg += data[i][4];
 	}
 	fFile.close();
 
-	///// Get mean redshift of pairs
-	meanZZ[0] = meanZZ[0]/(2.*sumWeg);
-	meanZZ[1] = sqrt( (meanZZ[1]/(4.*sumWeg) - meanZZ[0]*meanZZ[0])/sumOne);
-
-	std::cout << "  < z >           = " << meanZZ[0] << " +- " << meanZZ[1] << std::endl;
+	std::cout << "  < z >           = " << sumZZZ/sumWeg << std::endl;
 	std::cout << "  Number of pairs = " << sumOne << std::endl;
 	
 	return;
 }
-void Correlation::xi_1DlRF_delta_delta2(void) {
+void Correlation::xi_1DlRFDevide_delta_delta2(void) {
 
 	std::cout << "\n\n\n\n  ------ xi_1DlRF_delta_delta2 ------" << std::endl;
 	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_1DlRF_delta_delta2.py";
@@ -769,11 +740,6 @@ void Correlation::xi_1DlRF_delta_delta2(void) {
 	v_rDelta2__.clear();
 	v_lObsDelta2__.clear();
 
-
-
-
-
-
 	std::cout << "  Starting" << std::endl;
 
 	///// Constants:
@@ -784,18 +750,11 @@ void Correlation::xi_1DlRF_delta_delta2(void) {
 	const double binSize = (max-min)/nbBins;
 
 	///// Arrays for data
-	double meanZZ[2] = {};
-	double data_0[nbBins];
-	double data_1[nbBins];
-	double data_2[nbBins];
-	double data_3[nbBins];
-	double data_4[nbBins];
+	double data[nbBins][6];
 	for (unsigned int i=0; i<nbBins; i++) {
-		data_0[i] = 0.;
-		data_1[i] = 0.;
-		data_2[i] = 0.;
-		data_3[i] = 0.;
-		data_4[i] = 0.;
+		for (unsigned int j=0; j<6; j++) {
+			data[i][j] = 0.;
+		}
 	}
 
 	for (unsigned int f1=0; f1<nbForest_; f1++) {
@@ -829,15 +788,12 @@ void Correlation::xi_1DlRF_delta_delta2(void) {
 					const unsigned int idx = int((l1l2-min)/binSize);
 	
 					///// Compute the xi1D
-					data_0[idx] += w1w2*d1d2;
-					data_1[idx] += w1w2*d1d2*d1d2;
-					data_2[idx] += w1w2*l1l2;
-					data_3[idx] += w1w2;
-					data_4[idx] ++;
-	
-					///// Mean redshift of pairs
-					meanZZ[0] += w1w2*z1z2;
-					meanZZ[1] += w1w2*z1z2*z1z2;
+					data[idx][0] += w1w2*d1d2;
+					data[idx][1] += w1w2*d1d2*d1d2;
+					data[idx][2] += w1w2*l1l2;
+					data[idx][3] += w1w2*z1z2;
+					data[idx][4] += w1w2;
+					data[idx][5] ++;
 				}
 			}
 		}
@@ -847,7 +803,7 @@ void Correlation::xi_1DlRF_delta_delta2(void) {
 
 	std::ofstream fFile;
 	std::string pathToSave = pathToSave__;
-	pathToSave += "xi_1DlRF_delta_delta2_";
+	pathToSave += "xi_1DlRFDevide_delta_delta2_";
 	pathToSave += forest__;
 	pathToSave += "_";
 	pathToSave += forest2__;
@@ -858,43 +814,26 @@ void Correlation::xi_1DlRF_delta_delta2(void) {
 	fFile.precision(17);
 
 	long double sumOne = 0.;
+	long double sumZZZ = 0.;
 	long double sumWeg = 0.;
 
 	///// Set the values of data
-	///// [0] for value, [1] for error, [2] for bin center
 	for (unsigned int i=0; i<nbBins; i++) {
-		if (data_4[i]!=0.) {
-			const long double save0 = data_0[i];
-			const long double save1 = data_1[i];
-			const long double save2 = data_2[i];
-			const long double save3 = data_3[i];
-			const long double save4 = data_4[i];
+		fFile << data[i][0];
+		fFile << " " << data[i][1];
+		fFile << " " << data[i][2];
+		fFile << " " << data[i][3]/2.;
+		fFile << " " << data[i][4];
+		fFile << " " << data[i][5];
+		fFile << std::endl;
 
-			data_0[i] /= data_3[i];
-			data_1[i]  = sqrt( (data_1[i]/data_3[i] - data_0[i]*data_0[i])/data_4[i] );
-			data_2[i] /= data_3[i];
-
-			fFile << data_2[i];
-			fFile << " " << data_0[i];
-			fFile << " " << data_1[i];
-			fFile << " " << save0;
-			fFile << " " << save1;
-			fFile << " " << save2;
-			fFile << " " << save3;
-			fFile << " " << save4;
-			fFile << " " << std::endl;
-
-			sumOne += save4;
-			sumWeg += save3;
-		}
+		sumOne += data[i][5];
+		sumZZZ += data[i][3]/2.;
+		sumWeg += data[i][4];
 	}
 	fFile.close();
 
-	///// Get mean redshift of pairs
-	meanZZ[0] = meanZZ[0]/(2.*sumWeg);
-	meanZZ[1] = sqrt( (meanZZ[1]/(4.*sumWeg) - meanZZ[0]*meanZZ[0])/sumOne);
-
-	std::cout << "  < z >           = " << meanZZ[0] << " +- " << meanZZ[1] << std::endl;
+	std::cout << "  < z >           = " << sumZZZ/sumWeg << std::endl;
 	std::cout << "  Number of pairs = " << sumOne << std::endl;
 	
 	return;

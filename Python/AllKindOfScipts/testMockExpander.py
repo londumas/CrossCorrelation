@@ -40,6 +40,7 @@ distPixel2 = []
 for i in range(1,47): ##47
 	print i
 	el = cat[i]
+	print el.header
 	z = el.header['ZQSO']
 	el = el.data
 	#if (el['flux'][ el['flux']<0.05 ].size==0): continue
