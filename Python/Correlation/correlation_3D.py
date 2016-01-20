@@ -16,25 +16,10 @@ from iminuit import Minuit
 import myTools
 import const
 
-dic_constants = {
-	'minXi': 0.,
-	'maxXi': 200.,
-	'nbBin': 50,
-	'nbBinM': 25,
-	'nb_Sub_Sampling': 80,
-	'size_bin_calcul_s': 1.,
-	'size_bin_calcul_m': 0.02,
-	'correlation': 'q_f',
-	'path_to_txt_file_folder': 'NOTHING',
-	'f1': 'LYA',
-	'f2': 'LYA', 
-	'q1': 'QSO',
-	'q2': 'QSO' }
-
 
 class Correlation_3D:
 	
-	def __init__(self, dic_constants):
+	def __init__(self, dic_class=None):
 		"""
 		
 		correlationType:
@@ -44,6 +29,23 @@ class Correlation_3D:
 			- 'f_f2'
 	
 		"""
+		
+		if (dic_class==None):
+			dic_constants = {
+			'minXi': 0.,
+			'maxXi': 200.,
+			'nbBin': 50,
+			'nbBinM': 25,
+			'nb_Sub_Sampling': 80,
+			'size_bin_calcul_s': 1.,
+			'size_bin_calcul_m': 0.02,
+			'correlation': 'q_f',
+			'path_to_txt_file_folder': 'NOTHING',
+			'f1': 'LYA',
+			'f2': 'LYA', 
+			'q1': 'QSO',
+			'q2': 'QSO'
+			}
 
 		### folder wher data are
 		self._path_to_txt_file_folder = dic_constants['path_to_txt_file_folder']
@@ -274,7 +276,7 @@ class Correlation_3D:
 			xi2D[:,:,2][cut] = numpy.sqrt( (tmp_save1[cut]/tmp_save5[cut] - xi2D[:,:,1][cut]*xi2D[:,:,1][cut])/tmp_save6[cut] )
 
 		return xiMu, xiWe, xi1D, xi2D
-	def saveListReal(self, realisation_type, nb_realisation):
+	def save_list_realisation(self, realisation_type, nb_realisation):
 
 		if ( realisation_type=='subsampling' and (nb_realisation != self.nb_Sub_Sampling) ):
 			print "  Correlation_3D::saveListReal::  WARNING:  nb_realisation != self.nb_Sub_Sampling"
@@ -327,12 +329,15 @@ class Correlation_3D:
 		return
 	def set_error_on_covar_matrix(self, realisation_type):
 
-		pathToLoad = self._path_to_txt_file_folder + self._prefix + '_'+ self._middlefix + '_' + realisation_type + '_cov_Mu.npy'
-		self._xiMu[:,:,3] = myTools.convert1DTo2D(numpy.sqrt( numpy.diag(numpy.load(pathToLoad)) ),self._nbBin1D,self._nbBinM)
-		pathToLoad = self._path_to_txt_file_folder + self._prefix + '_'+ self._middlefix + '_' + realisation_type + '_cov_1D.npy'
-		self._xi1D[:,2]   = numpy.sqrt( numpy.diag(numpy.load(pathToLoad)) )
-		pathToLoad = self._path_to_txt_file_folder + self._prefix + '_'+ self._middlefix + '_' + realisation_type + '_cov_2D.npy'
-		self._xi2D[:,:,2] = myTools.convert1DTo2D(numpy.sqrt( numpy.diag(numpy.load(pathToLoad)) ),self._nbBinX2D, self._nbBinY2D)
+		### Mu
+		path = self._path_to_txt_file_folder + self._prefix + '_'+ self._middlefix + '_' + realisation_type + '_cov_Mu.npy'
+		self._xiMu[:,:,3] = myTools.convert1DTo2D(numpy.sqrt( numpy.diag(numpy.load(path)) ),self._nbBin1D,self._nbBinM)
+		### 1D
+		path = self._path_to_txt_file_folder + self._prefix + '_'+ self._middlefix + '_' + realisation_type + '_cov_1D.npy'
+		self._xi1D[:,2]   = numpy.sqrt( numpy.diag(numpy.load(path)) )
+		### 2D
+		path = self._path_to_txt_file_folder + self._prefix + '_'+ self._middlefix + '_' + realisation_type + '_cov_2D.npy'
+		self._xi2D[:,:,2] = myTools.convert1DTo2D(numpy.sqrt( numpy.diag(numpy.load(path)) ),self._nbBinX2D, self._nbBinY2D)
 
 		return
 	def apply_distortion_matrix(self):
@@ -343,13 +348,13 @@ class Correlation_3D:
 		self._xi1D[:,1] = numpy.dot(matrix,self._xi1D[:,1])
 		### 2d
 		path = self._path_to_txt_file_folder + self._prefix + '_distortionMatrix_2D_'+ self._middlefix + '.txt'
-                matrix = numpy.loadtxt(path)
+		matrix = numpy.loadtxt(path)
 		corr = myTools.convert2DTo1D(self._xi2D[:,:,1], self._nbBinX2D, self._nbBinY2D)
 		corr = numpy.dot(matrix,corr)
 		self._xi2D[:,:,1] = myTools.convert1DTo2D(corr, self._nbBinX2D, self._nbBinY2D)
 	
 		return
-	def get_multipol(self):
+	def get_multipol(self, dic=Null):
 
 		### Plot or not
 		plot = False
@@ -445,99 +450,65 @@ class Correlation_3D:
 				plt.show()
 	
 		return result_xi
-	def fit_CAMB(self,mulpol=0):
+	def fit_CAMB(self,dic=None):
 		
 		### Constants
-		startFit   = 20.
-		endFit     = 70.
-		maxForGues = 200.
-		roof = False
-		idx=1
-		if (mulpol==2):
-			idx = 2
-	
+		if (dic==None):
+			dic = {
+				'mulpol_index' : 0,
+				'start_fit'   : 20.,
+				'end_fit'     : 70.,
+				'b' : -1.,
+				'roof' : 0.,
+				'fix_roof_nul' : True
+				'guess_b' : False
+				'min_for_guess' : 20.,
+				'max_for_guess' : 50.,
+			}
+		
 		### Get the data
-		cut = numpy.logical_and( (self._xi1D[:,0]>=startFit),(self._xi1D[:,0]<endFit) )
+		cut = numpy.logical_and( (self._xi1D[:,0]>=dic['start_fit']),(self._xi1D[:,0]<dic['end']) )
 		xxx = self._xi1D[:,0][cut]
 		yyy = self._xi1D[:,1][cut]
 		yer = self._xi1D[:,2][cut]
 	
 		### Get Camb
+		idx=1
+		if (dic['mulpol_index']==2):
+			idx = 2
 		data_camb = numpy.loadtxt(const.pathToCamb__)
 		yyy_Camb  = numpy.interp(xxx,data_camb[1:,0],data_camb[1:,idx])
 	
-		b1b2_init = -0.2 #numpy.mean(yyy[ (xxx<maxForGues) ]/yyy_Camb[ (xxx<maxForGues) ])
-		print '  b1b2_init = ', b1b2_init
-	
-		'''
-		### Show result
-		for i in range(0,3):
-	
-			coef = numpy.power(xxx,i)
-			plt.errorbar(xxx,coef*yyy,yerr=coef*yer,fmt='o')
-	
-			coef = numpy.power(xxx,i)
-			plt.plot(xxx,coef*b1b2_init*yyy_Camb,marker='o')
-			myTools.deal_with_plot(False,False,False)
-			plt.show()
-		'''
+		if (dic['guess_b']):
+			b_init = numpy.mean(yyy[ (xxx<dic['min_for_guess']) ]/yyy_Camb[ (xxx<dic['max_for_guess']) ])
+			print '  b_init = ', b_init
+		else:
+			b_init = dic['b']
 	
 		### Define the chi^{2} for the fit
-		def chi2(b1b2,roof):
-			fit = yyy_Camb*b1b2+roof
+		def chi2(b,roof):
+			fit = yyy_Camb*b+roof
 			return numpy.sum( numpy.power( (yyy-fit)/yer ,2.) )
 	
 		### Init and perform the fit
 		
-		m = Minuit(chi2, b1b2=b1b2_init,error_b1b2=0.1, roof=0.,error_roof=0.1,print_level=-1, errordef=0.01,fix_roof=not roof) 	
+		m = Minuit(chi2, b=b_init,error_b=0.1, roof=dic['roof'],error_roof=0.1,print_level=-1, errordef=0.01,fix_roof=dic['fix_roof_nul'] ) 	
 		m.migrad()
 	
 		### Get result
-		b1b2 = m.values[ 'b1b2' ]
-		roof = m.values[ 'roof' ]
-		print '  b1b2 = ', b1b2
-		print '  roof = ', roof
+		dic['b'] = m.values[ 'b' ]
+		dic['roof = m.values[ 'roof' ]
+		print '  b = ', dic['b']
+		print '  roof = ', dic['roof']
 	
 		### Print chi^2
-		print '  DoF   = ', yyy.size, ' - ', 1
-		print '  chi^2 = ', numpy.sum( numpy.power( (yyy - (yyy_Camb*b1b2+roof) )/yer ,2.) )
-	
-		### Get the data
-		xxx = self._xi1D[:,0]
-		yyy = self._xi1D[:,1]
-		yer = self._xi1D[:,2]
-	
-		### Get the smooth CAMB
-		cut = (data_camb[1:,0] <= numpy.amax(xxx)*1.1)
-		size = cut[cut].size
-		result_1D_camb = numpy.zeros( shape=(size,3) )
-		result_1D_camb[:,0] = data_camb[1:,0][cut]
-		result_1D_camb[:,1] = b1b2*data_camb[1:,idx][cut]+roof
-		result_1D_camb[:,2] = 0.0000000001
-	
-		### Show result
-		for i in range(0,3):
-
-			coef = numpy.power(xxx,i)
-			plt.errorbar(xxx,coef*yyy,yerr=coef*yer,fmt='o')
-	
-			coef = numpy.power(result_1D_camb[:,0],i)
-			plt.plot(result_1D_camb[:,0],coef*result_1D_camb[:,1],color='red')
-	
-			if (i==0):
-				plt.ylabel(r'$\xi^{qq} (|s|)$', fontsize=40)
-			if (i==1):
-				plt.ylabel(r'$|s|^{1}.\xi^{qq} (|s|) \, [h^{-1}.Mpc]$', fontsize=40)
-			if (i==2):
-				plt.ylabel(r'$|s|^{2}.\xi^{qq} (|s|) \, [(h^{-1}.Mpc)^{2}]$', fontsize=40)
-			
-			plt.title(r'', fontsize=40)
-			plt.xlabel(r'$|s| \, [h^{-1}.Mpc]$', fontsize=40)
-			plt.xlim([ numpy.amin(xxx)-10., numpy.amax(xxx)+10. ])
-			myTools.deal_with_plot(False,False,False)
-			plt.show()
+		if (dic['fix_roof_nul']):
+			print '  DoF   = ', yyy.size, ' - 1'
+		else:
+			print '  DoF   = ', yyy.size, ' - 2'
+		print '  chi^{2} = ', numpy.sum( numpy.power( (yyy - (yyy_Camb*dic['b']+dic['roof']) )/yer ,2.) )
 		
-		return b1b2
+		return dic
 	def plot_1d(self, x_power=0):
 
 		xxx = self._xi1D[:,0]
@@ -692,6 +663,60 @@ class Correlation_3D:
 		plt.show()
 		
 		return
+	def plot_CAMB(self, dic=None):
+		
+		if (dic==None):
+			dic = {
+				'mulpol_index' : 0,
+				'start_fit'   : 20.,
+				'end_fit'     : 70.,
+				'b' : -1.,
+				'roof' : 0.,
+				'fix_roof_nul' : True
+				'guess_b' : False
+				'min_for_guess' : 20.,
+				'max_for_guess' : 50.,
+			}
+
+		### Get the data
+		xxx = self._xi1D[:,0]
+		yyy = self._xi1D[:,1]
+		yer = self._xi1D[:,2]
+	
+		### Get the smooth CAMB
+		idx=1
+		if (dic['mulpol_index']==2):
+			idx = 2
+		data_camb = numpy.loadtxt(const.pathToCamb__)
+		yyy_Camb  = numpy.interp(xxx,data_camb[1:,0],data_camb[1:,idx])
+		cut = (data_camb[1:,0] <= numpy.amax(xxx)*1.1)
+		size = cut[cut].size
+		result_1D_camb = numpy.zeros( shape=(size,3) )
+		result_1D_camb[:,0] = data_camb[1:,0][cut]
+		result_1D_camb[:,1] = dic['b']*data_camb[1:,idx][cut]+dic['roof']
+		result_1D_camb[:,2] = 0.0000000001
+	
+		### Show result
+		for i in range(0,3):
+
+			coef = numpy.power(xxx,i)
+			plt.errorbar(xxx,coef*yyy,yerr=coef*yer,fmt='o')
+	
+			coef = numpy.power(result_1D_camb[:,0],i)
+			plt.plot(result_1D_camb[:,0],coef*result_1D_camb[:,1],color='red')
+	
+			if (i==0):
+				plt.ylabel(r'$'+self._label+' (|s|)$', fontsize=40)
+			if (i==1):
+				plt.ylabel(r'$|s|^{1}.'+self._label+' (|s|) \, [h^{-1}.Mpc]$', fontsize=40)
+			if (i==2):
+				plt.ylabel(r'$|s|^{2}.'+self._label+' (|s|) \, [(h^{-1}.Mpc)^{2}]$', fontsize=40)
+			
+			plt.xlabel(r'$|s| \, [h^{-1}.Mpc]$', fontsize=40)
+			plt.xlim([ numpy.amin(xxx)-10., numpy.amax(xxx)+10. ])
+			myTools.deal_with_plot(False,False,False)
+			plt.show()
+		return
 	def plot_cov_cor_matrix(self, realisation_type, dim='1D'):
 
 		pathToLoad = self._path_to_txt_file_folder + self._prefix + '_'+ self._middlefix + '_' + realisation_type + '_cov_'+dim+'.npy'
@@ -702,13 +727,13 @@ class Correlation_3D:
 		myTools.plot2D(cor)
 
 		return
-        def plot_distortion_matrix(self):
-
-                path = self._path_to_txt_file_folder + self._prefix + '_distortionMatrix_1D_'+ self._middlefix + '.txt'
-                matrix = numpy.loadtxt(path)
-                myTools.plot2D(matrix)
-
-                return
+	def plot_distortion_matrix(self, dim='1D'):
+	
+		path = self._path_to_txt_file_folder + self._prefix + '_distortionMatrix_'+dim+'_'+ self._middlefix + '.txt'
+		matrix = numpy.loadtxt(path)
+		myTools.plot2D(matrix)
+		
+		return
 	def plot_map_sub_sampling(self):
 	
 		pathToLoad = self._path_to_txt_file_folder + self._prefix + '_map_'+ self._middlefix + '.txt'
@@ -745,7 +770,7 @@ class Correlation_3D:
 
 
 path_to_txt_file_folder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
-dic_constants = {
+dic_class = {
 	'minXi': 0.,
 	'maxXi': 200.,
 	'nbBin': 50,
@@ -759,13 +784,22 @@ dic_constants = {
 	'f2': 'CIV', 
 	'q1': 'QSO',
 	'q2': 'QSO'}
+dic_CAMB = {
+	'mulpol_index' : 0,
+	'start_fit'   : 20.,
+	'end_fit'     : 70.,
+	'b' : -1.,
+	'roof' : 0.,
+	'fix_roof_nul' : True
+	'guess_b' : False
+	'min_for_guess' : 20.,
+	'max_for_guess' : 50.,
+}
 
+corr = Correlation_3D(dic_class)
 
-corr = Correlation_3D(dic_constants)
-#corr.plot_distortion_matrix()
-#corr.apply_distortion_matrix()
-#corr.set_error_on_covar_matrix('subsampling')
-#corr.fit_CAMB()
+dic_CAMB = corr.fit_CAMB(dic_CAMB)
+corr.plot_CAMB(dic_CAMB)
 corr.plot_1d(0)
 corr.plot_1d(1)
 corr.plot_1d(2)
@@ -780,11 +814,14 @@ corr.plot_Mu(1)
 corr.plot_Mu(2)
 
 corr.plot_map_sub_sampling()
-'''
-corr.saveListReal('subsampling', 80)		
+corr.plot_distortion_matrix()
+corr.apply_distortion_matrix()
+
+
+corr.save_list_realisation('subsampling', 80)		
 corr.plot_cov_cor_matrix('subsampling','1D')
 corr.set_error_on_covar_matrix('subsampling')
-'''
+
 
 
 
