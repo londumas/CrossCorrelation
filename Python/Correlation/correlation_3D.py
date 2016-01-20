@@ -448,8 +448,8 @@ class Correlation_3D:
 	def fit_CAMB(self,mulpol=0):
 		
 		### Constants
-		startFit   = 40.
-		endFit     = 200.
+		startFit   = 20.
+		endFit     = 70.
 		maxForGues = 200.
 		roof = False
 		idx=1
@@ -755,20 +755,20 @@ dic_constants = {
 	'size_bin_calcul_m': 0.02,
 	'correlation': 'q_f',
 	'path_to_txt_file_folder': path_to_txt_file_folder,
-	'f1': 'LYA',
-	'f2': 'LYA', 
+	'f1': 'SIIV',
+	'f2': 'CIV', 
 	'q1': 'QSO',
 	'q2': 'QSO'}
 
 
 corr = Correlation_3D(dic_constants)
 #corr.plot_distortion_matrix()
-corr.apply_distortion_matrix()
+#corr.apply_distortion_matrix()
 #corr.set_error_on_covar_matrix('subsampling')
 #corr.fit_CAMB()
-#corr.plot_1d(0)
-#corr.plot_1d(1)
-#corr.plot_1d(2)
+corr.plot_1d(0)
+corr.plot_1d(1)
+corr.plot_1d(2)
 corr.plot_2d(0)
 corr.plot_2d(1)
 corr.plot_2d(2)
