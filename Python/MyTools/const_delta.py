@@ -7,10 +7,10 @@ import numpy
 import cosmolopy.distance as cosmology
 
 #forest__ = 'LYB'
-#forest__ = 'LYA'
+forest__ = 'LYA'
 #forest__ = 'SIIV'
 #forest__ = 'CIV'
-forest__ = 'MGII'
+#forest__ = 'MGII'
 
 takeNormaZone__ = False
 

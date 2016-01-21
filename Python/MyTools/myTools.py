@@ -625,7 +625,17 @@ def plotOnSpectra_spec(plate,mjd,fiber,z=0.):
 
 	### Get spectrum
 	cat = pyfits.open(pathToSpec + str(plate) + "/spec-" + str(plate) + "-" + str(mjd) + "-" + str(fiber).zfill(4) + ".fits", memmap=True)[1].data
+
+	### Get dispertion \Delta \log(\lambda)
+	difLOGLOBS = numpy.array( [ cat['LOGLAM'][i+1]-cat['LOGLAM'][i] for i in numpy.arange(cat['LOGLAM'].size-1) if ( cat['LOGLAM'][i]!=0. and cat['LOGLAM'][i+1]!=0.) ] )
+	print difLOGLOBS
+
+	plt.hist(difLOGLOBS)
+	plt.show()
+
 	cat['LOGLAM'] = numpy.power(10.,cat['LOGLAM'])/(1.+z)
+
+	print cat['LOGLAM'][ numpy.logical_and( (cat['LOGLAM']>=const_delta.lambdaRFTemplateMin__) , (cat['LOGLAM']<const_delta.lambdaRFTemplateMax__) ) ].size
 
 	### Plot
 	plt.plot( cat['LOGLAM'], cat['IVAR'],label='ivar', color='red')

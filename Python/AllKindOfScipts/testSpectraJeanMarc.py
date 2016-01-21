@@ -16,7 +16,7 @@ fluxForHist = []
 
 ### File Jean-Marc, there are 47 spectra
 cat = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation/TESTS/spectra-780-0.fits')
-
+#'/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/spectra-expander.fits
 ### Print header, data, ...
 print cat[0].header
 print cat[0].data

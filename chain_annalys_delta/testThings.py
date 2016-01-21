@@ -244,16 +244,17 @@ def meanDelta():
 		lambdaRFMin__      = 1570.
 		lambdaRFMax__      = 2790.
 
-	path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest+'/FitsFile_DR12_Guy/DR12_primery_with_Latest_CIV_Forest/DR12_primery.fits'
+	path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest+'/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits'
 	#path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_reObs/DR12_reObs.fits'
 	#path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits'
 
-	cat = pyfits.open(path, memmap=True)[1].data
+	cat = pyfits.open(path, memmap=True)[1].data[:1000]
 
 	cat = cat[ numpy.logical_and( numpy.logical_and(  numpy.logical_and( cat['ALPHA_2']!=alphaStart__, cat['BETA_2']!=0.),  numpy.abs(cat['ALPHA_2'])<=39.5 ), numpy.abs(cat['BETA_2'])<=0.25 ) ]
 	#cat = cat[ numpy.logical_or( numpy.logical_or(  numpy.logical_or( cat['ALPHA_2']==alphaStart__, cat['BETA_2']==0.),  numpy.abs(cat['ALPHA_2'])>=39.5 ), numpy.abs(cat['BETA_2'])>=0.25 ) ]
 	print cat.size
 	print cat[ (cat['BETA_1']==-600.) ].size
+
 
 
 	print '  nb |alpha| > 39.5  = ', cat[ (cat['ALPHA_2']>39.5) ].size
@@ -293,7 +294,7 @@ def meanDelta():
 	cat['DELTA_WEIGHT'][ (cat['DELTA_WEIGHT']>0.) ] = 1.
 	meanSNR = numpy.average( cat['NORM_FLUX']*numpy.sqrt(cat['NORM_FLUX_IVAR']), weights=cat['DELTA_WEIGHT'],axis=1)
 
-
+	'''
 	### < \delta >
 	plt.hist(meanDelta,bins=1000)
 	plt.xlabel(r'$< \delta >$', fontsize=40)
@@ -389,7 +390,7 @@ def meanDelta():
 	plt.ylabel(r'$|< \delta >|$', fontsize=40)
 	myTools.deal_with_plot(False,False,True)
 	plt.show()
-
+	
 	integralNumber = 100.*numpy.asarray( [ meanSNR[ (meanSNR<0.01*i) ].size for i in numpy.arange(0.,10000.) ] )/meanSNR.size
 	
 	plt.errorbar(0.01*numpy.arange(0.,10000.),integralNumber,fmt='o')
@@ -397,14 +398,14 @@ def meanDelta():
 	plt.ylabel(r'$p \, (\%)$', fontsize=40)
 	myTools.deal_with_plot(True,True,True)
 	plt.show()
+	'''
 	
-	
-	#cat = cat[ meanSNR<0.5 ]
-	#meanDelta = meanDelta[ meanSNR<0.5 ]
-	#meanSNR = meanSNR[ meanSNR<0.5 ]
-	cat = cat[ numpy.abs(meanDelta)>0.5 ]
-	meanDelta = meanDelta[ numpy.abs(meanDelta)>0.5 ]
-	meanSNR = meanSNR[ numpy.abs(meanDelta)>0.5 ]
+	cat = cat[ meanSNR>20. ]
+	meanDelta = meanDelta[ meanSNR>20. ]
+	meanSNR = meanSNR[ meanSNR>20. ]
+	#cat = cat[ numpy.abs(meanDelta)>0.5 ]
+	#meanDelta = meanDelta[ numpy.abs(meanDelta)>0.5 ]
+	#meanSNR = meanSNR[ numpy.abs(meanDelta)>0.5 ]
 	#meanDelta = meanDelta[cat['Z_VI']>4 ]
 	#meanSNR = meanSNR[ cat['Z_VI']>4 ]
 	#cat = cat[ cat['Z_VI']>4 ]

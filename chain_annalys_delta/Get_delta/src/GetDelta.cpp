@@ -41,7 +41,9 @@
 
 //// Constants
 std::string pathToTxt__    = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/";
-std::string pathToDLACat__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/DLA_all.fits";
+std::string pathToPDF__    = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/";
+const std::string pathToDLACat__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/DLA_all.fits";
+const std::string pathToMockJMC__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation/";
 const unsigned int nbPixelTemplate__ = int(lambdaRFMax__-lambdaRFMin__)+6;
 const unsigned int nbBinlambdaObs__  = int(lambdaObsMax__-lambdaObsMin__);
 const double onePlusZ0__ = 1.+z0__;
@@ -76,23 +78,27 @@ const bool setDLA__               = false;
 const bool cutNotFittedSpectra__  = true;
 const bool putReobsTogether__     = false;
 const bool mocksColab__           = false;
-const bool mockJMC__              = false;
+const bool mockJMC__              = true;
 
 GetDelta::GetDelta(int argc, char** argv) {
 
 	std::cout << std::scientific;
-	std::cout.precision(15);
+	std::cout.precision(14);
 
 	if (!mocksColab__ && !mockJMC__) {
 		pathForest__   = "/home/gpfs/manip/mnt/bao/hdumasde/Data/";
 		pathForest__  += forest__;
-		pathForest__  += "/FitsFile_DR12_Guy/DR12_primery_with_Latest_CIV_Forest/DR12_primery.fits";
+		pathForest__  += "/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits";
 //		pathForest__  += "/FitsFile_DR12_Guy/DR12_reObs/DR12_reObs.fits";
 //		pathForest__  += "/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits";
 
 	}
 	else {
 	
+		if (argc<3) {
+			std::cout << "  GetDelta::GetDelta:  ERROR:  not enought argument" << std::endl;
+			return; 
+		}
 		const std::string box = argv[1];
 		const std::string sim = argv[2];
 
@@ -113,13 +119,17 @@ GetDelta::GetDelta(int argc, char** argv) {
 			pathMoreForHist__ += "_MocksColab";
 		}
 		else if (mockJMC__) {
-			std::cout << "  Mocks Jean-Marc : box = " << box << " ,  simulation = " << sim << std::endl;
+			std::cout << "\n\n  Mocks Jean-Marc : box = " << box << " ,  simulation = " << sim << std::endl;
 
-			pathForest__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Box_00";
+			pathForest__ = pathToMockJMC__;
+			pathForest__ += "Box_00";
 			pathForest__ += box;
 			pathForest__ += "/Simu_00";
 			pathForest__ += sim;
-			pathForest__ += "/TESTS/Data/delta.fits";
+			pathToTxt__   = pathForest__;
+			pathForest__ += "/Data/delta.fits";
+
+			pathToTxt__  += "/Run/";
 		}
 	}
 
@@ -279,7 +289,7 @@ void GetDelta::defineHistos() {
 	hFluxPDF__->SetYTitle("z");
 	hFluxPDF__->SetZTitle("pdf");
 	hFluxPDF__->SetTitle("Flux PDF: method 2");
-	std::string pathToPDF = pathToTxt__;
+	std::string pathToPDF = pathToPDF__;
 	pathToPDF += "FluxPDF_mocksJMC.txt";
 	ifstream filePDF(pathToPDF.c_str());
 
@@ -476,7 +486,7 @@ void GetDelta::getHisto(unsigned int loopIdx) {
 	tmp_pathToSave += ".txt";
 	fFile.open(tmp_pathToSave.c_str());
 	fFile << std::scientific;
-	fFile.precision(17);
+	fFile.precision(14);
 
 	//// Template (m2)
 	for (unsigned int i=0; i<nbPixelTemplate__; i++) {
@@ -503,7 +513,7 @@ void GetDelta::getHisto(unsigned int loopIdx) {
 	tmp_pathToSave += ".txt";
 	fFile.open(tmp_pathToSave.c_str());
 	fFile << std::scientific;
-	fFile.precision(17);
+	fFile.precision(14);
 
 	unsigned int loopIdxForHist1 = loopIdx-1;
 	if (loopIdx==0) loopIdxForHist1 = nbLoop__;
@@ -538,7 +548,7 @@ void GetDelta::getHisto(unsigned int loopIdx) {
 	tmp_pathToSave += ".txt";
 	fFile.open(tmp_pathToSave.c_str());
 	fFile << std::scientific;
-	fFile.precision(17);
+	fFile.precision(14);
 
 	for (unsigned int i=0; i<nbPixelTemplate__; i++) {
 		fFile << i;
@@ -557,7 +567,7 @@ void GetDelta::getHisto(unsigned int loopIdx) {
 	tmp_pathToSave += ".txt";
 	fFile.open(tmp_pathToSave.c_str());
 	fFile << std::scientific;
-	fFile.precision(17);
+	fFile.precision(14);
 
 	unsigned int loopIdxForHist = loopIdx-1;
 	if (loopIdx==0) loopIdxForHist = nbLoop__;
@@ -669,7 +679,7 @@ void GetDelta::getHisto(unsigned int loopIdx) {
 	tmp_pathToSave += ".txt";
 	fFile.open(tmp_pathToSave.c_str());
 	fFile << std::scientific;
-	fFile.precision(17);
+	fFile.precision(14);
 
 	for (unsigned int i=0; i<nbBinlambdaObs__; i++) {
 		fFile << i;
@@ -687,7 +697,7 @@ void GetDelta::getHisto(unsigned int loopIdx) {
 	tmp_pathToSave += ".txt";
 	fFile1.open(tmp_pathToSave.c_str());
 	fFile1 << std::scientific;
-	fFile1.precision(17);
+	fFile1.precision(14);
 	tmp_pathToSave  = pathToTxt__;
 	tmp_pathToSave += "sigma2LSS_";
 	tmp_pathToSave += forest__;
@@ -695,7 +705,7 @@ void GetDelta::getHisto(unsigned int loopIdx) {
 	tmp_pathToSave += ".txt";
 	fFile2.open(tmp_pathToSave.c_str());
 	fFile2 << std::scientific;
-	fFile2.precision(17);
+	fFile2.precision(14);
 
 
 
@@ -943,7 +953,7 @@ void GetDelta::fitForests(unsigned int begin, unsigned int end) {
 	pathToSave += ".txt";
 	fFile.open(pathToSave.c_str());
 	fFile << std::scientific;
-	fFile.precision(15);
+	fFile.precision(14);
 
 	std::cout << "  pathToSave = " << pathToSave << std::endl;
 
@@ -1101,6 +1111,7 @@ void GetDelta::loadDataForest(std::string fitsnameSpec, unsigned int start, unsi
 		unsigned int tmp_nb = 0;
 
 		for (unsigned int j=0; j<nbBinRFMax__; j++) {
+
 			if (NORM_FLUX_IVAR[j]>0. && FLUX_DLA[j]>=C_DLACORR && LAMBDA_OBS[j]>=lambdaObsMin__ && LAMBDA_OBS[j]<lambdaObsMax__ && DELTA_WEIGHT[j]>0.) {
 
 				//// Remove veto lines

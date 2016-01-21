@@ -15,7 +15,8 @@ from const_delta import *
 
 chunckNb = 1
 simulNb  = 1
-
+mockNumber = ''
+isMock_ = True
 forest__ = 'LYA'
 if (forest__ == 'LYB'):
 	lambdaRFMin__      = 800.
@@ -42,7 +43,9 @@ path = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/"
 ### Delta+1 vs. lambda_Obs
 for i in range (0,chunckNb):
 	for j in range(0,simulNb):
-		mockNumber = '' #'_'+str(i)+'_'+str(j)
+		if (isMock_): 
+			path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation/Box_00'+str(i)+'/Simu_00'+str(j)+'/Run/'
+			mockNumber = '_'+str(i)+'_'+str(j)
 
 		data = numpy.loadtxt('/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_histos/hDeltaVsLambdaObs_LYA.txt')
                 plt.errorbar(data[:,0]+3600.5, data[:,1], label=r'$DR12$')
@@ -93,7 +96,9 @@ plt.show()
 ### Template (m2)
 for i in range (0,chunckNb):
 	for j in range(0,simulNb):
-		mockNumber = '' #'_'+str(i)+'_'+str(j)
+		if (isMock_): 
+			path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation/Box_00'+str(i)+'/Simu_00'+str(j)+'/Run/'
+			mockNumber = '_'+str(i)+'_'+str(j)
 		data = numpy.loadtxt(path + 'template_'+forest__+mockNumber+'.txt')
 		plt.errorbar(data[:,0], data[:,1], fmt='o', label=r'$'+str(i)+' \, '+str(j)+'$')
 		plt.plot([lambdaRFMin__,lambdaRFMin__],[numpy.min(data[:,1]),numpy.max(data[:,1])],color='red')
@@ -111,7 +116,9 @@ plt.show()
 ### Template (m2)
 for i in range (0,chunckNb):
 	for j in range(0,simulNb):
-		mockNumber = '' #'_'+str(i)+'_'+str(j)
+		if (isMock_): 
+			path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation/Box_00'+str(i)+'/Simu_00'+str(j)+'/Run/'
+			mockNumber = '_'+str(i)+'_'+str(j)
 		data = numpy.loadtxt(path + 'template_'+forest__+mockNumber+'.txt')
 		plt.errorbar(data[:,0], data[:,1]-saveYYY0, fmt='o', label=r'$'+str(i)+' \, '+str(j)+'$')
 		plt.plot([lambdaRFMin__,lambdaRFMin__],[numpy.min(data[:,1]),numpy.max(data[:,1])],color='red')
@@ -126,7 +133,9 @@ plt.show()
 ### Delta vs. lambda_RF
 for i in range (0,chunckNb):
 	for j in range(0,simulNb):
-		mockNumber = '' #'_'+str(i)+'_'+str(j)
+		if(isMock_): 
+			path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation/Box_00'+str(i)+'/Simu_00'+str(j)+'/Run/'
+			mockNumber = '_'+str(i)+'_'+str(j)
 		data = numpy.loadtxt(path+'deltaVSLambdaRF_'+forest__+mockNumber+'.txt')
 		plt.errorbar(data[:,0], data[:,1], fmt='o', label=r'$'+str(i)+' \, '+str(j)+'$')
 		plt.plot([lambdaRFMin__,lambdaRFMin__],[numpy.min(data[:,1]),numpy.max(data[:,1])],color='red')
@@ -137,7 +146,7 @@ plt.ylabel(r'$< \delta >$', fontsize=40)
 myTools.deal_with_plot(False,False,False)
 plt.show()
 
-
+'''
 ### Delta+1 vs. lambda_RF
 data = numpy.loadtxt(path+'hDeltaVsLambdaRF_'+forest__+'.txt')
 plt.errorbar(lambdaRFMin__-3.+data[:,0], data[:,1], fmt='o')
@@ -148,12 +157,14 @@ plt.xlabel(r'$\lambda_{R.F.} \, [\AA]$', fontsize=40)
 plt.ylabel(r'$< \delta+1 >$', fontsize=40)
 myTools.deal_with_plot(False,False,True)
 plt.show()
-
+'''
 
 ### Delta vs. lambda_Obs
 for i in range (0,chunckNb):
 	for j in range(0,simulNb):
-		mockNumber = '' #'_'+str(i)+'_'+str(j)
+		if(isMock_): 
+			path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation/Box_00'+str(i)+'/Simu_00'+str(j)+'/Run/'
+			mockNumber = '_'+str(i)+'_'+str(j)
 		data = numpy.loadtxt(path+'deltaVSLambdaObs_'+forest__+mockNumber+'.txt')
 		plt.errorbar(data[:,0], data[:,1], fmt='o', label=r'$'+str(i)+' \, '+str(j)+'$')
 		print numpy.amin( data[:,0] )
@@ -179,7 +190,9 @@ plt.show()
 ### Delta+1 vs. lambda_Obs
 for i in range (0,chunckNb):
 	for j in range(0,simulNb):
-		mockNumber = '' #'_'+str(i)+'_'+str(j)
+		if(isMock_): 
+			path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation/Box_00'+str(i)+'/Simu_00'+str(j)+'/Run/'
+			mockNumber = '_'+str(i)+'_'+str(j)
 		data = numpy.loadtxt(path+'hDeltaVsLambdaObs_'+forest__+mockNumber+'.txt')
 		plt.errorbar(data[:,0]+3600., data[:,1], marker='o', label=r'$'+str(i)+' \, '+str(j)+'$')
 
@@ -204,7 +217,9 @@ plt.show()
 ### Eta
 for i in range (0,chunckNb):
 	for j in range(0,simulNb):
-		mockNumber = '' #'_'+str(i)+'_'+str(j)
+		if(isMock_): 
+			path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation/Box_00'+str(i)+'/Simu_00'+str(j)+'/Run/'
+			mockNumber = '_'+str(i)+'_'+str(j)
 		data = numpy.loadtxt(path+'eta_'+forest__+mockNumber+'.txt')
 		plt.errorbar(data[:,0], data[:,1], fmt='o', label=r'$'+str(i)+' \, '+str(j)+'$')
 
@@ -221,7 +236,9 @@ ax = fig.add_subplot(111)
 
 for i in range (0,chunckNb):
 	for j in range(0,simulNb):
-		mockNumber = '' #'_'+str(i)+'_'+str(j)
+		if(isMock_): 
+			path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation/Box_00'+str(i)+'/Simu_00'+str(j)+'/Run/'
+			mockNumber = '_'+str(i)+'_'+str(j)
 		data = numpy.loadtxt(path+'sigma2LSS_'+forest__+mockNumber+'.txt')
 		ax.errorbar(data[:,0], data[:,1],yerr=data[:,2], fmt='o', label=r'$Data$')
 

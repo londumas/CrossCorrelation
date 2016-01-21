@@ -92,14 +92,16 @@ const unsigned int nbBinlambdaObs__  = int(lambdaObsMax__-lambdaObsMin__);
 double distMinPixel__ = 0.;
 double distMinPixelDelta2__ = 0.;
 unsigned int idxCommand_[6] = {0};
+const std::string pathToMockJMC__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation/";
+std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/";
 
 ///// Flags for Jean-Marc's simulations
 const bool mocks          = false;
-const bool mocksNoNoiseNoCont = false;
-const bool mockJMC__          = false;
+const bool mockJMC__          = true;
 const bool mockBox__          = false;
+const bool mocksNoNoiseNoCont = false;
 const double randomPositionOfQSOInCell__ = false;
-const double randomPositionOfQSOInCellNotBeforeCorrelation__ = false;
+const double randomPositionOfQSOInCellNotBeforeCorrelation__ = true;
 //// Flags for covariance matrix estimation
 const bool shuffleQSO     = false;
 const bool shuffleForest  = false;
@@ -111,7 +113,6 @@ const bool doVetoLines__ = true;
 const bool nicolasEstimator__ = false;
 
 
-std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/";
 
 Correlation::Correlation(int argc, char **argv) {
 
@@ -166,27 +167,24 @@ Correlation::Correlation(int argc, char **argv) {
 		}
 	}
 	else if (mockJMC__) {
-		pathForest__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Box_00";
+
+		QSO__     = "QSO";
+
+		pathForest__ = pathToMockJMC__;
+		pathForest__ += "Box_00";
 		pathForest__ += argv[5];
 		pathForest__ += "/Simu_00";
 		pathForest__ += argv[6];
+		pathQ1__      = pathForest__;
+		pathToSave__  = pathForest__;
+
 		if (!mocksNoNoiseNoCont) pathForest__ += "/Data/delta.fits";
 		else pathForest__ += "/Data/delta_noNoise_noCont.fits";
 		
-		QSO__     = "QSO";
-		pathQ1__  = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Box_00";
-		pathQ1__ += argv[5];
-		pathQ1__ += "/Simu_00";
-		pathQ1__ += argv[6];
 		pathQ1__ += "/Data/QSO_withRSD.fits";
 		
-		
-		pathToSave__  = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Box_00";
-		pathToSave__ += argv[5];
-		pathToSave__ += "/Simu_00";
-		pathToSave__ += argv[6];
-		if (!randomPositionOfQSOInCell__ && !randomPositionOfQSOInCellNotBeforeCorrelation__) pathToSave__ += "/Results_NicolasDistortion/";
-		else pathToSave__ += "/Results_NicolasDistortion/";  //_RandomPosInCell
+		if (!nicolasEstimator__) pathToSave__ += "/Results/";
+		else pathToSave__ += "/Results_NicolasDistortion/";
 		
 	}
 
@@ -4167,28 +4165,32 @@ void Correlation::xi_delta_QSO_MockJMc(bool doBootstraps/*=False*/, unsigned int
 
 	
 	if (!doBootstraps && !shuffleForest && !shuffleQSO && !randomQSO) {
+
+		std::vector< std::vector< double > > forests;
+		std::vector< double > tmp_forests_id;
+		std::vector< double > tmp_forests_pa;
 		
+		for (unsigned int i=0; i<nbForest_; i++) {
+			tmp_forests_id.push_back( v_idx__[i] );
+			tmp_forests_pa.push_back( a_nbPairs[i] );
+		}
+		forests.push_back(tmp_forests_id);
+		forests.push_back(v_ra__);
+		forests.push_back(v_de__);
+		forests.push_back(tmp_forests_pa);
+		
+
+		/// find the index of each forest among the C_NBSUBSAMPLES sub-samples
+		LymanForest* lymanForestObject = new LymanForest(forests, C_NBSUBSAMPLES, C_RA_SEPERATION_NGC_SGC, mockJMC__);
 		pathToSave = pathToSave__;
-		pathToSave += "xi_delta_QSO_nbPairsForest_";
+		pathToSave += "xi_delta_QSO_map_";
 		pathToSave += forest__;
 		pathToSave += "_";
 		pathToSave += QSO__;
 		pathToSave += ".txt";
-		std::cout << "\n  " << pathToSave << std::endl;
-		fFile.open(pathToSave.c_str());
-		fFile << std::scientific;
-		fFile.precision(17);
-
-		for (unsigned int i=0; i<nbForest_; i++) {
-
-			fFile << v_idx__[i];
-			fFile << " " << v_ra__[i];
-			fFile << " " << v_de__[i];
-			fFile << " " << a_nbPairs[i];
-			fFile << std::endl;
-		}
+		lymanForestObject->SaveRegionMap(pathToSave);
+		delete lymanForestObject;
 	}
-	fFile.close();
 
 	return;
 }

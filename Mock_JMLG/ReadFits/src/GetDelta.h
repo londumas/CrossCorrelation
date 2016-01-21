@@ -29,14 +29,12 @@ const unsigned int nbPixelsTemplate__ = 645;
 const double lambdaRFMin__ = 1040.;
 const double lambdaRFMax__ = 1200.;
 const double lambdaRFLine__  = 1215.67;
-const double lambdaRFTemplateMin__ = lambdaRFMin__-3.;
-const double lambdaRFTemplateMax__ = lambdaRFMax__+3.;
 const double lambdaRFNormaMin__ = 1275.;
 const double lambdaRFNormaMax__ = 1295.;
 const double lambdaObsMin__ = 3600.;
 const double lambdaObsMax__ = 7235.;
-const unsigned int nbBinlambdaObs__ = 3635;
 const double c_speedOfLight__ = 2.998e5;
+
 
 const double minRedshift__ = 1.96;
 const double maxRedshift__ = 3.9;
@@ -71,7 +69,8 @@ class GetDelta
 
 		double ratioForestToQSO__;
 
-		std::string pathToData__;
+		std::string pathToDataQSO__;
+		std::string pathToDataForest__;
 		std::string pathToSave__;
 		bool noCont__;
 		bool noNoise__;

@@ -44,11 +44,15 @@ class Correlation_3D:
 			'f1': 'LYA',
 			'f2': 'LYA', 
 			'q1': 'QSO',
-			'q2': 'QSO'
+			'q2': 'QSO',
+			'name' : 'Data'
 			}
 
 		### folder wher data are
 		self._path_to_txt_file_folder = dic['path_to_txt_file_folder']
+
+		### Name of the correlation
+		self._name = dic['name']
 
 		### forest and QSO name
 		self._f1 = dic['f1']
@@ -118,12 +122,12 @@ class Correlation_3D:
 		self.nb_Sub_Sampling = int(dic['nb_Sub_Sampling'])
 
 		### Correlations data
-		self._xiMu, self._xiWe, self._xi1D, self._xi2D = self.fill_data(path1D, path2D)
+		self._xiMu, self._xiWe, self._xi1D, self._xi2D = self.fill_data(path1D, path2D,0,True)
 		self._xiMul = self.get_multipol()
 		
 		return
 	
-	def fill_data(self, path1D, path2D, selection=0):
+	def fill_data(self, path1D, path2D, selection=0, init=False):
 		'''
 	
 		selection:
@@ -274,6 +278,9 @@ class Correlation_3D:
 			xi2D[:,:,0][cut] = numpy.sqrt( (tmp_save2[cut]/tmp_save5[cut])**2. + (tmp_save3[cut]/tmp_save5[cut])**2. )
 			xi2D[:,:,1][cut] = tmp_save0[cut] / tmp_save5[cut]
 			xi2D[:,:,2][cut] = numpy.sqrt( (tmp_save1[cut]/tmp_save5[cut] - xi2D[:,:,1][cut]*xi2D[:,:,1][cut])/tmp_save6[cut] )
+
+			if (init):
+				self._meanZ = numpy.sum(data[:,4])/numpy.sum(data[:,5])
 
 		return xiMu, xiWe, xi1D, xi2D
 	def save_list_realisation(self, realisation_type, nb_realisation):
@@ -509,7 +516,7 @@ class Correlation_3D:
 		print '  chi^{2} = ', numpy.sum( numpy.power( (yyy - (yyy_Camb*dic['b']+dic['roof']) )/yer ,2.) )
 		
 		return dic
-	def plot_1d(self, x_power=0):
+	def plot_1d(self, x_power=0, other=[]):
 
 		xxx = self._xi1D[:,0]
 		yyy = self._xi1D[:,1]
@@ -523,7 +530,21 @@ class Correlation_3D:
 		yyy = yyy[ cut ]
 		yer = yer[ cut ]
 		coef = numpy.power(xxx,x_power)
-		plt.errorbar(xxx, coef*yyy, yerr=coef*yer, fmt='o')
+		plt.errorbar(xxx, coef*yyy, yerr=coef*yer, fmt='o', label=self._name)
+
+		for el in other:
+			TMP_xxx = el._xi1D[:,0]
+			TMP_yyy = el._xi1D[:,1]
+			TMP_yer = el._xi1D[:,2]
+		
+			TMP_cut = (TMP_yer>0.)
+			if (TMP_xxx[cut].size==0):
+				return
+			TMP_xxx = TMP_xxx[ TMP_cut ]
+			TMP_yyy = TMP_yyy[ TMP_cut ]
+			TMP_yer = TMP_yer[ TMP_cut ]
+			TMP_coef = numpy.power(TMP_xxx,x_power)
+			plt.errorbar(TMP_xxx, TMP_coef*TMP_yyy, yerr=TMP_coef*TMP_yer, fmt='o', label=el._name)
 		
 		if (x_power==0):
 			plt.ylabel(r'$'+self._label+' (|s|)$', fontsize=40)
@@ -535,7 +556,7 @@ class Correlation_3D:
 		plt.title(r'$'+self._title+'$', fontsize=40)
 		plt.xlabel(r'$|s| \, [h^{-1}.Mpc]$', fontsize=40)
 		plt.xlim([ numpy.amin(xxx)-10., numpy.amax(xxx)+10. ])
-		myTools.deal_with_plot(False,False,False)
+		myTools.deal_with_plot(False,False,True)
 		plt.show()
 		
 		return
@@ -733,7 +754,8 @@ class Correlation_3D:
 		path = self._path_to_txt_file_folder + self._prefix + '_distortionMatrix_'+dim+'_'+ self._middlefix + '.txt'
 		matrix = numpy.loadtxt(path)
 		myTools.plot2D(matrix)
-		
+		myTools.plotCovar([matrix],['Distortion matrix'])
+
 		return
 	def plot_map_sub_sampling(self):
 	
@@ -770,7 +792,10 @@ class Correlation_3D:
 
 
 
-path_to_txt_file_folder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
+#path_to_txt_file_folder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
+
+path_to_txt_file_folder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation/Box_000/Simu_000/Results/'
+
 dic_class = {
 	'minXi': 0.,
 	'maxXi': 200.,
@@ -779,12 +804,13 @@ dic_class = {
 	'nb_Sub_Sampling': 80,
 	'size_bin_calcul_s': 1.,
 	'size_bin_calcul_m': 0.02,
-	'correlation': 'f_f2',
+	'correlation': 'q_f',
 	'path_to_txt_file_folder': path_to_txt_file_folder,
 	'f1': 'LYA',
-	'f2': 'CIV', 
+	'f2': 'LYA',
 	'q1': 'QSO',
-	'q2': 'QSO'
+	'q2': 'QSO',
+	'name' : 'Mocks'
 }
 dic_CAMB = {
 	'mulpol_index' : 0,
@@ -799,12 +825,35 @@ dic_CAMB = {
 }
 
 corr = Correlation_3D(dic_class)
+print corr._meanZ
 
-dic_CAMB = corr.fit_CAMB(dic_CAMB)
-corr.plot_CAMB(dic_CAMB)
-corr.plot_1d(0)
-corr.plot_1d(1)
-corr.plot_1d(2)
+
+path_to_txt_file_folder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
+dic_class = {
+	'minXi': 0.,
+	'maxXi': 200.,
+	'nbBin': 50,
+	'nbBinM': 25,
+	'nb_Sub_Sampling': 80,
+	'size_bin_calcul_s': 1.,
+	'size_bin_calcul_m': 0.02,
+	'correlation': 'q_f',
+	'path_to_txt_file_folder': path_to_txt_file_folder,
+	'f1': 'LYA',
+	'f2': 'LYA',
+	'q1': 'QSO',
+	'q2': 'QSO',
+	'name' : 'Data'
+}
+corr2 = Correlation_3D(dic_class)
+print corr._meanZ
+
+corr.plot_1d(0,[corr2])
+corr.plot_1d(1,[corr2])
+corr.plot_1d(2,[corr2])
+
+
+'''
 corr.plot_2d(0)
 corr.plot_2d(1)
 corr.plot_2d(2)
@@ -814,8 +863,11 @@ corr.plot_We(2)
 corr.plot_Mu(0)
 corr.plot_Mu(1)
 corr.plot_Mu(2)
+corr.plot_distortion_matrix()
+corr.apply_distortion_matrix()
+dic_CAMB = corr.fit_CAMB(dic_CAMB)
+corr.plot_CAMB(dic_CAMB)
 
-'''
 corr.plot_map_sub_sampling()
 corr.plot_distortion_matrix()
 corr.apply_distortion_matrix()

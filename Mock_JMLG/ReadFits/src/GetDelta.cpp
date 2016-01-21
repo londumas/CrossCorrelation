@@ -28,7 +28,15 @@
 #include <sstream>	//stringstream
 #include <stdlib.h>	//atoi
 #include <unistd.h>	//getopt
-#include <cstdlib>	// std::rand, std::srand
+#include <cstdlib>	//std::rand, std::srand
+#include <stdio.h>	//send a command
+#include <algorithm>	//remove_if
+#include <algorithm>
+#include <string>
+#include <iostream>
+#include <cctype>
+
+
 
 /// ROOT
 #include "fitsio.h"
@@ -40,7 +48,11 @@
 #include "TMath.h"
 #include "TProfile.h"
 
-const double findPDF__ = true; 
+const unsigned int nbBinlambdaObs__  = int(lambdaObsMax__-lambdaObsMin__);
+const double lambdaRFTemplateMin__ = lambdaRFMin__-3.;
+const double lambdaRFTemplateMax__ = lambdaRFMax__+3.;
+long  Bit16 = 1;
+const double findPDF__ = false; 
 bool hasCont = true;
 
 GetDelta::GetDelta(int argc, char** argv) {
@@ -49,27 +61,40 @@ GetDelta::GetDelta(int argc, char** argv) {
 	std::cout.precision(15);
 	if (findPDF__) defineHistos();
 
+	// Init the bit
+	Bit16 = Bit16 <<16;
+
 	/// 0: Box, 1: Simulation
 	if (argc<3) return;
 	const std::string box_idx  = argv[1];
 	const std::string sim_idx  = argv[2];
 
 
-	pathToData__ = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/v1547/fits/spectra-78";
-	pathToData__ += box_idx;
-	pathToData__ += "-";
-	pathToData__ += sim_idx;
-	pathToData__ += ".fits";
-
+	///
+	pathToDataQSO__ = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/v1547/fits/spectra-78";
+	pathToDataQSO__ += box_idx;
+	pathToDataQSO__ += "-";
+	pathToDataQSO__ += sim_idx;
+	pathToDataQSO__ += ".fits";
+	pathToDataQSO__ = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/spectra-expander.fits";
+	///
+	pathToDataForest__ = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/v1547/fits/spectra-78";
+	pathToDataForest__ += box_idx;
+	pathToDataForest__ += "-";
+	pathToDataForest__ += sim_idx;
+	pathToDataForest__ += "/Data/mocks-*";
+	///
 	pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/noNoisenoCont/Box_00";
 	pathToSave__ += box_idx;
 	pathToSave__ += "/Simu_00";
 	pathToSave__ += sim_idx;
 	pathToSave__ += "/Data/";
+	pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation/Box_000/Simu_000/Data/";
 
 
 	std::cout << "\n"   << std::endl;
-	std::cout << "  " << pathToData__ << std::endl;
+	std::cout << "  " << pathToDataQSO__ << std::endl;
+	std::cout << "  " << pathToDataForest__ << std::endl;
 	std::cout << "  " << pathToSave__ << std::endl;
 	std::cout << "\n"   << std::endl;
 
@@ -77,55 +102,13 @@ GetDelta::GetDelta(int argc, char** argv) {
 
 	/// QSO
 	withRSD__ = true;
-	//GetQSO();
+	GetQSO();
+
+	std::cout << "\n"   << std::endl;
 
 	/// Delta
-	noCont__  = true;
-	noNoise__ = true;
-	//GetData();
-
-	pathToData__ = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/v1547/fits/spectra-780-0.fits";
-	GetData();
-	pathToData__ = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/v1547/fits/spectra-780-1.fits";
-	GetData();
-	pathToData__ = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/v1547/fits/spectra-780-2.fits";
-	GetData();
-	pathToData__ = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/v1547/fits/spectra-780-3.fits";
-	GetData();
-	pathToData__ = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/v1547/fits/spectra-780-4.fits";
-	GetData();
-	pathToData__ = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/v1547/fits/spectra-780-5.fits";
-	GetData();
-	pathToData__ = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/v1547/fits/spectra-780-6.fits";
-	GetData();
-	pathToData__ = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/v1547/fits/spectra-780-7.fits";
-	GetData();
-	pathToData__ = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/v1547/fits/spectra-780-8.fits";
-	GetData();
-	pathToData__ = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/v1547/fits/spectra-780-9.fits";
-	GetData();
-	pathToData__ = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/v1547/fits/spectra-781-0.fits";
-	GetData();
-	pathToData__ = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/v1547/fits/spectra-781-1.fits";
-	GetData();
-	pathToData__ = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/v1547/fits/spectra-781-2.fits";
-	GetData();
-	pathToData__ = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/v1547/fits/spectra-781-3.fits";
-	GetData();
-	pathToData__ = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/v1547/fits/spectra-781-4.fits";
-	GetData();
-	pathToData__ = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/v1547/fits/spectra-781-5.fits";
-	GetData();
-	pathToData__ = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/v1547/fits/spectra-781-6.fits";
-	GetData();
-	pathToData__ = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/v1547/fits/spectra-781-7.fits";
-	GetData();
-	pathToData__ = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/v1547/fits/spectra-781-8.fits";
-	GetData();
-	pathToData__ = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/v1547/fits/spectra-781-9.fits";
-	GetData();
-	pathToData__ = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/spectra-highz.fits";
-	hasCont = false;
+	noCont__  = false;
+	noNoise__ = false;
 	GetData();
 
 	if (findPDF__) saveHistos();
@@ -140,6 +123,281 @@ GetDelta::~GetDelta(void) {
 		delete hFlux__;
 	}
 }
+
+void GetDelta::GetData(void) {
+
+
+	/// Fits file where to save
+	TString TSfitsnameSpec2 = pathToSave__;
+	TSfitsnameSpec2 += "delta.fits";
+	std::cout << "  " << TSfitsnameSpec2 << std::endl;
+	int sta2    = 0;
+	fitsfile* fitsptrSpec2;
+	fits_open_table(&fitsptrSpec2,TSfitsnameSpec2, READWRITE, &sta2);
+
+	/// index of forest
+	unsigned int forestIdx = 0;
+
+
+	/// Get the list 
+	FILE *fp;
+	char path[PATH_MAX];
+	std::string command = "ls " + pathToDataForest__;
+	std::vector< std::string > listFiles;
+	fp = popen(command.c_str(), "r");
+	while (fgets(path, PATH_MAX, fp) != NULL) listFiles.push_back(path);
+	
+
+	/// Get nb of files
+	const unsigned int nbFiles = listFiles.size();
+
+	for (unsigned int fileIdx=0; fileIdx<nbFiles; fileIdx++) {
+
+		std::string path = listFiles[fileIdx];
+		path.erase(std::remove(path.begin(), path.end(), '\n'), path.end());
+		path.erase(std::remove(path.begin(), path.end(), ' '), path.end());
+
+		/// Get the file
+		std::cout << "  file = " << path << std::endl;
+		const TString TSfitsnameSpec = path;
+		int sta = 0;
+		fitsfile* fitsptrSpec;
+		fits_open_table(&fitsptrSpec,TSfitsnameSpec, READONLY, &sta);
+
+		/// Get the number of spectra
+		int tmp_nbSpectra = 0;
+		unsigned int nbSpectra = 0;
+		if (isTest__) nbSpectra = 1000;
+		else {
+			fits_get_num_hdus(fitsptrSpec, &tmp_nbSpectra, &sta);
+			nbSpectra = tmp_nbSpectra-1;
+		}
+		std::cout << "  nbSpectra = " << nbSpectra << std::endl;
+	
+		/// Set to the first HDU
+		fits_movabs_hdu(fitsptrSpec, 2,  NULL, &sta);
+		
+		/// Get the data
+		for (unsigned int f=0; f<nbSpectra; f++) {
+	
+			/// Move to next HDU
+			if (f!=0) fits_movrel_hdu(fitsptrSpec, 1,  NULL, &sta);
+	
+			/// Get the number of pixels in this HDU
+			long tmp_nbPixels = 0;
+			fits_get_num_rows(fitsptrSpec, &tmp_nbPixels, &sta);
+			const unsigned int tmp_nbPixels2 = tmp_nbPixels;
+			if (!findPDF__ && tmp_nbPixels2<C_MIN_NB_PIXEL) continue;
+	
+			/// Variable from old FITS
+			double X = 0.;
+			double Y = 0.;
+			double Z = 0.;
+			float LAMBDA_OBS[tmp_nbPixels2];
+			float FLUX[tmp_nbPixels2];
+			float IVAR[tmp_nbPixels2];
+			long  AND_MASK[tmp_nbPixels2];
+			float CONTINUUM[tmp_nbPixels2];
+			fits_read_key_dbl(fitsptrSpec,"X",   &X,NULL,&sta);
+			fits_read_key_dbl(fitsptrSpec,"Y",   &Y,NULL,&sta);
+			fits_read_key_dbl(fitsptrSpec,"ZQSO",&Z,NULL,&sta);
+			fits_read_col(fitsptrSpec,TFLOAT, 1,1,1,tmp_nbPixels2,NULL, &LAMBDA_OBS,NULL,&sta);
+			fits_read_col(fitsptrSpec,TFLOAT, 2,1,1,tmp_nbPixels2,NULL, &FLUX,      NULL,&sta);
+			fits_read_col(fitsptrSpec,TFLOAT, 3,1,1,tmp_nbPixels2,NULL, &IVAR,      NULL,&sta);
+			fits_read_col(fitsptrSpec,TLONG,  4,1,1,tmp_nbPixels2,NULL, &AND_MASK,  NULL,&sta);
+			fits_read_col(fitsptrSpec,TFLOAT, 5,1,1,tmp_nbPixels2,NULL, &CONTINUUM, NULL,&sta);
+	
+			/// Variables for new FITS
+			double lambdaOBS[nbPixelsTemplate__];
+			double lambdaRF[nbPixelsTemplate__];
+			double norm_flux[nbPixelsTemplate__];
+			double norm_flux_ivar[nbPixelsTemplate__];
+			double delta[nbPixelsTemplate__];
+			double delta_ivar[nbPixelsTemplate__];
+			double delta_weight[nbPixelsTemplate__];
+			double continuum[nbPixelsTemplate__];
+			unsigned int nbPixel = 0;
+			double normFactor[2] = {0.};
+			double meanForestLRF[2] = {0.};
+			const double oneOverOnePlusZ = 1./(1.+Z);
+	
+			for (unsigned int p=0; p<tmp_nbPixels2; p++) {
+	
+				/// bad pixels
+				if (LAMBDA_OBS[p]<=0. || IVAR[p]<=0. || AND_MASK[p]>=Bit16 ) continue;
+	
+				LAMBDA_OBS[p] = pow(10.,LAMBDA_OBS[p]);
+				const double lambdaRFd = LAMBDA_OBS[p]*oneOverOnePlusZ;
+	
+				/// Pixel outside working region and remove pixels because of CCD and Sky lines 
+				if (lambdaRFd<lambdaRFTemplateMin__ || lambdaRFd>lambdaRFNormaMax__ || LAMBDA_OBS[p]<lambdaObsMin__ || LAMBDA_OBS[p]>=lambdaObsMax__) continue;
+	
+				/// Normalisation zone
+				if (lambdaRFd>=lambdaRFNormaMin__ && lambdaRFd<lambdaRFNormaMax__) {
+					normFactor[0] += FLUX[p];
+					normFactor[1] ++;
+				}
+				/// Keep only the template, i.e. the zone with the forest plus some pixels
+				else if (lambdaRFd>=lambdaRFTemplateMin__ && lambdaRFd<lambdaRFTemplateMax__) {
+	
+					lambdaOBS[nbPixel]      = LAMBDA_OBS[p];
+					lambdaRF[nbPixel]       = lambdaRFd;
+					norm_flux[nbPixel]      = FLUX[p];
+					norm_flux_ivar[nbPixel] = IVAR[p];
+					continuum[nbPixel]      = CONTINUUM[p];
+					nbPixel ++;
+	
+					if (lambdaRFd>=lambdaRFMin__ && lambdaRFd<lambdaRFMax__) {
+						meanForestLRF[0] += FLUX[p];
+						meanForestLRF[1] ++;
+	
+						/// Get the PDF
+						if (findPDF__) {
+							hFluxPDF__->Fill(FLUX[p],LAMBDA_OBS[p]/lambdaRFLine__-1.);
+							hRedshift__->Fill(LAMBDA_OBS[p]/lambdaRFLine__-1.);
+							hFlux__->Fill(FLUX[p]);
+							hFluxVsLambdaObs__->Fill(LAMBDA_OBS[p], FLUX[p]);
+						}
+					}
+				}
+			}
+	
+			if (nbPixel>nbPixelsTemplate__)  std::cout << "  GetDelta::GetData::  ERROR: nbPixel>nbPixelsTemplate__ " << nbPixel << " " << nbPixelsTemplate__ << std::endl;
+	
+			/// Normalisation zone
+			if ( normFactor[0]<= 0. || nbPixel<=C_MIN_NB_PIXEL ||  meanForestLRF[1]<C_MIN_NB_PIXEL) {
+				//std::cout << Z << " " << NORM_FACTOR_nb << " " << NORM_FACTOR << " " << nbPixelTemplate << " " << NB_PIXEL << std::endl;
+				continue;
+			}
+	
+			/// Normalize the forest
+			const double norm = normFactor[0]/normFactor[1];
+	
+			/// Normalise the data
+			for (unsigned int i=0; i<nbPixel; i++) {
+				norm_flux[i]      /= norm;
+				norm_flux_ivar[i] *= norm*norm;
+				continuum[i]      /= norm;
+				delta[i]           = norm_flux[i]/continuum[i] -1.;
+				delta_ivar[i]      = norm_flux_ivar[i]*continuum[i]*continuum[i];
+				delta_weight[i]    = delta_ivar[i];
+			}
+	
+			/// Get the mean lambda_RF
+			meanForestLRF[0] /= meanForestLRF[1];
+		
+			/// Save data in second file
+			fits_write_col(fitsptrSpec2,TDOUBLE, 4,forestIdx+1,1,1, &X, &sta2);
+			fits_write_col(fitsptrSpec2,TDOUBLE, 5,forestIdx+1,1,1, &Y, &sta2);
+			fits_write_col(fitsptrSpec2,TDOUBLE, 6,forestIdx+1,1,1, &Z, &sta2);
+			fits_write_col(fitsptrSpec2,TINT,    7,forestIdx+1,1,1, &meanForestLRF[1], &sta2);
+			fits_write_col(fitsptrSpec2,TDOUBLE, 8,forestIdx+1,1,1, &meanForestLRF[0], &sta2);
+			fits_write_col(fitsptrSpec2,TDOUBLE, 13,forestIdx+1,1,nbPixel, &lambdaOBS, &sta2);
+			fits_write_col(fitsptrSpec2,TDOUBLE, 14,forestIdx+1,1,nbPixel, &lambdaRF, &sta2);
+			fits_write_col(fitsptrSpec2,TDOUBLE, 15,forestIdx+1,1,nbPixel, &norm_flux,       &sta2);
+			fits_write_col(fitsptrSpec2,TDOUBLE, 16,forestIdx+1,1,nbPixel, &norm_flux_ivar,   &sta2);
+			fits_write_col(fitsptrSpec2,TDOUBLE, 18,forestIdx+1,1,nbPixel, &delta,       &sta2);
+			fits_write_col(fitsptrSpec2,TDOUBLE, 19,forestIdx+1,1,nbPixel, &delta_ivar,   &sta2);
+			fits_write_col(fitsptrSpec2,TDOUBLE, 20,forestIdx+1,1,nbPixel, &delta_weight,   &sta2);
+			fits_write_col(fitsptrSpec2,TDOUBLE, 21,forestIdx+1,1,nbPixel, &continuum,   &sta2);
+			forestIdx ++;
+		}
+		fits_close_file(fitsptrSpec,&sta);
+		std::cout << "  nb forest =  " << forestIdx << std::endl;
+	}
+
+
+	fits_close_file(fitsptrSpec2,&sta2);
+	std::cout << "  nb forest =  " << forestIdx << std::endl;
+
+}
+void GetDelta::GetQSO(void) {
+	const TString TSfitsnameSpec = pathToDataQSO__;
+
+	/// Constants
+	const double oneOverc_speedOfLight = 1./c_speedOfLight__;
+
+	/// Fits file where to save
+	TString TSfitsnameSpec2 = pathToSave__;
+	TSfitsnameSpec2 += "QSO";
+	if (withRSD__) {
+		TSfitsnameSpec2 += "_withRSD";
+	}
+	else {
+		TSfitsnameSpec2 += "_noRSD";
+	}
+	TSfitsnameSpec2 += ".fits";
+	std::cout << "  " << TSfitsnameSpec2 << std::endl;
+
+	/// Variables for FITS
+	int sta    = 0;
+
+	/// Get the file where there is data
+	fitsfile* fitsptrSpec;
+	fits_open_table(&fitsptrSpec,TSfitsnameSpec, READONLY, &sta);
+
+	/// Get the number of spectra
+	int tmp_nbSpectra = 0;
+	unsigned int nbSpectra = 0;
+	if (isTest__) nbSpectra = 10000;
+	else {
+		fits_get_num_hdus(fitsptrSpec, &tmp_nbSpectra, &sta);
+		nbSpectra = tmp_nbSpectra-1;
+	}
+	std::cout << "  nbSpectra = " << nbSpectra << std::endl;
+
+
+	/// Fits file where to save
+	int sta2    = 0;
+	fitsfile* fitsptrSpec2;
+	fits_open_table(&fitsptrSpec2,TSfitsnameSpec2, READWRITE, &sta2); //READWRITE  //READONLY
+
+	/// Number of QSO
+	unsigned int nbQSOs = 0;
+
+	/// Set to the first HDU
+	fits_movabs_hdu(fitsptrSpec, 2,  NULL, &sta);
+
+	/// Get the parameters of the QSO
+	for (unsigned int i=0; i<nbSpectra; i++) {
+
+		/// Get the data
+		if (i!=0) fits_movrel_hdu(fitsptrSpec, 1,  NULL, &sta);
+
+		double X = 0.;
+		double Y = 0.;
+		double Z = 0.;
+		double V = 0.;
+
+		fits_read_key_dbl(fitsptrSpec,"X",   &X,NULL,&sta);
+		fits_read_key_dbl(fitsptrSpec,"Y",   &Y,NULL,&sta);
+		fits_read_key_dbl(fitsptrSpec,"ZQSO",&Z,NULL,&sta);
+		fits_read_key_dbl(fitsptrSpec,"VELOCITY",&V,NULL,&sta);
+
+		/// If with RSD
+		if (withRSD__) Z += V*oneOverc_speedOfLight*(1.+Z);
+
+		/// Save the data
+		fits_write_col(fitsptrSpec2,TDOUBLE, 1,nbQSOs+1,1,1, &X, &sta2);
+		fits_write_col(fitsptrSpec2,TDOUBLE, 2,nbQSOs+1,1,1, &Y, &sta2);
+		fits_write_col(fitsptrSpec2,TDOUBLE, 3,nbQSOs+1,1,1, &Z, &sta2);
+
+		nbQSOs ++;
+	}
+
+	/// Close files
+	fits_close_file(fitsptrSpec,&sta);
+	fits_close_file(fitsptrSpec2,&sta2);
+
+	std::cout << "  nbQSOs = "  << nbQSOs << std::endl;
+}
+
+
+
+
+
+
+
 void GetDelta::defineHistos() {
 
 	hFluxVsLambdaObs__ = new TProfile("hFluxVsLambdaObs__","",nbBinlambdaObs__,lambdaObsMin__,lambdaObsMax__);
@@ -219,328 +477,6 @@ void GetDelta::saveHistos() {
 */
 	
 }
-void GetDelta::GetData(void) {
-
-
-	/// Where are the data
-	const TString TSfitsnameSpec = pathToData__;
-	std::cout << "  pathToData__ :  " << pathToData__ << std::endl;
-
-	/// Fits file where to save
-	TString TSfitsnameSpec2 = pathToSave__;
-	TSfitsnameSpec2 += "delta";
-	if (noNoise__) {
-		TSfitsnameSpec2 += "_noNoise";
-	}
-	if (noCont__) {
-		TSfitsnameSpec2 += "_noCont";
-	}
-	TSfitsnameSpec2 += ".fits";
-	std::cout << "  " << TSfitsnameSpec2 << std::endl;
-
-	/// Variables for FITS
-	int sta    = 0;
-
-	/// Get the file
-	fitsfile* fitsptrSpec;
-	fits_open_table(&fitsptrSpec,TSfitsnameSpec, READONLY, &sta);
-
-	/// Get the number of spectra
-	int tmp_nbSpectra = 0;
-	unsigned int nbSpectra = 0;
-	if (isTest__) nbSpectra = 10000;
-	else {
-		fits_get_num_hdus(fitsptrSpec, &tmp_nbSpectra, &sta);
-		nbSpectra = tmp_nbSpectra-1;
-	}
-	std::cout << " nbSpectra = " << nbSpectra << std::endl;
-
-	
-	/// Get the number of pixels
-	unsigned int nbMinPixels = 100000;
-	unsigned int nbPixels    = 0;
-
-	/// Set to the first HDU
-	fits_movabs_hdu(fitsptrSpec, 2,  NULL, &sta);
-
-	for (unsigned int i=0; i<nbSpectra; i++) {
-
-		/// Move to next HDU
-		if (i!=0) fits_movrel_hdu(fitsptrSpec, 1,  NULL, &sta);
-
-		long tmp_nbPixels = 0;
-		fits_get_num_rows(fitsptrSpec, &tmp_nbPixels, &sta);
-		const unsigned int tmp_nbPixels2 = tmp_nbPixels;
-
-		nbMinPixels = std::min(nbMinPixels,tmp_nbPixels2);
-		nbPixels    = std::max(nbPixels,tmp_nbPixels2);
-	}
-	std::cout << " nbMinPixels  = " << nbMinPixels << std::endl;
-	std::cout << " nbPixels     = " << nbPixels << std::endl;
-
-	/// Fits file where to save
-	int sta2    = 0;
-	fitsfile* fitsptrSpec2;
-	fits_open_table(&fitsptrSpec2,TSfitsnameSpec2, READONLY, &sta2); //READWRITE
-
-	std::cout << "\n" << std::endl;
-
-
-
-	/// Variable from fit
-	double X = 0.;
-	double Y = 0.;
-	double Z = 0.;
-	float LAMBDA_OBS[nbPixels];
-	float FLUX[nbPixels];
-	float FLUX_ERR[nbPixels];
-	float CONTINUUM[nbPixels];
-	float FLUXNON[nbPixels];
-	for (unsigned int j=0; j<nbPixels; j++) {
-		LAMBDA_OBS[j] = 0.;
-		FLUX[j]       = 0.;
-		FLUX_ERR[j]   = 0.;
-		CONTINUUM[j]  = 0.;
-		FLUXNON[j]    = 0.;
-	}
-
-
-	/// Variables for new fit
-	double LAMBDA_OBS2[nbPixelsTemplate__];
-	double LAMBDA_RF2[nbPixelsTemplate__];
-	double FLUX2[nbPixelsTemplate__];
-	double FLUX_ERR2[nbPixelsTemplate__];
-	double DELTA[nbPixelsTemplate__];
-	double DELTA_ERR[nbPixelsTemplate__];
-	double TEMPLATE2[nbPixelsTemplate__];
-	double NORM_FACTOR    = 0.;
-	unsigned int NORM_FACTOR_nb = 0;
-	double MEAN_FOREST_LAMBDA_RF = 0.;
-	unsigned int NB_PIXEL = 0;
-	for (unsigned int j=0; j<nbPixelsTemplate__; j++) {
-		LAMBDA_OBS2[j] = 0.;
-		LAMBDA_RF2[j]  = 0.;
-		FLUX2[j]       = 0.;
-		FLUX_ERR2[j]   = 0.;
-		DELTA[j]       = 0.;
-		DELTA_ERR[j]   = 1.;
-		TEMPLATE2[j]   = 0.;
-	}
-
-
-	/// index of forest
-	unsigned int forestIdx = 0;
-
-
-	/// Set to the first HDU
-	fits_movabs_hdu(fitsptrSpec, 2,  NULL, &sta);
-	
-	/// Get the data
-	for (unsigned int i=0; i<nbSpectra; i++) {
-
-		/// Move to next HDU
-		if (i!=0) fits_movrel_hdu(fitsptrSpec, 1,  NULL, &sta);
-
-		/// Get the number of pixels in this HDU
-		long tmp_nbPixels = 0;
-		fits_get_num_rows(fitsptrSpec, &tmp_nbPixels, &sta);
-		const unsigned int tmp_nbPixels2 = tmp_nbPixels;
-		if (tmp_nbPixels2 < C_MIN_NB_PIXEL && !findPDF__) continue;
-		
-
-		/// Variables for new fit
-		NORM_FACTOR    = 0.;
-		NORM_FACTOR_nb = 0;
-		MEAN_FOREST_LAMBDA_RF = 0.;
-		NB_PIXEL = 0;
-
-
-		fits_read_key_dbl(fitsptrSpec,"X",&X,NULL,&sta);
-		fits_read_key_dbl(fitsptrSpec,"Y",&Y,NULL,&sta);
-		fits_read_key_dbl(fitsptrSpec,"ZQSO",&Z,NULL,&sta);
-		fits_read_col(fitsptrSpec,TFLOAT, 1,1,1,tmp_nbPixels2,NULL, &LAMBDA_OBS,NULL,&sta);
-		fits_read_col(fitsptrSpec,TFLOAT, 2,1,1,tmp_nbPixels2,NULL, &FLUX,      NULL,&sta);
-		fits_read_col(fitsptrSpec,TFLOAT, 3,1,1,tmp_nbPixels2,NULL, &FLUX_ERR,  NULL,&sta);
-		fits_read_col(fitsptrSpec,TFLOAT, 4,1,1,tmp_nbPixels2,NULL, &CONTINUUM, NULL,&sta);
-		fits_read_col(fitsptrSpec,TFLOAT, 5,1,1,tmp_nbPixels2,NULL, &FLUXNON,   NULL,&sta);
-
-		const double oneOverOnePlusZ = 1./(1.+Z);
-		unsigned int nbPixelTemplate = 0;
-		for (unsigned int j=0; j<tmp_nbPixels2; j++) {
-
-			/// If no noise
-			if (noNoise__) {
-				FLUX[j]     = FLUXNON[j];
-				FLUX_ERR[j] = 1.;
-			}
-			///  If no continuum
-			if (hasCont && noCont__) FLUX[j] /= CONTINUUM[j];
-			const double lambdaRF = LAMBDA_OBS[j]*oneOverOnePlusZ;
-
-			/// Get the PDF
-			if (lambdaRF>=lambdaRFMin__ && lambdaRF<lambdaRFMax__ && findPDF__) {
-				hFluxPDF__->Fill(FLUX[j],LAMBDA_OBS[j]/lambdaRFLine__-1.);
-				hRedshift__->Fill(LAMBDA_OBS[j]/lambdaRFLine__-1.);
-				hFlux__->Fill(FLUX[j]);
-				hFluxVsLambdaObs__->Fill(LAMBDA_OBS[j], FLUX[j]);
-			}
-
-			/// CCD and too many sky lines and bad pixels
-			if (LAMBDA_OBS[j]<lambdaObsMin__ || LAMBDA_OBS[j]>=lambdaObsMax__ || FLUX_ERR[j]<=0.) continue;
-
-			/// Normalisation zone
-			if (lambdaRF>=lambdaRFNormaMin__ && lambdaRF<lambdaRFNormaMax__) {
-				NORM_FACTOR    += FLUX[j];
-				NORM_FACTOR_nb ++;
-			}
-			/// Keep only the template, i.e. the zone with the forest plus some pixels
-			else if (lambdaRF>=lambdaRFTemplateMin__ && lambdaRF<lambdaRFTemplateMax__) {
-
-				LAMBDA_OBS2[nbPixelTemplate] = LAMBDA_OBS[j];
-				LAMBDA_RF2[nbPixelTemplate]  = lambdaRF;
-				FLUX2[nbPixelTemplate]       = FLUX[j];
-				FLUX_ERR2[nbPixelTemplate]   = FLUX_ERR[j];
-				DELTA[nbPixelTemplate]       = FLUX[j];
-				TEMPLATE2[nbPixelTemplate]   = CONTINUUM[j];
-				nbPixelTemplate ++;
-
-				if (lambdaRF>=lambdaRFMin__ && lambdaRF<lambdaRFMax__) {
-					MEAN_FOREST_LAMBDA_RF += lambdaRF;
-					NB_PIXEL ++;
-				}
-			}
-		}
-
-		if (nbPixelTemplate>nbPixelsTemplate__)  std::cout << nbPixelTemplate << " " << nbPixelsTemplate__ << std::endl;
-
-		/// Normalisation zone
-		if (NORM_FACTOR_nb == 0 || NORM_FACTOR <= 0. || nbPixelTemplate == 0 || NB_PIXEL < C_MIN_NB_PIXEL) {
-			//std::cout << Z << " " << NORM_FACTOR_nb << " " << NORM_FACTOR << " " << nbPixelTemplate << " " << NB_PIXEL << std::endl;
-			continue;
-		}
-
-		/// Get the mean lambda_RF
-		MEAN_FOREST_LAMBDA_RF /= NB_PIXEL;
-
-		/// Normalize or not the forest
-		if (noCont__) {
-			NORM_FACTOR = 1.;
-		}
-		else {
-			NORM_FACTOR /= NORM_FACTOR_nb;
-
-			/// Normalise the data
-			for (unsigned int j=0; j<nbPixelTemplate; j++) {
-				FLUX2[j]     /= NORM_FACTOR;
-				FLUX_ERR2[j]  = 1./((FLUX_ERR2[j]/NORM_FACTOR)*(FLUX_ERR2[j]/NORM_FACTOR));
-				TEMPLATE2[j] /= NORM_FACTOR;
-
-				DELTA[j] /= TEMPLATE2[j];
-			}
-		}
-	
-		/// Save data in second file
-		fits_write_col(fitsptrSpec2,TDOUBLE, 4,forestIdx+1,1,1, &X, &sta2);
-		fits_write_col(fitsptrSpec2,TDOUBLE, 5,forestIdx+1,1,1, &Y, &sta2);
-		fits_write_col(fitsptrSpec2,TDOUBLE, 6,forestIdx+1,1,1, &Z, &sta2);
-		fits_write_col(fitsptrSpec2,TINT,    7,forestIdx+1,1,1, &NB_PIXEL, &sta2);
-		fits_write_col(fitsptrSpec2,TDOUBLE, 8,forestIdx+1,1,1, &MEAN_FOREST_LAMBDA_RF, &sta2);
-		fits_write_col(fitsptrSpec2,TDOUBLE, 13,forestIdx+1,1,nbPixelTemplate, &LAMBDA_OBS2, &sta2);
-		fits_write_col(fitsptrSpec2,TDOUBLE, 14,forestIdx+1,1,nbPixelTemplate, &LAMBDA_RF2, &sta2);
-		fits_write_col(fitsptrSpec2,TDOUBLE, 15,forestIdx+1,1,nbPixelTemplate, &FLUX2,       &sta2);
-		fits_write_col(fitsptrSpec2,TDOUBLE, 16,forestIdx+1,1,nbPixelTemplate, &FLUX_ERR2,   &sta2);
-
-		/// Delta
-		fits_write_col(fitsptrSpec2,TDOUBLE, 18,forestIdx+1,1,nbPixelTemplate, &DELTA,       &sta2);
-		fits_write_col(fitsptrSpec2,TDOUBLE, 19,forestIdx+1,1,nbPixelTemplate, &DELTA_ERR,   &sta2);
-		fits_write_col(fitsptrSpec2,TDOUBLE, 20,forestIdx+1,1,nbPixelTemplate, &DELTA_ERR,   &sta2);
-
-		fits_write_col(fitsptrSpec2,TDOUBLE, 21,forestIdx+1,1,nbPixelTemplate, &TEMPLATE2,   &sta2);
-		forestIdx ++;
-	}
-
-	fits_close_file(fitsptrSpec,&sta);
-	fits_close_file(fitsptrSpec2,&sta2);
-
-}
-void GetDelta::GetQSO(void) {
-	const TString TSfitsnameSpec = pathToData__;
-
-	/// Constants
-	const double oneOverc_speedOfLight = 1./c_speedOfLight__;
-
-	/// Fits file where to save
-	TString TSfitsnameSpec2 = pathToSave__;
-	TSfitsnameSpec2 += "QSO";
-	if (withRSD__) {
-		TSfitsnameSpec2 += "_withRSD";
-	}
-	else {
-		TSfitsnameSpec2 += "_noRSD";
-	}
-	TSfitsnameSpec2 += ".fits";
-	std::cout << "  " << TSfitsnameSpec2 << std::endl;
-
-	/// Variables for FITS
-	int sta    = 0;
-
-	/// Get the file where there is data
-	fitsfile* fitsptrSpec;
-	fits_open_table(&fitsptrSpec,TSfitsnameSpec, READONLY, &sta);
-
-	/// Get the number of spectra
-	int tmp_nbSpectra = 0;
-	fits_get_num_hdus(fitsptrSpec, &tmp_nbSpectra, &sta);
-	const unsigned int nbSpectra = tmp_nbSpectra-1;
-	std::cout << "  nbSpectra = " << nbSpectra << std::endl;
-
-	/// Fits file where to save
-	int sta2    = 0;
-	fitsfile* fitsptrSpec2;
-	fits_open_table(&fitsptrSpec2,TSfitsnameSpec2, READWRITE, &sta2); //READWRITE
-
-	/// Number of QSO
-	unsigned int nbQSOs = 0;
-
-	/// Set to the first HDU
-	fits_movabs_hdu(fitsptrSpec, 2,  NULL, &sta);
-
-	/// Get the parameters of the QSO
-	for (unsigned int i=0; i<nbSpectra; i++) {
-
-		/// Get the data
-		if (i!=0) fits_movrel_hdu(fitsptrSpec, 1,  NULL, &sta);
-
-		double X = 0.;
-		double Y = 0.;
-		double Z = 0.;
-		double V = 0.;
-
-		fits_read_key_dbl(fitsptrSpec,"X",   &X,NULL,&sta);
-		fits_read_key_dbl(fitsptrSpec,"Y",   &Y,NULL,&sta);
-		fits_read_key_dbl(fitsptrSpec,"ZQSO",&Z,NULL,&sta);
-		fits_read_key_dbl(fitsptrSpec,"VELOCITY",&V,NULL,&sta);
-
-		/// If with RSD
-		if (withRSD__) Z += V*oneOverc_speedOfLight*(1.+Z);
-
-		/// Save the data
-		fits_write_col(fitsptrSpec2,TDOUBLE, 1,nbQSOs+1,1,1, &X, &sta2);
-		fits_write_col(fitsptrSpec2,TDOUBLE, 2,nbQSOs+1,1,1, &Y, &sta2);
-		fits_write_col(fitsptrSpec2,TDOUBLE, 3,nbQSOs+1,1,1, &Z, &sta2);
-
-		nbQSOs ++;
-	}
-
-	/// Close files
-	fits_close_file(fitsptrSpec,&sta);
-	fits_close_file(fitsptrSpec2,&sta2);
-
-	std::cout << "  nbQSOs = "  << nbQSOs << std::endl;
-}
-
-
-
 
 
 

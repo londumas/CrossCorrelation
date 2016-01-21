@@ -30,8 +30,9 @@
 
 LymanForest::LymanForest(std::vector< std::vector<double> > forests, unsigned int nbRegions, double raSeperationTwoRegions, bool euclidean/*=false*/) {
 	
-	raSeperationTwoRegions_ = raSeperationTwoRegions;
 	euclidean_ = euclidean;
+	if (euclidean_) raSeperationTwoRegions_ = 0.;
+	else raSeperationTwoRegions_ = raSeperationTwoRegions;
 	
 	if (nbRegions < 1) {
 		std::cout << "  ERROR: LymanForest::LymanForest: nbRegions < 1" <<std::endl;
@@ -64,8 +65,9 @@ LymanForest::LymanForest(std::vector< std::vector<double> > forests, unsigned in
 }
 LymanForest::LymanForest(std::string pathToLoad, unsigned int nbRegions, double raSeperationTwoRegions, bool euclidean/*=false*/) {
 
-	raSeperationTwoRegions_ = raSeperationTwoRegions;
 	euclidean_ = euclidean;
+	if (euclidean_) raSeperationTwoRegions_ = 0.;
+	else raSeperationTwoRegions_ = raSeperationTwoRegions;
 
 	if (nbRegions < 1) {
 		std::cout << "  ERROR: LymanForest::LymanForest: nbRegions < 1" <<std::endl;

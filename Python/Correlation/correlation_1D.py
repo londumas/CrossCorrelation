@@ -3,7 +3,7 @@
 # created by Hélion du Mas des Bourboux
 # < helion.du-mas-des-bourboux@cea.fr >
 #
-#  /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/correlation_3D.py
+#  /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/correlation_1D.py
 #
 
 ### Python lib
@@ -37,10 +37,14 @@ class Correlation_1D:
 			'f1': 'LYA',
 			'f2': 'LYA',
 			'nb_Sub_Sampling': 80,
+			'name' : 'Data'
 			}
 
 		### folder wher data are
 		self._path_to_txt_file_folder = dic['path_to_txt_file_folder']
+
+		### Name of the correlation
+		self._name = dic['name']
 
 		### forest and QSO name
 		self._f1 = dic['f1']
@@ -127,32 +131,46 @@ class Correlation_1D:
 		path = self._path_to_txt_file_folder + self._prefix + '_' + self._middlefix + '.txt'
 
 		### Get data
-		self._nbBin, self._xi = self.fill_data(path)
+		self._xi = self.fill_data(path, True)
 
 
 		
 		return
 
-	def fill_data(self, path):
+	def fill_data(self, path, init=False):
 
 		data = numpy.loadtxt(path)
 		cut = (data[:,5]>1.)
 
 		nbBin = data[:,2][ cut ].size
+		if (nbBin==0):
+			print "  Correlation_1D::fill_data::  WARNING:  file is empty: path = ", path
+			return numpy.zeros(shape=(1,3))
+
 		xi = numpy.zeros(shape=(nbBin,3))
 
 		xi[:,0] = data[:,2][cut]/data[:,4][cut]
 		xi[:,1] = data[:,0][cut]/data[:,4][cut]
 		xi[:,2] = numpy.sqrt( (data[:,1][cut]/data[:,4][cut] -xi[:,1]**2. )/data[:,5][cut]  )
-	
-		return nbBin, xi
 
-	def plot(self, with_lines=False, verbose=False):
+		if (init):
+			self._nbBin = nbBin
+			self._meanZ = numpy.sum(data[:,3][cut])/numpy.sum(data[:,4][cut])
+
+		return xi
+
+	def plot(self, with_lines=False, verbose=False, other=[]):
 
 		xxx = self._xi[:,0]
 		yyy = self._xi[:,1]
 		yer = self._xi[:,2]
-		plt.errorbar(xxx, yyy, yerr=yer, marker='o')
+		plt.errorbar(xxx, yyy, yerr=yer, marker='o', label=self._name)
+
+		for el in other:
+			TMP_xxx = el._xi[:,0]
+			TMP_yyy = el._xi[:,1]
+			TMP_yer = el._xi[:,2]
+			plt.errorbar(TMP_xxx, TMP_yyy, yerr=TMP_yer, marker='o', label=el._name)
 
 		if (with_lines):
 
@@ -172,7 +190,8 @@ class Correlation_1D:
 
 				for j in range(0,nbLines2):
 					if (self._correlation=='f_f_r' or self._correlation=='f_f2_r'):
-						continue
+						line = numpy.abs( const_delta.find_dist_correlation_lines(self._meanZ,self._lines2[j], self._lines1[i]) )
+						if (line>xMax): continue
 					elif (self._correlation=='f_f_lRF' or self._correlation=='f_f2_lRF'):
 						line = abs(self._lines1[i]-self._lines2[j])
 						if (line==0. or line>xMax): continue
@@ -197,7 +216,7 @@ class Correlation_1D:
 		if (self._correlation=='f_f_lRF_devide' or self._correlation=='f_f2_lRF_devide'):
 			plt.xlim([ 0.99*numpy.min(xxx), 1.01*numpy.max(xxx) ])
 
-		myTools.deal_with_plot(False,False,False)
+		myTools.deal_with_plot(False,False,True)
 		plt.show()
 
 		return
@@ -206,23 +225,37 @@ class Correlation_1D:
 
 
 
+#path_to_txt_file_folder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
+#listCorr = ['f_f_r','f_f_lRF','f_f_lRF_devide','f_f2_r','f_f2_lRF_devide']
+path_to_txt_file_folder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation/Box_000/Simu_000/Results/'
+listCorr = ['f_f_r','f_f_lRF','f_f_lRF_devide']
 
-path_to_txt_file_folder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
-listCorr = ['f_f_r','f_f_lRF','f_f_lRF_devide','f_f2_r','f_f2_lRF_devide']
 
 for el in listCorr:
 	dic_class = {
 		'correlation': el,
 		'path_to_txt_file_folder': path_to_txt_file_folder,
 		'f1': 'LYA',
-		'f2': 'SIIV',
+		'f2': 'LYA',
 		'nb_Sub_Sampling': 80,
+		'name' : 'Mocks'
 	}
 	corr = Correlation_1D(dic_class)
-	corr.plot(True)
+	print corr._meanZ
+	#corr.plot(True)
 
-
-
+	dic_class = {
+		'correlation': el,
+		'path_to_txt_file_folder': '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/',
+		'f1': 'LYA',
+		'f2': 'LYA',
+		'nb_Sub_Sampling': 80,
+		'name' : 'Data'
+	}
+	corr2 = Correlation_1D(dic_class)
+	print corr2._meanZ
+	#corr2.plot(True, False)
+	corr2.plot(False, False, [corr])
 
 
 

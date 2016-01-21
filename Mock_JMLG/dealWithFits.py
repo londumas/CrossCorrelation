@@ -18,7 +18,7 @@ import os
 import myTools
 from const_delta import *
 
-path__ = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/vXXXX/Box_000/Simu_000/Data/'
+#path__ = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/vXXXX/Box_000/Simu_000/Data/'
 #name__ = 'delta_noNoise_noCont.fits'
 name__ = 'delta.fits'
 nbPixel = 645
@@ -77,9 +77,8 @@ def removeUselessLines():
 	return
 def haveAlookForest():	
 
-	print path__+name__
-	cat = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1536/Box_000/Simu_000/Data/delta.fits', memmap=True)[1].data[:100]
-
+	cat = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation/Box_000/Simu_000/Data/delta.fits', memmap=True)[1].data[100:200]
+	cat2 = pyfits.open('/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits', memmap=True)[1].data[100:200]
 
 	print cat.size
 	cat = cat[ (cat['Z_VI'] != 0.) ]
@@ -89,17 +88,58 @@ def haveAlookForest():
 	print numpy.amin(cat['DEC']), numpy.amax(cat['DEC'])
 	print numpy.amin(cat['Z_VI']), numpy.amax(cat['Z_VI'])
 
+	
+	from myTools import Get_TProfile
+	flux      = cat["NORM_FLUX"][ cat['NORM_FLUX_IVAR'] >0.]/alphaStart__
+	lambdaRF  = cat["LAMBDA_RF"][ cat['NORM_FLUX_IVAR'] >0.]
+	lambdaObs = cat["LAMBDA_OBS"][ cat['NORM_FLUX_IVAR'] >0.]
+	weight    = numpy.ones(flux.size)
+	xxx, yyy, eyyy, nyyy = Get_TProfile(lambdaRF,flux, 160,weight)	
+	plt.errorbar(xxx, yyy, yerr=eyyy, marker="o")
+	myTools.deal_with_plot(False, False, False)
+	plt.show()
+	###
+	xxx, yyy, eyyy, nyyy = Get_TProfile(lambdaObs,flux, 3000,weight)	
+	plt.errorbar(xxx, yyy, yerr=eyyy, marker="o")
+	myTools.deal_with_plot(False, False, False)
+	plt.show()
+	
 
 	ar_cut          = (cat['NORM_FLUX_IVAR']>0.)
 	ar_lambdaObs    = cat['LAMBDA_OBS'][ ar_cut ]
 	ar_lambdaRF     = cat['LAMBDA_RF'][ ar_cut ]
 	ar_flux         = cat['NORM_FLUX'][ ar_cut ]
+	ar_flux_ivar    = cat['NORM_FLUX_IVAR'][ ar_cut ]
 	ar_zi           = cat['LAMBDA_OBS'][ ar_cut ]/(lambdaRFLine__) -1.
 	ar_weight       = cat['DELTA_WEIGHT'][ ar_cut ]
 
 	print numpy.amin(ar_zi), numpy.amax(ar_zi)
+	
+	'''
+	for i in range(0,cat.size):
+		el = cat[i]
+		if (el['LAMBDA_RF'][0]>1041.): continue
+		cut = el['NORM_FLUX_IVAR']>0.
+		lambdaAAA = el['LAMBDA_OBS'][cut]
 
+		template = (el['ALPHA_2']+el['BETA_2']*(el['LAMBDA_RF'][cut]-el['MEAN_FOREST_LAMBDA_RF']))*el['TEMPLATE'][cut]
+		print el['ALPHA_2'], el['BETA_2'], el['MEAN_FOREST_LAMBDA_RF'], el['Z_VI']
 
+		plt.errorbar(lambdaAAA,el['NORM_FLUX'][cut],yerr=numpy.power(el['NORM_FLUX_IVAR'][cut],-0.5),label='$Data$')
+
+		plt.plot(lambdaAAA,numpy.power(el['NORM_FLUX_IVAR'][cut],-0.5),label='flux err')
+		plt.plot(lambdaAAA,el['DELTA'][cut],label='delta')
+		plt.plot(lambdaAAA,numpy.power(el['DELTA_IVAR'][cut],-0.5),label='delta err')
+		plt.plot(lambdaAAA,el['DELTA_WEIGHT'][cut],label='delta weight')		
+		plt.plot(lambdaAAA,template,label=r'$QSO \, template$',color='red')
+		
+		myTools.deal_with_plot(False,False,True)
+		plt.xlabel(r'$\lambda_{R.F.} \, [\AA]$', fontsize=40)
+		plt.ylabel(r'$flux$', fontsize=40)
+		plt.show()
+	'''
+
+	
 	### delta vs. lambda_RF
 	xxx, yyy, eyyy, nyyy = myTools.Get_TProfile(ar_lambdaRF,ar_flux, lambdaRFTemplateBinEdges__, ar_weight)
 	plt.errorbar(xxx, yyy, yerr=eyyy, marker="o")
@@ -114,11 +154,19 @@ def haveAlookForest():
 	plt.ylabel(r'$flux$', fontsize=40)
 	myTools.deal_with_plot(False,False,False)
 	plt.show()
+	
 	### Distribution redshift
 	plt.hist(ar_zi, bins=50)
 	plt.xlabel(r'$z_{pixel}$')
 	plt.ylabel(r'$\#$')
 	myTools.deal_with_plot(False,False,False)
+	plt.show()
+	### Distribution norm_flux_ivar
+	plt.hist(numpy.log(ar_flux_ivar), bins=50, histtype='step')
+	plt.hist(numpy.log(cat2['NORM_FLUX_IVAR'][ cat2['NORM_FLUX_IVAR']>0. ]), bins=50, histtype='step')
+	plt.xlabel(r'$norm \, flux \, ivar$')
+	plt.ylabel(r'$\#$')
+	myTools.deal_with_plot(False,True,False)
 	plt.show()
 	### Map
 	plt.plot(cat['RA'],cat['DEC'], linestyle="", marker="o")
@@ -156,8 +204,8 @@ def saveCatalogueQSO():
 def haveAlookQSO():	
 
 #	cat = pyfits.open(path__+'QSO.fits', memmap=True)[1].data
-	cat   = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1536/Box_000/Simu_000/Data/QSO_withRSD.fits', memmap=True)[1].data
-	cat2  = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1536/Box_000/Simu_000/Data/QSO_noRSD.fits', memmap=True)[1].data
+	cat   = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation/Box_000/Simu_000/Data/QSO_withRSD.fits', memmap=True)[1].data
+	#cat2  = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1536/Box_000/Simu_000/Data/QSO_noRSD.fits', memmap=True)[1].data
 
 	print cat.size
 	
@@ -195,6 +243,7 @@ def haveAlookQSO():
 	plt.ylabel(r'$\#$')
 	myTools.deal_with_plot(False,False,False)
 	plt.show()
+	'''
 	### Distribution redshift
 	plt.hist(cat2['Z'], bins=50)
 	plt.xlabel(r'$z_{QSO}$')
@@ -207,7 +256,13 @@ def haveAlookQSO():
 	plt.ylabel(r'$\#$')
 	myTools.deal_with_plot(False,False,False)
 	plt.show()
+	'''
+
 	return
+
+
+cat = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation/Box_000/Simu_000/Data/delta.fits', memmap=True)[1].data
+print cat.size
 
 #createEmptyFitsFile()
 #copyToNormalFits()
