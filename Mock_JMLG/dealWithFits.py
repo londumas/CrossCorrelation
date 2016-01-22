@@ -77,7 +77,7 @@ def removeUselessLines():
 	return
 def haveAlookForest():	
 
-	cat = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation/Box_000/Simu_000/Data/delta.fits', memmap=True)[1].data[100:200]
+	cat = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_metals/Box_000/Simu_000/Data/delta.fits', memmap=True)[1].data[100:200]
 	cat2 = pyfits.open('/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits', memmap=True)[1].data[100:200]
 
 	print cat.size
@@ -115,7 +115,7 @@ def haveAlookForest():
 
 	print numpy.amin(ar_zi), numpy.amax(ar_zi)
 	
-	'''
+	
 	for i in range(0,cat.size):
 		el = cat[i]
 		if (el['LAMBDA_RF'][0]>1041.): continue
@@ -137,7 +137,7 @@ def haveAlookForest():
 		plt.xlabel(r'$\lambda_{R.F.} \, [\AA]$', fontsize=40)
 		plt.ylabel(r'$flux$', fontsize=40)
 		plt.show()
-	'''
+	
 
 	
 	### delta vs. lambda_RF

@@ -23,7 +23,7 @@ from const_delta import *
 
 
 ### File Jean-Marc
-path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation/Box_000/Simu_000/Data/mocks-0_10000.fits'
+path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_metals/Box_000/Simu_000/Data/mocks-0_1000.fits'
 key = ['loglam','flux','mock_F','mock_contpca','ivar','model','mock_miscalib','and_mask','mock_ivar']
 
 cat = pyfits.open(path, memmap=True)

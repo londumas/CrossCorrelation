@@ -54,6 +54,8 @@ const double lambdaRFTemplateMax__ = lambdaRFMax__+3.;
 long  Bit16 = 1;
 const double findPDF__ = false; 
 bool hasCont = true;
+const bool doVetoLines__          = true;
+
 
 GetDelta::GetDelta(int argc, char** argv) {
 
@@ -78,9 +80,9 @@ GetDelta::GetDelta(int argc, char** argv) {
 	pathToDataQSO__ += ".fits";
 	pathToDataQSO__ = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/spectra-expander.fits";
 	///
-	pathToDataForest__ = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/v1547/fits/spectra-78";
+	pathToDataForest__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation/Box_00";
 	pathToDataForest__ += box_idx;
-	pathToDataForest__ += "-";
+	pathToDataForest__ += "/Simu_00";
 	pathToDataForest__ += sim_idx;
 	pathToDataForest__ += "/Data/mocks-*";
 	///
@@ -231,6 +233,18 @@ void GetDelta::GetData(void) {
 	
 				/// Pixel outside working region and remove pixels because of CCD and Sky lines 
 				if (lambdaRFd<lambdaRFTemplateMin__ || lambdaRFd>lambdaRFNormaMax__ || LAMBDA_OBS[p]<lambdaObsMin__ || LAMBDA_OBS[p]>=lambdaObsMax__) continue;
+
+				//// Remove veto lines
+				bool isLine = false;
+				if (doVetoLines__) {
+					for (unsigned int k=0; k<nbVetoLines__; k++) {
+						 if (LAMBDA_OBS[p]>=vetoLine__[2*k] && LAMBDA_OBS[p]<vetoLine__[2*k+1]) {
+							isLine = true;
+							break;
+						}
+					}
+				}
+				if (isLine) continue;
 	
 				/// Normalisation zone
 				if (lambdaRFd>=lambdaRFNormaMin__ && lambdaRFd<lambdaRFNormaMax__) {

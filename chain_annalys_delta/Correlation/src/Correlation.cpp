@@ -93,7 +93,7 @@ double distMinPixel__ = 0.;
 double distMinPixelDelta2__ = 0.;
 unsigned int idxCommand_[6] = {0};
 const std::string pathToMockJMC__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation/";
-std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/";
+std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/TESTS/";
 
 ///// Flags for Jean-Marc's simulations
 const bool mocks          = false;
@@ -135,7 +135,7 @@ Correlation::Correlation(int argc, char **argv) {
 	
 
 	///// Set the number of forest to work on
-	nbForest_   = 0;
+	nbForest_   = 1000;
 	nbForest2__ = 0;
 	nbQ1__      = 0;
 	nbQ2__      = 0;
@@ -977,70 +977,18 @@ void Correlation::xi_A_delta_delta(void) {
 		}
 	}
 
+	std::string prefix = forest__;
+	prefix += ".txt";
 
 	std::ofstream fFile;
-	std::string tmp_pathToSave = pathToSave__;
-	tmp_pathToSave += "xi_A_delta_delta_1D_";
-	tmp_pathToSave += forest__;
-	tmp_pathToSave += ".txt";
-	std::cout << "\n  " << tmp_pathToSave << std::endl;
-	fFile.open(tmp_pathToSave.c_str());
-	fFile << std::scientific;
-	fFile.precision(17);
-
 	long double sumOne = 0.;
 	long double sumZZZ = 0.;
 	long double sumWeg = 0.;
 
-	///// Set the values of data
-	///// [0] for value, [1] for error, [2] for bin center
-	for (unsigned int i=0; i<nbBin; i++) {
-
-		long double save0 = 0.;
-		long double save1 = 0.;
-		long double save2 = 0.;
-		long double save3 = 0.;
-		long double save4 = 0.;
-		long double save5 = 0.;
-		long double save6 = 0.;
-
-		for (unsigned int j=0; j<nbBinM; j++) {
-			save0 += dataMu[i][j][0];
-			save1 += dataMu[i][j][1];
-			save2 += dataMu[i][j][2];
-			save3 += dataMu[i][j][3];
-			save4 += dataMu[i][j][4];
-			save5 += dataMu[i][j][5];
-			save6 += dataMu[i][j][6];
-		}
-
-		fFile << save0;
-		fFile << " " << save1;
-		fFile << " " << save2;
-		fFile << " " << save3;
-		fFile << " " << save4/2.;
-		fFile << " " << save5;
-		fFile << " " << save6;
-		fFile << std::endl;
-
-		sumZZZ += save4/2.;
-		sumWeg += save5;
-		sumOne += save6;
-	}
-	fFile.close();
-
-	std::cout << "  < z >                = " << sumZZZ/sumWeg    << std::endl;
-	std::cout << "  number of pairs      = " << sumOne           << std::endl;
-	std::cout << "  < pairs per forest > = " << sumOne/nbForest_ << std::endl;
-	sumOne = 0.;
-	sumZZZ = 0.;
-	sumWeg = 0.;
-
 	///// Save the 2D cross-correlation
 	std::string pathToSave = pathToSave__;
 	pathToSave += "xi_A_delta_delta_2D_";
-	pathToSave += forest__;
-	pathToSave += ".txt";
+	pathToSave += prefix;
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
 	fFile << std::scientific;
@@ -1075,8 +1023,7 @@ void Correlation::xi_A_delta_delta(void) {
 	///// Mu
 	pathToSave = pathToSave__;
 	pathToSave += "xi_A_delta_delta_Mu_";
-	pathToSave += forest__;
-	pathToSave += ".txt";
+	pathToSave += prefix;
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
 	fFile << std::scientific;
@@ -1253,11 +1200,6 @@ void Correlation::xi_A_delta_delta2(void) {
 	v_lRFDelta2__.clear();
 	v_lObsDelta2__.clear();
 
-
-
-
-	std::cout << "  Starting" << std::endl;
-
 	///// Constants:
 	const unsigned int max = 200.;
 	const unsigned int nbBin = int(max);
@@ -1294,8 +1236,21 @@ void Correlation::xi_A_delta_delta2(void) {
 			}
 		}
 	}
+
+	///// get an array for nb of pairs for the forest 1
+	double a_nbPairs[nbForest_];
+	for (unsigned int i=0; i<nbForest_; i++) {
+		a_nbPairs[i] = 0.;
+	}
+
+
+	std::cout << "  Starting" << std::endl;
+
 	
 	for (unsigned int f1=0; f1<nbForest_; f1++) {
+
+		double nbPairs = 0.;
+
 		const unsigned int nb1      = v_nbPixelDelta1__[f1];
 		const double cosDe          = v_CosDe__[f1];
 		const double sinDe          = v_SinDe__[f1];
@@ -1365,78 +1320,34 @@ void Correlation::xi_A_delta_delta2(void) {
 					data2D[rPerpBinIdx][rParralBinIdx][4] += w1w2z1z2;
 					data2D[rPerpBinIdx][rParralBinIdx][5] += w1w2;
 					data2D[rPerpBinIdx][rParralBinIdx][6] ++;
+
+					///// Get the number of pairs
+					nbPairs += w1w2;
 				}
 			}
 		}
+
+		///// Put the number of pairs comming with this forest
+		a_nbPairs[f1] = nbPairs;
 	}
 
 
-	std::ofstream fFile;
-	std::string tmp_pathToSave = pathToSave__;
-	tmp_pathToSave += "xi_A_delta_delta2_1D_";
-	tmp_pathToSave += forest__;
-	tmp_pathToSave += "_";
-	tmp_pathToSave += forest2__;
-	tmp_pathToSave += ".txt";
-	std::cout << "\n  " << tmp_pathToSave << std::endl;
-	fFile.open(tmp_pathToSave.c_str());
-	fFile << std::scientific;
-	fFile.precision(17);
+	std::string prefix = forest__;
+	prefix += "_";
+	prefix += forest2__;
+	prefix += ".txt";
 
+	std::ofstream fFile;
 	long double sumZZZ = 0.;
 	long double sumWeg = 0.;
 	long double sumOne = 0.;
 
-	///// Set the values of data
-	for (unsigned int i=0; i<nbBin; i++) {
-
-		long double save0 = 0.;
-		long double save1 = 0.;
-		long double save2 = 0.;
-		long double save3 = 0.;
-		long double save4 = 0.;
-		long double save5 = 0.;
-		long double save6 = 0.;
-
-		for (unsigned int j=0; j<nbBinM; j++) {
-			save0 += dataMu[i][j][0];
-			save1 += dataMu[i][j][1];
-			save2 += dataMu[i][j][2];
-			save3 += dataMu[i][j][3];
-			save4 += dataMu[i][j][4];
-			save5 += dataMu[i][j][5];
-			save6 += dataMu[i][j][6];
-		}
-
-		fFile << save0;
-		fFile << " " << save1;
-		fFile << " " << save2;
-		fFile << " " << save3;
-		fFile << " " << save4/2.;
-		fFile << " " << save5;
-		fFile << " " << save6;
-		fFile << std::endl;
-
-		sumZZZ += save4/2.;
-		sumWeg += save5;
-		sumOne += save6;
-	}
-	fFile.close();
-
-	std::cout << "  < z >                = " << sumZZZ/sumWeg    << std::endl;
-	std::cout << "  number of pairs      = " << sumOne           << std::endl;
-	std::cout << "  < pairs per forest > = " << sumOne/nbForest_ << std::endl;
-	sumOne = 0.;
-
 	///// Save the 2D cross-correlation
-	tmp_pathToSave = pathToSave__;
-	tmp_pathToSave += "xi_A_delta_delta2_2D_";
-	tmp_pathToSave += forest__;
-	tmp_pathToSave += "_";
-	tmp_pathToSave += forest2__;
-	tmp_pathToSave += ".txt";
-	std::cout << "\n  " << tmp_pathToSave << std::endl;
-	fFile.open(tmp_pathToSave.c_str());
+	std::string pathToSave = pathToSave__;
+	pathToSave += "xi_A_delta_delta2_2D_";
+	pathToSave += prefix;
+	std::cout << "\n  " << pathToSave << std::endl;
+	fFile.open(pathToSave.c_str());
 	fFile << std::scientific;
 	fFile.precision(17);
 
@@ -1458,7 +1369,6 @@ void Correlation::xi_A_delta_delta2(void) {
 			fFile << " " << data2D[i][j][6];
 			fFile << std::endl;
 
-
 			sumZZZ += data2D[i][j][4]/2.;
 			sumWeg += data2D[i][j][5];
 			sumOne += data2D[i][j][6];
@@ -1472,14 +1382,11 @@ void Correlation::xi_A_delta_delta2(void) {
 
 
 	///// Mu
-	tmp_pathToSave = pathToSave__;
-	tmp_pathToSave += "xi_A_delta_delta2_Mu_";
-	tmp_pathToSave += forest__;
-	tmp_pathToSave += "_";
-	tmp_pathToSave += forest2__;
-	tmp_pathToSave += ".txt";
-	std::cout << "\n  " << tmp_pathToSave << std::endl;
-	fFile.open(tmp_pathToSave.c_str());
+	pathToSave = pathToSave__;
+	pathToSave += "xi_A_delta_delta2_Mu_";
+	pathToSave += prefix;
+	std::cout << "\n  " << pathToSave << std::endl;
+	fFile.open(pathToSave.c_str());
 	fFile << std::scientific;
 	fFile.precision(17);
 
@@ -1497,6 +1404,33 @@ void Correlation::xi_A_delta_delta2(void) {
 		}
 	}
 	fFile.close();
+
+
+	if (true) {
+
+		std::vector< std::vector< double > > forests;
+		std::vector< double > tmp_forests_id;
+		std::vector< double > tmp_forests_pa;
+		
+		for (unsigned int i=0; i<nbForest_; i++) {
+			tmp_forests_id.push_back( v_idx__[i] );
+			tmp_forests_pa.push_back( a_nbPairs[i] );
+		}
+		forests.push_back(tmp_forests_id);
+		forests.push_back(v_ra__);
+		forests.push_back(v_de__);
+		forests.push_back(tmp_forests_pa);
+		
+
+		/// find the index of each forest among the C_NBSUBSAMPLES sub-samples
+		LymanForest* lymanForestObject = new LymanForest(forests, C_NBSUBSAMPLES, C_RA_SEPERATION_NGC_SGC, mockJMC__);
+		pathToSave = pathToSave__;
+		pathToSave += "xi_A_delta_delta2_map_";
+		pathToSave += prefix;
+		lymanForestObject->SaveRegionMap(pathToSave);
+		delete lymanForestObject;
+	}
+
 
 	return;
 }
@@ -1671,10 +1605,6 @@ void Correlation::xi_delta_QSO(bool doBootstraps/*=False*/, unsigned int bootIdx
 	v_lRF__.clear();
 	v_lObs__.clear();
 	v_nb__.clear();
-
-	std::stringstream convert;
-	convert << bootIdx;
-	const std::string strBootIdx = convert.str();
 
 	///// Constants:
 	///// The space between bins is of 10 Mpc.h^-1
@@ -1926,7 +1856,16 @@ void Correlation::xi_delta_QSO(bool doBootstraps/*=False*/, unsigned int bootIdx
 	std::cout << "\n\n  Finishing" << std::endl;
 	std::cout << "\n\n\n" << std::endl;
 
-	///// Set the prefix for different type of runs
+	//// Set the prefix of different forest and QSOs
+	std::string prefix1 = forest__;
+	prefix1 += "_";
+	prefix1 += QSO__;
+
+	std::stringstream convert;
+	convert << bootIdx;
+	const std::string strBootIdx = convert.str();
+
+	//// Set the prefix for different type of runs
 	std::string prefix = "_";
 	if (doBootstraps)  prefix += "subsampling";
 	if (shuffleForest) prefix += "shuffleForest";
@@ -1945,9 +1884,7 @@ void Correlation::xi_delta_QSO(bool doBootstraps/*=False*/, unsigned int bootIdx
 	///// Save the 2D cross-correlation
 	pathToSave = pathToSave__;
 	pathToSave += "xi_delta_QSO_2D_";
-	pathToSave += forest__;
-	pathToSave += "_";
-	pathToSave += QSO__;
+	pathToSave += prefix1;
 	if (doBootstraps || shuffleForest || shuffleQSO || randomQSO) pathToSave += prefix;
 	pathToSave += ".txt";
 	std::cout << "\n  " << pathToSave << std::endl;
@@ -1990,9 +1927,7 @@ void Correlation::xi_delta_QSO(bool doBootstraps/*=False*/, unsigned int bootIdx
 	///// Save the Mu cross-correlation
 	pathToSave = pathToSave__;
 	pathToSave += "xi_delta_QSO_Mu_";
-	pathToSave += forest__;
-	pathToSave += "_";
-	pathToSave += QSO__;
+	pathToSave += prefix1;
 	if (doBootstraps || shuffleForest || shuffleQSO || randomQSO) pathToSave += prefix;
 	pathToSave += ".txt";
 	std::cout << "\n  " << pathToSave << std::endl;
@@ -2033,13 +1968,11 @@ void Correlation::xi_delta_QSO(bool doBootstraps/*=False*/, unsigned int bootIdx
 		forests.push_back(tmp_forests_pa);
 		
 
-		/// find the index of each forest among the C_NBSUBSAMPLES sub-samples
+		//// find the index of each forest among the C_NBSUBSAMPLES sub-samples
 		LymanForest* lymanForestObject = new LymanForest(forests, C_NBSUBSAMPLES, C_RA_SEPERATION_NGC_SGC, mockJMC__);
 		pathToSave = pathToSave__;
 		pathToSave += "xi_delta_QSO_map_";
-		pathToSave += forest__;
-		pathToSave += "_";
-		pathToSave += QSO__;
+		pathToSave += prefix1;
 		pathToSave += ".txt";
 		lymanForestObject->SaveRegionMap(pathToSave);
 		delete lymanForestObject;
@@ -3701,59 +3634,9 @@ void Correlation::xi_A_delta_delta_MockJMc(void) {
 
 
 	std::ofstream fFile;
-	std::string tmp_pathToSave = pathToSave__;
-	tmp_pathToSave += "xi_A_delta_delta_1D_";
-	tmp_pathToSave += forest__;
-	tmp_pathToSave += ".txt";
-	std::cout << "\n  " << tmp_pathToSave << std::endl;
-	fFile.open(tmp_pathToSave.c_str());
-	fFile << std::scientific;
-	fFile.precision(17);
-
 	long double sumZZZ = 0.;
 	long double sumWeg = 0.;
 	long double sumOne = 0.;
-
-	///// Set the values of data
-	///// [0] for value, [1] for error, [2] for bin center
-	for (unsigned int i=0; i<nbBin; i++) {
-
-		long double save0 = 0.;
-		long double save1 = 0.;
-		long double save2 = 0.;
-		long double save3 = 0.;
-		long double save4 = 0.;
-		long double save5 = 0.;
-		long double save6 = 0.;
-
-		for (unsigned int j=0; j<nbBinM; j++) {
-			save0 += dataMu[i][j][0];
-			save1 += dataMu[i][j][1];
-			save2 += dataMu[i][j][2];
-			save3 += dataMu[i][j][3];
-			save4 += dataMu[i][j][4];
-			save5 += dataMu[i][j][5];
-			save6 += dataMu[i][j][6];
-		}
-
-		fFile << save0;
-		fFile << " " << save1;
-		fFile << " " << save2;
-		fFile << " " << save3;
-		fFile << " " << save4/2.;
-		fFile << " " << save5;
-		fFile << " " << save6;
-		fFile << std::endl;
-
-		sumZZZ += save4/2.;
-		sumWeg += save5;
-		sumOne += save6;
-	}
-	fFile.close();
-
-	std::cout << "  number of pairs      = " << sumOne          << std::endl;
-	std::cout << "  < pairs per forest > = " << sumOne/nbForest_ << std::endl;
-	sumOne = 0.;
 
 	///// Save the 2D cross-correlation
 	std::string pathToSave = pathToSave__;
@@ -3842,20 +3725,6 @@ void Correlation::xi_delta_QSO_MockJMc(bool doBootstraps/*=False*/, unsigned int
 	v_lRF__.clear();
 	v_lObs__.clear();
 	v_nb__.clear();
-
-	std::stringstream convert;
-	convert << bootIdx;
-	const std::string strBootIdx = convert.str();
-
-	//// Set the prefix for different type of runs
-	std::string prefix = "_";
-	if (doBootstraps)  prefix += "subsampling";
-	if (shuffleForest) prefix += "shuffleForest";
-	if (shuffleQSO)    prefix += "shuffleQSO";
-	if (randomQSO)     prefix += "randomQSO";
-	prefix += "_";
-	prefix += strBootIdx;
-
 
 	//// Schiffle the forest
 	if (shuffleForest) {
@@ -4082,19 +3951,35 @@ void Correlation::xi_delta_QSO_MockJMc(bool doBootstraps/*=False*/, unsigned int
 
 
 	std::cout << "\n\n\n" << std::endl;
+
+	//// Set the prefix of different forest and QSOs
+	std::string prefix1 = forest__;
+	prefix1 += "_";
+	prefix1 += QSO__;
+
+	std::stringstream convert;
+	convert << bootIdx;
+	const std::string strBootIdx = convert.str();
+
+	//// Set the prefix for different type of runs
+	std::string prefix = "_";
+	if (doBootstraps)  prefix += "subsampling";
+	if (shuffleForest) prefix += "shuffleForest";
+	if (shuffleQSO)    prefix += "shuffleQSO";
+	if (randomQSO)     prefix += "randomQSO";
+	prefix += "_";
+	prefix += strBootIdx;
+
 	std::ofstream fFile;
-	std::string pathToSave;
 
 	long double sumZZZ = 0.;
 	long double sumWeg = 0.;
 	long double sumOne = 0.;
 
 	//// Save the 2D cross-correlation
-	pathToSave = pathToSave__;
+	std::string pathToSave = pathToSave__;
 	pathToSave += "xi_delta_QSO_2D_";
-	pathToSave += forest__;
-	pathToSave += "_";
-	pathToSave += QSO__;
+	pathToSave += prefix1;
 	if (doBootstraps || shuffleForest || shuffleQSO || randomQSO) pathToSave += prefix;
 	pathToSave += ".txt";
 	std::cout << "\n  " << pathToSave << std::endl;
@@ -4137,9 +4022,7 @@ void Correlation::xi_delta_QSO_MockJMc(bool doBootstraps/*=False*/, unsigned int
 	//// Save the Mu cross-correlation
 	pathToSave = pathToSave__;
 	pathToSave += "xi_delta_QSO_Mu_";
-	pathToSave += forest__;
-	pathToSave += "_";
-	pathToSave += QSO__;
+	pathToSave += prefix1;
 	if (doBootstraps || shuffleForest || shuffleQSO || randomQSO) pathToSave += prefix;
 	pathToSave += ".txt";
 	std::cout << "\n  " << pathToSave << std::endl;
@@ -4180,13 +4063,11 @@ void Correlation::xi_delta_QSO_MockJMc(bool doBootstraps/*=False*/, unsigned int
 		forests.push_back(tmp_forests_pa);
 		
 
-		/// find the index of each forest among the C_NBSUBSAMPLES sub-samples
+		//// find the index of each forest among the C_NBSUBSAMPLES sub-samples
 		LymanForest* lymanForestObject = new LymanForest(forests, C_NBSUBSAMPLES, C_RA_SEPERATION_NGC_SGC, mockJMC__);
 		pathToSave = pathToSave__;
 		pathToSave += "xi_delta_QSO_map_";
-		pathToSave += forest__;
-		pathToSave += "_";
-		pathToSave += QSO__;
+		pathToSave += prefix1;
 		pathToSave += ".txt";
 		lymanForestObject->SaveRegionMap(pathToSave);
 		delete lymanForestObject;

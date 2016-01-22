@@ -757,7 +757,7 @@ class Correlation_3D:
 		myTools.plotCovar([matrix],['Distortion matrix'])
 
 		return
-	def plot_map_sub_sampling(self):
+	def plot_map_sub_sampling(self, euclidean=False):
 	
 		pathToLoad = self._path_to_txt_file_folder + self._prefix + '_map_'+ self._middlefix + '.txt'
 	
@@ -765,6 +765,7 @@ class Correlation_3D:
 		re = data[:,1].astype(int)
 		ra = data[:,2]
 		de = data[:,3]
+		pa = data[:,4]
 
 		### Test if number region == self.nb_Sub_Sampling
 		if (numpy.amax(re)+1 != self.nb_Sub_Sampling):
@@ -778,11 +779,38 @@ class Correlation_3D:
 		#plt.xlim([0,360.])
 		#plt.ylim([-90.,90.])
 		plt.ticklabel_format(style='sci', axis='z', scilimits=(0,0))
-		plt.xlabel(r'$R.A. (\degree)$')
-		plt.ylabel(r'$Dec. (\degree)$')
+		if (euclidean):
+			plt.xlabel(r'$x \, [h^{-1.}.Mpc]$')
+			plt.ylabel(r'$y \, [h^{-1.}.Mpc]$')
+		else:
+			plt.xlabel(r'$R.A. \, [\degree]$')
+			plt.ylabel(r'$Dec. \, [\degree]$')
 		myTools.deal_with_plot(False,False,False)
 		plt.show()
 	
+
+		### Plot the sky with color as function of nb of pairs
+		from matplotlib  import cm
+
+		fig = plt.figure(figsize=(6,6))
+		ax = fig.add_subplot(111)
+		ax.grid(True,linestyle='-',color='0.75')
+
+		if (euclidean):
+			plt.xlabel(r'$x \, [h^{-1.}.Mpc]$')
+			plt.ylabel(r'$y \, [h^{-1.}.Mpc]$')
+		else:
+			plt.xlabel(r'$R.A. \, [\degree]$')
+			plt.ylabel(r'$Dec. \, [\degree]$')
+
+		ax.scatter(ra,de,s=20,c=numpy.log10(pa), marker = 'o', cmap = cm.jet )
+
+		#cbar = plt.colorbar()
+		#cbar.set_label(r'$nb \, pairs \, [\#]$',size=40)
+
+		plt.show()
+
+
 		return
 
 
@@ -791,10 +819,6 @@ class Correlation_3D:
 
 
 
-
-#path_to_txt_file_folder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
-
-path_to_txt_file_folder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation/Box_000/Simu_000/Results/'
 
 dic_class = {
 	'minXi': 0.,
@@ -805,12 +829,12 @@ dic_class = {
 	'size_bin_calcul_s': 1.,
 	'size_bin_calcul_m': 0.02,
 	'correlation': 'q_f',
-	'path_to_txt_file_folder': path_to_txt_file_folder,
+	'path_to_txt_file_folder': 'NOTHING',
 	'f1': 'LYA',
 	'f2': 'LYA',
 	'q1': 'QSO',
 	'q2': 'QSO',
-	'name' : 'Mocks'
+	'name' : 'Data'
 }
 dic_CAMB = {
 	'mulpol_index' : 0,
@@ -824,50 +848,38 @@ dic_CAMB = {
 	'max_for_guess' : 50.,
 }
 
-corr = Correlation_3D(dic_class)
-print corr._meanZ
-
 
 path_to_txt_file_folder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
-dic_class = {
-	'minXi': 0.,
-	'maxXi': 200.,
-	'nbBin': 50,
-	'nbBinM': 25,
-	'nb_Sub_Sampling': 80,
-	'size_bin_calcul_s': 1.,
-	'size_bin_calcul_m': 0.02,
-	'correlation': 'q_f',
-	'path_to_txt_file_folder': path_to_txt_file_folder,
-	'f1': 'LYA',
-	'f2': 'LYA',
-	'q1': 'QSO',
-	'q2': 'QSO',
-	'name' : 'Data'
-}
+#path_to_txt_file_folder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_metals/Box_000/Simu_000/Results/'
+
+
+dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
+dic_class['name'] = 'Data'
+corr = Correlation_3D(dic_class)
+dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation/Box_000/Simu_000/Results/'
+dic_class['name'] = 'MocksJM-mockExpander'
 corr2 = Correlation_3D(dic_class)
-print corr._meanZ
+dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_metals/Box_000/Simu_000/Results/'
+dic_class['name'] = 'MocksJM-mockExpander-'
+corr3 = Correlation_3D(dic_class)
 
-corr.plot_1d(0,[corr2])
-corr.plot_1d(1,[corr2])
-corr.plot_1d(2,[corr2])
-
-
+corr.plot_1d(0, [corr2,corr3])
+corr.plot_1d(1, [corr2,corr3])
+corr.plot_1d(2, [corr2,corr3])
+corr3.plot_2d(0)
+corr3.plot_2d(1)
+corr3.plot_2d(2)
+corr3.plot_We(0)
+corr3.plot_We(1)
+corr3.plot_We(2)
+corr3.plot_Mu(0)
+corr3.plot_Mu(1)
+corr3.plot_Mu(2)
+corr3.plot_distortion_matrix()
+corr3.apply_distortion_matrix()
+dic_CAMB = corr3.fit_CAMB(dic_CAMB)
+corr3.plot_CAMB(dic_CAMB)
 '''
-corr.plot_2d(0)
-corr.plot_2d(1)
-corr.plot_2d(2)
-corr.plot_We(0)
-corr.plot_We(1)
-corr.plot_We(2)
-corr.plot_Mu(0)
-corr.plot_Mu(1)
-corr.plot_Mu(2)
-corr.plot_distortion_matrix()
-corr.apply_distortion_matrix()
-dic_CAMB = corr.fit_CAMB(dic_CAMB)
-corr.plot_CAMB(dic_CAMB)
-
 corr.plot_map_sub_sampling()
 corr.plot_distortion_matrix()
 corr.apply_distortion_matrix()

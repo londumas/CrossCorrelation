@@ -228,7 +228,7 @@ class Correlation_1D:
 #path_to_txt_file_folder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
 #listCorr = ['f_f_r','f_f_lRF','f_f_lRF_devide','f_f2_r','f_f2_lRF_devide']
 path_to_txt_file_folder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation/Box_000/Simu_000/Results/'
-listCorr = ['f_f_r','f_f_lRF','f_f_lRF_devide']
+listCorr = ['f_f_lRF_devide']
 
 
 for el in listCorr:
@@ -238,7 +238,7 @@ for el in listCorr:
 		'f1': 'LYA',
 		'f2': 'LYA',
 		'nb_Sub_Sampling': 80,
-		'name' : 'Mocks'
+		'name' : 'MocksJM-mockExpander'
 	}
 	corr = Correlation_1D(dic_class)
 	print corr._meanZ
@@ -255,7 +255,32 @@ for el in listCorr:
 	corr2 = Correlation_1D(dic_class)
 	print corr2._meanZ
 	#corr2.plot(True, False)
-	corr2.plot(False, False, [corr])
+
+	dic_class = {
+		'correlation': el,
+		'path_to_txt_file_folder': '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Box_009/Simu_009/Results/',
+		'f1': 'LYA',
+		'f2': 'LYA',
+		'nb_Sub_Sampling': 80,
+		'name' : 'MockJM'
+	}
+	corr3 = Correlation_1D(dic_class)
+	print corr3._meanZ
+	#corr2.plot(True, False)
+
+	dic_class = {
+		'correlation': el,
+		'path_to_txt_file_folder': '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_metals/Box_000/Simu_000/Results/',
+		'f1': 'LYA',
+		'f2': 'LYA',
+		'nb_Sub_Sampling': 80,
+		'name' : 'MocksJM-mockExpander-metals'
+	}
+	corr4 = Correlation_1D(dic_class)
+	print corr4._meanZ
+	#corr.plot(True)
+
+	corr2.plot(False, False, [corr,corr3,corr4])
 
 
 

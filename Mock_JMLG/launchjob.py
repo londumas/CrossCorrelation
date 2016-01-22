@@ -30,6 +30,7 @@ import cosmolopy.distance as cosmology
 
 ### Constants
 sizeMax = 300000
+sizeMaxForest = 300000
 nbQSO__ = 238929
 nbFor__ = 170898
 nbPixel = 645
@@ -45,10 +46,12 @@ pathToFolder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation
 ###		- 1: fill files
 ###		- 2: remove empty fields
 ###
+index_function = -1
 index_pass = -1
-index_pass = int(sys.argv[1])
+index_function = int(sys.argv[1])
+index_pass = int(sys.argv[2])
+print index_function
 print index_pass
-
 
 def main():
 
@@ -85,7 +88,7 @@ def main():
 
 				if (i==0 and j==0):
 					tbhduQSO    = create_fits_qso(sizeMax)
-					tbhduForest = create_fits_forest(60000)
+					tbhduForest = create_fits_forest(sizeMaxForest)
 					tbhduQSO.writeto(path + 'Data/QSO_withRSD.fits', clobber=True)
 					tbhduForest.writeto(path + 'Data/delta.fits', clobber=True)
 				else:
@@ -115,18 +118,10 @@ def main():
 				nbQSO = cat.size
 				pyfits.writeto(path + 'Data/QSO_withRSD.fits', cat, clobber=True)
 				print nbQSO
-
-				cat = pyfits.open(path + 'Data/delta.fits', memmap=True)[1].data
-				print cat.size
-				cat = cat[ (cat['Z_VI'] != 0.) ]
-				print cat.size
-				pyfits.writeto(path + 'Data/delta.fits', cat, clobber=True)
 			
-			'''
-			### Remove useless lines in Forest
-			#####################
-			for el in ['delta_noNoise_noCont.fits']: #,'delta.fits','delta_noNoise_noCont.fits']:
-				cat = pyfits.open(path + 'Data/'+el, memmap=True)[1].data[:nbQSO]
+			
+				### Remove useless lines in Forest
+				cat = pyfits.open(path + 'Data/delta.fits', memmap=True)[1].data[:nbQSO]
 				print cat.size
 				tmp_idx  = numpy.arange(cat.size)
 				tmp_bool = (cat['Z_VI'] != 0.)
@@ -141,8 +136,8 @@ def main():
 				cat['Z_VI'][rand] = 0.
 				cat = cat[ (cat['Z_VI'] != 0.) ]
 				print cat.size
-				pyfits.writeto(path + 'Data/'+el, cat, clobber=True)
-			'''
+				pyfits.writeto(path + 'Data/delta.fits', cat, clobber=True)
+			
 
 			'''
 			### Get the data to 'good' files
@@ -425,9 +420,10 @@ def create_fits_forest(sizeMax=0):
 
 
 ## Execute the code
-#main()
-sendCalculDelta()
-
+if (index_function==0):
+	main()
+elif (index_function==1):
+	sendCalculDelta()
 
 
 
