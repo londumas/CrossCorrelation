@@ -80,18 +80,17 @@ GetDelta::GetDelta(int argc, char** argv) {
 	pathToDataQSO__ += ".fits";
 	pathToDataQSO__ = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/spectra-expander.fits";
 	///
-	pathToDataForest__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation/Box_00";
+	pathToDataForest__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_correctedForest_withMetals/Box_00";
 	pathToDataForest__ += box_idx;
 	pathToDataForest__ += "/Simu_00";
 	pathToDataForest__ += sim_idx;
 	pathToDataForest__ += "/Data/mocks-*";
 	///
-	pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/noNoisenoCont/Box_00";
+	pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_correctedForest_withMetals/Box_00";
 	pathToSave__ += box_idx;
 	pathToSave__ += "/Simu_00";
 	pathToSave__ += sim_idx;
 	pathToSave__ += "/Data/";
-	pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation/Box_000/Simu_000/Data/";
 
 
 	std::cout << "\n"   << std::endl;
@@ -140,7 +139,6 @@ void GetDelta::GetData(void) {
 	/// index of forest
 	unsigned int forestIdx = 0;
 
-
 	/// Get the list 
 	FILE *fp;
 	char path[PATH_MAX];
@@ -148,7 +146,6 @@ void GetDelta::GetData(void) {
 	std::vector< std::string > listFiles;
 	fp = popen(command.c_str(), "r");
 	while (fgets(path, PATH_MAX, fp) != NULL) listFiles.push_back(path);
-	
 
 	/// Get nb of files
 	const unsigned int nbFiles = listFiles.size();
@@ -169,7 +166,7 @@ void GetDelta::GetData(void) {
 		/// Get the number of spectra
 		int tmp_nbSpectra = 0;
 		unsigned int nbSpectra = 0;
-		if (isTest__) nbSpectra = 1000;
+		if (isTest__) nbSpectra = 30000;
 		else {
 			fits_get_num_hdus(fitsptrSpec, &tmp_nbSpectra, &sta);
 			nbSpectra = tmp_nbSpectra-1;
@@ -224,7 +221,7 @@ void GetDelta::GetData(void) {
 			const double oneOverOnePlusZ = 1./(1.+Z);
 	
 			for (unsigned int p=0; p<tmp_nbPixels2; p++) {
-	
+
 				/// bad pixels
 				if (LAMBDA_OBS[p]<=0. || IVAR[p]<=0. || AND_MASK[p]>=Bit16 ) continue;
 	
@@ -264,14 +261,14 @@ void GetDelta::GetData(void) {
 					if (lambdaRFd>=lambdaRFMin__ && lambdaRFd<lambdaRFMax__) {
 						meanForestLRF[0] += FLUX[p];
 						meanForestLRF[1] ++;
-	
+						/*
 						/// Get the PDF
 						if (findPDF__) {
 							hFluxPDF__->Fill(FLUX[p],LAMBDA_OBS[p]/lambdaRFLine__-1.);
 							hRedshift__->Fill(LAMBDA_OBS[p]/lambdaRFLine__-1.);
 							hFlux__->Fill(FLUX[p]);
 							hFluxVsLambdaObs__->Fill(LAMBDA_OBS[p], FLUX[p]);
-						}
+						}*/
 					}
 				}
 			}
@@ -289,12 +286,12 @@ void GetDelta::GetData(void) {
 	
 			/// Normalise the data
 			for (unsigned int i=0; i<nbPixel; i++) {
-				norm_flux[i]      /= norm;
-				norm_flux_ivar[i] *= norm*norm;
-				continuum[i]      /= norm;
 				delta[i]           = norm_flux[i]/continuum[i] -1.;
 				delta_ivar[i]      = norm_flux_ivar[i]*continuum[i]*continuum[i];
 				delta_weight[i]    = delta_ivar[i];
+				norm_flux[i]      /= norm;
+				norm_flux_ivar[i] *= norm*norm;
+				continuum[i]      /= norm;
 			}
 	
 			/// Get the mean lambda_RF

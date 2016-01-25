@@ -118,6 +118,7 @@ class Correlation
 		//
 		void xi_A_delta_delta_MockJMc(void);
 		void xi_delta_QSO_MockJMc( bool doBootstraps=false, unsigned int bootIdx=0);
+		void xi_delta_QSO_lambda_MockJMc( bool doBootstraps=false, unsigned int bootIdx=0);
 		void xi_delta_QSO_MockJMc_distortionMatrix( void );
 		void xi_delta_QSO_MockJMc_distortionMatrix_1D( void );
 		void xi_QSO_QSO_MockJMc(bool doBootstraps=false, unsigned int bootIdx=0);

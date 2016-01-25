@@ -71,7 +71,7 @@ std::string pathMoreForHist__ = "";
 
 //// Flags
 const unsigned int stepDefinition = 2;
-const unsigned int stepAnnalyse   = 0;
+const unsigned int stepAnnalyse   = 1;
 const unsigned int methodIndex__ = 2;
 const bool doVetoLines__          = true;
 const bool setDLA__               = false;

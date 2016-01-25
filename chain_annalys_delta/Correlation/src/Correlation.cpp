@@ -92,16 +92,16 @@ const unsigned int nbBinlambdaObs__  = int(lambdaObsMax__-lambdaObsMin__);
 double distMinPixel__ = 0.;
 double distMinPixelDelta2__ = 0.;
 unsigned int idxCommand_[6] = {0};
-const std::string pathToMockJMC__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation/";
+const std::string pathToMockJMC__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_correctedForest_withMetals/";
 std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/TESTS/";
 
 ///// Flags for Jean-Marc's simulations
 const bool mocks          = false;
 const bool mockJMC__          = true;
 const bool mockBox__          = false;
-const bool mocksNoNoiseNoCont = false;
+const bool mocksNoNoiseNoCont = true;
 const double randomPositionOfQSOInCell__ = false;
-const double randomPositionOfQSOInCellNotBeforeCorrelation__ = true;
+const double randomPositionOfQSOInCellNotBeforeCorrelation__ = false;
 //// Flags for covariance matrix estimation
 const bool shuffleQSO     = false;
 const bool shuffleForest  = false;
@@ -135,7 +135,7 @@ Correlation::Correlation(int argc, char **argv) {
 	
 
 	///// Set the number of forest to work on
-	nbForest_   = 1000;
+	nbForest_   = 0;
 	nbForest2__ = 0;
 	nbQ1__      = 0;
 	nbQ2__      = 0;
@@ -179,7 +179,7 @@ Correlation::Correlation(int argc, char **argv) {
 		pathToSave__  = pathForest__;
 
 		if (!mocksNoNoiseNoCont) pathForest__ += "/Data/delta.fits";
-		else pathForest__ += "/Data/delta_noNoise_noCont.fits";
+		else pathForest__ += "/Data/delta.fits";
 		
 		pathQ1__ += "/Data/QSO_withRSD.fits";
 		
@@ -225,9 +225,10 @@ Correlation::Correlation(int argc, char **argv) {
 	//
 	else if (command == 17) xi_A_delta_delta_MockJMc();
 	else if (command == 18) xi_delta_QSO_MockJMc(doBootstraps__,idxCommand_[2]);
-	else if (command == 19) xi_delta_QSO_MockJMc_distortionMatrix();
-	else if (command == 20) xi_delta_QSO_MockJMc_distortionMatrix_1D();
-	else if (command == 21) xi_QSO_QSO_MockJMc(doBootstraps__,idxCommand_[2]);
+	//else if (command == 19) xi_delta_QSO_lambda_MockJMc(doBootstraps__,idxCommand_[2]);
+	else if (command == 20) xi_delta_QSO_MockJMc_distortionMatrix();
+	else if (command == 21) xi_delta_QSO_MockJMc_distortionMatrix_1D();
+	else if (command == 22) xi_QSO_QSO_MockJMc(doBootstraps__,idxCommand_[2]);
 
 	std::cout << "\n\n\n\n" << std::endl;
 }
@@ -501,7 +502,6 @@ void Correlation::xi_1DlRFDevide_delta_delta(void) {
 	v_r__.clear();
 	v_lObs__.clear();
 	v_nb__.clear();
-
 
 	///// Constants:
 	//const double min           = lambdaRFMin__/lambdaRFMax__;

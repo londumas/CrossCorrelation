@@ -28,6 +28,9 @@
 #include <sstream>	//stringstream
 #include <cmath>
 
+// Nb of allowed tries in a 'while' loop before ending
+long unsigned int nbAllowedTriesWhileLoop_ = 1000000;
+
 LymanForest::LymanForest(std::vector< std::vector<double> > forests, unsigned int nbRegions, double raSeperationTwoRegions, bool euclidean/*=false*/) {
 	
 	euclidean_ = euclidean;
@@ -35,10 +38,15 @@ LymanForest::LymanForest(std::vector< std::vector<double> > forests, unsigned in
 	else raSeperationTwoRegions_ = raSeperationTwoRegions;
 	
 	if (nbRegions < 1) {
-		std::cout << "  ERROR: LymanForest::LymanForest: nbRegions < 1" <<std::endl;
+		std::cout << "  LymanForest::LymanForest:: ERROR: nbRegions < 1" <<std::endl;
 		return;
 	}
-	nbRegion_ = nbRegions;
+
+	if (nbRegions>forests[0].size()) {
+		nbRegion_ = forests[0].size();
+		std::cout << "  LymanForest::LymanForest:: WARNING:  nbRegions>forests[0].size()" <<std::endl;
+	}
+	else nbRegion_ = nbRegions;
 
 	std::cout << "\n  nbRegion_ = " << nbRegion_ << std::endl;
 	std::cout << "  raSeperationTwoRegions_ = " << raSeperationTwoRegions_ << std::endl;
@@ -59,6 +67,7 @@ LymanForest::LymanForest(std::vector< std::vector<double> > forests, unsigned in
 	
 	// Devide the sky into 'nbRegion_' regions
 	DevideInRegions();
+	nbRegion_ = ra_.size();
 	
 	// Print the information on the screen
 	PrintData();
@@ -206,7 +215,7 @@ void LymanForest::LoadForestFromMap(std::string pathToLoad) {
 		return;
 	}
 }
-void LymanForest::DevideInRegions(void) {
+bool LymanForest::DevideInRegions(void) {
 	
 	// Maximum number of steps we have to use to reach
 	//  equally spaced strips
@@ -216,7 +225,7 @@ void LymanForest::DevideInRegions(void) {
 	const unsigned nbStepsRa = 10000;
 	
 	
-	if (nbRegion_ == 1) return;
+	if (nbRegion_ == 1) return true;
 	else {
 
 		std::vector <std::vector <double> > tmp_ra(nbRegion_);
@@ -271,7 +280,7 @@ void LymanForest::DevideInRegions(void) {
 			tmp_id = tmp2_id;
 			tmp_co = tmp2_co;
 		}		
-		else {
+		else {			
 			
 			// Get the total number of pairs in the two regions
 			double nbPairsInRegions[2] = {};
@@ -280,7 +289,9 @@ void LymanForest::DevideInRegions(void) {
 					nbPairsInRegions[i] += tmp2_pa[i][j];
 				}
 			}
-			
+			std::cout << "  nb of pairs in region 0: " << nbPairsInRegions[0] << std::endl;
+			std::cout << "  nb of pairs in region 1: " << nbPairsInRegions[1] << std::endl;
+
 			// Find the best way to devide the two regions
 			unsigned int nbRegionInRegions[2] = {};
 			nbRegionInRegions[0] = nbRegion_*nbPairsInRegions[0]/(nbPairsInRegions[0]+nbPairsInRegions[1]);
@@ -288,7 +299,8 @@ void LymanForest::DevideInRegions(void) {
 			//std::cout << "  " << 1.*nbRegion_*nbPairsInRegions[0]/(nbPairsInRegions[0]+nbPairsInRegions[1]) << " " << 1.*nbRegion_*nbPairsInRegions[1]/(nbPairsInRegions[0]+nbPairsInRegions[1]) << std::endl;
 			//std::cout << "  " << 1.*nbPairsInRegions[0]/(nbPairsInRegions[0]+nbPairsInRegions[1]) << " " << 1.*nbPairsInRegions[1]/(nbPairsInRegions[0]+nbPairsInRegions[1]) << std::endl;
 			//std::cout << "  " << 1.*nbPairsInRegions[1]/nbPairsInRegions[0] << std::endl;
-			std::cout << "  nb of regions = " << nbRegion_ << " " << nbRegionInRegions[0] << " " << nbRegionInRegions[1] << std::endl;
+			std::cout << "  nb of sub-regions in region 0: " << nbRegionInRegions[0] << std::endl;
+			std::cout << "  nb of sub-regions in region 1: " << nbRegionInRegions[1] << std::endl;
 			
 			// Get the size of the two regions
 			double deltaRa[2] = {};
@@ -304,7 +316,8 @@ void LymanForest::DevideInRegions(void) {
 			unsigned int nbStrips[2] = {};
 			for (unsigned int i=0; i<2; i++) {
 				if (nbRegionInRegions[i]==0) continue;
-				nbStrips[i] = sqrt(nbRegionInRegions[i]*deltaDe[i]/deltaRa[i]);
+				if (deltaDe[i]>0. && deltaRa[i]>0.) nbStrips[i] = sqrt(nbRegionInRegions[i]*deltaDe[i]/deltaRa[i]);
+				else nbStrips[i] = 1;
 			}
 			std::cout << "  nb of strips per regions = " << nbStrips[0] << " " << nbStrips[1] << std::endl;
 			
@@ -339,10 +352,10 @@ void LymanForest::DevideInRegions(void) {
 					}
 					
 					nbOfRegionsPerStrips[i][idx] = nbSquares;
-					std::cout << " region =  " << i << " , strip = " << idx << " , nb of regions = " << nbOfRegionsPerStrips[i][idx] << std::endl;	
+					std::cout << "  region =  " << i << " , strip = " << idx << " , nb of regions = " << nbOfRegionsPerStrips[i][idx] << std::endl;	
 				}
 			}
-			
+
 			// Get the number of pairs in each strips
 			std::vector<std::vector<double> > nbOfPairsPerStrips(2);
 			for (unsigned int i=0; i<2; i++) {
@@ -353,10 +366,11 @@ void LymanForest::DevideInRegions(void) {
 					if (j == nbStrips[i]-1) nbOfPairsPerStrips[i][j] = nbPairsInRegions[i] - nbTotPairs;
 					else nbOfPairsPerStrips[i][j] = nbOfRegionsPerStrips[i][j]*nbPairsInRegions[i]/nbRegionInRegions[i];
 					nbTotPairs += nbOfRegionsPerStrips[i][j]*nbPairsInRegions[i]/nbRegionInRegions[i];
-					std::cout << " region =  " << i << " , strip = " << j << " , nb of pairs = " << nbOfPairsPerStrips[i][j] << std::endl;	
+					std::cout << "  region =  " << i << " , strip = " << j << " , nb of pairs = " << nbOfPairsPerStrips[i][j] << std::endl;	
 				}
 			}
-			
+
+
 			// Find the intervals in declination of each strips
 			std::vector<std::vector<std::vector<double> > > deIntervalsEachStrips(2);
 			
@@ -366,18 +380,20 @@ void LymanForest::DevideInRegions(void) {
 			unsigned int stripIdx = 0;
 			
 			for (unsigned int i=0; i<2; i++) {
+
 				if (nbRegionInRegions[i]==0) continue;
 				deIntervalsEachStrips[i].resize(nbStrips[i]);
 				nbOfPairsPerStripsTrue[i].resize(nbStrips[i]);
-				
+
 				double tmp_nbPairs = 0;
 				const double deMin = tmp2_co[i][2];
 				const double deMax = tmp2_co[i][3];
 				const double sizeStrips = deltaDe[i]/nbStepsDe;
-				
+
 				for (unsigned int j=0; j<nbStrips[i]-1; j++) {
+
 					deIntervalsEachStrips[i][j].resize(2);
-					
+
 					double deMinStrip = 0.;
 					if (j == 0) {
 						if (deMin < 0) deMinStrip = 1.1*deMin;
@@ -386,13 +402,16 @@ void LymanForest::DevideInRegions(void) {
 					else {
 						deMinStrip = deIntervalsEachStrips[i][j-1][1];
 					}
-					
+
 					// Find the best declination max for the strip
 					double deMaxStrip = deMinStrip;
 					double nbPairs = 0;
 					bool neg = true;
-					
-					while (neg) {
+
+					unsigned int nbLoop = 0;					
+					while (neg && nbLoop<nbAllowedTriesWhileLoop_) {
+						nbLoop++;
+
 						deMaxStrip += sizeStrips;
 						
 						nbPairs = 0;
@@ -404,6 +423,11 @@ void LymanForest::DevideInRegions(void) {
 						
 						neg = (1.*nbPairs-1.*nbOfPairsPerStrips[i][j] < 0. );
 						if (neg == false && stripIdx%2 == 0) deMaxStrip -= sizeStrips;
+					}
+
+					if (nbLoop>=nbAllowedTriesWhileLoop_) {
+						std::cout << "  LymanForest::DevideInRegions::  ERROR:  nbLoop>=nbAllowedTriesWhileLoop_" << std::endl;
+						return false;
 					}
 					
 					// Find the final number of pairs
@@ -423,21 +447,23 @@ void LymanForest::DevideInRegions(void) {
 
 					stripIdx ++;
 				}
-				
-				const double deMinStrip = deIntervalsEachStrips[i][nbStrips[i]-2][1];
+
+				double deMinStrip = 0.;
 				double deMaxStrip = 0.;
+
+				if (nbStrips[i] > 1) deMinStrip = deIntervalsEachStrips[i][nbStrips[i]-2][1];
 				if (deMax < 0) deMaxStrip = 0.9*deMax;
 				else deMaxStrip = 1.1*deMax;
-				
+
 				deIntervalsEachStrips[i][nbStrips[i]-1].resize(2);
 				deIntervalsEachStrips[i][nbStrips[i]-1][0] = deMinStrip;
 				deIntervalsEachStrips[i][nbStrips[i]-1][1] = deMaxStrip;
-				
+
 				double nbPairs = nbPairsInRegions[i] - tmp_nbPairs;
 				nbOfPairsPerStripsTrue[i][nbStrips[i]-1] = nbPairs;
 				//std::cout << i << " " << nbStrips[i]-1 << " " << nbPairs << " " << nbOfPairsPerStrips[i][nbStrips[i]-1] << " " << (1.*nbPairs-1.*nbOfPairsPerStrips[i][nbStrips[i]-1])/nbOfPairsPerStrips[i][nbStrips[i]-1] << std::endl;
 			}
-			
+
 			// Find the intervals in declination and right assencion
 			//  of all regions
 			unsigned int regIdx1 = 0;
@@ -450,6 +476,7 @@ void LymanForest::DevideInRegions(void) {
 				const double raMax = tmp2_co[i][1];
 				
 				for (unsigned int j=0; j<nbStrips[i]; j++) {
+
 					intervalsEachRegions[i][j].resize(nbOfRegionsPerStrips[i][j]);
 					
 					const double sizeColumn = deltaRa[i]/nbStepsRa;
@@ -475,10 +502,12 @@ void LymanForest::DevideInRegions(void) {
 						double raMaxSquare = raMinSquare;
 						double nbPairs = 0;
 						bool neg = true;
-						
-						while (neg) {
+
+						unsigned int nbLoop = 0;
+						while (neg && nbLoop<nbAllowedTriesWhileLoop_) {
+							nbLoop++;
 							raMaxSquare += sizeColumn;
-							
+
 							nbPairs = 0;
 							for (unsigned int l=0; l<tmp2_ra[i].size(); l++) {
 								if ( (tmp2_ra[i][l] >= raMinSquare) && (tmp2_ra[i][l] < raMaxSquare) && (tmp2_de[i][l] >= deMin) && (tmp2_de[i][l] < deMax) ) {
@@ -488,6 +517,11 @@ void LymanForest::DevideInRegions(void) {
 							
 							neg = (1.*nbPairs-1.*nbPairsPerRegions < 0. );
 							if (neg == false && regIdx1%2 == 0) raMaxSquare -= sizeColumn;
+						}
+
+						if (nbLoop>=nbAllowedTriesWhileLoop_) {
+							std::cout << "  LymanForest::DevideInRegions::  ERROR:  nbLoop>=nbAllowedTriesWhileLoop_" << std::endl;
+							return false;
 						}
 						
 						nbPairs = 0;
@@ -570,12 +604,13 @@ void LymanForest::DevideInRegions(void) {
 		co_ = tmp_co;
 		
 	}
+	return true;
 }
 void LymanForest::PrintData(void) {
 
 	unsigned int nbForesTot = 0;
 	double nbPairsTot = 0;
-	
+
 	for (unsigned int i=0; i<nbRegion_; i++) {
 		
 		nbForesTot += ra_[i].size();

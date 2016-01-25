@@ -30,12 +30,12 @@ import cosmolopy.distance as cosmology
 
 ### Constants
 sizeMax = 300000
-sizeMaxForest = 300000
+sizeMaxForest = 60000 #300000
 nbQSO__ = 238929
-nbFor__ = 170898
+nbFor__ = 238929 ## 170898
 nbPixel = 645
 ratioForestToQSO__    = 1.*nbFor__/nbQSO__;
-pathToFolder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation/'
+pathToFolder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_correctedForest_withMetals/'
 
 
 

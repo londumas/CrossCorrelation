@@ -73,7 +73,7 @@ class LymanForest
 		void LoadForestFromMap(std::string pathToLoad);
 		
 		// Performs the devision of the sky into regions
-		void DevideInRegions(void);
+		bool DevideInRegions(void);
 		
 		// Print data
 		void PrintData(void);

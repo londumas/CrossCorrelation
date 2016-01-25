@@ -855,30 +855,28 @@ path_to_txt_file_folder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Fit
 
 dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
 dic_class['name'] = 'Data'
-corr = Correlation_3D(dic_class)
-dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation/Box_000/Simu_000/Results/'
-dic_class['name'] = 'MocksJM-mockExpander'
-corr2 = Correlation_3D(dic_class)
-dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_metals/Box_000/Simu_000/Results/'
-dic_class['name'] = 'MocksJM-mockExpander-'
-corr3 = Correlation_3D(dic_class)
+corrD = Correlation_3D(dic_class)
 
-corr.plot_1d(0, [corr2,corr3])
-corr.plot_1d(1, [corr2,corr3])
-corr.plot_1d(2, [corr2,corr3])
-corr3.plot_2d(0)
-corr3.plot_2d(1)
-corr3.plot_2d(2)
-corr3.plot_We(0)
-corr3.plot_We(1)
-corr3.plot_We(2)
-corr3.plot_Mu(0)
-corr3.plot_Mu(1)
-corr3.plot_Mu(2)
-corr3.plot_distortion_matrix()
-corr3.apply_distortion_matrix()
-dic_CAMB = corr3.fit_CAMB(dic_CAMB)
-corr3.plot_CAMB(dic_CAMB)
+dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_correctedForest_withMetals/Box_000/Simu_000/Results/'
+dic_class['name'] = 'LYA+Metals'
+corr = Correlation_3D(dic_class)
+
+corr.plot_1d(0,[corrD])
+corr.plot_1d(1,[corrD])
+corr.plot_1d(2,[corrD])
+corr.plot_2d(0)
+corr.plot_2d(1)
+corr.plot_2d(2)
+corr.plot_We(0)
+corr.plot_We(1)
+corr.plot_We(2)
+corr.plot_Mu(0)
+corr.plot_Mu(1)
+corr.plot_Mu(2)
+corr.plot_distortion_matrix()
+corr.apply_distortion_matrix()
+dic_CAMB = corr.fit_CAMB(dic_CAMB)
+corr.plot_CAMB(dic_CAMB)
 '''
 corr.plot_map_sub_sampling()
 corr.plot_distortion_matrix()

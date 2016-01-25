@@ -223,65 +223,42 @@ class Correlation_1D:
 
 
 
-
+dic_class = {
+	'correlation': 'f_f_lRF_devide',
+	'path_to_txt_file_folder': 'NONE',
+	'f1': 'LYA',
+	'f2': 'LYA',
+	'nb_Sub_Sampling': 80,
+	'name' : 'aaa'
+}
 
 #path_to_txt_file_folder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
 #listCorr = ['f_f_r','f_f_lRF','f_f_lRF_devide','f_f2_r','f_f2_lRF_devide']
-path_to_txt_file_folder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation/Box_000/Simu_000/Results/'
+path_to_txt_file_folder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_correctedForest_withMetals/Box_000/Simu_000/Results/'
 listCorr = ['f_f_lRF_devide']
 
 
-for el in listCorr:
-	dic_class = {
-		'correlation': el,
-		'path_to_txt_file_folder': path_to_txt_file_folder,
-		'f1': 'LYA',
-		'f2': 'LYA',
-		'nb_Sub_Sampling': 80,
-		'name' : 'MocksJM-mockExpander'
-	}
-	corr = Correlation_1D(dic_class)
-	print corr._meanZ
-	#corr.plot(True)
 
-	dic_class = {
-		'correlation': el,
-		'path_to_txt_file_folder': '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/',
-		'f1': 'LYA',
-		'f2': 'LYA',
-		'nb_Sub_Sampling': 80,
-		'name' : 'Data'
-	}
-	corr2 = Correlation_1D(dic_class)
-	print corr2._meanZ
-	#corr2.plot(True, False)
+###
+path_to_txt_file_folder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_correctedForest/Box_000/Simu_000/Results/'
+dic_class['path_to_txt_file_folder'] = path_to_txt_file_folder
+corr = Correlation_1D(dic_class)
+dic_class['name'] = "LYA"
+print corr._meanZ
+###
+path_to_txt_file_folder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_correctedForest_withMetals/Box_000/Simu_000/Results/'
+dic_class['path_to_txt_file_folder'] = path_to_txt_file_folder
+dic_class['name'] = "LYA+Metals"
+corr2 = Correlation_1D(dic_class)
+print corr2._meanZ
+###
+path_to_txt_file_folder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
+dic_class['path_to_txt_file_folder'] = path_to_txt_file_folder
+dic_class['name'] = "Data"
+corr3 = Correlation_1D(dic_class)
+print corr3._meanZ
 
-	dic_class = {
-		'correlation': el,
-		'path_to_txt_file_folder': '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Box_009/Simu_009/Results/',
-		'f1': 'LYA',
-		'f2': 'LYA',
-		'nb_Sub_Sampling': 80,
-		'name' : 'MockJM'
-	}
-	corr3 = Correlation_1D(dic_class)
-	print corr3._meanZ
-	#corr2.plot(True, False)
-
-	dic_class = {
-		'correlation': el,
-		'path_to_txt_file_folder': '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_metals/Box_000/Simu_000/Results/',
-		'f1': 'LYA',
-		'f2': 'LYA',
-		'nb_Sub_Sampling': 80,
-		'name' : 'MocksJM-mockExpander-metals'
-	}
-	corr4 = Correlation_1D(dic_class)
-	print corr4._meanZ
-	#corr.plot(True)
-
-	corr2.plot(False, False, [corr,corr3,corr4])
-
+corr3.plot(False,False,[corr,corr2])
 
 
 
