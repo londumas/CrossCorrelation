@@ -13,8 +13,8 @@ from scipy import interpolate
 type__        = '2D'
 #path__        = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/noNoisenoCont/Box_000/Simu_000/Results/BaoFit_q_f/bao' + type__ + ''
 #pathData__    = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/noNoisenoCont/Box_000/Simu_000/Results/BaoFit_q_f/bao' + type__
-path__        = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/BACKUP_2015_01_15/FitsFile_DR12_Guy/BaoFit_q_f/bao' + type__ + ''  ##_scanAlphaParal  scanAlphaPerp ##SmalScan  #middleScan
-pathData__    = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/BACKUP_2015_01_15/FitsFile_DR12_Guy/BaoFit_q_f/bao' + type__
+path__        = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/BaoFit_q_f__LYA__QSO/bao' + type__ + ''  ##_scanAlphaParal  scanAlphaPerp ##SmalScan  #middleScan
+pathData__    = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/BaoFit_q_f__LYA__QSO/bao' + type__
 
 nbParam__ = 30
 nbBin__   = 5000
@@ -790,7 +790,7 @@ getResults()
 #getChiScan1D()
 #getChiScanToyMC()
 printResults()
-getChiScan()
+#getChiScan()
 plotDataAndFit_1D()
 if (type__=='2D'):
 	plotDataAndFit_2D()

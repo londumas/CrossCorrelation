@@ -36,7 +36,7 @@ elif (forest__ == 'MGII'):
 ###
 #path = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_histos/"
 path = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/"
-rawPath = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation/'
+rawPath = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_correctedForest_withMoreMetals/'
 
 
 

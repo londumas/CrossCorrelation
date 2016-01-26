@@ -88,6 +88,8 @@ class Correlation_3D:
 		path1D = self._path_to_txt_file_folder + self._prefix + '_Mu_' + self._middlefix + '.txt'
 		path2D = self._path_to_txt_file_folder + self._prefix + '_2D_' + self._middlefix + '.txt'
 
+		print '  Correlation_3D::__init__::  path1D = ', path1D
+
 		### 1D
 		self._min1D   = float(dic['minXi'])
 		self._max1D   = float(dic['maxXi'])
@@ -122,12 +124,12 @@ class Correlation_3D:
 		self.nb_Sub_Sampling = int(dic['nb_Sub_Sampling'])
 
 		### Correlations data
-		self._xiMu, self._xiWe, self._xi1D, self._xi2D = self.fill_data(path1D, path2D,0,True)
+		self._xiMu, self._xiWe, self._xi1D, self._xi2D = self.read_data(path1D, path2D,0,True)
 		self._xiMul = self.get_multipol()
 		
 		return
 	
-	def fill_data(self, path1D, path2D, selection=0, init=False):
+	def read_data(self, path1D, path2D, selection=0, init=False):
 		'''
 	
 		selection:
@@ -283,6 +285,59 @@ class Correlation_3D:
 				self._meanZ = numpy.sum(data[:,4])/numpy.sum(data[:,5])
 
 		return xiMu, xiWe, xi1D, xi2D
+	def read_grid(self):
+
+		path = self._path_to_txt_file_folder + self._prefix + '_2D_' + self._middlefix + '.txt'
+		data = numpy.loadtxt(path)
+		int_binSize = int(self._binSize)
+	
+		tmp_save2  = numpy.zeros( shape=(self._nbBinX2D,self._nbBinY2D) )
+		tmp_save3  = numpy.zeros( shape=(self._nbBinX2D,self._nbBinY2D) )
+		tmp_save4  = numpy.zeros( shape=(self._nbBinX2D,self._nbBinY2D) )
+		tmp_save5  = numpy.zeros( shape=(self._nbBinX2D,self._nbBinY2D) )
+		meanRperp  = numpy.zeros( shape=(self._nbBinX2D,2))
+		meanRparal = numpy.zeros( shape=(self._nbBinY2D,2))
+	
+		for i in range( 0,data[:,2].size ):
+			iX = i/self._nbBinY2D_calcul
+			iY = i%self._nbBinY2D_calcul
+	
+			idX = iX/int_binSize
+			idY = iY/int_binSize
+	
+			tmp_save2[idX][idY] += data[i,2]
+			tmp_save3[idX][idY] += data[i,3]
+			tmp_save4[idX][idY] += data[i,4]
+			tmp_save5[idX][idY] += data[i,5]
+
+			meanRperp[idX][0]  += data[i,2]
+			meanRperp[idX][1]  += data[i,5]
+			meanRparal[idY][0] += data[i,3]
+			meanRparal[idY][1] += data[i,5]
+		
+		### Get the grid
+		cut = (tmp_save5!=0.)
+		rPerp  = numpy.zeros( shape=(self._nbBinX2D,self._nbBinY2D) )
+		rParal = numpy.zeros( shape=(self._nbBinX2D,self._nbBinY2D) )
+		z      = numpy.zeros( shape=(self._nbBinX2D,self._nbBinY2D) )
+		rPerp[cut]  = tmp_save2[cut]/tmp_save5[cut]
+		rParal[cut] = tmp_save3[cut]/tmp_save5[cut]
+		z[cut]      = tmp_save4[cut]/tmp_save5[cut]
+
+		grid = numpy.zeros( shape=(self._nbBin2D,4) )
+		indexMatrix = numpy.arange(self._nbBin2D)
+		grid[:,0] = (indexMatrix%self._nbBinY2D)*self._nbBinX2D + indexMatrix/self._nbBinY2D
+		grid[:,1] = rParal.flatten()
+		grid[:,2] = rPerp.flatten()
+		grid[:,3] = z.flatten()
+		
+		### Get the s_perp bin center
+		meanRperp[:,0]  /= meanRperp[:,1]
+			
+		### Get the s_paral bin center
+		meanRparal[:,0] /= meanRparal[:,1]
+
+		return grid, meanRperp[:,0], meanRparal[:,0]
 	def save_list_realisation(self, realisation_type, nb_realisation):
 
 		if ( realisation_type=='subsampling' and (nb_realisation != self.nb_Sub_Sampling) ):
@@ -301,7 +356,7 @@ class Correlation_3D:
 		for i in numpy.arange(nb_realisation):
 			print i
 
-			xiMu, xiWe, xi1D, xi2D = self.fill_data(path1D+str(i)+'.txt',path2D+str(i)+'.txt')
+			xiMu, xiWe, xi1D, xi2D = self.read_data(path1D+str(i)+'.txt',path2D+str(i)+'.txt')
 			list1D[:,i]         = xi1D[:,1]
 			list2D[:,i]         = xi2D[:,:,1].flatten()
 			listMu[:,i]         = xiMu[:,:,2].flatten()
@@ -516,6 +571,202 @@ class Correlation_3D:
 		print '  chi^{2} = ', numpy.sum( numpy.power( (yyy - (yyy_Camb*dic['b']+dic['roof']) )/yer ,2.) )
 		
 		return dic
+	def write_BAOFIT_ini_and_grid(self, param=None):
+
+		precision = 1000.
+		if (param==None):
+			param = numpy.asarray( [1.6,-0.336,0.9,0.,0.,3.25,0.962524,3.26,1.966,1.,1.,1.,1.,0.,0.,0.,0.,0.,0.] )
+		param = param.astype('str')
+		path_to_BAOFIT = self._path_to_txt_file_folder + 'BaoFit_q_f__'+self._f1+'__'+self._q1+'/bao2D'
+
+		grid, meanRperp, meanRparal = self.read_grid()
+
+		### Saving .grid
+		numpy.savetxt(path_to_BAOFIT+'.grid',zip(grid[:,0],grid[:,1],grid[:,2],grid[:,3]),fmt='%u %1.20e %1.20e %1.20e')
+		del grid
+
+		### Get the s_perp bin center
+		meanRperp = (precision*meanRperp).astype(int)/precision
+		stringRperp = ''
+		for el in meanRperp[:-1]:
+			stringRperp += str(el) + ','
+		stringRperp += str( meanRperp[-1] )
+
+		### Get the s_paral bin center
+		meanRparal = (precision*meanRparal).astype(int)/precision
+		stringRparal = ''
+		for el in meanRparal[:-1]:
+			stringRparal += str(el) + ','
+		stringRparal += str( meanRparal[-1])
+
+		### Get the redshift center
+		meanZ = (precision*self._meanZ).astype(int)/precision
+		stringRedshift = str(meanZ)
+
+		string_ini = """
+
+## Linear theory P(k) templates with and w/o wiggles
+modelroot = """ + const.path_to_BAOFIT_model__ + """
+fiducial =  DR9LyaMocksLCDM
+nowiggles = DR9LyaMocksLCDMSB
+
+## k-space fit
+kspace = true
+ell-max = 6
+
+# Model configuration
+cross-correlation = yes
+anisotropic = yes
+decoupled   = yes
+custom-grid = yes
+pixelize = yes
+#dist-matrix = yes
+dist-matrix-order = """+str(self._nbBin2D)+"""
+
+# Parameter setup
+model-config = value[beta]=               """+param[0] +""";
+model-config = fix[(1+beta)*bias]=        """+param[1] +""";
+model-config = fix[gamma-bias]=           """+param[2] +""";
+model-config = fix[gamma-beta]=           """+param[3] +""";
+model-config = value[delta-v]=            """+param[4] +""";
+model-config = value[bias2]=              """+param[5] +""";
+model-config = fix[beta2*bias2]=          """+param[6] +""";
+model-config = fix[1+f]=                  """+param[7] +""";
+model-config = fix[SigmaNL-perp]=         """+param[8] +""";
+model-config = fix[BAO amplitude]=        """+param[9] +""";
+model-config = fix[BAO alpha-iso]=        """+param[10] +""";
+model-config = value[BAO alpha-parallel]= """+param[11] +""";
+model-config = value[BAO alpha-perp]=     """+param[12]+""";
+model-config = fix[gamma-scale]=          """+param[13]+""";
+model-config = fix[pixel scale]=0.7;
+
+## 2D chisq scan in BAO parameters
+model-config = binning[BAO alpha-parallel] ={0.5:1.5}*50
+model-config = binning[BAO alpha-perp]     ={0.5:1.5}*50	
+
+## Reference redshift
+zref = 2.3
+
+## Maximum allowed radial dilation (increases the range that model needs to cover)
+dilmin = 0.5
+dilmax = 2.5
+
+## Non-linear broadening with 1+f = (SigmaNL-par)/(SigmaNL-perp)
+
+# boxprior keeps result positive (since model only depends on squared value)
+model-config = boxprior[SigmaNL-perp] @ (0,6);
+# un-comment next line to broaden all scales (default is peak only)
+#nl-broadband = true
+
+# Broadband distortion model
+dist-add = rP,rT=0:2,-3:1
+
+### Data Options #############################################
+
+## Data to analyze
+data = """+path_to_BAOFIT+"""
+dist-matrix-name = """+path_to_BAOFIT+"""
+
+## Data format
+data-format = comoving-cartesian
+axis1-bins = {""" + stringRparal   + """}
+axis2-bins = {""" + stringRperp    + """}
+axis3-bins = {""" + stringRedshift + """}
+
+### Analysis Options #########################################
+
+# Cuts to apply before fitting
+rmin = 30
+rmax = 180
+
+# Generate a second set of outputs with the additive distortion turned off
+alt-config = fix[dist*]=0
+
+# Do not dump multipoles (since the distortion model multipole integrals are singular)
+ndump = 0
+
+# Prefix to use for all analysis output files
+output-prefix = """ + path_to_BAOFIT + """
+"""
+
+		text_file = open(path_to_BAOFIT+'.ini', "w")
+		text_file.write(string_ini)
+		text_file.close()
+		
+
+		return
+	def send_BAOFIT(self, realisation_type, correlation_matrix_path=None):
+		"""
+
+			Send the fit of the BAO with BAOFIT
+			realisation_type:
+			cor:=None
+
+		"""
+
+		### Constants
+		param = numpy.asarray( [1.6,-0.336,0.9,0.,0.,3.25,0.962524,3.26,1.966,1.,1.,1.,1.,0.,0.,0.,0.,0.,0.] )
+		path_to_cov = self._path_to_txt_file_folder + self._prefix + '_'+ self._middlefix + '_' + realisation_type + '_cov_2D.npy'
+		path_to_distortion_matrix = self._path_to_txt_file_folder + self._prefix + '_distortionMatrix_2D_'+ self._middlefix + '.txt'
+		path_to_BAOFIT = self._path_to_txt_file_folder + 'BaoFit_q_f__'+self._f1+'__'+self._q1+'/bao2D.'
+		if (correlation_matrix_path==None): correlation_matrix_path = path_to_cov
+		print '  correlation matrix path = ', correlation_matrix_path
+
+		### Save .grid and .ini
+		self.write_BAOFIT_ini_and_grid()
+
+		### For data
+		cov = numpy.load(path_to_cov)
+		cor = myTools.getCorrelationMatrix( numpy.load(correlation_matrix_path) )
+
+		
+		### Save .data
+		correlation = numpy.zeros( shape=(self._nbBin2D,2) )
+		indexMatrix = numpy.arange(self._nbBin2D)
+		correlation[:,0] = (indexMatrix%self._nbBinY2D)*self._nbBinX2D + indexMatrix/self._nbBinY2D
+		correlation[:,1] = self._xi2D[:,:,1].flatten()
+		cutCorrelation = (correlation[:,1]!=0.)
+		numpy.savetxt( path_to_BAOFIT + 'data',zip(correlation[:,0][cutCorrelation],correlation[:,1][cutCorrelation]),fmt='%u %1.20e')
+		del correlation, indexMatrix, cutCorrelation
+		
+		### Save .cov
+		print '  Saving .cov'
+		cov = myTools.getCovarianceMatrix(cor,numpy.diag(cov))
+		covarianceMatrix = numpy.zeros( shape=(self._nbBin2D*self._nbBin2D,3) )
+		indexMatrix1 = numpy.arange(self._nbBin2D*self._nbBin2D).reshape(self._nbBin2D,self._nbBin2D)/self._nbBin2D
+		indexMatrix2 = numpy.arange(self._nbBin2D*self._nbBin2D).reshape(self._nbBin2D,self._nbBin2D)%self._nbBin2D
+		indexMatrix1 = (indexMatrix1%self._nbBinY2D)*self._nbBinX2D + indexMatrix1/self._nbBinY2D
+		indexMatrix2 = (indexMatrix2%self._nbBinY2D)*self._nbBinX2D + indexMatrix2/self._nbBinY2D
+		covarianceMatrix[:,0] = numpy.triu(indexMatrix1,k=0).flatten()
+		covarianceMatrix[:,1] = numpy.triu(indexMatrix2,k=0).flatten()
+		covarianceMatrix[:,2] = numpy.triu(cov,k=0).flatten()
+		cutCovarMatrix = (covarianceMatrix[:,2]!=0.)
+		if (covarianceMatrix[:,2][cutCovarMatrix].size != int(self._nbBin2D*(self._nbBin2D+1.)/2.) ):
+			print '  xi_delta_QSO.py::prepareForBAOFIT()  size of covariance matrix is incorrect'
+			print '  size covariance matrix', cutCovarMatrix[:,2][cutCovarMatrix].size
+			print '  size it should have', self._nbBin2D*(self._nbBin2D+1.)/2.
+			return
+		numpy.savetxt( path_to_BAOFIT + 'cov',zip(covarianceMatrix[:,0][cutCovarMatrix],covarianceMatrix[:,1][cutCovarMatrix],covarianceMatrix[:,2][cutCovarMatrix]),fmt='%u %u %1.20e')
+		del cov, covarianceMatrix, cutCovarMatrix
+	
+		### Save .dmat
+		print '  Saving .dmat'
+		dmatData = numpy.loadtxt(path_to_distortion_matrix)
+		distortionMatrix = numpy.zeros( shape=(self._nbBin2D*self._nbBin2D,3) )
+		distortionMatrix[:,0] = indexMatrix1.flatten()
+		distortionMatrix[:,1] = indexMatrix2.flatten()
+		distortionMatrix[:,2] = dmatData.flatten()
+		cutDistortionMatrix = (distortionMatrix[:,2]!=0.)
+		numpy.savetxt( path_to_BAOFIT + 'dmat',zip(distortionMatrix[:,0][cutDistortionMatrix], distortionMatrix[:,1][cutDistortionMatrix], distortionMatrix[:,2][cutDistortionMatrix]),fmt='%u %u %1.20e')
+		del dmatData, distortionMatrix, cutDistortionMatrix
+		
+
+		### Send the fit (#--parameter-scan'   ### --toymc-samples 10000)
+		command = const.path_to_BAOFIT_bin__ + ' -i ' + path_to_BAOFIT + 'ini'
+		print command
+		subprocess.call(command, shell=True)
+
+		return
 	def plot_1d(self, x_power=0, other=[]):
 
 		xxx = self._xi1D[:,0]
@@ -530,7 +781,7 @@ class Correlation_3D:
 		yyy = yyy[ cut ]
 		yer = yer[ cut ]
 		coef = numpy.power(xxx,x_power)
-		plt.errorbar(xxx, coef*yyy, yerr=coef*yer, fmt='o', label=self._name)
+		plt.errorbar(xxx, coef*yyy, yerr=coef*yer, fmt='o', label=r'$'+self._name+'$')
 
 		for el in other:
 			TMP_xxx = el._xi1D[:,0]
@@ -544,7 +795,7 @@ class Correlation_3D:
 			TMP_yyy = TMP_yyy[ TMP_cut ]
 			TMP_yer = TMP_yer[ TMP_cut ]
 			TMP_coef = numpy.power(TMP_xxx,x_power)
-			plt.errorbar(TMP_xxx, TMP_coef*TMP_yyy, yerr=TMP_coef*TMP_yer, fmt='o', label=el._name)
+			plt.errorbar(TMP_xxx, TMP_coef*TMP_yyy, yerr=TMP_coef*TMP_yer, fmt='o', label=r'$'+el._name+'$')
 		
 		if (x_power==0):
 			plt.ylabel(r'$'+self._label+' (|s|)$', fontsize=40)
@@ -557,6 +808,40 @@ class Correlation_3D:
 		plt.xlabel(r'$|s| \, [h^{-1}.Mpc]$', fontsize=40)
 		plt.xlim([ numpy.amin(xxx)-10., numpy.amax(xxx)+10. ])
 		myTools.deal_with_plot(False,False,True)
+		plt.show()
+		
+		return
+	def plot_We(self, x_power=0):
+	
+		label = ['0.8 < |\mu|', '0.5 < |\mu| \leq 0.8', '|\mu| \leq 0.5']
+		
+		
+		for i in numpy.arange(0,3):
+		
+			cut = (self._xiWe[:,i,2]>0.)
+			if (self._xiWe[:,i,0][cut].size==0):
+				continue
+		
+			xxx = self._xiWe[:,i,0][cut]
+			yyy = self._xiWe[:,i,1][cut]
+			yer = self._xiWe[:,i,2][cut]
+			coef = numpy.power(xxx,x_power)
+			plt.errorbar(xxx, coef*yyy, yerr=coef*yer, fmt='o', label=r'$'+label[i]+'$')
+		
+			if (x_power==0):
+				plt.ylabel(r'$'+self._label+' (|s|)$', fontsize=40)
+				plt.legend(fontsize=30, frameon=False, numpoints=1,ncol=2, loc=4)
+			if (x_power==1):
+				plt.ylabel(r'$|s|.'+self._label+' (|s|) \, [h^{-1}.Mpc]$', fontsize=40)
+				plt.legend(fontsize=30, frameon=False, numpoints=1,ncol=2, loc=4)
+			if (x_power==2):
+				plt.ylabel(r'$|s|^{2}.'+self._label+' (|s|) \, [(h^{-1}.Mpc)^{2}]$', fontsize=40)
+				plt.legend(fontsize=30, frameon=False, numpoints=1,ncol=2, loc=2)
+		
+		plt.title(r'$'+self._title+'$', fontsize=40)
+		plt.xlabel(r'$|s| \, [h^{-1}.Mpc]$', fontsize=40)
+		plt.xlim([ numpy.amin(xxx)-10., numpy.amax(xxx)+10. ])
+		myTools.deal_with_plot(False,False,False)
 		plt.show()
 		
 		return
@@ -649,40 +934,6 @@ class Correlation_3D:
 		cbar.update_ticks()
 		plt.show()
 	
-		return
-	def plot_We(self, x_power=0):
-	
-		label = ['0.8 < |\mu|', '0.5 < |\mu| \leq 0.8', '|\mu| \leq 0.5']
-		
-		
-		for i in numpy.arange(0,3):
-		
-			cut = (self._xiWe[:,i,2]>0.)
-			if (self._xiWe[:,i,0][cut].size==0):
-				continue
-		
-			xxx = self._xiWe[:,i,0][cut]
-			yyy = self._xiWe[:,i,1][cut]
-			yer = self._xiWe[:,i,2][cut]
-			coef = numpy.power(xxx,x_power)
-			plt.errorbar(xxx, coef*yyy, yerr=coef*yer, fmt='o', label=r'$'+label[i]+'$')
-		
-			if (x_power==0):
-				plt.ylabel(r'$'+self._label+' (|s|)$', fontsize=40)
-				plt.legend(fontsize=30, frameon=False, numpoints=1,ncol=2, loc=4)
-			if (x_power==1):
-				plt.ylabel(r'$|s|.'+self._label+' (|s|) \, [h^{-1}.Mpc]$', fontsize=40)
-				plt.legend(fontsize=30, frameon=False, numpoints=1,ncol=2, loc=4)
-			if (x_power==2):
-				plt.ylabel(r'$|s|^{2}.'+self._label+' (|s|) \, [(h^{-1}.Mpc)^{2}]$', fontsize=40)
-				plt.legend(fontsize=30, frameon=False, numpoints=1,ncol=2, loc=2)
-		
-		plt.title(r'$'+self._title+'$', fontsize=40)
-		plt.xlabel(r'$|s| \, [h^{-1}.Mpc]$', fontsize=40)
-		plt.xlim([ numpy.amin(xxx)-10., numpy.amax(xxx)+10. ])
-		myTools.deal_with_plot(False,False,False)
-		plt.show()
-		
 		return
 	def plot_CAMB(self, dic=None):
 		
@@ -810,6 +1061,16 @@ class Correlation_3D:
 
 		plt.show()
 
+		### Distribution
+		plt.hist(pa, bins=1000)
+		plt.xlabel(r'$nb \, pairs \, [\#]$')
+		plt.ylabel(r'$\#$')
+		plt.show()
+		### Distribution
+		plt.hist(numpy.log10(pa), bins=1000)
+		plt.xlabel(r'$log( nb \, pairs ) \, [\#]$')
+		plt.ylabel(r'$\#$')
+		plt.show()
 
 		return
 
@@ -849,42 +1110,49 @@ dic_CAMB = {
 }
 
 
-path_to_txt_file_folder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
-#path_to_txt_file_folder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_metals/Box_000/Simu_000/Results/'
 
 
 dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
 dic_class['name'] = 'Data'
 corrD = Correlation_3D(dic_class)
 
-dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_correctedForest_withMetals/Box_000/Simu_000/Results/'
-dic_class['name'] = 'LYA+Metals'
+dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_correctedForest_withMoreMetals/Box_000/Simu_000/Results/'
+dic_class['name'] = 'Mocks \, LYA+Metals'
 corr = Correlation_3D(dic_class)
+
+correlation_matrix_path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Results_RandomPosInCell/xi_delta_QSO_result_cor_2D_allSubSamplingFromFit.npy'
+corr.send_BAOFIT('subsampling',correlation_matrix_path)
 
 corr.plot_1d(0,[corrD])
 corr.plot_1d(1,[corrD])
 corr.plot_1d(2,[corrD])
-corr.plot_2d(0)
-corr.plot_2d(1)
-corr.plot_2d(2)
 corr.plot_We(0)
 corr.plot_We(1)
 corr.plot_We(2)
+corr.plot_2d(0)
+corr.plot_2d(1)
+corr.plot_2d(2)
 corr.plot_Mu(0)
 corr.plot_Mu(1)
 corr.plot_Mu(2)
-corr.plot_distortion_matrix()
-corr.apply_distortion_matrix()
+corr.plot_map_sub_sampling()
 dic_CAMB = corr.fit_CAMB(dic_CAMB)
 corr.plot_CAMB(dic_CAMB)
+
+corr.plot_distortion_matrix()
+corr.apply_distortion_matrix()
 '''
 corr.plot_map_sub_sampling()
 corr.plot_distortion_matrix()
 corr.apply_distortion_matrix()
 corr.plot_cov_cor_matrix('subsampling','1D')
-corr.save_list_realisation('subsampling', 80)		
+corr.save_list_realisation('subsampling', 80)
 corr.plot_cov_cor_matrix('subsampling','1D')
 corr.set_error_on_covar_matrix('subsampling')
+
+### Fit
+correlation_matrix_path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Results_RandomPosInCell/xi_delta_QSO_result_cor_2D_allSubSamplingFromFit.npy'
+corrD.send_BAOFIT('subsampling',correlation_matrix_path)
 '''
 
 

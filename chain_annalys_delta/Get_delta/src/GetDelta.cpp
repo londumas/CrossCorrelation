@@ -43,7 +43,7 @@
 std::string pathToTxt__    = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/";
 std::string pathToPDF__    = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/";
 const std::string pathToDLACat__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/DLA_all.fits";
-const std::string pathToMockJMC__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation/";
+const std::string pathToMockJMC__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_correctedForest_withMoreMetals/";
 const unsigned int nbPixelTemplate__ = int(lambdaRFMax__-lambdaRFMin__)+6;
 const unsigned int nbBinlambdaObs__  = int(lambdaObsMax__-lambdaObsMin__);
 const double onePlusZ0__ = 1.+z0__;
@@ -70,8 +70,8 @@ std::string pathMoreForHist__ = "";
 
 
 //// Flags
-const unsigned int stepDefinition = 2;
-const unsigned int stepAnnalyse   = 1;
+unsigned int stepDefinition = 0;
+unsigned int stepAnnalyse   = 0;
 const unsigned int methodIndex__ = 2;
 const bool doVetoLines__          = true;
 const bool setDLA__               = false;
@@ -85,6 +85,31 @@ GetDelta::GetDelta(int argc, char** argv) {
 	std::cout << std::scientific;
 	std::cout.precision(14);
 
+
+
+	std::string box = "NOTHING";
+	std::string sim = "NOTHING";
+	std::string startFit = "NOTHING";
+	std::string endFit   = "NOTHING";
+
+	if (argc<7) {
+		std::cout << "  GetDelta::GetDelta:  ERROR:  not enought argument" << std::endl;
+		return;
+	}
+	else {
+		box = argv[1];
+		sim = argv[2];
+		startFit = argv[3];
+		endFit   = argv[4];
+		std::string str = argv[5];
+		stepDefinition  = atoi( str.c_str() );
+		str = argv[6];
+		stepAnnalyse    = atoi( str.c_str() );
+	}
+
+
+
+
 	if (!mocksColab__ && !mockJMC__) {
 		pathForest__   = "/home/gpfs/manip/mnt/bao/hdumasde/Data/";
 		pathForest__  += forest__;
@@ -95,13 +120,6 @@ GetDelta::GetDelta(int argc, char** argv) {
 	}
 	else {
 	
-		if (argc<3) {
-			std::cout << "  GetDelta::GetDelta:  ERROR:  not enought argument" << std::endl;
-			return; 
-		}
-		const std::string box = argv[1];
-		const std::string sim = argv[2];
-
 		pathMoreForHist__  = "_";
 		pathMoreForHist__ += box;
 		pathMoreForHist__ += "_";
@@ -162,10 +180,8 @@ GetDelta::GetDelta(int argc, char** argv) {
 	
 	//// Fit the forest
 	if (stepAnnalyse==1) {
-		std::string str = argv[3];
-		unsigned int start = atoi( str.c_str() );
-		str = argv[4];
-		unsigned int end   = atoi( str.c_str() );
+		unsigned int start = atoi( startFit.c_str() );
+		unsigned int end   = atoi( endFit.c_str() );
 
 		std::cout << "  " << start << " " << end << std::endl;
 		

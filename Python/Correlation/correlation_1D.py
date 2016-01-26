@@ -129,6 +129,7 @@ class Correlation_1D:
 			self._middlefix = self._f1 + '_' + self._f2
 
 		path = self._path_to_txt_file_folder + self._prefix + '_' + self._middlefix + '.txt'
+		print '  Correlation_1D::__init__::  path = ', path
 
 		### Get data
 		self._xi = self.fill_data(path, True)
@@ -161,18 +162,22 @@ class Correlation_1D:
 
 	def plot(self, with_lines=False, verbose=False, other=[]):
 
-		xxx = self._xi[:,0]
-		yyy = self._xi[:,1]
-		yer = self._xi[:,2]
-		plt.errorbar(xxx, yyy, yerr=yer, marker='o', label=self._name)
+		cut = 0
+
+		xxx = self._xi[cut:,0]
+		yyy = self._xi[cut:,1]
+		yer = self._xi[cut:,2]
+		plt.errorbar(xxx, yyy, yerr=yer, marker='o', label=r'$'+self._name+'$')
 
 		for el in other:
-			TMP_xxx = el._xi[:,0]
-			TMP_yyy = el._xi[:,1]
-			TMP_yer = el._xi[:,2]
-			plt.errorbar(TMP_xxx, TMP_yyy, yerr=TMP_yer, marker='o', label=el._name)
+			TMP_xxx = el._xi[cut:,0]
+			TMP_yyy = el._xi[cut:,1]
+			TMP_yer = el._xi[cut:,2]
+			plt.errorbar(TMP_xxx, TMP_yyy, yerr=TMP_yer, marker='o', label=r'$'+el._name+'$')
 
 		if (with_lines):
+
+			if (verbose): print ' ||  name_1 - name_2 || line || lambda_rf_1 || lamnda_rf_2 || '
 
 			xMin = numpy.amin(xxx)
 			xMax = numpy.amax(xxx)
@@ -189,6 +194,11 @@ class Correlation_1D:
 					nbLines2 = self._lines2.size
 
 				for j in range(0,nbLines2):
+
+					if ( self._lines1[i]!=1215.67 and self._lines2[j]!=1215.67 ): continue
+					if ( self._name_line1[i][:4]!='SiII' and self._name_line2[j][:4]!='SiII' ): continue
+					if ( self._name_line1[i]=='SiII(1304)' or self._name_line2[j]=='SiII(1304)' ): continue
+
 					if (self._correlation=='f_f_r' or self._correlation=='f_f2_r'):
 						line = numpy.abs( const_delta.find_dist_correlation_lines(self._meanZ,self._lines2[j], self._lines1[i]) )
 						if (line>xMax): continue
@@ -223,13 +233,15 @@ class Correlation_1D:
 
 
 
+
+
 dic_class = {
 	'correlation': 'f_f_lRF_devide',
 	'path_to_txt_file_folder': 'NONE',
 	'f1': 'LYA',
 	'f2': 'LYA',
 	'nb_Sub_Sampling': 80,
-	'name' : 'aaa'
+	'name' : 'NAME'
 }
 
 #path_to_txt_file_folder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
@@ -240,25 +252,19 @@ listCorr = ['f_f_lRF_devide']
 
 
 ###
-path_to_txt_file_folder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_correctedForest/Box_000/Simu_000/Results/'
-dic_class['path_to_txt_file_folder'] = path_to_txt_file_folder
-corr = Correlation_1D(dic_class)
-dic_class['name'] = "LYA"
-print corr._meanZ
-###
-path_to_txt_file_folder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_correctedForest_withMetals/Box_000/Simu_000/Results/'
-dic_class['path_to_txt_file_folder'] = path_to_txt_file_folder
-dic_class['name'] = "LYA+Metals"
-corr2 = Correlation_1D(dic_class)
-print corr2._meanZ
-###
 path_to_txt_file_folder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
 dic_class['path_to_txt_file_folder'] = path_to_txt_file_folder
 dic_class['name'] = "Data"
-corr3 = Correlation_1D(dic_class)
-print corr3._meanZ
+corrD = Correlation_1D(dic_class)
+print corrD._meanZ
+###
+path_to_txt_file_folder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_correctedForest_withMoreMetals/Box_000/Simu_000/Results/'
+dic_class['path_to_txt_file_folder'] = path_to_txt_file_folder
+dic_class['name'] = "Mocks \, LYA+Metals"
+corr2 = Correlation_1D(dic_class)
+print corr2._meanZ
 
-corr3.plot(False,False,[corr,corr2])
+corrD.plot(True,True,[corr2])
 
 
 

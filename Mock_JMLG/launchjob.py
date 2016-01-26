@@ -30,12 +30,12 @@ import cosmolopy.distance as cosmology
 
 ### Constants
 sizeMax = 300000
-sizeMaxForest = 60000 #300000
+sizeMaxForest = 250000 #300000
 nbQSO__ = 238929
-nbFor__ = 238929 ## 170898
+nbFor__ = 170898
 nbPixel = 645
 ratioForestToQSO__    = 1.*nbFor__/nbQSO__;
-pathToFolder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_correctedForest_withMetals/'
+pathToFolder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_correctedForest_withMoreMetals/'
 
 
 
@@ -83,7 +83,7 @@ def main():
 				subprocess.call('mkdir ' + path + 'Run', shell=True)
 				subprocess.call('mkdir ' + path + 'Results', shell=True)
 				subprocess.call('mkdir ' + path + 'Results_NicolasDistortion', shell=True)
-				subprocess.call('mkdir ' + path + '/Results/BaoFit_q_f', shell=True)
+				subprocess.call('mkdir ' + path + '/Results/BaoFit_q_f__LYA__QSO', shell=True)
 				subprocess.call('mkdir ' + path + '/Results_NicolasDistortion/BaoFit_q_f', shell=True)
 
 				if (i==0 and j==0):
@@ -175,10 +175,12 @@ def sendCalculDelta():
 
 			path = pathToFolder + 'Box_00' + str(i) + '/Simu_00'+str(j) + '/'
 
+			
 			if (index_pass==0):
 				### Get the data to 'good' files
 				#####################
-				command = "clubatch \"echo ; hostname ; /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/chain_annalys_delta/Get_delta/bin/main.exe " + str(i) + ' ' + str(j) + "\""
+				#command = "clubatch \"echo ; hostname ; /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/chain_annalys_delta/Get_delta/bin/main.exe " + str(i) + ' ' + str(j) + " 0 0 2 0\""
+				command = "time /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/chain_annalys_delta/Get_delta/bin/main.exe " + str(i) + ' ' + str(j) + " 0 0 2 0"
 				print command
 				subprocess.call(command, shell=True)
 				myTools.isReadyForNewJobs(20, 430)
@@ -193,7 +195,7 @@ def sendCalculDelta():
 				last  = step
 				while (first <= nbSpectra):
 
-					tmp_command = "clubatch \"echo ; hostname ; /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/chain_annalys_delta/Get_delta/bin/main.exe " + str(i) + " " + str(j) + " " + str(first) + " " + str(last) +"\""
+					tmp_command = "clubatch \"echo ; hostname ; /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/chain_annalys_delta/Get_delta/bin/main.exe " + str(i) + " " + str(j) + " " + str(first) + " " + str(last) +" 2 1 \""
 					subprocess.call(tmp_command, shell=True)
 	
 					tmp_command = "echo " + tmp_command
