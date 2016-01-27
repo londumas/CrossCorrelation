@@ -15,9 +15,30 @@ import matplotlib.pyplot as plt
 import correlation_3D
 import myTools
 
+par_name = numpy.asarray(['\\beta','b.(1+\\beta)','gamma-bias','gamma-beta','\\Delta v','b_{2}','b_{2}.\\beta_{2}',
+	'1+f','SigmaNL-perp',
+	'BAO \, amplitude','\\alpha_{iso}','\\alpha_{\parallel}','\\alpha_{\perp}',
+	'gamma-scale','Rad \, strength','Rad \, anisotropy','Rad \, mean \, free \, path',
+	'Rad \, quasar \, lifetime','a0','a1','a2','a3','a4','a5','a6','a7','a7','a8','a9','a10','a11','a12','a13'])
 raw_index_parameter = {
-	'alpha_paral' : 10,
-	'alpha_perp'  : 11
+	'beta'                        : 0,
+	'b.(1+beta)'                  : 1,
+	'gamma-bias'                  : 2,
+	'gamma-beta'                  : 3,
+	'Delta v'                     : 4,
+	'b_{2}'                       : 5,
+	'b_{2}.beta_{2}'              : 6,
+	'1+f'                         : 7,
+	'SigmaNL-perp'                : 8,
+	'BAO \, amplitude'            : 9,
+	'alpha_{iso}'                 : 10,
+	'alpha_paral'                 : 11, 
+	'alpha_perp'                  : 12,
+	'gamma-scale'                 : 13,
+	'Rad \, strength'             : 14,
+	'Rad \, anisotropy'           : 15,
+	'Rad \, mean \, free \, path' : 16,
+	'Rad \, quasar \, lifetime'   : 17
 }
 
 class AnnalyseBAOFIT(correlation_3D.Correlation3D):
@@ -87,7 +108,8 @@ class AnnalyseBAOFIT(correlation_3D.Correlation3D):
 		i_alpha_paral = self._index_parameter['alpha_paral']
 		i_alpha_perp  = self._index_parameter['alpha_perp']
 
-		path_to_BAOFIT = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/BACKUP_2015_01_15/FitsFile_DR12_Guy/BaoFit_q_f/bao2D.'
+		path_to_BAOFIT = self._path_to_BAOFIT
+		#path_to_BAOFIT = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/BACKUP_2015_01_15/FitsFile_DR12_Guy/BaoFit_q_f/bao2D.'
 		
 		### Create a file a tmp with the scan minus the two first lines
 		idx = 0
@@ -192,9 +214,9 @@ class AnnalyseBAOFIT(correlation_3D.Correlation3D):
 		xi2D[:,:,1] = self._xi2D_fit[:,:,6]
 		xi2D[:,:,2] = self._xi2D_fit[:,:,8]
 		cut = (xi2D[:,:,2]>0.)
-		yyy = (self._xi2D[:,:,1][cut]-xi2D[:,:,1][cut])/xi2D[:,:,2][cut]
+		xi2D[:,:,1][cut] = (self._xi2D[:,:,1][cut]-xi2D[:,:,1][cut])/xi2D[:,:,2][cut]
 
-		return yyy
+		return xi2D
 	def print_results(self):
 
 		### Get the chi^2
@@ -205,22 +227,22 @@ class AnnalyseBAOFIT(correlation_3D.Correlation3D):
 		print '  chi^{2} = ', tmp_chi2
 	
 		### Get the fit parameters
-		tmp_beta               = self._param[0,0]
-		tmp_beta_err           = self._param[0,1]
-		tmp_delta_v            = self._param[4,0]
-		tmp_delta_v_err        = self._param[4,1]
-		tmp_bias2              = self._param[5,0]
-		tmp_bias2_err          = self._param[5,1]
-		tmp_beta2_bias2        = self._param[6,0]
-		tmp_beta2_bias2_err    = self._param[6,1]
-		tmp_alpha_parallel     = self._param[9,0]
-		tmp_alpha_parallel_err = self._param[9,1]
-		tmp_alpha_perp         = self._param[10,0]
-		tmp_alpha_perp_err     = self._param[10,1]
-	
+		tmp_beta               = self._param[ self._index_parameter['beta'],0]
+		tmp_beta_err           = self._param[ self._index_parameter['beta'],1]
+		tmp_delta_v            = self._param[ self._index_parameter['Delta v'],0]
+		tmp_delta_v_err        = self._param[ self._index_parameter['Delta v'],1]
+		tmp_bias2              = self._param[ self._index_parameter['b_{2}'],0]
+		tmp_bias2_err          = self._param[ self._index_parameter['b_{2}'],1]
+		tmp_beta2_bias2        = self._param[ self._index_parameter['b_{2}.beta_{2}'],0]
+		tmp_beta2_bias2_err    = self._param[ self._index_parameter['b_{2}.beta_{2}'],1]
+		tmp_alpha_parallel     = self._param[ self._index_parameter['alpha_paral'],0]
+		tmp_alpha_parallel_err = self._param[ self._index_parameter['alpha_paral'],1]
+		tmp_alpha_perp         = self._param[ self._index_parameter['alpha_perp'],0]
+		tmp_alpha_perp_err     = self._param[ self._index_parameter['alpha_perp'],1]
+
 		string =  """
-||  chiSquare / dof      || beta         ||  delta-v      ||  bias2        ||  beta2*bias2      ||  BAO alpha-parallel  ||  BAO alpha-perp  ||
-||  %1.3e / (%u - %u)  ||  %1.3e ± %1.3e  ||  %1.3e ±  %1.3e   ||  %1.3e ± %1.3e    ||  %1.3e ± %1.3e       ||  %1.3e ± %1.3e       || %1.3e ± %1.3e  ||
+|| chi2 / dof              || beta                  || delta-v                 || bias2                 || beta2*bias2           ||  BAO alpha-parallel   ||  BAO alpha-perp       ||
+|| %1.3e / (%u - %u) || %1.3e ± %1.3e || %1.3e ±  %1.3e || %1.3e ± %1.3e || %1.3e ± %1.3e || %1.3e ± %1.3e || %1.3e ± %1.3e ||
 """ % (tmp_chi2,tmp_NBBin,tmp_NBParam,tmp_beta,tmp_beta_err,tmp_delta_v,tmp_delta_v_err,tmp_bias2,tmp_bias2_err,tmp_beta2_bias2,tmp_beta2_bias2_err,tmp_alpha_parallel,tmp_alpha_parallel_err,tmp_alpha_perp,tmp_alpha_perp_err)
 		print string
 
@@ -414,7 +436,8 @@ class AnnalyseBAOFIT(correlation_3D.Correlation3D):
 		return
 	def plot_histo_residuals(self, nbBins=100):
 
-		yyy = self.get_residuals()
+		xi2D = self.get_residuals()
+		yyy  = (xi2D[:,:,1][ (xi2D[:,:,2]>0.) ]).flatten()
 	
 		fig = plt.figure()
 		ax = fig.add_subplot(111)

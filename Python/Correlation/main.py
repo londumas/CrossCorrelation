@@ -32,16 +32,42 @@ corr.send_BAOFIT('subsampling',correlation_matrix_path, False, False, 10000)
 dic_class = correlation_3D.raw_dic_class
 dic_CAMB  = correlation_3D.raw_dic_CAMB
 index_parameter = annalyse_BAOFIT.raw_index_parameter
-index_parameter = {
-	'alpha_paral' : 11,
-	'alpha_perp'  : 12
+dic_class = {
+	'minXi': 0.,
+	'maxXi': 200.,
+	'nbBin': 50,
+	'nbBinM': 25,
+	'nb_Sub_Sampling': 80,
+	'size_bin_calcul_s': 1.,
+	'size_bin_calcul_m': 0.02,
+	'correlation': 'q_f',
+	'path_to_txt_file_folder': 'NOTHING',
+	'f1': 'LYA',
+	'f2': 'LYA',
+	'q1': 'QSO',
+	'q2': 'QSO',
+	'name' : 'Data'
 }
 dic_class['name'] = 'Data'
 dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
 corr = annalyse_BAOFIT.AnnalyseBAOFIT(dic_class, index_parameter)
 corr.print_results()
+corr.plot_data_and_fit_1d(0)
+corr.plot_data_and_fit_1d(1)
+corr.plot_data_and_fit_1d(2)
+corr.plot_data_and_fit_we(0)
+corr.plot_data_and_fit_we(1)
+corr.plot_data_and_fit_we(2)
+corr.plot_fit_2d(0)
+corr.plot_fit_2d(1)
+corr.plot_fit_2d(2)
+corr.plot_residuals_2d(0)
+corr.plot_residuals_2d(1)
+corr.plot_residuals_2d(2)
+corr.plot_histo_residuals()
 corr.plot_chi2_scan(100,100, [0.5,1.5,0.5,1.5], True, False)
 '''
+
 
 
 
@@ -50,10 +76,8 @@ corr.plot_chi2_scan(100,100, [0.5,1.5,0.5,1.5], True, False)
 dic_class = correlation_3D.raw_dic_class
 dic_CAMB  = correlation_3D.raw_dic_CAMB
 index_parameter = annalyse_BAOFIT.raw_index_parameter
-index_parameter = {
-	'alpha_paral' : 9,
-	'alpha_perp'  : 10
-}
+index_parameter['alpha_paral'] = 9
+index_parameter['alpha_perp']  = 10
 dic_class['name'] = 'Simulation'
 dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Box_000/Simu_009/Results/'
 path_to_BAOFIT = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Box_000/Simu_009/BaoFit_q_f_covFromFit/bao2D.'
@@ -66,10 +90,8 @@ corr.plot_chi2_scan(50,50)
 '''
 dic_class = correlation_3D.raw_dic_class
 index_parameter = annalyse_BAOFIT.raw_index_parameter
-index_parameter = {
-	'alpha_paral' : 9,
-	'alpha_perp'  : 10
-}
+index_parameter['alpha_paral'] = 9
+index_parameter['alpha_perp']  = 10
 aMB = annalyse_many_BAOFIT.AnnalyseManyBAOFIT(dic_class, index_parameter, '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/', 1,10)
 aMB.plot_histo_residuals()
 #aMB.print_results()
@@ -81,7 +103,7 @@ aMB.plot_chi2_scan(50,50)
 
 
 
-
+'''
 dic_class = {
 	'minXi': 0.,
 	'maxXi': 200.,
@@ -122,7 +144,9 @@ corr.plot_mu(2)
 #corr.save_list_realisation('subsampling', 80)
 #corr.plot_cov_cor_matrix('subsampling','1D')
 correlation_matrix_path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Results_RandomPosInCell/xi_delta_QSO_result_cor_2D_allSubSamplingFromFit.npy'
-corr.send_BAOFIT('subsampling',correlation_matrix_path,False)
+corr.send_BAOFIT('subsampling',correlation_matrix_path,False,True)
+'''
+
 
 ### List function Correlation3D
 '''
@@ -160,8 +184,8 @@ corr.send_BAOFIT('subsampling',correlation_matrix_path)
 '''
 
 
-'''
 ### List function AnnalyseBAOFIT
+'''
 corr.print_results()
 corr.plot_data_and_fit_1d(0)
 corr.plot_data_and_fit_1d(1)
@@ -176,7 +200,7 @@ corr.plot_residuals_2d(0)
 corr.plot_residuals_2d(1)
 corr.plot_residuals_2d(2)
 corr.plot_histo_residuals()
-corr.plot_chi2_scan(50,50)
+corr.plot_chi2_scan(100,100, [0.5,1.5,0.5,1.5], True, False)
 '''
 
 

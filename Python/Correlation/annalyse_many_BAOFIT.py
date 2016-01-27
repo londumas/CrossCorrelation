@@ -50,7 +50,9 @@ class AnnalyseManyBAOFIT:
 
 		yyy = numpy.array([])
 		for el in self._listFit:
-			yyy = numpy.append(yyy,el.get_residuals())
+			xi2D = el.get_residuals()
+			tmp_yyy  = (xi2D[:,:,1][ (xi2D[:,:,2]>0.) ]).flatten()
+			yyy = numpy.append(yyy,tmp_yyy)
 
 		### histo
 		fig = plt.figure()
@@ -79,6 +81,7 @@ class AnnalyseManyBAOFIT:
 			nb[cut] += 1.
 
 		self._chi2_scan /= nb
+		#print '  edge = ', self._listFit[0]._chi2_scan_edge
 
 		### Plot the data
 		myTools.plot_chi2_scan(self._chi2_scan,self._listFit[0]._chi2_scan_edge,True, None,'\\alpha_{\\perp}','\\alpha_{\\parallel}','\\Delta \\chi^{2} = \\chi^{2}-\\chi^{2}_{best \\, fit}')

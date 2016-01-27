@@ -114,13 +114,13 @@ GetDelta::GetDelta(int argc, char** argv) {
 		pathForest__   = "/home/gpfs/manip/mnt/bao/hdumasde/Data/";
 		pathForest__  += forest__;
 		pathToTxt__    = pathForest__;
-//		pathForest__  += "/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits";
+		pathForest__  += "/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits";
 //		pathForest__  += "/FitsFile_DR12_Guy/DR12_reObs/DR12_reObs.fits";
-		pathForest__  += "/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits";
+//		pathForest__  += "/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits";
 
-//		pathToTxt__   += "/FitsFile_DR12_Guy/DR12_primery/histos/";
+		pathToTxt__   += "/FitsFile_DR12_Guy/DR12_primery/histos/";
 //		pathToTxt__   += "/FitsFile_DR12_Guy/DR12_reObs/histos/";
-		pathToTxt__   += "/FitsFile_eBOSS_Guy/all_eBOSS_primery/histos/";
+//		pathToTxt__   += "/FitsFile_eBOSS_Guy/all_eBOSS_primery/histos/";
 
 		std::cout << "  pathToTxt = " << pathToTxt__ << std::endl;
 	}
@@ -1655,7 +1655,7 @@ void GetDelta::putReobsTogether(std::string fitsnameSpec, unsigned int loopIdx)
 				const double zi         = LAMBDA_OBS[p]/lambdaRFLine__-1.;
 				const double eta        = grEta__[loopIdx]->Eval(zi);
 				const double sigma2LSS  = grSig__[loopIdx]->Eval(zi);
-				DELTA_WEIGHT[p]         = pow( (zi+1.)/onePlusZ0__, halfGama__)/(sigma2LSS+1./(eta*DELTA_IVAR[p]));
+				delta_weight[j]         = std::max(0.,pow( (zi+1.)/onePlusZ0__, halfGama__)/(sigma2LSS+1./(eta*delta_ivar[j])));
 			}
 
 			fits_write_col(fitsptrSpec,TDOUBLE, 18,i+1,1,nbBinRFMax__, &DELTA,        &sta);
