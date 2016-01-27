@@ -1332,11 +1332,25 @@ void Correlation::xi_A_delta_delta2( unsigned int bootIdx/*=0*/ ) {
 	}
 
 	std::cout << "\n  Saving\n" << std::endl;
+	
+	
+	std::stringstream convert;
+	convert << bootIdx;
+	const std::string strBootIdx = convert.str();
 
-	std::string prefix = forest__;
+	//// Set the prefix for different type of runs
+	std::string prefix = "_";
+	if (doBootstraps)  prefix += "subsampling";
+	if (shuffleForest) prefix += "shuffleForest";
+	if (shuffleQSO)    prefix += "shuffleQSO";
+	if (randomQSO)     prefix += "randomQSO";
 	prefix += "_";
-	prefix += forest2__;
-	prefix += ".txt";
+	prefix += strBootIdx;
+	
+
+	std::string prefix1 = forest__;
+	prefix1 += "_";
+	prefix1 += forest2__;
 
 	std::ofstream fFile;
 	long double sumZZZ = 0.;
@@ -1346,7 +1360,9 @@ void Correlation::xi_A_delta_delta2( unsigned int bootIdx/*=0*/ ) {
 	///// Save the 2D cross-correlation
 	std::string pathToSave = pathToSave__;
 	pathToSave += "xi_A_delta_delta2_2D_";
-	pathToSave += prefix;
+	pathToSave += prefix1;
+	if (doBootstraps || shuffleForest || shuffleQSO || randomQSO) pathToSave += prefix;
+	pathToSave += ".txt";
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
 	fFile << std::scientific;
@@ -1386,6 +1402,8 @@ void Correlation::xi_A_delta_delta2( unsigned int bootIdx/*=0*/ ) {
 	pathToSave = pathToSave__;
 	pathToSave += "xi_A_delta_delta2_Mu_";
 	pathToSave += prefix;
+	if (doBootstraps || shuffleForest || shuffleQSO || randomQSO) pathToSave += prefix;
+	pathToSave += ".txt";
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
 	fFile << std::scientific;
@@ -1407,7 +1425,7 @@ void Correlation::xi_A_delta_delta2( unsigned int bootIdx/*=0*/ ) {
 	fFile.close();
 
 
-	if (true) {
+	if (!doBootstraps__ && !shuffleForest && !shuffleQSO && !randomQSO) {
 
 		std::vector< std::vector< double > > forests;
 		std::vector< double > tmp_forests_id;
