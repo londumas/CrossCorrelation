@@ -107,7 +107,7 @@ const bool shuffleQSO     = false;
 const bool shuffleForest  = false;
 const bool randomQSO      = false;
 const bool randomForest   = false;
-const bool doBootstraps__ = false;
+const bool doBootstraps__ = true;
 
 const bool doVetoLines__ = true;
 const bool nicolasEstimator__ = false;
@@ -211,7 +211,7 @@ Correlation::Correlation(int argc, char **argv) {
 	//
 	else if (command == 5)  xi_A_delta_delta();
 	else if (command == 6)  xi_A_delta_delta_lambda();
-	else if (command == 7)  xi_A_delta_delta2();
+	else if (command == 7)  xi_A_delta_delta2( idxCommand_[2] );
 	else if (command == 8)  xi_A_delta_delta2_lambda();
 	//
 	else if (command == 9)  xi_delta_QSO(doBootstraps__,idxCommand_[2]);
@@ -1185,7 +1185,7 @@ void Correlation::xi_A_delta_delta_lambda(void) {
 
 	return;
 }
-void Correlation::xi_A_delta_delta2(void) {
+void Correlation::xi_A_delta_delta2( unsigned int bootIdx/*=0*/ ) {
 
 	std::cout << "\n\n\n\n  ------ xi_A_delta_delta2 ------" << std::endl;
 	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_A_delta_delta2.py";
@@ -1194,6 +1194,7 @@ void Correlation::xi_A_delta_delta2(void) {
 
 	///// Forest 1
 	loadDataForest(pathForest__);
+	if (doBootstraps__) removeFalseCorrelations();
 	v_idx__.clear();
 	v_lRF__.clear();
 	v_lObs__.clear();
