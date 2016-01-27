@@ -16,7 +16,7 @@ from const_delta import *
 chunckNb = 1
 simulNb  = 1
 mockNumber = ''
-isMock_ = True
+isMock_ = False
 forest__ = 'LYA'
 if (forest__ == 'LYB'):
 	lambdaRFMin__      = 800.
@@ -35,8 +35,8 @@ elif (forest__ == 'MGII'):
 	lambdaRFMax__      = 2790.
 ###
 #path = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_histos/"
-path = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/"
-rawPath = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_correctedForest_withMoreMetals/'
+path = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA//FitsFile_eBOSS_Guy/all_eBOSS_primery/histos/"
+#rawPath = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_correctedForest_withMoreMetals/'
 
 
 
@@ -47,7 +47,7 @@ for i in range (0,chunckNb):
 			path = rawPath + 'Box_00'+str(i)+'/Simu_00'+str(j)+'/Run/'
 			mockNumber = '_'+str(i)+'_'+str(j)
 
-		data = numpy.loadtxt('/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_histos/hDeltaVsLambdaObs_LYA.txt')
+		data = numpy.loadtxt('/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/histos/hDeltaVsLambdaObs_LYA.txt')
                 plt.errorbar(data[:,0]+3600.5, data[:,1], label=r'$DR12$')
 
 		data = numpy.loadtxt(path+'hDeltaVsLambdaObs_LYA'+mockNumber+'.txt')
@@ -97,7 +97,7 @@ plt.show()
 for i in range (0,chunckNb):
 	for j in range(0,simulNb):
 
-		data = numpy.loadtxt('/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_histos/template_LYA.txt')
+		data = numpy.loadtxt('/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/histos/template_LYA.txt')
 		plt.errorbar(data[:,0], data[:,1], fmt='o', label=r'$DR12$')
 
 		if (isMock_): 
@@ -252,7 +252,7 @@ for i in range (0,chunckNb):
 		yyy = data[:,1]
 		def chi2(a0,a1,a2):
 			return numpy.sum(numpy.power( yyy-(a0+a1*numpy.power(xxx+1.,a2)) ,2.))
-		m = Minuit(chi2,a0=1.,error_a0=1.,a1=1.,error_a1=1.,a2=1.,error_a2=1.,print_level=-1, errordef=0.01) 	
+		m = Minuit(chi2,a0=0.,error_a0=1.,a1=1.,error_a1=1.,a2=1.,error_a2=1.,print_level=-1, errordef=0.01, fix_a0=True) 	
 		m.migrad()
 		a0 = m.values['a0']
 		a1 = m.values['a1']

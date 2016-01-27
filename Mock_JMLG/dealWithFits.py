@@ -77,14 +77,8 @@ def removeUselessLines():
 	return
 def haveAlookForest():	
 
-	cat = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_correctedForest_withMoreMetals/Box_000/Simu_000/Data/delta.fits', memmap=True)
+	cat = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_correctedForest_withMoreMetals_test2Bugs/Box_000/Simu_000/Data/delta.fits', memmap=True)[1].data[0:50000]
 	cat2 = pyfits.open('/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits', memmap=True)[1].data[0:10000]
-
-	print cat[0].header
-	print cat[0].data
-	print cat[1].header
-
-	cat = cat[1].data[0:10000]
 
 	print cat.size
 	cat = cat[ (cat['Z_VI'] != 0.) ]
@@ -97,10 +91,34 @@ def haveAlookForest():
 	
 	from myTools import Get_TProfile
 	flux      = cat["NORM_FLUX"][ cat['NORM_FLUX_IVAR'] >0.]/alphaStart__
+	template  = cat["TEMPLATE"][ cat['NORM_FLUX_IVAR'] >0.]
+	ivar      = cat["NORM_FLUX_IVAR"][ cat['NORM_FLUX_IVAR'] >0.]
+	delta     = cat["DELTA"][ cat['NORM_FLUX_IVAR'] >0.]
 	lambdaRF  = cat["LAMBDA_RF"][ cat['NORM_FLUX_IVAR'] >0.]
 	lambdaObs = cat["LAMBDA_OBS"][ cat['NORM_FLUX_IVAR'] >0.]
 	weight    = numpy.ones(flux.size)
+	###
 	xxx, yyy, eyyy, nyyy = Get_TProfile(lambdaRF,flux, 160,weight)	
+	plt.errorbar(xxx, yyy, yerr=eyyy, marker="o")
+	myTools.deal_with_plot(False, False, False)
+	plt.show()
+	###
+	xxx, yyy, eyyy, nyyy = Get_TProfile(lambdaRF,flux/template, 160,weight)	
+	plt.errorbar(xxx, yyy, yerr=eyyy, marker="o")
+	myTools.deal_with_plot(False, False, False)
+	plt.show()
+	###
+	xxx, yyy, eyyy, nyyy = Get_TProfile(lambdaRF,delta, 160,weight)	
+	plt.errorbar(xxx, yyy, yerr=eyyy, marker="o")
+	myTools.deal_with_plot(False, False, False)
+	plt.show()
+	###
+	xxx, yyy, eyyy, nyyy = Get_TProfile(lambdaRF,template, 160,weight)	
+	plt.errorbar(xxx, yyy, yerr=eyyy, marker="o")
+	myTools.deal_with_plot(False, False, False)
+	plt.show()
+	###
+	xxx, yyy, eyyy, nyyy = Get_TProfile(lambdaRF,ivar, 160,weight)	
 	plt.errorbar(xxx, yyy, yerr=eyyy, marker="o")
 	myTools.deal_with_plot(False, False, False)
 	plt.show()
@@ -109,7 +127,6 @@ def haveAlookForest():
 	plt.errorbar(xxx, yyy, yerr=eyyy, marker="o")
 	myTools.deal_with_plot(False, False, False)
 	plt.show()
-	
 
 	ar_cut          = (cat['NORM_FLUX_IVAR']>0.)
 	ar_lambdaObs    = cat['LAMBDA_OBS'][ ar_cut ]

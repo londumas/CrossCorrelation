@@ -23,7 +23,7 @@ from const_delta import *
 
 
 ### File Jean-Marc
-path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_metals/Box_000/Simu_000/Data/mocks-0_1000.fits'
+path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_correctedForest_withMoreMetals_test2Bugs/Box_000/Simu_000/Data/mocks-0_1000.fits'
 key = ['loglam','flux','mock_F','mock_contpca','ivar','model','mock_miscalib','and_mask','mock_ivar']
 
 cat = pyfits.open(path, memmap=True)
@@ -45,7 +45,7 @@ for i in numpy.arange(1,100):
 	el = cat[i].data
 
 	el = el[ (el['LOGLAM']>0.) ]
-	el = el[ (el['IVAR']>0.) ]
+	#el = el[ (el['IVAR']>0.) ]
 	el['LOGLAM'] = numpy.power(10., el['LOGLAM'] )
 	el['LOGLAM'] /= (1.+z)
 
@@ -59,14 +59,16 @@ for i in numpy.arange(1,100):
 
 	plt.plot(el['LOGLAM'],el['flux'], marker='o')
 	#plt.plot(el['LOGLAM'],el['ivar'], marker='o')
-	plt.plot(el['LOGLAM'],el['mock_contpca'])
-	myTools.deal_with_plot(False,False,False)
-	plt.show()
+	#plt.plot(el['LOGLAM'],el['mock_contpca'])
+
 
 	'''
 	nb += [ el['loglam'][ numpy.logical_and( (el['loglam']>=lambdaRFTemplateMin__) , (el['loglam']<lambdaRFTemplateMax__) ) ].size ]
 	zA += [z]
 	'''
+
+myTools.deal_with_plot(False,False,False)
+plt.show()
 
 nb = numpy.array(nb)
 difLOGLOBS = numpy.array(difLOGLOBS)

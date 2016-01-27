@@ -80,18 +80,17 @@ GetDelta::GetDelta(int argc, char** argv) {
 	pathToDataQSO__ += ".fits";
 	pathToDataQSO__ = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/spectra-expander.fits";
 	///
-	pathToDataForest__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_correctedForest_withMoreMetals/Box_00";
+	pathToDataForest__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_correctedForest_withMoreMetals_test2Bugs/Box_00";
 	pathToDataForest__ += box_idx;
 	pathToDataForest__ += "/Simu_00";
 	pathToDataForest__ += sim_idx;
 	pathToDataForest__ += "/Data/mocks-*";
 	///
-	pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_correctedForest_withMoreMetals/Box_00";
+	pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_correctedForest_withMoreMetals_test2Bugs/Box_00";
 	pathToSave__ += box_idx;
 	pathToSave__ += "/Simu_00";
 	pathToSave__ += sim_idx;
 	pathToSave__ += "/Data/";
-
 
 	std::cout << "\n"   << std::endl;
 	std::cout << "  " << pathToDataQSO__ << std::endl;
@@ -218,6 +217,7 @@ void GetDelta::GetData(void) {
 			unsigned int nbPixel = 0;
 			double normFactor[2] = {0.};
 			double meanForestLRF[2] = {0.};
+			double meanFluxForest[2] = {0.};
 			const double oneOverOnePlusZ = 1./(1.+Z);
 	
 			for (unsigned int p=0; p<tmp_nbPixels2; p++) {
@@ -259,8 +259,10 @@ void GetDelta::GetData(void) {
 					nbPixel ++;
 	
 					if (lambdaRFd>=lambdaRFMin__ && lambdaRFd<lambdaRFMax__) {
-						meanForestLRF[0] += FLUX[p];
+						meanForestLRF[0] += lambdaRFd;
 						meanForestLRF[1] ++;
+						meanFluxForest[0] += FLUX[p];
+						meanFluxForest[1] ++;
 						/*
 						/// Get the PDF
 						if (findPDF__) {
@@ -293,16 +295,21 @@ void GetDelta::GetData(void) {
 				norm_flux_ivar[i] *= norm*norm;
 				continuum[i]      /= norm;
 			}
-	
+
+			/// Number of pixels in forest
+			unsigned int nbPixelInForest = meanForestLRF[1];
 			/// Get the mean lambda_RF
 			meanForestLRF[0] /= meanForestLRF[1];
+			/// Get the mean_flux_in_forest
+			double alpha = C_CONVERT_FROM_FLUX_TO_ALPHA*meanFluxForest[0]/(meanFluxForest[1]*norm);
 		
 			/// Save data in second file
 			fits_write_col(fitsptrSpec2,TDOUBLE, 4,forestIdx+1,1,1, &X, &sta2);
 			fits_write_col(fitsptrSpec2,TDOUBLE, 5,forestIdx+1,1,1, &Y, &sta2);
 			fits_write_col(fitsptrSpec2,TDOUBLE, 6,forestIdx+1,1,1, &Z, &sta2);
-			fits_write_col(fitsptrSpec2,TINT,    7,forestIdx+1,1,1, &meanForestLRF[1], &sta2);
+			fits_write_col(fitsptrSpec2,TINT,    7,forestIdx+1,1,1, &nbPixelInForest, &sta2);
 			fits_write_col(fitsptrSpec2,TDOUBLE, 8,forestIdx+1,1,1, &meanForestLRF[0], &sta2);
+			fits_write_col(fitsptrSpec2,TDOUBLE, 11,forestIdx+1,1,1, &alpha, &sta2);
 			fits_write_col(fitsptrSpec2,TDOUBLE, 13,forestIdx+1,1,nbPixel, &lambdaOBS, &sta2);
 			fits_write_col(fitsptrSpec2,TDOUBLE, 14,forestIdx+1,1,nbPixel, &lambdaRF, &sta2);
 			fits_write_col(fitsptrSpec2,TDOUBLE, 15,forestIdx+1,1,nbPixel, &norm_flux,       &sta2);

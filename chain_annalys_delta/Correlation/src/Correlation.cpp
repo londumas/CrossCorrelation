@@ -92,16 +92,16 @@ const unsigned int nbBinlambdaObs__  = int(lambdaObsMax__-lambdaObsMin__);
 double distMinPixel__ = 0.;
 double distMinPixelDelta2__ = 0.;
 unsigned int idxCommand_[6] = {0};
-const std::string pathToMockJMC__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_correctedForest_withMoreMetals/";
-std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/TESTS/";
+const std::string pathToMockJMC__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_correctedForest_withMoreMetals_test2Bugs/";
+std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator/";
 
 ///// Flags for Jean-Marc's simulations
 const bool mocks              = false;
-const bool mockJMC__          = true;
+const bool mockJMC__          = false;
 const bool mockBox__          = false;
 const bool mocksNoNoiseNoCont = false;
 const double randomPositionOfQSOInCell__ = false;
-const double randomPositionOfQSOInCellNotBeforeCorrelation__ = true;
+const double randomPositionOfQSOInCellNotBeforeCorrelation__ = false;
 //// Flags for covariance matrix estimation
 const bool shuffleQSO     = false;
 const bool shuffleForest  = false;
@@ -110,7 +110,7 @@ const bool randomForest   = false;
 const bool doBootstraps__ = true;
 
 const bool doVetoLines__ = true;
-const bool nicolasEstimator__ = false;
+const bool nicolasEstimator__ = true;
 
 
 
@@ -143,6 +143,7 @@ Correlation::Correlation(int argc, char **argv) {
 		pathForest__  = "/home/gpfs/manip/mnt/bao/hdumasde/Data/";
 		pathForest__  += forest__;
 		pathForest__  += "/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits";
+//		pathForest__  += "/FitsFile_DR12_Guy/DR12_reObs/DR12_reObs.fits";
 //		pathForest__  += "/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits";
 	}
 	else if (mocks) {
@@ -1592,7 +1593,7 @@ void Correlation::xi_delta_QSO(bool doBootstraps/*=False*/, unsigned int bootIdx
 	command += commandEnd__;
 	std::cout << command << "\n" << std::endl;
 	if (doBootstraps)  std::cout << "  subsampling N° "     << bootIdx << std::endl;
-	if (shuffleForest) std::cout << "  shuffleForest seed " << bootIdx*10 << std::endl;
+	if ( shuffleForest || shuffleQSO || randomQSO ) std::cout << "  shuffleForest seed " << bootIdx*10 << std::endl;
 
 	///// QSO
 	loadDataQ1();

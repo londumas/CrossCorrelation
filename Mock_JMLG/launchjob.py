@@ -11,7 +11,6 @@ import astropy.io.fits as pyfits
 import matplotlib.pyplot as plt
 import numpy
 import myTools
-import myTools
 from const_delta import *
 
 import subprocess
@@ -30,12 +29,12 @@ import cosmolopy.distance as cosmology
 
 ### Constants
 sizeMax = 300000
-sizeMaxForest = 250000 #300000
+sizeMaxForest = 20000 #300000
 nbQSO__ = 238929
 nbFor__ = 170898
 nbPixel = 645
 ratioForestToQSO__    = 1.*nbFor__/nbQSO__;
-pathToFolder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_correctedForest_withMoreMetals/'
+pathToFolder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_correctedForest_withMoreMetals_test2Bugs/'
 
 
 
@@ -84,7 +83,7 @@ def main():
 				subprocess.call('mkdir ' + path + 'Results', shell=True)
 				subprocess.call('mkdir ' + path + 'Results_NicolasDistortion', shell=True)
 				subprocess.call('mkdir ' + path + '/Results/BaoFit_q_f__LYA__QSO', shell=True)
-				subprocess.call('mkdir ' + path + '/Results_NicolasDistortion/BaoFit_q_f', shell=True)
+				subprocess.call('mkdir ' + path + '/Results_NicolasDistortion/BaoFit_q_f__LYA__QSO', shell=True)
 
 				if (i==0 and j==0):
 					tbhduQSO    = create_fits_qso(sizeMax)

@@ -11,10 +11,10 @@ import myTools
 from scipy import interpolate
 
 type__        = '2D'
-#path__        = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/noNoisenoCont/Box_000/Simu_000/Results/BaoFit_q_f/bao' + type__ + ''
-#pathData__    = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/noNoisenoCont/Box_000/Simu_000/Results/BaoFit_q_f/bao' + type__
 path__        = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/BaoFit_q_f__LYA__QSO/bao' + type__ + ''  ##_scanAlphaParal  scanAlphaPerp ##SmalScan  #middleScan
 pathData__    = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/BaoFit_q_f__LYA__QSO/bao' + type__
+#path__        = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_correctedForest_withMoreMetals/Box_000/Simu_000/Results/BaoFit_q_f__LYA__QSO/bao' + type__
+#pathData__    = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_correctedForest_withMoreMetals/Box_000/Simu_000/Results/BaoFit_q_f__LYA__QSO/bao' + type__
 
 nbParam__ = 30
 nbBin__   = 5000

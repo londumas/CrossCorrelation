@@ -43,7 +43,9 @@
 //// Number of sub-samples the sky is split into:
 #define C_NBSUBSAMPLES 80
 //// Minimum number of pixels in a forest
-# define C_MIN_NB_PIXEL 50
+#define C_MIN_NB_PIXEL 50
+//// Conversion from mean_flux_in_forest to alpha
+#define C_CONVERT_FROM_FLUX_TO_ALPHA 1.154
 
 //// Lines in the sky to veto or not
 const unsigned int nbVetoLines__ = 21;

@@ -169,20 +169,29 @@ class Correlation_1D:
 		yer = self._xi[cut:,2]
 		plt.errorbar(xxx, yyy, yerr=yer, marker='o', label=r'$'+self._name+'$')
 
+		xMin = numpy.amin(xxx)
+		xMax = numpy.amax(xxx)
+		yMin = numpy.amin(yyy)
+		yMax = numpy.amax(yyy)
+
 		for el in other:
-			TMP_xxx = el._xi[cut:,0]
+			if (el._correlation == 'f_f2_lRF_devide'): 
+				TMP_xxx = 1./el._xi[cut:,0]
+			else:
+				TMP_xxx = el._xi[cut:,0]
 			TMP_yyy = el._xi[cut:,1]
 			TMP_yer = el._xi[cut:,2]
 			plt.errorbar(TMP_xxx, TMP_yyy, yerr=TMP_yer, marker='o', label=r'$'+el._name+'$')
+
+			xMin = min(xMin, numpy.amin(TMP_xxx) )
+			xMax = max(xMax, numpy.amax(TMP_xxx) )
+			yMin = min(yMin, numpy.amin(TMP_yyy) )
+			yMax = max(yMax, numpy.amax(TMP_yyy) )
 
 		if (with_lines):
 
 			if (verbose): print ' ||  name_1 - name_2 || line || lambda_rf_1 || lamnda_rf_2 || '
 
-			xMin = numpy.amin(xxx)
-			xMax = numpy.amax(xxx)
-			yMin = numpy.amin(yyy)
-			yMax = numpy.amax(yyy)
 			yLi = [yMin,yMax]
 			nbLines1 = self._lines1.size
 
@@ -195,9 +204,9 @@ class Correlation_1D:
 
 				for j in range(0,nbLines2):
 
-					if ( self._lines1[i]!=1215.67 and self._lines2[j]!=1215.67 ): continue
-					if ( self._name_line1[i][:4]!='SiII' and self._name_line2[j][:4]!='SiII' ): continue
-					if ( self._name_line1[i]=='SiII(1304)' or self._name_line2[j]=='SiII(1304)' ): continue
+					#if ( self._lines1[i]!=1215.67 and self._lines2[j]!=1215.67 ): continue
+					#if ( self._name_line1[i][:4]!='SiII' and self._name_line2[j][:4]!='SiII' ): continue
+					#if ( self._name_line1[i]=='SiII(1304)' or self._name_line2[j]=='SiII(1304)' ): continue
 
 					if (self._correlation=='f_f_r' or self._correlation=='f_f2_r'):
 						line = numpy.abs( const_delta.find_dist_correlation_lines(self._meanZ,self._lines2[j], self._lines1[i]) )
@@ -224,7 +233,7 @@ class Correlation_1D:
 		if (self._correlation=='f_f_r' or self._correlation=='f_f2_r' or self._correlation=='f_f_lRF' or self._correlation=='f_f_lRF'):
 			plt.xlim([ numpy.min(xxx)-10., numpy.max(xxx)+10. ])
 		if (self._correlation=='f_f_lRF_devide' or self._correlation=='f_f2_lRF_devide'):
-			plt.xlim([ 0.99*numpy.min(xxx), 1.01*numpy.max(xxx) ])
+			plt.xlim([ 0.99*xMin, 1.01*xMax ])
 
 		myTools.deal_with_plot(False,False,True)
 		plt.show()
@@ -244,27 +253,74 @@ dic_class = {
 	'name' : 'NAME'
 }
 
-#path_to_txt_file_folder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
-#listCorr = ['f_f_r','f_f_lRF','f_f_lRF_devide','f_f2_r','f_f2_lRF_devide']
-path_to_txt_file_folder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_correctedForest_withMetals/Box_000/Simu_000/Results/'
+
+
+
+### Data
 listCorr = ['f_f_lRF_devide']
-
-
-
-###
 path_to_txt_file_folder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
 dic_class['path_to_txt_file_folder'] = path_to_txt_file_folder
-dic_class['name'] = "Data"
+dic_class['name'] = "CIV"
+dic_class['f1']   = 'CIV'
 corrD = Correlation_1D(dic_class)
 print corrD._meanZ
-###
-path_to_txt_file_folder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_correctedForest_withMoreMetals/Box_000/Simu_000/Results/'
-dic_class['path_to_txt_file_folder'] = path_to_txt_file_folder
-dic_class['name'] = "Mocks \, LYA+Metals"
-corr2 = Correlation_1D(dic_class)
-print corr2._meanZ
 
-corrD.plot(True,True,[corr2])
+### Data
+listCorr = ['f_f_lRF_devide']
+path_to_txt_file_folder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
+dic_class['path_to_txt_file_folder'] = path_to_txt_file_folder
+dic_class['name'] = "SIIV"
+dic_class['f1']   = 'SIIV'
+corrD2 = Correlation_1D(dic_class)
+print corrD2._meanZ
+
+### Data
+listCorr = ['f_f_lRF_devide']
+path_to_txt_file_folder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
+dic_class['path_to_txt_file_folder'] = path_to_txt_file_folder
+dic_class['name'] = "LYA"
+dic_class['f1']   = 'LYA'
+corrD4 = Correlation_1D(dic_class)
+print corrD4._meanZ
+
+
+
+corrD.plot(False,False,[corrD2,corrD4])
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

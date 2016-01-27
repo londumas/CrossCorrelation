@@ -40,7 +40,7 @@
 
 
 //// Constants
-std::string pathToTxt__    = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/";
+std::string pathToTxt__    = "";
 std::string pathToPDF__    = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/";
 const std::string pathToDLACat__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/DLA_all.fits";
 const std::string pathToMockJMC__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_correctedForest_withMoreMetals/";
@@ -70,15 +70,15 @@ std::string pathMoreForHist__ = "";
 
 
 //// Flags
-unsigned int stepDefinition = 0;
-unsigned int stepAnnalyse   = 0;
+unsigned int stepDefinition = 1000;
+unsigned int stepAnnalyse   = 1000;
 const unsigned int methodIndex__ = 2;
 const bool doVetoLines__          = true;
 const bool setDLA__               = false;
 const bool cutNotFittedSpectra__  = true;
 const bool putReobsTogether__     = false;
 const bool mocksColab__           = false;
-const bool mockJMC__              = true;
+const bool mockJMC__              = false;
 
 GetDelta::GetDelta(int argc, char** argv) {
 
@@ -113,10 +113,16 @@ GetDelta::GetDelta(int argc, char** argv) {
 	if (!mocksColab__ && !mockJMC__) {
 		pathForest__   = "/home/gpfs/manip/mnt/bao/hdumasde/Data/";
 		pathForest__  += forest__;
-		pathForest__  += "/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits";
+		pathToTxt__    = pathForest__;
+//		pathForest__  += "/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits";
 //		pathForest__  += "/FitsFile_DR12_Guy/DR12_reObs/DR12_reObs.fits";
-//		pathForest__  += "/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits";
+		pathForest__  += "/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits";
 
+//		pathToTxt__   += "/FitsFile_DR12_Guy/DR12_primery/histos/";
+//		pathToTxt__   += "/FitsFile_DR12_Guy/DR12_reObs/histos/";
+		pathToTxt__   += "/FitsFile_eBOSS_Guy/all_eBOSS_primery/histos/";
+
+		std::cout << "  pathToTxt = " << pathToTxt__ << std::endl;
 	}
 	else {
 	

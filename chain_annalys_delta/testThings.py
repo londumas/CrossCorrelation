@@ -248,7 +248,7 @@ def meanDelta():
 	#path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_reObs/DR12_reObs.fits'
 	#path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits'
 
-	cat = pyfits.open(path, memmap=True)[1].data[:1000]
+	cat = pyfits.open(path, memmap=True)[1].data
 
 	cat = cat[ numpy.logical_and( numpy.logical_and(  numpy.logical_and( cat['ALPHA_2']!=alphaStart__, cat['BETA_2']!=0.),  numpy.abs(cat['ALPHA_2'])<=39.5 ), numpy.abs(cat['BETA_2'])<=0.25 ) ]
 	#cat = cat[ numpy.logical_or( numpy.logical_or(  numpy.logical_or( cat['ALPHA_2']==alphaStart__, cat['BETA_2']==0.),  numpy.abs(cat['ALPHA_2'])>=39.5 ), numpy.abs(cat['BETA_2'])>=0.25 ) ]
@@ -267,6 +267,13 @@ def meanDelta():
 	cat['DELTA'][ (cat['LAMBDA_RF']<lambdaRFMin__) ] = 0.
 	cat['DELTA'][ (cat['LAMBDA_RF']>lambdaRFMax__) ] = 0.
 
+	cat['NORM_FLUX'][ (cat['NORM_FLUX_IVAR']<0.) ] = 0.
+	cat['NORM_FLUX'][ (cat['DELTA_IVAR']<0.) ] = 0.
+	cat['NORM_FLUX'][ (cat['DELTA_WEIGHT']<0.) ] = 0.
+	cat['NORM_FLUX'][ (cat['FLUX_DLA']<0.8) ] = 0.
+	cat['NORM_FLUX'][ (cat['LAMBDA_RF']<lambdaRFMin__) ] = 0.
+	cat['NORM_FLUX'][ (cat['LAMBDA_RF']>lambdaRFMax__) ] = 0.
+
 	cat['DELTA_WEIGHT'][ (cat['NORM_FLUX_IVAR']<0.) ] = 0.
 	cat['DELTA_WEIGHT'][ (cat['DELTA_IVAR']<0.) ] = 0.
 	cat['DELTA_WEIGHT'][ (cat['DELTA_WEIGHT']<0.) ] = 0.
@@ -279,6 +286,11 @@ def meanDelta():
 	len_forest = numpy.sum(cut_noForestPixel,axis=1)
 	cat = cat[ (len_forest>=nbBinRFMin__) ]
 	print cat.size
+
+	### Get the mean flux
+	meanFlux = numpy.average( cat['NORM_FLUX'], weights=cat['DELTA_WEIGHT'],axis=1)
+	print meanFlux.size
+	print meanFlux[ numpy.isfinite(meanFlux) ].size
 
 	### Get the mean delta
 	meanDelta = numpy.average( cat['DELTA'], weights=cat['DELTA_WEIGHT'],axis=1)
@@ -293,6 +305,24 @@ def meanDelta():
 	### Get the mean S/N
 	cat['DELTA_WEIGHT'][ (cat['DELTA_WEIGHT']>0.) ] = 1.
 	meanSNR = numpy.average( cat['NORM_FLUX']*numpy.sqrt(cat['NORM_FLUX_IVAR']), weights=cat['DELTA_WEIGHT'],axis=1)
+
+
+	### \alpha vs. <flux>
+	xxx = meanFlux
+	yyy = cat['ALPHA_2']
+	def chi2(a0,a1,a2):
+		return numpy.sum(numpy.power( yyy-(a0*xxx) ,2.))
+	m = Minuit(chi2,a0=1.,error_a0=1., print_level=-1, errordef=0.01) 	
+	m.migrad()
+	a0 = m.values['a0']
+	print a0, numpy.mean(meanFlux), numpy.mean(cat['ALPHA_2'])
+	plt.errorbar(meanFlux, cat['ALPHA_2'],fmt='o')
+	plt.errorbar(meanFlux, a0*meanFlux,fmt='o')
+	plt.xlabel(r'$<flux>$', fontsize=40)
+	plt.ylabel(r'$\alpha$', fontsize=40)
+	myTools.deal_with_plot(False,False,True)
+	plt.show()
+
 
 	'''
 	### < \delta >

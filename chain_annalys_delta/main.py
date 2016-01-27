@@ -32,13 +32,14 @@ commandProd     = "/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/c
 commandProd     = "/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/chain_annalys_delta/Correlation/bin/main.exe"
 step      = 2000
 nbSpectra = 300000
+stepIdx = int(sys.argv[1])
 
 def main():
 
-	stepIdx = 1
 	forest = 'LYA'
 	alphaStart__ = 1.3
 	reObs = False
+	eBOSS = True
 	method = '' #'_method1'
 
 	print
@@ -52,6 +53,15 @@ def main():
 	subprocess.call(tmp_command, shell=True)
 	'''
 
+	if (stepIdx==0):
+		tmp_command = "time /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/chain_annalys_delta/Get_delta/bin/main.exe 0 0 0 0 2 0 "
+		subprocess.call(tmp_command, shell=True)
+		
+		tmp_command = "echo " + tmp_command
+		subprocess.call(tmp_command, shell=True)
+		tmp_command = "echo " + time.ctime()
+		subprocess.call(tmp_command, shell=True)
+
 	if (stepIdx==1):
 		### Do the fits
 		nbSpectra = 300000
@@ -60,7 +70,7 @@ def main():
 		last  = step
 		while (first <= nbSpectra):
 		
-			tmp_command = "clubatch \"echo ; hostname ; /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/chain_annalys_delta/Get_delta/bin/main.exe 0 0 " + str(first) + " " + str(last) +"\""
+			tmp_command = "clubatch \"echo ; hostname ; /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/chain_annalys_delta/Get_delta/bin/main.exe 0 0 " + str(first) + " " + str(last) +" 2 1 \""
 			subprocess.call(tmp_command, shell=True)
 		
 			tmp_command = "echo " + tmp_command
@@ -80,7 +90,12 @@ def main():
 
 		### Put files of alpha and beta together
 
-		folder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/'
+		if (reObs):
+			folder = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_reObs/histos/'
+		elif (eBOSS):
+			folder = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_eBOSS_Guy/all_eBOSS_primery/histos/'
+		else:
+			folder = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/histos/'
 		scheme = 'alphaAndBeta_'+forest+'_'
 		lenScheme = len(scheme)
 
@@ -216,12 +231,12 @@ def main():
 		
 		
 		### Put the new alpha and beta in fits file
-		if (not reObs):
-			#path     = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest+'/FitsFile_DR12_Guy/DR12_primery/DR12_primery'+method+'.fits'
-			path     = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest+'/FitsFile_DR12_Guy/DR12_primery_with_Latest_CIV_Forest/DR12_primery'+method+'.fits'
+		if (reObs):
+			path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_reObs/DR12_reObs.fits'
+		elif (eBOSS):
+			path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits'
 		else:
-			path     = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_reObs/DR12_reObs.fits'
-		#path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest+'/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits'
+			path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits'
 
 		file_cat = pyfits.open(path,mode='update')
 		cat      = file_cat[1].data

@@ -11,6 +11,9 @@ import subprocess
 import time
 import iminuit as minuit
 from iminuit import Minuit
+import pylab
+
+### Perso lib
 import const_delta
 
 #import warnings
@@ -32,7 +35,7 @@ def Rebin(a, shape, weight=None):
 	sh = [item  for sublist in sh for item in sublist]
 	a = a.reshape(tuple(sh))
 
-	if weight==None:
+	if weight is None:
 		return a.mean(axis=tuple(numpy.arange(1,len(sh),2)))
 	else:
 		weight = weight.reshape(tuple(sh))
@@ -164,13 +167,13 @@ def plot1D(data, xTitle='-',yTitle='-',title='-',label=None):
 	size = len(data)
 
 	for i in numpy.arange(size):
-		if (label!=None): plt.plot(numpy.arange(0,data[i].size),data[i],marker='o',label=label[i])
+		if (label is not None): plt.plot(numpy.arange(0,data[i].size),data[i],marker='o',label=label[i])
 		else: plt.plot(numpy.arange(0,data[i].size),data[i],marker='o')
 
 	plt.xlabel(r'$'+xTitle+'$', fontsize=40)
 	plt.ylabel(r'$'+yTitle+'$', fontsize=40)
 
-	if (label!=None): deal_with_plot(False,False,True)
+	if (label is not None): deal_with_plot(False,False,True)
 	else: deal_with_plot()
 
 	plt.show()
@@ -647,7 +650,47 @@ def plotOnSpectra_spec(plate,mjd,fiber,z=0.):
 		
 
 	return
+def plot_chi2_scan(data, edge=None, contour=False, bestFit=None, xTitle='-',yTitle='-',zTitle='-',title='-'):
+	'''
+	'''
+	
+	fig = plt.figure()
+	ax = fig.add_subplot(111)
 
+	deal_with_plot(False,False,False)
+	ax.set_xticks([ 0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5 ])
+	ax.set_yticks([ 0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5 ])
+	
+	plt.imshow(data, origin='lower',extent=edge, interpolation='None') ##, interpolation='None'
+	cbar = plt.colorbar()
+	plt.xlabel(r'$'+xTitle+'$', fontsize=40)
+	plt.ylabel(r'$'+yTitle+'$', fontsize=40)
+	cbar.set_label(r'$'+zTitle+'$',size=40)
+
+	### Limit for color
+	plt.clim(0.,63.69)
+	
+	plt.grid(True)
+	#cbar.formatter.set_powerlimits((0, 0))
+	cbar.update_ticks()
+	
+	### [1s = 2.30, 2s = 6.18, 3s = 11.83, 4s = 19.33]
+	### http://www.reid.ai/2012/09/chi-squared-distribution-table-with.html
+	if (contour):
+		pylab.contour(data, [2.30, 6.18, 11.83, 19.33, 28.74], extent=edge, linewidths=3, colors = 'red', origin='lower', hold='on') #0.57,1.47, 
+	
+	if (bestFit is not None):
+		if (bestFit[0,:].size > 1):
+			plt.scatter(bestFit[0,1:],bestFit[1,1:],marker='+',color='white',linewidths=5, hold='on')
+		if (bestFit[0,:].size > 0):
+			plt.scatter(bestFit[0,0],bestFit[1,0], marker='+',color='red',linewidths=10, hold='on')
+		
+	plt.xlim(edge[:2])
+	plt.ylim(edge[2:])
+
+	plt.show()
+	
+	return
 
 
 
