@@ -29,23 +29,18 @@ def plotOne():
 		'nb_Sub_Sampling': 80,
 		'size_bin_calcul_s': 1.,
 		'size_bin_calcul_m': 0.02,
-		'correlation': 'q_f',
+		'correlation': 'f_f',
 		'path_to_txt_file_folder': 'NOTHING',
 		'f1': 'LYA',
 		'f2': 'LYA',
-		'q1': 'QSO_DR7_DR12_EBOSS',
+		'q1': 'QSO',
 		'q2': 'QSO',
 		'name' : 'Data'
 	}
 	dic_CAMB  = correlation_3D.raw_dic_CAMB
-	dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_eBOSS/'
+	dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
 	dic_class['name'] = 'Data'
-	dic_class['name'] = 'LYA'
 	corr = correlation_3D.Correlation3D(dic_class)
-	corr.save_list_realisation('subsampling', 80)
-	corr.plot_cov_cor_matrix('subsampling','1D')
-	dic_CAMB = corr.fit_CAMB(dic_CAMB)
-	corr.plot_CAMB(dic_CAMB)
 
 	return
 def plotMany():
@@ -75,9 +70,12 @@ def plotMany():
 
 	for el in list_correlation:
 		dic_class['f1']   = el
-		dic_class['name'] = el
+		dic_class['name'] = el+' \, \\times \, QSO'
 		corr = correlation_3D.Correlation3D(dic_class)
 		corr.set_error_on_covar_matrix('subsampling')
+		corr.plot_2d(0)
+		corr.plot_2d(1)
+		corr.plot_2d(2)
 		list_corr += [corr]
 		list_value += [ corr._xi1D[2,1] ]
 		print el, corr._meanZ
@@ -87,15 +85,56 @@ def plotMany():
 		list_corr[i].multiply_by_constant( list_value[0]/list_value[i] )
 		print list_correlation[i],'/',list_correlation[0], '   ',  list_value[i]/list_value[0]
 
-	list_corr[0].plot_1d(0, list_corr[1:] )
-	list_corr[0].plot_1d(1, list_corr[1:] )
-	list_corr[0].plot_1d(2, list_corr[1:] )
+	list_corr[0].plot_1d(0, list_corr[1:], False )
+	list_corr[0].plot_1d(1, list_corr[1:], False )
+	list_corr[0].plot_1d(2, list_corr[1:], False )
+
+	return
+def plotBosseBOSS():
+
+	list_corr = []
+
+	dic_class = {
+		'minXi': 0.,
+		'maxXi': 200.,
+		'nbBin': 50,
+		'nbBinM': 25,
+		'nb_Sub_Sampling': 80,
+		'size_bin_calcul_s': 1.,
+		'size_bin_calcul_m': 0.02,
+		'correlation': 'q_f',
+		'path_to_txt_file_folder': 'NOTHING',
+		'f1': 'LYA',
+		'f2': 'LYA',
+		'q1': 'QSO',
+		'q2': 'QSO',
+		'name' : 'Data'
+	}
+	### Boss
+	dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
+	dic_class['name'] = 'BOSS'
+	corr = correlation_3D.Correlation3D(dic_class)
+	corr.set_error_on_covar_matrix('subsampling')
+	list_corr += [corr]
+	print corr._meanZ
+	### eBoss
+	dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_eBOSS/'
+	dic_class['name'] = 'eBOSS'
+	dic_class['q1'] = 'QSO_DR7_DR12_EBOSS'
+	corr = correlation_3D.Correlation3D(dic_class)
+	corr.set_error_on_covar_matrix('subsampling')
+	list_corr += [corr]
+	print corr._meanZ
+
+
+	list_corr[0].plot_1d(0, list_corr[1:])
+	list_corr[0].plot_1d(1, list_corr[1:])
+	list_corr[0].plot_1d(2, list_corr[1:])
 
 	return
 
 
-
-
+#plotBosseBOSS()
 #plotOne()
 #plotMany()
 
@@ -111,7 +150,7 @@ corr.send_BAOFIT('subsampling',correlation_matrix_path, False, False, 10000)
 '''
 
 ### BAOFIT + Data
-
+'''
 dic_class = correlation_3D.raw_dic_class
 dic_CAMB  = correlation_3D.raw_dic_CAMB
 index_parameter = annalyse_BAOFIT.raw_index_parameter
@@ -127,7 +166,7 @@ dic_class = {
 	'path_to_txt_file_folder': 'NOTHING',
 	'f1': 'LYA',
 	'f2': 'LYA',
-	'q1': 'ALL_OBJECTS',
+	'q1': 'QSO',
 	'q2': 'QSO',
 	'name' : 'Data'
 }
@@ -148,8 +187,8 @@ corr.plot_residuals_2d(0)
 corr.plot_residuals_2d(1)
 corr.plot_residuals_2d(2)
 corr.plot_histo_residuals()
-corr.plot_chi2_scan(100,100, [0.5,1.5,0.5,1.5], False, False)
-
+corr.plot_chi2_scan(100,100, [0.5,1.5,0.5,1.5], True, False)
+'''
 
 
 
@@ -186,7 +225,7 @@ aMB.plot_chi2_scan(50,50)
 
 
 
-'''
+
 dic_class = {
 	'minXi': 0.,
 	'maxXi': 200.,
@@ -195,10 +234,10 @@ dic_class = {
 	'nb_Sub_Sampling': 80,
 	'size_bin_calcul_s': 1.,
 	'size_bin_calcul_m': 0.02,
-	'correlation': 'q_f',
+	'correlation': 'f_f2',
 	'path_to_txt_file_folder': 'NOTHING',
 	'f1': 'SIIV',
-	'f2': 'LYA',
+	'f2': 'CIV',
 	'q1': 'QSO',
 	'q2': 'QSO',
 	'name' : 'Data'
@@ -207,10 +246,12 @@ dic_CAMB  = correlation_3D.raw_dic_CAMB
 dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
 dic_class['name'] = 'Data'
 corr = correlation_3D.Correlation3D(dic_class)
-
+#corr.set_error_on_covar_matrix('subsampling')
 #path = [ [ 'Mocks', '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Results_RandomPosInCell/xi_delta_QSO_result_cov_2D.npy'],
 #	['< Mock \, subsampling >','/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Results_RandomPosInCell/xi_delta_QSO_result_cov_2D_meanSubSampling.npy'] ]
 #	corr.plot_cov_cor_matrix_different_method( [ 'subsampling', 'shuffleForest', 'shuffleQSO', 'randomQSO'], '2D', path)
+
+
 corr.plot_1d(0)
 corr.plot_1d(1)
 corr.plot_1d(2)
@@ -223,12 +264,19 @@ corr.plot_2d(2)
 corr.plot_mu(0)
 corr.plot_mu(1)
 corr.plot_mu(2)
-
-corr.save_list_realisation('subsampling', 80)
-corr.plot_cov_cor_matrix('subsampling','1D')
+corr.plot_multipol(0)
+corr.plot_multipol(1)
+corr.plot_multipol(2)
+dic_CAMB = corr.fit_CAMB(dic_CAMB)
+corr.plot_CAMB(dic_CAMB,0)
+corr.plot_CAMB(dic_CAMB,1)
+corr.plot_CAMB(dic_CAMB,2)
+corr.plot_map_sub_sampling()
+#corr.save_list_realisation('subsampling', 80)
+#corr.plot_cov_cor_matrix('subsampling','1D')
 #correlation_matrix_path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Results_RandomPosInCell/xi_delta_QSO_result_cor_2D_allSubSamplingFromFit.npy'
 #corr.send_BAOFIT('subsampling',correlation_matrix_path,False,True)
-'''
+
 
 
 ### List function Correlation3D

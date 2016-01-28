@@ -17,7 +17,7 @@ chunckNb = 1
 simulNb  = 1
 mockNumber = ''
 isMock_ = False
-forest__ = 'LYA'
+forest__ = 'SIIV'
 if (forest__ == 'LYB'):
 	lambdaRFMin__      = 800.
 	lambdaRFMax__      = 1020.
@@ -34,8 +34,9 @@ elif (forest__ == 'MGII'):
 	lambdaRFMin__      = 1570.
 	lambdaRFMax__      = 2790.
 ###
+path = "/home/gpfs/manip/mnt0607/bao/hdumasde/Data/SIIV/FitsFile_DR12_Guy/DR12_primery/histos/"
 #path = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_histos/"
-path = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA//FitsFile_eBOSS_Guy/all_eBOSS_primery/histos/"
+#path = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA//FitsFile_eBOSS_Guy/all_eBOSS_primery/histos/"
 #rawPath = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_correctedForest_withMoreMetals/'
 
 
@@ -50,8 +51,8 @@ for i in range (0,chunckNb):
 		data = numpy.loadtxt('/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/histos/hDeltaVsLambdaObs_LYA.txt')
                 plt.errorbar(data[:,0]+3600.5, data[:,1], label=r'$DR12$')
 
-		data = numpy.loadtxt(path+'hDeltaVsLambdaObs_LYA'+mockNumber+'.txt')
-		plt.errorbar(data[:,0]+3600.5, data[:,1], label=r'$MockJM-mockExpander$')
+		#data = numpy.loadtxt(path+'hDeltaVsLambdaObs_LYA'+mockNumber+'.txt')
+		#plt.errorbar(data[:,0]+3600.5, data[:,1], label=r'$MockJM-mockExpander$')
 
 		data = numpy.loadtxt('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/calibration_flux_using_CIV_forest.txt')
 		plt.errorbar(data[:,0]+3547.5, data[:,1], label=r'$CIV \, forest$')
@@ -97,24 +98,24 @@ plt.show()
 for i in range (0,chunckNb):
 	for j in range(0,simulNb):
 
-		data = numpy.loadtxt('/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/histos/template_LYA.txt')
-		plt.errorbar(data[:,0], data[:,1], fmt='o', label=r'$DR12$')
+		#data = numpy.loadtxt('/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/histos/template_LYA.txt')
+		#plt.errorbar(data[:,0], data[:,1], fmt='o', label=r'$DR12$')
 
 		if (isMock_): 
 			path = rawPath + 'Box_00'+str(i)+'/Simu_00'+str(j)+'/Run/'
 			mockNumber = '_'+str(i)+'_'+str(j)
 		data = numpy.loadtxt(path + 'template_'+forest__+mockNumber+'.txt')
 
-		plt.errorbar(data[:,0], data[:,1], fmt='o', label=r'$'+str(i)+' \, '+str(j)+'$')
-		plt.plot([lambdaRFMin__,lambdaRFMin__],[numpy.min(data[:,1]),numpy.max(data[:,1])],color='red')
+		plt.errorbar(data[:,0], data[:,1], fmt='o') #, label=r'$'+str(i)+' \, '+str(j)+'$')
+		plt.plot([lambdaRFMin__,lambdaRFMin__],[numpy.min(data[:,1]),numpy.max(data[:,1])],color='red', label=r'$forest \, definition$')
 		plt.plot([lambdaRFMax__,lambdaRFMax__],[numpy.min(data[:,1]),numpy.max(data[:,1])],color='red')
 		print path + 'template_'+forest__+mockNumber+'.txt'
 		print data[:,0].size
 		if (i==0 and j==0): saveYYY0 = data[:,1]
-plt.title(r'$Template$', fontsize=40)
+#plt.title(r'$Template$', fontsize=40)
 plt.xlabel(r'$\lambda_{R.F.} \, [\AA]$', fontsize=40)
-plt.ylabel(r'$Norm \, flux$', fontsize=40)
-myTools.deal_with_plot(False,False,False)
+plt.ylabel(r'$Normalized \, flux$', fontsize=40)
+myTools.deal_with_plot(False,False,True)
 plt.show()
 
 '''

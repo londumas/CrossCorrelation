@@ -141,10 +141,10 @@ class Correlation3D:
 
 		### Set attributes set after
 		self._meanZ = None
+		self._xiMul = None
 
 		### Correlations data
 		self._xiMu, self._xiWe, self._xi1D, self._xi2D = self.read_data(path1D, path2D,0,True)
-		self._xiMul = self.get_multipol()
 		
 		return
 	
@@ -450,26 +450,33 @@ class Correlation3D:
 		self._xi2D[:,:,1] = myTools.convert1DTo2D(corr, self._nbBinX2D, self._nbBinY2D)
 	
 		return
-	def get_multipol(self, dic=None):
-
-		### Plot or not
-		plot = False
-	
-		### Get the data
-		xxx = self._xiMu[:,:,0]
-		muu = self._xiMu[:,:,1]
-		yyy = self._xiMu[:,:,2]
-		yer = self._xiMu[:,:,3]
-	
-		### Array to keep the results
-		result_xi = numpy.zeros(shape=(self._nbBin1D,5,3))
-		for i in range(0,5):
-			result_xi[:,i,0] = numpy.mean(xxx,axis=1)
+	def get_multipol(self, xiMu, dic=None):
 	
 		### Array with name of variable
+		if (dic is None):
+			dic = {
+				'xi0' : True,
+				'xi1' : False,
+				'xi2' : True,
+				'xi3' : False,
+				'xi4' : False
+			}
 		nameArray = [ 'xi0','xi1','xi2','xi3','xi4']
+		nbXi = len(nameArray)
+
+		### Get the data
+		xxx = xiMu[:,:,0]
+		muu = xiMu[:,:,1]
+		yyy = xiMu[:,:,2]
+		yer = xiMu[:,:,3]
+
+		### Keep the results
+		result_xi = numpy.zeros(shape=(self._nbBin1D,nbXi,3))
+		meanXXX   = numpy.mean(xxx,axis=1)
+		for i in numpy.arange(0,nbXi):
+			result_xi[:,i,0] = meanXXX
 	
-		for i in range(0,self._nbBin1D):
+		for i in numpy.arange(self._nbBin1D):
 	
 			cut         = (muu[i,:]!=0.)
 			tmpyyy      = yyy[i,:][cut]
@@ -486,65 +493,18 @@ class Correlation3D:
 				return numpy.sum( numpy.power( (tmpyyy-fit)/tmpyer ,2.) )
 	
 			### Init ad perform the fit
-			m = Minuit(chi2, xi0=0.,error_xi0=0.1,xi1=0.,error_xi1=0.1,xi2=0.,error_xi2=0.1,xi3=0.,error_xi3=0.1,xi4=0.,error_xi4=0.1, print_level=-1, errordef=0.01,fix_xi1=True,fix_xi2=False, fix_xi3=True,fix_xi4=True) 	
+			m = Minuit(chi2, xi0=0.,error_xi0=0.1,xi1=0.,error_xi1=0.1,xi2=0.,error_xi2=0.1,xi3=0.,error_xi3=0.1,xi4=0.,error_xi4=0.1, print_level=-1, errordef=0.01,
+				fix_xi0=not dic['xi0'],fix_xi1=not dic['xi1'],fix_xi2=not dic['xi2'], fix_xi3=not dic['xi3'],fix_xi4=not dic['xi4'])
 			m.migrad()
-			#m.hesse()
 	
 			### Keep the results
-			for j in range(0,5): 
+			for j in numpy.arange(0,nbXi):
 				result_xi[i,j,1] = m.values[ nameArray[j] ]
 				result_xi[i,j,2] = m.errors[ nameArray[j] ]
-	
-			'''
-			xi0 = m.values[ nameArray[0] ]
-			xi1 = m.values[ nameArray[1] ]
-			xi2 = m.values[ nameArray[2] ]
-			xi3 = m.values[ nameArray[3] ]
-			xi4 = m.values[ nameArray[4] ]
-			fit = (xi0 - 0.5*xi2 + 0.375*xi4) + (xi1-1.5*xi3)*xxxMuPower1 + (1.5*xi2 - 3.75*xi4)*xxxMuPower2 + 2.5*xi3*xxxMuPower3 + 4.375*xi4*xxxMuPower4
-	
-			plt.errorbar(xxxMu, tmpyyy, yerr=tmpyer, fmt='o')
-			plt.errorbar(xxxMu, fit)
-			myTools.deal_with_plot(False,False,False)
-			plt.show()
-	
-			
-			### Residuals
-			plt.errorbar(xxxMu, (yyy[i,:]-fit)/yer[i,:], fmt='o')
-			'''
-	
-		if (plot):
-	
-			color = ['blue','red','red']
-			ylabel = ['\\xi^{qf} (|s|)','|s|.\\xi^{qf} (|s|) \, [h^{-1}.Mpc]','|s|^{2}.\\xi^{qf} (|s|) \, [(h^{-1}.Mpc)^{2}]']
-	
-			### Show the result
-			for i in range(0,3):
-	
-				for j in range(0,5):
-					if ( result_xi[:,j,1][ (result_xi[:,j,1]!=0.) ].size == 0): continue
-	
-					tmp_xxx = result_xi[:,j,0][ (result_xi[:,j,1]!=0.) ]
-					tmp_yyy = result_xi[:,j,1][ (result_xi[:,j,1]!=0.) ]
-					tmp_yer = result_xi[:,j,2][ (result_xi[:,j,2]!=0.) ]
-					coef    = numpy.power(tmp_xxx,i)
 
-					plt.errorbar(tmp_xxx, coef*tmp_yyy,  yerr=coef*tmp_yer,  fmt='o', label=r'$\xi_{'+str(j)+'}$',color=color[j])
-	
-				cut = (self._xi1D[:,2]!=0.)
-				tmp_xxx = self._xi1D[:,0][ cut ]
-				tmp_yyy = self._xi1D[:,1][ cut ]
-				tmp_yer = self._xi1D[:,2][ cut ]
-				coef    = numpy.power(tmp_xxx,i)
-				#plt.errorbar(tmp_xxx, coef*tmp_yyy,  yerr=coef*tmp_yer,  fmt='o', label=r'$\xi$')
-	
-				plt.xlabel(r'$|s| \, [h^{-1}.Mpc]$', fontsize=40)
-				plt.ylabel(r'$'+ylabel[i]+'$', fontsize=40)
-				plt.title(r'$'+self._title+'$', fontsize=40)
-				myTools.deal_with_plot(False,False,True)
-				plt.xlim([ numpy.min(tmp_xxx)-10., numpy.max(tmp_xxx)+10. ])
-				plt.show()
-	
+		cut = (result_xi[:,:,2]==0.1)
+		result_xi[cut] = 0.
+
 		return result_xi
 	def fit_CAMB(self,dic=None):
 		
@@ -798,7 +758,7 @@ output-prefix = """ + path_to_BAOFIT + """.
 		subprocess.call(command, shell=True)
 
 		return
-	def plot_1d(self, x_power=0, other=[]):
+	def plot_1d(self, x_power=0, other=[], title=True):
 
 		xxx = self._xi1D[:,0]
 		yyy = self._xi1D[:,1]
@@ -827,22 +787,21 @@ output-prefix = """ + path_to_BAOFIT + """.
 			TMP_yer = TMP_yer[ TMP_cut ]
 			TMP_coef = numpy.power(TMP_xxx,x_power)
 			plt.errorbar(TMP_xxx, TMP_coef*TMP_yyy, yerr=TMP_coef*TMP_yer, fmt='o', label=r'$'+el._name+'$')
-		
+
+		if (title): plt.title(r'$'+self._title+'$', fontsize=40)
 		if (x_power==0):
 			plt.ylabel(r'$'+self._label+' (|s|)$', fontsize=40)
 		if (x_power==1):
 			plt.ylabel(r'$|s|.'+self._label+' (|s|) \, [h^{-1}.Mpc]$', fontsize=40)
 		if (x_power==2):
 			plt.ylabel(r'$|s|^{2}.'+self._label+' (|s|) \, [(h^{-1}.Mpc)^{2}]$', fontsize=40)
-		
-		plt.title(r'$'+self._title+'$', fontsize=40)
 		plt.xlabel(r'$|s| \, [h^{-1}.Mpc]$', fontsize=40)
 		plt.xlim([ numpy.amin(xxx)-10., numpy.amax(xxx)+10. ])
 		myTools.deal_with_plot(False,False,True)
 		plt.show()
 		
 		return
-	def plot_we(self, x_power=0):
+	def plot_we(self, x_power=0, title=True):
 	
 		label = ['0.8 < |\mu|', '0.5 < |\mu| \leq 0.8', '|\mu| \leq 0.5']
 		
@@ -869,7 +828,7 @@ output-prefix = """ + path_to_BAOFIT + """.
 				plt.ylabel(r'$|s|^{2}.'+self._label+' (|s|) \, [(h^{-1}.Mpc)^{2}]$', fontsize=40)
 				plt.legend(fontsize=30, frameon=False, numpoints=1,ncol=2, loc=2)
 		
-		plt.title(r'$'+self._title+'$', fontsize=40)
+		if (title): plt.title(r'$'+self._title+'$', fontsize=40)
 		plt.xlabel(r'$|s| \, [h^{-1}.Mpc]$', fontsize=40)
 		plt.xlim([ numpy.amin(xxx)-10., numpy.amax(xxx)+10. ])
 		myTools.deal_with_plot(False,False,False)
@@ -966,7 +925,7 @@ output-prefix = """ + path_to_BAOFIT + """.
 		plt.show()
 	
 		return
-	def plot_CAMB(self, dic=None):
+	def plot_CAMB(self, dic=None, x_power=0):
 		
 		if (dic is None):
 			dic = {
@@ -1000,25 +959,58 @@ output-prefix = """ + path_to_BAOFIT + """.
 		result_1D_camb[:,2] = 0.0000000001
 	
 		### Show result
-		for i in range(0,3):
-
-			coef = numpy.power(xxx,i)
-			plt.errorbar(xxx,coef*yyy,yerr=coef*yer,fmt='o')
+		coef = numpy.power(xxx,x_power)
+		plt.errorbar(xxx,coef*yyy,yerr=coef*yer,fmt='o')
 	
-			coef = numpy.power(result_1D_camb[:,0],i)
-			plt.plot(result_1D_camb[:,0],coef*result_1D_camb[:,1],color='red')
+		coef2 = numpy.power(result_1D_camb[:,0],x_power)
+		plt.plot(result_1D_camb[:,0],coef2*result_1D_camb[:,1],color='red')
 	
-			if (i==0):
-				plt.ylabel(r'$'+self._label+' (|s|)$', fontsize=40)
-			if (i==1):
-				plt.ylabel(r'$|s|^{1}.'+self._label+' (|s|) \, [h^{-1}.Mpc]$', fontsize=40)
-			if (i==2):
-				plt.ylabel(r'$|s|^{2}.'+self._label+' (|s|) \, [(h^{-1}.Mpc)^{2}]$', fontsize=40)
+		if (x_power==0):
+			plt.ylabel(r'$'+self._label+' (|s|)$', fontsize=40)
+		if (x_power==1):
+			plt.ylabel(r'$|s|^{1}.'+self._label+' (|s|) \, [h^{-1}.Mpc]$', fontsize=40)
+		if (x_power==2):
+			plt.ylabel(r'$|s|^{2}.'+self._label+' (|s|) \, [(h^{-1}.Mpc)^{2}]$', fontsize=40)
 			
-			plt.xlabel(r'$|s| \, [h^{-1}.Mpc]$', fontsize=40)
-			plt.xlim([ numpy.amin(xxx)-10., numpy.amax(xxx)+10. ])
-			myTools.deal_with_plot(False,False,False)
-			plt.show()
+		plt.xlabel(r'$|s| \, [h^{-1}.Mpc]$', fontsize=40)
+		plt.xlim([ numpy.amin(xxx)-10., numpy.amax(xxx)+10. ])
+		plt.ylim([ min( numpy.amin(coef*yyy)*1.1,numpy.amin(coef*yyy)*0.9) , max( numpy.amax(coef*yyy)*1.1,numpy.amax(coef*yyy)*0.9) ])
+		myTools.deal_with_plot(False,False,False)
+		plt.show()
+
+		return
+	def plot_multipol(self, x_power=0):
+
+		if (self._xiMul is None):
+			self._xiMul = self.get_multipol(self._xiMu)
+	
+		color = ['blue','green','red','orange','black']
+		ylabel = ['\\xi^{qf} (|s|)','|s|.\\xi^{qf} (|s|) \, [h^{-1}.Mpc]','|s|^{2}.\\xi^{qf} (|s|) \, [(h^{-1}.Mpc)^{2}]']
+	
+		### Show the result
+		for i in numpy.arange(0, self._xiMul[0,:,0].size ):
+
+			cut = (self._xiMul[:,i,2]>0.)
+			if ( self._xiMul[:,i,1][cut].size == 0): continue
+
+			xxx = self._xiMul[:,i,0][cut]
+			yyy = self._xiMul[:,i,1][cut]
+			yer = self._xiMul[:,i,2][cut]
+			coef    = numpy.power(xxx,x_power)
+			plt.errorbar(xxx, coef*yyy, yerr=coef*yer, fmt='o', label=r'$\xi_{'+str(i)+'}$',color=color[i])
+	
+		plt.title(r'$'+self._title+'$', fontsize=40)
+		if (x_power==0):
+			plt.ylabel(r'$'+self._label+' (|s|)$', fontsize=40)
+		if (x_power==1):
+			plt.ylabel(r'$|s|.'+self._label+' (|s|) \, [h^{-1}.Mpc]$', fontsize=40)
+		if (x_power==2):
+			plt.ylabel(r'$|s|^{2}.'+self._label+' (|s|) \, [(h^{-1}.Mpc)^{2}]$', fontsize=40)
+		plt.xlabel(r'$|s| \, [h^{-1}.Mpc]$', fontsize=40)
+		plt.xlim([ numpy.amin(xxx)-10., numpy.amax(xxx)+10. ])
+		myTools.deal_with_plot(False,False,True)
+		plt.show()
+
 		return
 	def plot_cov_cor_matrix(self, realisation_type, dim='1D'):
 

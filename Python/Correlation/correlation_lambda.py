@@ -101,7 +101,7 @@ class CorrelationLambda:
 		return
 	def read_data(self, path):
 
-		xiMu = numpy.zeros(shape=(self._nbBinL1oL2,self._nbBinTheta,4))
+		xiMu = numpy.zeros(shape=(self._nbBinTheta,self._nbBinL1oL2,4))
 		xiWe = numpy.zeros(shape=(self._nbBinL1oL2,3,3))
 		xi1D = numpy.zeros(shape=(self._nbBinL1oL2,3))
 
@@ -170,7 +170,6 @@ class CorrelationLambda:
 			tmp_save555[iX] += save5[i]
 			tmp_save666[iX] += save6[i]
 		
-		xiMu = numpy.zeros(shape=(self._nbBinTheta,self._nbBinL1oL2,4))
 		cut = (tmp_save6!=0.)
 		xiMu[:,:,0][cut] = tmp_save2[cut]/tmp_save5[cut]
 		xiMu[:,:,1][cut] = tmp_save3[cut]/tmp_save5[cut]
