@@ -16,11 +16,11 @@ from iminuit import Minuit
 nbRegion__ = 0
 
 ### 1D
-min1D__ = 0.40  ##0.80  ##0.89
-max1D__ = 2.30  ##1.20  ##1.11
-nbBin1D__ = 220
+min1D__ = 1.
+max1D__ = 1.11
+nbBin1D__ = 110
 
-### Mu
+### Theta
 minTheta_ = 0.;
 maxTheta_ = 0.003;
 nbBinM__ = 30;
@@ -58,7 +58,6 @@ if (forest__=='SIIV'):
 	lines = SIIV_lines
 	names = SIIV_lines_names
 	lambdaRFLine     = 1402.77291
-
 
 def loadData(path1D):
 
@@ -179,19 +178,20 @@ def plotXi():
 	yMax    = numpy.max(yyy)
 	nbLines = lines.size
 	for i in range(0,nbLines):
-		line = lines[i]/lambdaRFLine
-		if (line<min1D__ or line>max1D__): continue
-		print ' ||  QSO - ', names[i], ' || ', line, ' || ', lambdaRFLine, ' || ', lines[i], ' || '
-		xLi  = [line,line]
-		yLi  = [yMin,yMax]
-		name = 'QSO - ' + names[i]
-		plt.plot(xLi,yLi,color='green',linewidth=2)
-		plt.text(line, 0.7*yMin, name, rotation='vertical', fontsize=20)
+		for j in range(0,i):
+			if ( lines[i]!=lambdaRFLine and lines[j]!=lambdaRFLine ): continue
+			line = max( lines[i]/lines[j], lines[j]/lines[i])
+			if (line<min1D__ or line>max1D__): continue
+			xLi  = [line,line]
+			yLi  = [yMin,yMax]
+			name = names[i] + ' - ' + names[j]
+			plt.plot(xLi,yLi,color='green',linewidth=2)
+			plt.text(line, yMax, name, rotation='vertical', fontsize=20)
 
 	plt.errorbar(xxx, yyy, yerr=yer, fmt='o')
-	plt.ylabel(r'$\xi^{qf} \, (\theta<'+str(maxTheta_)+' \, rad)$', fontsize=40)
-	plt.xlabel(r'$\lambda_{Obs., pix}/\lambda_{Obs., QSO}$', fontsize=40)
-	
+	plt.ylabel(r'$\xi^{ff}$', fontsize=40)
+	plt.xlabel(r'$\lambda_{Obs.,2}/\lambda_{Obs.,1}$', fontsize=40)
+	plt.xlim([ min1D__-0.01, max1D__+0.01 ])
 	myTools.deal_with_plot(False,False,False)
 
 	plt.show()
@@ -207,65 +207,63 @@ def plotMu():
 	yyy[ (yer==0.) ] = float('nan')
 	yer[ (yer==0.) ] = float('nan')
 
-	'''
-	### Test to smooth the background
-	cut = numpy.logical_and(yyy!=float('nan'), yyy>0.0005)
-	xxxForCut = xxx[cut]
-	yyyForCut = yyy[cut]
-	cut = numpy.logical_or(xxxForCut<0.98, xxxForCut<1.02)
-	mean = numpy.mean(yyyForCut[cut])
-	yyy = yyy-mean
-	'''
-
 	fig = plt.figure()
 	ax = fig.add_subplot(111)
 	extent=[min1D__, max1D__, minTheta_, maxTheta_]
 
-	plt.imshow(yyy, origin='lower',aspect='auto',extent=extent,interpolation='None',vmin=-0.04, vmax=0.04)  ##interpolation='None'
+	plt.imshow(yyy, origin='lower',aspect='auto',extent=extent,interpolation='None',vmin=-0.002,vmax=0.002)  ##interpolation='None'
 	cbar = plt.colorbar()
-	plt.xlabel(r'$\lambda_{Obs., pix}/\lambda_{Obs., QSO}$', fontsize=40)
+	plt.xlabel(r'$\lambda_{Obs.,2}/\lambda_{Obs.,1}$', fontsize=40)
 	plt.ylabel(r'$\theta \, [rad]$', fontsize=40)
-	cbar.set_label(r'$\xi^{qf}$',size=40)
+	cbar.set_label(r'$\xi^{ff}$',size=40)
 	plt.grid(True)
 
 	plt.xlim([ min1D__, max1D__ ])
 	plt.ylim([ minTheta_, maxTheta_ ])
 
+
 	yMin    = numpy.min(muu)
-	yMax    = 0.95*numpy.max(muu)
+	yMax    = numpy.max(muu)
 	nbLines = lines.size
 	for i in range(0,nbLines):
-		line = lines[i]/lambdaRFLine
-		if (line<min1D__ or line>max1D__): continue
-		xLi  = [line,line]
-		yLi  = [yMin,yMax]
-		name = 'QSO - ' + names[i]
-		plt.plot(xLi,yLi,color='green',linewidth=2)
-		plt.text(line, yMax, name, rotation='vertical', fontsize=20)
+		for j in range(0,i):
+			if ( lines[i]!=lambdaRFLine and lines[j]!=lambdaRFLine ): continue
+			line = max( lines[i]/lines[j], lines[j]/lines[i])
+			if (line<min1D__ or line>max1D__): continue
+			xLi  = [line,line]
+			yLi  = [yMin,yMax]
+			name = names[i] + ' - ' + names[j]
+			plt.plot(xLi,yLi,color='green',linewidth=2)
+			plt.text(line, yMax, name, rotation='vertical', fontsize=20)
 
 
 	plt.show()
-def plotWe():
+def plotWe(rescale):
 
-	yMin    = numpy.min(xiWe_[:,:,1])
-	yMax    = numpy.max(xiWe_[:,:,1])
+	a = ["theta < 0.0001", "0.0001 < theta < 0.0002"]
+
+	yMin    = 0.
+	yMax    = 0.005
 	nbLines = lines.size
 	for i in range(0,nbLines):
-		line = lines[i]/lambdaRFLine
-		if (line<min1D__ or line>max1D__): continue
-		xLi  = [line,line]
-		yLi  = [1.3*yMin,yMax]
-		name = 'QSO - ' + names[i]
-		plt.plot(xLi,yLi,color='green',linewidth=2)
-		plt.text(line, 1.1*yMin, name, rotation='vertical', fontsize=20)
+		for j in range(0,i):
+			#if ( lines[i]!=1550.77845 and lines[j]!=1550.77845 and lines[i]!=1548.2049 and lines[j]!=1548.2049 ): continue
+			#if ( lines[i]!=1402.77291 and lines[j]!=1402.77291 and lines[i]!=1393.76018 and lines[j]!=1393.76018 ): continue
+			if ( lines[i]!=1215.67 and lines[j]!=1215.67): continue
+			line = max( lines[i]/lines[j], lines[j]/lines[i])
+			if (line<min1D__ or line>max1D__): continue
+			xLi  = [line,line]
+			yLi  = [yMin,yMax]
+			name = names[i] + ' - ' + names[j]
+			plt.plot(xLi,yLi,color='green',linewidth=2)
+			plt.text(line, yMax, name, rotation='vertical', fontsize=20)
 
+	for i in range(0,2):
 
-	for i in range(0,1):
-
-		if (i>=1):
-			xiWe_[:,i,1] += 0.05
-		if (i>=2):
-			xiWe_[:,i,1] += 0.05	
+		#if (i>=1):
+		#	xiWe_[:,i,1] += 0.05
+		#if (i>=2):
+		#	xiWe_[:,i,1] += 0.05	
 
 		###
 		cut = (xiWe_[:,i,2]!=0.)
@@ -276,31 +274,28 @@ def plotWe():
 		xxx = xiWe_[:,i,0][cut]
 		yyy = xiWe_[:,i,1][cut]
 		yer = xiWe_[:,i,2][cut]
+		coef = numpy.power(xxx,rescale)
 		
-		plt.errorbar(xxx, yyy, yerr=yer,marker='o')
+
+		plt.errorbar(xxx, coef*yyy, yerr=coef*yer, marker='o', label=r'$'+a[i]+'$')
 		plt.legend(fontsize=30, frameon=False, numpoints=1,ncol=2, loc=1)
 	
-	plt.xlabel(r'$\lambda_{Obs., pix}/\lambda_{Obs., QSO}$', fontsize=40)
-	plt.ylabel(r'$\xi^{qf} \, (\theta<'+str(maxTheta_/nbBinM__)+' \, rad)$', fontsize=40)
+	plt.ylabel(r'$\xi^{ff}$', fontsize=40)
+	plt.xlabel(r'$\lambda_{Obs.,2}/\lambda_{Obs.,1}$', fontsize=40)
+	plt.xlim([ min1D__-0.01, max1D__+0.01 ])
 	myTools.deal_with_plot(False,False,False)
-	plt.ylim([ 1.4*yMin, 1.1*yMax ])
 
+	
 
 
 	plt.show()
 
-
-
-
-
-
-
-
-xi1D_, xiMu_, xiWe_ = loadData('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/xi_delta_QSO_lambda_Mu_'+forest__+'_'+qso__+'.txt')
+#xi1D_, xiMu_, xiWe_ = loadData('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/xi_A_delta_delta_lambda_Mu_'+forest__+'.txt')
+xi1D_, xiMu_, xiWe_ = loadData('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/xi_A_delta_delta2_lambda_Mu_LYA_SIIV.txt')
 
 plotXi()
 plotMu()
-plotWe()
+plotWe(0)
 
 
 

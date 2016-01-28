@@ -63,7 +63,7 @@ class Correlation3D:
 		if (dic is None):
 			dic = raw_dic_class
 
-		### folder wher data are
+		### folder where data are
 		self._path_to_txt_file_folder = dic['path_to_txt_file_folder']
 
 		### Name of the correlation
@@ -419,6 +419,21 @@ class Correlation3D:
 		### 2D
 		path = self._path_to_txt_file_folder + self._prefix + '_'+ self._middlefix + '_' + realisation_type + '_cov_2D.npy'
 		self._xi2D[:,:,2] = myTools.convert1DTo2D(numpy.sqrt( numpy.diag(numpy.load(path)) ),self._nbBinX2D, self._nbBinY2D)
+
+		return
+	def multiply_by_constant(self, const):
+
+		### Data
+		self._xiMu[:,:,2] *= const
+		self._xiWe[:,:,1] *= const
+		self._xi1D[:,1]   *= const
+		self._xi2D[:,:,1] *= const
+
+		### Errors
+		self._xiMu[:,:,3] *= const
+		self._xiWe[:,:,2] *= const
+		self._xi1D[:,2]   *= const
+		self._xi2D[:,:,2] *= const
 
 		return
 	def apply_distortion_matrix(self):

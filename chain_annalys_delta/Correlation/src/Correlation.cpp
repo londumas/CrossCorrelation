@@ -93,7 +93,7 @@ double distMinPixel__ = 0.;
 double distMinPixelDelta2__ = 0.;
 unsigned int idxCommand_[6] = {0};
 const std::string pathToMockJMC__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_correctedForest_withMoreMetals_test2Bugs/";
-std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/";
+std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_eBOSS/";
 
 ///// Flags for Jean-Marc's simulations
 const bool mocks              = false;
@@ -1340,7 +1340,7 @@ void Correlation::xi_A_delta_delta2( unsigned int bootIdx/*=0*/ ) {
 
 	//// Set the prefix for different type of runs
 	std::string prefix = "_";
-	if (doBootstraps)  prefix += "subsampling";
+	if (doBootstraps__)  prefix += "subsampling";
 	if (shuffleForest) prefix += "shuffleForest";
 	if (shuffleQSO)    prefix += "shuffleQSO";
 	if (randomQSO)     prefix += "randomQSO";
@@ -1361,7 +1361,7 @@ void Correlation::xi_A_delta_delta2( unsigned int bootIdx/*=0*/ ) {
 	std::string pathToSave = pathToSave__;
 	pathToSave += "xi_A_delta_delta2_2D_";
 	pathToSave += prefix1;
-	if (doBootstraps || shuffleForest || shuffleQSO || randomQSO) pathToSave += prefix;
+	if (doBootstraps__ || shuffleForest || shuffleQSO || randomQSO) pathToSave += prefix;
 	pathToSave += ".txt";
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
@@ -1402,7 +1402,7 @@ void Correlation::xi_A_delta_delta2( unsigned int bootIdx/*=0*/ ) {
 	pathToSave = pathToSave__;
 	pathToSave += "xi_A_delta_delta2_Mu_";
 	pathToSave += prefix;
-	if (doBootstraps || shuffleForest || shuffleQSO || randomQSO) pathToSave += prefix;
+	if (doBootstraps__ || shuffleForest || shuffleQSO || randomQSO) pathToSave += prefix;
 	pathToSave += ".txt";
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
