@@ -410,9 +410,12 @@ class Correlation3D:
 		return
 	def set_error_on_covar_matrix(self, realisation_type):
 
-		### Mu
-		path = self._path_to_txt_file_folder + self._prefix + '_'+ self._middlefix + '_' + realisation_type + '_cov_Mu.npy'
-		self._xiMu[:,:,3] = myTools.convert1DTo2D(numpy.sqrt( numpy.diag(numpy.load(path)) ),self._nbBin1D,self._nbBinM)
+		### mu
+		#path = self._path_to_txt_file_folder + self._prefix + '_'+ self._middlefix + '_' + realisation_type + '_cov_Mu.npy'
+		#self._xiMu[:,:,3] = myTools.convert1DTo2D(numpy.sqrt( numpy.diag(numpy.load(path)) ),self._nbBin1D,self._nbBinM)
+		### we
+		path = self._path_to_txt_file_folder + self._prefix + '_'+ self._middlefix + '_' + realisation_type + '_cov_We.npy'
+		print numpy.load(path)
 		### 1D
 		path = self._path_to_txt_file_folder + self._prefix + '_'+ self._middlefix + '_' + realisation_type + '_cov_1D.npy'
 		self._xi1D[:,2]   = numpy.sqrt( numpy.diag(numpy.load(path)) )

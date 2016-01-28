@@ -234,10 +234,10 @@ dic_class = {
 	'nb_Sub_Sampling': 80,
 	'size_bin_calcul_s': 1.,
 	'size_bin_calcul_m': 0.02,
-	'correlation': 'f_f2',
+	'correlation': 'q_f',
 	'path_to_txt_file_folder': 'NOTHING',
-	'f1': 'SIIV',
-	'f2': 'CIV',
+	'f1': 'LYA',
+	'f2': 'LYA',
 	'q1': 'QSO',
 	'q2': 'QSO',
 	'name' : 'Data'
@@ -246,7 +246,7 @@ dic_CAMB  = correlation_3D.raw_dic_CAMB
 dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
 dic_class['name'] = 'Data'
 corr = correlation_3D.Correlation3D(dic_class)
-#corr.set_error_on_covar_matrix('subsampling')
+corr.set_error_on_covar_matrix('subsampling')
 #path = [ [ 'Mocks', '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Results_RandomPosInCell/xi_delta_QSO_result_cov_2D.npy'],
 #	['< Mock \, subsampling >','/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Results_RandomPosInCell/xi_delta_QSO_result_cov_2D_meanSubSampling.npy'] ]
 #	corr.plot_cov_cor_matrix_different_method( [ 'subsampling', 'shuffleForest', 'shuffleQSO', 'randomQSO'], '2D', path)
