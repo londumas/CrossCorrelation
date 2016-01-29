@@ -698,11 +698,49 @@ def plot_chi2_scan(data, edge=None, contour=False, bestFit=None, xTitle='-',yTit
 	plt.show()
 	
 	return
+def append_files(all_t, path_to_save):
+	### Get the FitsFile
+	all_t_file  = []
+	for el in all_t:
+		all_t_file.append( pyfits.open(el,  memmap=True) )
+		print el
+	
+	### Get arrays of size of FitsFile
+	all_t_nrows = []
+	for el in all_t_file:
+		print el[1].data.size
+		all_t_nrows.append( el[1].data.shape[0] )
+	nrowsTot = numpy.sum(all_t_nrows)
+	all_t_nrows = numpy.array(all_t_nrows)
 
+	print 
+	print '  ', all_t_nrows.size
+	print '  ', nrowsTot
 
+	### Set the Fits_File which will contain all
+	hdu = pyfits.BinTableHDU.from_columns(all_t_file[0][1].columns, nrows=nrowsTot)
 
+	### Set the values of each rows
+	first = 0
+	last  = all_t_nrows[0]
+	for i in range(1, all_t_nrows.size ):
+		first += all_t_nrows[i-1]
+		last  += all_t_nrows[i]
+		print first, last
+		for colname in all_t_file[0][1].columns.names:
+			hdu.data[colname][first:last] = all_t_file[i][1].data[colname]
 
+	### Add some column to the data
+	cat     = hdu.data
+	sizeMax = cat.size
 
+	print sizeMax
+
+	tbhdu = pyfits.BinTableHDU(data=cat)
+	tbhdu.update()
+	tbhdu.writeto(path_to_save, clobber=True)
+
+	return
 
 
 

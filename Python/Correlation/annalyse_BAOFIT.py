@@ -46,7 +46,7 @@ class AnnalyseBAOFIT(correlation_3D.Correlation3D):
 
 	def __init__(self, dic=None, index_parameter=None, path_to_BAOFIT=None):
 
-		correlation_3D.Correlation3D.__init__(self,copy.deepcopy(dic))
+		correlation_3D.Correlation3D.__init__(self,dic)
 
 		### index of parameters
 		if (index_parameter is None):

@@ -246,7 +246,7 @@ class Correlation_1D:
 
 
 dic_class = {
-	'correlation': 'f_f2_lRF_devide',
+	'correlation': 'f_f_lRF_devide',
 	'path_to_txt_file_folder': 'NONE',
 	'f1': 'LYA',
 	'f2': 'LYA',
@@ -261,34 +261,21 @@ dic_class = {
 listCorr = ['f_f_lRF_devide']
 path_to_txt_file_folder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
 dic_class['path_to_txt_file_folder'] = path_to_txt_file_folder
-dic_class['name'] = "LYA \\times CIV"
-dic_class['f2']   = 'CIV'
+dic_class['name'] = "LYA"
 corrD = Correlation_1D(dic_class)
 print corrD._meanZ
 
 ### Data
 listCorr = ['f_f_lRF_devide']
-path_to_txt_file_folder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
+path_to_txt_file_folder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_reOBS_Guy/'
 dic_class['path_to_txt_file_folder'] = path_to_txt_file_folder
-dic_class['name'] = "LYA \\times SIIV"
-dic_class['f2']   = 'SIIV'
+dic_class['name'] = "+reObs"
 corrD2 = Correlation_1D(dic_class)
 print corrD2._meanZ
 
 ### Data
-'''
-listCorr = ['f_f_lRF_devide']
-path_to_txt_file_folder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
-dic_class['path_to_txt_file_folder'] = path_to_txt_file_folder
-dic_class['name'] = "LYA"
-dic_class['f1']   = 'LYA'
-corrD4 = Correlation_1D(dic_class)
-print corrD4._meanZ
-'''
 
-
-corrD.plot(True)
-corrD2.plot(True)
+corrD.plot(True,False,[corrD2])
 
 
 

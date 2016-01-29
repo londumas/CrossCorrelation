@@ -76,9 +76,10 @@ const unsigned int methodIndex__ = 2;
 const bool doVetoLines__          = true;
 const bool setDLA__               = false;
 const bool cutNotFittedSpectra__  = true;
-const bool putReobsTogether__     = false;
 const bool mocksColab__           = false;
 const bool mockJMC__              = false;
+const bool putReobsTogether__     = true;
+double isReobsFlag__ = -100.;
 
 GetDelta::GetDelta(int argc, char** argv) {
 
@@ -114,14 +115,19 @@ GetDelta::GetDelta(int argc, char** argv) {
 		pathForest__   = "/home/gpfs/manip/mnt/bao/hdumasde/Data/";
 		pathForest__  += forest__;
 		pathToTxt__    = pathForest__;
-		pathForest__  += "/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits";
+//		pathForest__  += "/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits";
 //		pathForest__  += "/FitsFile_DR12_Guy/DR12_reObs/DR12_reObs.fits";
 //		pathForest__  += "/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits";
 
-		pathToTxt__   += "/FitsFile_DR12_Guy/DR12_primery/histos/";
+//		pathToTxt__   += "/FitsFile_DR12_Guy/DR12_primery/histos/";
 //		pathToTxt__   += "/FitsFile_DR12_Guy/DR12_reObs/histos/";
 //		pathToTxt__   += "/FitsFile_eBOSS_Guy/all_eBOSS_primery/histos/";
 
+//		pathForest__   = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/FitsFile_DR12_reOBS_eBOSS_Guy/DR12_primery/DR12_primery_reOBS_eBOSS.fits";
+//		pathToTxt__    = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/FitsFile_DR12_reOBS_eBOSS_Guy/DR12_primery/histos/";
+
+		pathForest__   = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/FitsFile_DR12_reOBS_Guy/DR12_primery/DR12_primery_reOBS.fits";
+		pathToTxt__    = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/FitsFile_DR12_reOBS_Guy/DR12_primery/histos/";
 		std::cout << "  pathToTxt = " << pathToTxt__ << std::endl;
 	}
 	else {
@@ -1551,18 +1557,18 @@ void GetDelta::updateFlux(std::string fitsnameSpec, unsigned int start, unsigned
 
 	return;
 }
-void GetDelta::putReobsTogether(std::string fitsnameSpec, unsigned int loopIdx)
-{
-
-	double isReobsFlag = -100.;
+void GetDelta::putReobsTogether(std::string fitsnameSpec, unsigned int loopIdx) {
 
 	const TString TSfitsnameSpec = fitsnameSpec;
+	std::cout << "  putReobsTogether" << std::endl;
 	std::cout << "  " << fitsnameSpec << std::endl;
+
+	//// nb of reObs
+	unsigned int nbReObs = 0;
 
 	//// Variables for FITS
 	int sta    = 0;
 	long nrows = 0;
-
 	fitsfile* fitsptrSpec;
 	fits_open_table(&fitsptrSpec,TSfitsnameSpec, READWRITE, &sta);
 	fits_get_num_rows(fitsptrSpec, &nrows, &sta);
@@ -1597,11 +1603,11 @@ void GetDelta::putReobsTogether(std::string fitsnameSpec, unsigned int loopIdx)
 			double tmpRa = ra[j];
 			double tmpDe = de[j];
 
-			if ( tmpRa==ra1 && tmpDe==de1) {
+			//if ( tmpRa==ra1 && tmpDe==de1) {
+			if (fabs(tmpRa-ra1)<C_AUTOCORRCRIT && fabs(tmpDe-de1)<C_AUTOCORRCRIT ) {
 				idxObservation.push_back(j);
 				isReobs[j] = true;
 			}
-
 		}
 
 		//// If there is no other observations
@@ -1646,7 +1652,9 @@ void GetDelta::putReobsTogether(std::string fitsnameSpec, unsigned int loopIdx)
 				makeCoAdd(NbLambda, DELTA, LAMBDA_OBS, DELTA_IVAR, tmpNbLambda, tmpDELTA, tmpLAMBDA_OBS, tmpDELTA_IVAR);
 
 				//// Set a useless value to tell that it is a re-obs
-				fits_write_col(fitsptrSpec,TDOUBLE, 9,idx+1,1,1, &isReobsFlag, &sta);
+				fits_write_col(fitsptrSpec,TDOUBLE, 9,idx+1,1,1, &isReobsFlag__, &sta);
+
+				nbReObs ++;
 			}
 
 			//// Find the new DELTA_WEIGHT
@@ -1655,50 +1663,50 @@ void GetDelta::putReobsTogether(std::string fitsnameSpec, unsigned int loopIdx)
 				const double zi         = LAMBDA_OBS[p]/lambdaRFLine__-1.;
 				const double eta        = grEta__[loopIdx]->Eval(zi);
 				const double sigma2LSS  = grSig__[loopIdx]->Eval(zi);
-				delta_weight[j]         = std::max(0.,pow( (zi+1.)/onePlusZ0__, halfGama__)/(sigma2LSS+1./(eta*delta_ivar[j])));
+				DELTA_WEIGHT[p]         = std::max(0.,pow( (zi+1.)/onePlusZ0__, halfGama__)/(sigma2LSS+1./(eta*DELTA_IVAR[p])));
 			}
 
 			fits_write_col(fitsptrSpec,TDOUBLE, 18,i+1,1,nbBinRFMax__, &DELTA,        &sta);
 			fits_write_col(fitsptrSpec,TDOUBLE, 19,i+1,1,nbBinRFMax__, &DELTA_IVAR,   &sta);
 			fits_write_col(fitsptrSpec,TDOUBLE, 20,i+1,1,nbBinRFMax__, &DELTA_WEIGHT, &sta);
-
-		}		
+		}
 	}
 
 	fits_close_file(fitsptrSpec,&sta);
 
+	std::cout << "  nbReObs = " << nbReObs << std::endl;
+
 	return;
 }
-void GetDelta::makeCoAdd(unsigned int NbLambda, double* Flux, double* Lambda, double* ErrFlux, unsigned int NbLambdaObs, double* FluxObs, double* LambdaObs, double* ErrFluxObs) {
+void GetDelta::makeCoAdd(unsigned int n1, double* f1, double* l1, double* ivar1, unsigned int n2, double* f2, double* l2, double* ivar2) {
 
 	// Compute shift
-	const double LambdaRef = Lambda[0];
-	const double LambdaNew = LambdaObs[0];
-
-	const int tmp_NbLambda = std::min(NbLambda,NbLambdaObs);
+	const double LambdaRef = l1[0];
+	const double LambdaNew = l2[0];
+	const int tmp_NbLambda = std::min(n1,n2);
 
 	int ishift=0;
 	if (LambdaNew>LambdaRef) {
-		for (int ilam=0; ilam<tmp_NbLambda; ilam++) {
-			if(Lambda[ilam]>LambdaNew){ 
-				ishift=ilam-1;
+		for (int i=0; i<tmp_NbLambda; i++) {
+			if(l1[i]>LambdaNew){ 
+				ishift=i-1;
 				break;
 			}
 		}
-		for (int ilam=ishift; ilam<tmp_NbLambda; ilam++) {
-			sumFlux(Flux[ilam],ErrFlux[ilam],FluxObs[ilam-ishift],ErrFluxObs[ilam-ishift]);
+		for (int i=ishift; i<tmp_NbLambda; i++) {
+			sumFlux(f1[i],ivar1[i],f2[i-ishift],ivar2[i-ishift]);
 		}
 	}
 	else {
-		for (int ilam=0; ilam<tmp_NbLambda; ilam++) {
-			if(LambdaObs[ilam]>LambdaRef){ 
-				ishift=ilam-1;
+		for (int i=0; i<tmp_NbLambda; i++) {
+			if(l2[i]>LambdaRef){ 
+				ishift=i-1;
 				break;
 			}
 		}
 
-		for (int ilam=0; ilam<tmp_NbLambda-ishift; ilam++) {
-			sumFlux(Flux[ilam],ErrFlux[ilam],FluxObs[ilam+ishift],ErrFluxObs[ilam+ishift]);
+		for (int i=0; i<tmp_NbLambda-ishift; i++) {
+			sumFlux(f1[i],ivar1[i],f2[i+ishift],ivar2[i+ishift]);
 		}
 	}
 
@@ -1707,7 +1715,6 @@ void GetDelta::makeCoAdd(unsigned int NbLambda, double* Flux, double* Lambda, do
 void GetDelta::sumFlux (double& f1, double& s1, double f2, double s2) {
 
 	if (s1<=0. && s2<=0.) return;
-
 	if (s2<=0. || isnan(f2)) return;
 	else {
 		if ( s1>0. && !isnan(f1) ) {

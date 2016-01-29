@@ -8,3 +8,11 @@
 
 	- Correlation.cpp
 		* remove "1D" in "xi_delta_QSO_lambda" method
+# 2016 - 01 - 29
+	- myTools.py:
+		* add a function to append FITS files
+	- Correlation.cpp:
+		* add dealing with co-added files
+	- GetDelta.cpp:
+		* correct bug in putReObsTogether, when testing the coordinate
+	

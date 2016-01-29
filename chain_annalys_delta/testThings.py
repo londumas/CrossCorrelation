@@ -248,7 +248,7 @@ def meanDelta():
 	#path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_reObs/DR12_reObs.fits'
 	#path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits'
 
-	cat = pyfits.open(path, memmap=True)[1].data[:1000]
+	cat = pyfits.open(path, memmap=True)[1].data
 
 	cat = cat[ numpy.logical_and( numpy.logical_and(  numpy.logical_and( cat['ALPHA_2']!=alphaStart__, cat['BETA_2']!=0.),  numpy.abs(cat['ALPHA_2'])<=39.5 ), numpy.abs(cat['BETA_2'])<=0.25 ) ]
 	#cat = cat[ numpy.logical_or( numpy.logical_or(  numpy.logical_or( cat['ALPHA_2']==alphaStart__, cat['BETA_2']==0.),  numpy.abs(cat['ALPHA_2'])>=39.5 ), numpy.abs(cat['BETA_2'])>=0.25 ) ]
@@ -321,7 +321,7 @@ def meanDelta():
 	plt.ylabel(r'$\alpha$', fontsize=40)
 	myTools.deal_with_plot(False,False,True)
 	plt.show()
-
+	
 	### < \delta >
 	plt.hist(meanDelta,bins=1000)
 	plt.xlabel(r'$< \delta >$', fontsize=40)
@@ -334,6 +334,7 @@ def meanDelta():
 	plt.ylabel(r'$\#$', fontsize=40)
 	myTools.deal_with_plot(False,False,True)
 	plt.show()
+	'''
 	### <SNR> vs. <delta>
 	plt.errorbar(numpy.abs(meanDelta[meanDLA==1.]),meanSNR[meanDLA==1.],fmt='o')
 	plt.errorbar(numpy.abs(meanDelta[meanDLA!=1.]),meanSNR[meanDLA!=1.],fmt='o',color='red')
@@ -350,7 +351,7 @@ def meanDelta():
 	plt.ylabel(r'$<SNR>$', fontsize=40)
 	myTools.deal_with_plot(True,True,True)
 	plt.show()
-
+	'''
 	### |<delta>| vs. chi^2/NDF
 	plt.errorbar(cat['ALPHA_1'],numpy.abs(meanDelta),fmt='o')
 	plt.xlabel(r'$\chi^{2}/NDF$', fontsize=40)
@@ -427,9 +428,9 @@ def meanDelta():
 	plt.show()
 	'''
 	
-	cat = cat[ meanSNR>20. ]
-	meanDelta = meanDelta[ meanSNR>20. ]
-	meanSNR = meanSNR[ meanSNR>20. ]
+	cat = cat[ meanSNR>30. ]
+	meanDelta = meanDelta[ meanSNR>30. ]
+	meanSNR = meanSNR[ meanSNR>30. ]
 	#cat = cat[ numpy.abs(meanDelta)>0.5 ]
 	#meanDelta = meanDelta[ numpy.abs(meanDelta)>0.5 ]
 	#meanSNR = meanSNR[ numpy.abs(meanDelta)>0.5 ]
@@ -460,8 +461,8 @@ def meanDelta():
 		#plt.plot(el['LAMBDA_RF'][cut],el['FLUX_DLA'][cut],label='DLA')
 		
 		
-		#plt.plot(el['LAMBDA_RF'][cut],template,label=r'$QSO \, template$',color='red')
-		plt.plot(el['LAMBDA_RF'][cut],el['NORM_FLUX'][cut]/(el['DELTA'][cut]+1.),label=r'$QSO \, continuum$',color='red')
+		plt.plot(el['LAMBDA_RF'][cut],template,label=r'$QSO \, continuum$',color='red')
+		#plt.plot(el['LAMBDA_RF'][cut],el['NORM_FLUX'][cut]/(el['DELTA'][cut]+1.),label=r'$QSO \, continuum$',color='red')
 
 		myTools.deal_with_plot(False,False,True)
 		plt.xlabel(r'$\lambda_{R.F.} \, [\AA]$', fontsize=40)

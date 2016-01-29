@@ -27,7 +27,7 @@ class AnnalyseManyBAOFIT:
 		self._path_to_simu = path_to_simu
 
 		if (dic is None):
-			dic = copy.deepcopy(correlation_3D.raw_dic_class)
+			dic = correlation_3D.raw_dic_class
 
 		### Get all the fits
 		self._listFit = []
@@ -36,7 +36,7 @@ class AnnalyseManyBAOFIT:
 				path = self._path_to_simu + 'Box_00'+str(i)+'/Simu_00'+str(j)+'/'
 				dic['path_to_txt_file_folder'] = path+'Results/'
 				dic['name'] = str(i)+'-'+str(j)
-				self._listFit += [annalyse_BAOFIT.AnnalyseBAOFIT(dic, copy.deepcopy(index_parameter), path+'BaoFit_q_f_covFromFit/bao2D.')]
+				self._listFit += [annalyse_BAOFIT.AnnalyseBAOFIT(dic, index_parameter, path+'BaoFit_q_f_covFromFit/bao2D.')]
 
 		### Init parameters
 		self._nbBin1D  = self._listFit[0]._nbBin1D
@@ -44,15 +44,19 @@ class AnnalyseManyBAOFIT:
 		self._nbBinX2D = self._listFit[0]._nbBinX2D
 		self._nbBinY2D = self._listFit[0]._nbBinY2D
 		self._nbBinM   = self._listFit[0]._nbBinM
-
-		### Create a 'Correlation3D' object
-		dic['path_to_txt_file_folder'] = self._path_to_simu + 'Box_000/Simu_000/Results/'
-		dic['name'] = '<simulation>'
-		self._mean_data_correlation = correlation_3D.Correlation3D(dic)
-		self._mean_data_correlation._xiMul = self._mean_data_correlation.get_multipol(self._mean_data_correlation._xiMu)
-
 		### Set attributes set after
 		self._chi2_scan = None
+
+		### Create a 'AnnalyseBAOFIT' object for mean_fit
+		#dic['path_to_txt_file_folder'] = self._path_to_simu + 'Box_000/Simu_000/Results/'
+		#dic['name'] = '<fit \, simu>'
+		#self._mean_fit = annalyse_BAOFIT.AnnalyseBAOFIT(dic, index_parameter, path+'BaoFit_q_f_covFromFit/bao2D.')
+
+		### Create a 'Correlation3D' object for mean_data
+		dic['path_to_txt_file_folder'] = self._path_to_simu + 'Box_000/Simu_000/Results/'
+		dic['name'] = '<simulation>'
+		self._mean_data = correlation_3D.Correlation3D(dic)
+		self._mean_data._xiMul = self._mean_data.get_multipol(self._mean_data._xiMu)
 
 		return
 	def save_list_realisation(self):
@@ -89,6 +93,15 @@ class AnnalyseManyBAOFIT:
 		numpy.save(pathToSave+'cov_2D',cov2D)
 	
 		return
+	def set_mean_fit(self):
+
+		list1D       = numpy.zeros( shape=(self._nbBin1D,self._nbtot) )
+		list2D       = numpy.zeros( shape=(self._nbBin2D,self._nbtot) )
+		listMu       = numpy.zeros( shape=(self._nbBin1D*self._nbBinM,self._nbtot) )
+		listWe       = numpy.zeros( shape=(self._nbBin1D,3,self._nbtot) )
+		listMultipol = numpy.zeros( shape=(self._nbBin1D,5,self._nbtot) )
+
+		return
 	def set_mean_data(self):
 
 		raw_path = self._path_to_simu + 'Results_16_01_28/'
@@ -97,26 +110,26 @@ class AnnalyseManyBAOFIT:
 		listWe = numpy.load(path)
 		nbTot = listWe[0,0,:].size
 		for i in numpy.arange(3):
-			self._mean_data_correlation._xiWe[:,i,1] = numpy.mean(listWe[:,i,:],axis=1)
-			self._mean_data_correlation._xiWe[:,i,2] = numpy.sqrt( numpy.diag(numpy.cov( listWe[:,i,:] ))/nbTot)
+			self._mean_data._xiWe[:,i,1] = numpy.mean(listWe[:,i,:],axis=1)
+			self._mean_data._xiWe[:,i,2] = numpy.sqrt( numpy.diag(numpy.cov( listWe[:,i,:] ))/nbTot)
 		### mu
 		path = raw_path + 'cov_Mu.npy'
-		self._mean_data_correlation._xiMu[:,:,2] = myTools.convert1DTo2D(numpy.mean(numpy.load(raw_path + 'list_Mu.npy'),axis=1),self._nbBin1D,self._nbBinM)
-		self._mean_data_correlation._xiMu[:,:,3] = myTools.convert1DTo2D(numpy.sqrt( numpy.diag(numpy.load(path))/nbTot ),self._nbBin1D,self._nbBinM)
+		self._mean_data._xiMu[:,:,2] = myTools.convert1DTo2D(numpy.mean(numpy.load(raw_path + 'list_Mu.npy'),axis=1),self._nbBin1D,self._nbBinM)
+		self._mean_data._xiMu[:,:,3] = myTools.convert1DTo2D(numpy.sqrt( numpy.diag(numpy.load(path))/nbTot ),self._nbBin1D,self._nbBinM)
 		### 1D
 		path = raw_path + 'cov_1D.npy'
-		self._mean_data_correlation._xi1D[:,1]   = numpy.mean(numpy.load(raw_path + 'list_1D.npy'),axis=1)
-		self._mean_data_correlation._xi1D[:,2]   = numpy.sqrt( numpy.diag(numpy.load(path))/nbTot )
+		self._mean_data._xi1D[:,1]   = numpy.mean(numpy.load(raw_path + 'list_1D.npy'),axis=1)
+		self._mean_data._xi1D[:,2]   = numpy.sqrt( numpy.diag(numpy.load(path))/nbTot )
 		### 2D
 		path = raw_path + 'cov_2D.npy'
-		self._mean_data_correlation._xi2D[:,:,1] = myTools.convert1DTo2D(numpy.mean(numpy.load(raw_path + 'list_2D.npy'),axis=1),self._nbBinX2D, self._nbBinY2D)
-		self._mean_data_correlation._xi2D[:,:,2] = myTools.convert1DTo2D(numpy.sqrt( numpy.diag(numpy.load(path))/nbTot ),self._nbBinX2D, self._nbBinY2D)
+		self._mean_data._xi2D[:,:,1] = myTools.convert1DTo2D(numpy.mean(numpy.load(raw_path + 'list_2D.npy'),axis=1),self._nbBinX2D, self._nbBinY2D)
+		self._mean_data._xi2D[:,:,2] = myTools.convert1DTo2D(numpy.sqrt( numpy.diag(numpy.load(path))/nbTot ),self._nbBinX2D, self._nbBinY2D)
 		### Multipol
 		path = raw_path + 'list_Multipol.npy'
 		listMultipol = numpy.load(path)
 		for i in numpy.arange(5):
-			self._mean_data_correlation._xiMul[:,i,1] = numpy.mean(listMultipol[:,i,:],axis=1)
-			self._mean_data_correlation._xiMul[:,i,2] = numpy.sqrt( numpy.diag(numpy.cov( listMultipol[:,i,:] ))/nbTot)
+			self._mean_data._xiMul[:,i,1] = numpy.mean(listMultipol[:,i,:],axis=1)
+			self._mean_data._xiMul[:,i,2] = numpy.sqrt( numpy.diag(numpy.cov( listMultipol[:,i,:] ))/nbTot)
 
 		return
 	def print_results(self):
@@ -126,23 +139,23 @@ class AnnalyseManyBAOFIT:
 
 		return
 	def plot_1d(self, x_power=0, other=[], title=True):
-		self._mean_data_correlation.plot_1d(x_power, other, title)
+		self._mean_data.plot_1d(x_power, other, title)
 		
 		return
 	def plot_we(self, x_power=0, other=[], title=True):
-		self._mean_data_correlation.plot_we(x_power, other, title)
+		self._mean_data.plot_we(x_power, other, title)
 		
 		return
 	def plot_2d(self, x_power=0):
-		self._mean_data_correlation.plot_2d(x_power)
+		self._mean_data.plot_2d(x_power)
 		
 		return
 	def plot_mu(self, x_power=0):
-		self._mean_data_correlation.plot_mu(x_power)
+		self._mean_data.plot_mu(x_power)
 	
 		return
 	def plot_multipol(self, x_power=0):
-		self._mean_data_correlation.plot_multipol(x_power)
+		self._mean_data.plot_multipol(x_power)
 	
 		return
 	def plot_histo_residuals(self, nbBins=100):

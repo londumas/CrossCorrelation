@@ -34,8 +34,10 @@ elif (forest__ == 'MGII'):
 	lambdaRFMin__      = 1570.
 	lambdaRFMax__      = 2790.
 ###
-path = "/home/gpfs/manip/mnt0607/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/histos/"
-#path = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_histos/"
+#path = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/FitsFile_DR12_reOBS_eBOSS_Guy/DR12_primery/histos/"
+path = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/FitsFile_DR12_reOBS_Guy/DR12_primery/histos/"
+#path = "/home/gpfs/manip/mnt0607/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/histos/"
+#path = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_reObs/histos/"
 #path = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA//FitsFile_eBOSS_Guy/all_eBOSS_primery/histos/"
 #rawPath = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_correctedForest_withMoreMetals/'
 
@@ -74,7 +76,7 @@ for i in range (0,chunckNb):
 		#data = numpy.loadtxt('/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_histos_test_PDFMocksJMC/hDeltaVsLambdaObs_LYA.txt')
 		#plt.errorbar(data[:,0]+3600.5, data[:,1], label=r'$simulation2$')
 
-		'''
+		
 		yMin    = numpy.amin(0.)
 		yMax    = numpy.amax(1.)
 		skyLines__ = numpy.power(10.,skyLines__)
@@ -86,7 +88,7 @@ for i in range (0,chunckNb):
 			yLi = [yMin,yMax]
 			plt.plot(xLi,yLi,color='green')
 			plt.text(line, yMax, skyLinesNames__[i], rotation='vertical', fontsize=20)
-		'''
+		
 
 #plt.title(r'$hDeltaVsLambdaObs$', fontsize=40)
 plt.xlabel(r'$\lambda_{Obs.} \, [\AA]$', fontsize=40)
@@ -205,7 +207,7 @@ for i in range (0,chunckNb):
 		data = numpy.loadtxt(path+'hDeltaVsLambdaObs_'+forest__+mockNumber+'.txt')
 		plt.errorbar(data[:,0]+3600., data[:,1], marker='o', label=r'$'+str(i)+' \, '+str(j)+'$')
 
-		'''
+		
 		yMin    = 0.
 		yMax    = 1.
 		for i in range(0,skyLinesNames__.size):
@@ -215,7 +217,7 @@ for i in range (0,chunckNb):
 			yLi = [yMin,yMax]
 			plt.plot(xLi,yLi,color='green')
 			plt.text(line, yMax, skyLinesNames__[i], rotation='vertical', fontsize=20)
-		'''
+		
 
 #plt.title(r'$hDeltaVsLambdaObs$', fontsize=40)
 plt.xlabel(r'$\lambda_{Obs.} \, [\AA]$', fontsize=40)

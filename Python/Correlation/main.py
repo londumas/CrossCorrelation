@@ -13,9 +13,16 @@ import matplotlib.pyplot as plt
 from iminuit import Minuit
 
 ### Perso lib
+import myTools
 import correlation_3D
 import annalyse_BAOFIT
 import annalyse_many_BAOFIT
+
+
+#all_t = [ '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits',
+#'/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits',
+#'/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_reObs/DR12_reObs.fits']
+#myTools.append_files(all_t, '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/FitsFile_DR12_reOBS_eBOSS_noCoADD_Guy/DR12_primery/DR12_primery_reOBS_eBOSS_noCoADD.fits')
 
 
 def plotOne():
@@ -28,18 +35,19 @@ def plotOne():
 		'nb_Sub_Sampling': 80,
 		'size_bin_calcul_s': 1.,
 		'size_bin_calcul_m': 0.02,
-		'correlation': 'f_f2',
+		'correlation': 'q_f',
 		'path_to_txt_file_folder': 'NOTHING',
 		'f1': 'LYA',
-		'f2': 'SIIV',
-		'q1': 'QSO',
-		'q2': 'QSO',
+		'f2': 'a',
+		'q1': 'DLA',
+		'q2': 'a',
 		'name' : 'Data'
 	}
 	dic_CAMB  = correlation_3D.raw_dic_CAMB
-	dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
+	dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_reOBS_eBOSS_noCoADD_Guy//'
 	dic_class['name'] = 'Data'
 	corr = correlation_3D.Correlation3D(dic_class)
+	print corr._meanZ
 
 	dic_CAMB = corr.fit_CAMB()
 	corr.plot_CAMB(None,None,0)
@@ -164,7 +172,7 @@ def plotBosseBOSS():
 
 
 #plotBosseBOSS()
-#plotOne()
+plotOne()
 #plotMany()
 
 ### Send parameter scan
@@ -293,15 +301,15 @@ aMB.plot_multipol(2)
 aMB.plot_chi2_scan(50,50,None,corr.get_best_fit())
 
 
-corr.plot_multipol(0,[aMB._mean_data_correlation])
-corr.plot_multipol(1,[aMB._mean_data_correlation])
-corr.plot_multipol(2,[aMB._mean_data_correlation])
-corr.plot_1d(0,[aMB._mean_data_correlation])
-corr.plot_1d(1,[aMB._mean_data_correlation])
-corr.plot_1d(2,[aMB._mean_data_correlation])
-corr.plot_we(0,[aMB._mean_data_correlation])
-corr.plot_we(1,[aMB._mean_data_correlation])
-corr.plot_we(2,[aMB._mean_data_correlation])
+corr.plot_multipol(0,[aMB._mean_data])
+corr.plot_multipol(1,[aMB._mean_data])
+corr.plot_multipol(2,[aMB._mean_data])
+corr.plot_1d(0,[aMB._mean_data])
+corr.plot_1d(1,[aMB._mean_data])
+corr.plot_1d(2,[aMB._mean_data])
+corr.plot_we(0,[aMB._mean_data])
+corr.plot_we(1,[aMB._mean_data])
+corr.plot_we(2,[aMB._mean_data])
 
 
 
