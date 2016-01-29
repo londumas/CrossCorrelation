@@ -248,7 +248,7 @@ def meanDelta():
 	#path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_reObs/DR12_reObs.fits'
 	#path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits'
 
-	cat = pyfits.open(path, memmap=True)[1].data
+	cat = pyfits.open(path, memmap=True)[1].data[:1000]
 
 	cat = cat[ numpy.logical_and( numpy.logical_and(  numpy.logical_and( cat['ALPHA_2']!=alphaStart__, cat['BETA_2']!=0.),  numpy.abs(cat['ALPHA_2'])<=39.5 ), numpy.abs(cat['BETA_2'])<=0.25 ) ]
 	#cat = cat[ numpy.logical_or( numpy.logical_or(  numpy.logical_or( cat['ALPHA_2']==alphaStart__, cat['BETA_2']==0.),  numpy.abs(cat['ALPHA_2'])>=39.5 ), numpy.abs(cat['BETA_2'])>=0.25 ) ]
@@ -301,12 +301,11 @@ def meanDelta():
 	meanDLA = numpy.average( cat['FLUX_DLA'], weights=cat['DELTA_WEIGHT'],axis=1)
 	print cat[ meanDLA!=1. ].size
 
-
 	### Get the mean S/N
 	cat['DELTA_WEIGHT'][ (cat['DELTA_WEIGHT']>0.) ] = 1.
 	meanSNR = numpy.average( cat['NORM_FLUX']*numpy.sqrt(cat['NORM_FLUX_IVAR']), weights=cat['DELTA_WEIGHT'],axis=1)
 
-
+	'''
 	### \alpha vs. <flux>
 	xxx = meanFlux
 	yyy = cat['ALPHA_2']
@@ -323,8 +322,6 @@ def meanDelta():
 	myTools.deal_with_plot(False,False,True)
 	plt.show()
 
-
-	'''
 	### < \delta >
 	plt.hist(meanDelta,bins=1000)
 	plt.xlabel(r'$< \delta >$', fontsize=40)
@@ -453,22 +450,22 @@ def meanDelta():
 
 
 		#myTools.plotOnSpectra_plate(el['PLATE'], el['MJD'], el['FIBERID'])
-		myTools.plotOnSpectra_spec(el['PLATE'], el['MJD'], el['FIBERID'],el['Z_VI'])
+		#myTools.plotOnSpectra_spec(el['PLATE'], el['MJD'], el['FIBERID'],el['Z_VI'])
 
 		plt.errorbar(el['LAMBDA_RF'][cut],el['NORM_FLUX'][cut],yerr=numpy.power(el['NORM_FLUX_IVAR'][cut],-0.5),label='$Data$')
-		plt.plot(el['LAMBDA_RF'][cut],numpy.power(el['NORM_FLUX_IVAR'][cut],-0.5),label='flux err')
-		plt.plot(el['LAMBDA_RF'][cut],el['DELTA'][cut],label='delta')
-		plt.plot(el['LAMBDA_RF'][cut],numpy.power(el['DELTA_IVAR'][cut],-0.5),label='delta err')
-		plt.plot(el['LAMBDA_RF'][cut],el['DELTA_WEIGHT'][cut],label='delta weight')
-		plt.plot(el['LAMBDA_RF'][cut],el['FLUX_DLA'][cut],label='DLA')
+		#plt.plot(el['LAMBDA_RF'][cut],numpy.power(el['NORM_FLUX_IVAR'][cut],-0.5),label='flux err')
+		#plt.plot(el['LAMBDA_RF'][cut],el['DELTA'][cut],label='delta')
+		#plt.plot(el['LAMBDA_RF'][cut],numpy.power(el['DELTA_IVAR'][cut],-0.5),label='delta err')
+		#plt.plot(el['LAMBDA_RF'][cut],el['DELTA_WEIGHT'][cut],label='delta weight')
+		#plt.plot(el['LAMBDA_RF'][cut],el['FLUX_DLA'][cut],label='DLA')
 		
 		
-		plt.plot(el['LAMBDA_RF'][cut],template,label=r'$QSO \, template$',color='red')
-		#plt.plot(el['LAMBDA_RF'][cut],el['NORM_FLUX'][cut]/(el['DELTA'][cut]+1.),label=r'$QSO \, continuum$',color='red')
+		#plt.plot(el['LAMBDA_RF'][cut],template,label=r'$QSO \, template$',color='red')
+		plt.plot(el['LAMBDA_RF'][cut],el['NORM_FLUX'][cut]/(el['DELTA'][cut]+1.),label=r'$QSO \, continuum$',color='red')
 
 		myTools.deal_with_plot(False,False,True)
 		plt.xlabel(r'$\lambda_{R.F.} \, [\AA]$', fontsize=40)
-		plt.ylabel(r'$flux$', fontsize=40)
+		plt.ylabel(r'$Normalized \, flux$', fontsize=40)
 		plt.show()
 	
 

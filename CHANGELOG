@@ -1,0 +1,10 @@
+# 2016 - 01 - 29
+	- PYTHON classes :
+		* correct bugs relative to pointers. Now do a "copy.deepcopy()" of dictionnaires
+		* add a "get_best_fit" method
+		* add geting the mean over manu simulations
+		* add a empty data method
+		* correct the "set_error_on_covar_matrix" method to take into acount multipol and wedge
+
+	- Correlation.cpp
+		* remove "1D" in "xi_delta_QSO_lambda" method

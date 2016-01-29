@@ -11,6 +11,7 @@ import subprocess
 import numpy
 import matplotlib.pyplot as plt
 from iminuit import Minuit
+import copy
 
 ### Perso lib
 import myTools
@@ -41,7 +42,7 @@ class Correlation_1D:
 			}
 
 		### folder wher data are
-		self._path_to_txt_file_folder = dic['path_to_txt_file_folder']
+		self._path_to_txt_file_folder = copy.deepcopy(dic['path_to_txt_file_folder'])
 
 		### Name of the correlation
 		self._name = dic['name']
@@ -162,7 +163,7 @@ class Correlation_1D:
 
 	def plot(self, with_lines=False, verbose=False, other=[]):
 
-		cut = 0
+		cut = 2
 
 		xxx = self._xi[cut:,0]
 		yyy = self._xi[cut:,1]
@@ -204,7 +205,7 @@ class Correlation_1D:
 
 				for j in range(0,nbLines2):
 
-					#if ( self._lines1[i]!=1215.67 and self._lines2[j]!=1215.67 ): continue
+					if ( self._lines1[i]!=1215.67 and self._lines2[j]!=1215.67 ): continue
 					#if ( self._name_line1[i][:4]!='SiII' and self._name_line2[j][:4]!='SiII' ): continue
 					#if ( self._name_line1[i]=='SiII(1304)' or self._name_line2[j]=='SiII(1304)' ): continue
 
@@ -245,7 +246,7 @@ class Correlation_1D:
 
 
 dic_class = {
-	'correlation': 'f_f_lRF_devide',
+	'correlation': 'f_f2_lRF_devide',
 	'path_to_txt_file_folder': 'NONE',
 	'f1': 'LYA',
 	'f2': 'LYA',
@@ -260,8 +261,8 @@ dic_class = {
 listCorr = ['f_f_lRF_devide']
 path_to_txt_file_folder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
 dic_class['path_to_txt_file_folder'] = path_to_txt_file_folder
-dic_class['name'] = "CIV"
-dic_class['f1']   = 'CIV'
+dic_class['name'] = "LYA \\times CIV"
+dic_class['f2']   = 'CIV'
 corrD = Correlation_1D(dic_class)
 print corrD._meanZ
 
@@ -269,12 +270,13 @@ print corrD._meanZ
 listCorr = ['f_f_lRF_devide']
 path_to_txt_file_folder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
 dic_class['path_to_txt_file_folder'] = path_to_txt_file_folder
-dic_class['name'] = "SIIV"
-dic_class['f1']   = 'SIIV'
+dic_class['name'] = "LYA \\times SIIV"
+dic_class['f2']   = 'SIIV'
 corrD2 = Correlation_1D(dic_class)
 print corrD2._meanZ
 
 ### Data
+'''
 listCorr = ['f_f_lRF_devide']
 path_to_txt_file_folder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
 dic_class['path_to_txt_file_folder'] = path_to_txt_file_folder
@@ -282,12 +284,11 @@ dic_class['name'] = "LYA"
 dic_class['f1']   = 'LYA'
 corrD4 = Correlation_1D(dic_class)
 print corrD4._meanZ
+'''
 
 
-
-corrD.plot(False,False,[corrD2,corrD4])
-
-
+corrD.plot(True)
+corrD2.plot(True)
 
 
 

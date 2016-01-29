@@ -10,6 +10,7 @@
 import subprocess
 import numpy
 import matplotlib.pyplot as plt
+import copy
 
 ### Perso lib
 import correlation_3D
@@ -45,13 +46,13 @@ class AnnalyseBAOFIT(correlation_3D.Correlation3D):
 
 	def __init__(self, dic=None, index_parameter=None, path_to_BAOFIT=None):
 
-		correlation_3D.Correlation3D.__init__(self,dic)
+		correlation_3D.Correlation3D.__init__(self,copy.deepcopy(dic))
 
 		### index of parameters
 		if (index_parameter is None):
-			self._index_parameter = raw_index_parameter
+			self._index_parameter = copy.deepcopy(raw_index_parameter)
 		else:
-			self._index_parameter = index_parameter
+			self._index_parameter = copy.deepcopy(index_parameter)
 
 		if (path_to_BAOFIT is None):
 			self._path_to_BAOFIT = self._path_to_txt_file_folder + 'BaoFit_q_f__'+self._f1+'__'+self._q1 + '/bao2D.'
@@ -205,7 +206,12 @@ class AnnalyseBAOFIT(correlation_3D.Correlation3D):
 			except Exception:
 				print '  bootstrap missing : ', i
 
-		if (nb<nbBoot): bestFit = bestFit[:,nb]
+		return bestFit
+	def get_best_fit(self):
+
+		bestFit = numpy.zeros( shape=(2,1) )
+		bestFit[0,0] = self._param[self._index_parameter['alpha_perp'],0]
+		bestFit[1,0] = self._param[self._index_parameter['alpha_paral'],0]
 
 		return bestFit
 	def get_residuals(self):
@@ -459,9 +465,7 @@ class AnnalyseBAOFIT(correlation_3D.Correlation3D):
 		self.read_chi2_scan(sizeX, sizeY)
 
 		### Best Fit
-		bestFit  = numpy.zeros( shape=(2,1) )
-		bestFit[0,0] = self._param[self._index_parameter['alpha_perp'],0]
-		bestFit[1,0] = self._param[self._index_parameter['alpha_paral'],0]
+		bestFit = self.get_best_fit()
 
 		if (edge is not None):
 			self._chi2_scan_edge = edge

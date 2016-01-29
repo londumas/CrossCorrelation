@@ -17,7 +17,7 @@ chunckNb = 1
 simulNb  = 1
 mockNumber = ''
 isMock_ = False
-forest__ = 'SIIV'
+forest__ = 'LYA'
 if (forest__ == 'LYB'):
 	lambdaRFMin__      = 800.
 	lambdaRFMax__      = 1020.
@@ -34,7 +34,7 @@ elif (forest__ == 'MGII'):
 	lambdaRFMin__      = 1570.
 	lambdaRFMax__      = 2790.
 ###
-path = "/home/gpfs/manip/mnt0607/bao/hdumasde/Data/SIIV/FitsFile_DR12_Guy/DR12_primery/histos/"
+path = "/home/gpfs/manip/mnt0607/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/histos/"
 #path = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_histos/"
 #path = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA//FitsFile_eBOSS_Guy/all_eBOSS_primery/histos/"
 #rawPath = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_correctedForest_withMoreMetals/'
@@ -51,6 +51,9 @@ for i in range (0,chunckNb):
 		data = numpy.loadtxt('/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/histos/hDeltaVsLambdaObs_LYA.txt')
                 plt.errorbar(data[:,0]+3600.5, data[:,1], label=r'$DR12$')
 
+		data = numpy.loadtxt('/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_eBOSS_Guy/all_eBOSS_primery/histos/hDeltaVsLambdaObs_LYA.txt')
+                plt.errorbar(data[:,0]+3600.5, data[:,1], label=r'$eBOSS$')
+
 		#data = numpy.loadtxt(path+'hDeltaVsLambdaObs_LYA'+mockNumber+'.txt')
 		#plt.errorbar(data[:,0]+3600.5, data[:,1], label=r'$MockJM-mockExpander$')
 
@@ -66,8 +69,8 @@ for i in range (0,chunckNb):
 		#data = numpy.loadtxt(path+'hDeltaVsLambdaObs_SIIV.txt')
                 #plt.errorbar(data[:,0]+3547.5, data[:,1], label=r'$CIV \, forest$',color='black')
 
-		#data = numpy.loadtxt('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/hDeltaVsLambdaObs_LYA_JMC.txt')
-		#plt.errorbar(data[:,1][ data[:,2]!=0. ], data[:,2][ data[:,2]!=0. ], label=r'$simulation$')
+		data = numpy.loadtxt('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/hDeltaVsLambdaObs_LYA_JMC.txt')
+		plt.errorbar(data[:,1][ data[:,2]!=0. ], data[:,2][ data[:,2]!=0. ], label=r'$Simulation \, input$', color='orange')
 		#data = numpy.loadtxt('/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_histos_test_PDFMocksJMC/hDeltaVsLambdaObs_LYA.txt')
 		#plt.errorbar(data[:,0]+3600.5, data[:,1], label=r'$simulation2$')
 
@@ -87,7 +90,7 @@ for i in range (0,chunckNb):
 
 #plt.title(r'$hDeltaVsLambdaObs$', fontsize=40)
 plt.xlabel(r'$\lambda_{Obs.} \, [\AA]$', fontsize=40)
-plt.ylabel(r'$flux$', fontsize=40)
+plt.ylabel(r'$Normalized \, flux$', fontsize=40)
 myTools.deal_with_plot(False,False,True)
 plt.show()
 
@@ -261,17 +264,18 @@ for i in range (0,chunckNb):
 		
 		xxx = numpy.arange(0.,5.,0.01)
 		print a0, a1, a2
-		ax.plot( xxx, a0+a1*numpy.power(xxx+1.,a2),label=r'$\sigma_{L.S.S.}^{2}=a + b.(1+z)^{\gamma}$' )
+		ax.plot( xxx, a0+a1*numpy.power(xxx+1.,a2),label=r'$\sigma_{L.S.S.}^{2}=b.(1+z)^{\gamma}$' )
+		#ax.plot( xxx, a0+a1*numpy.power(xxx+1.,a2),label=r'$\sigma_{L.S.S.}^{2}=a + b.(1+z)^{\gamma}$' )
 		
 plt.title(r'', fontsize=40)
 plt.xlabel(r'$z_{pixel}$', fontsize=40)
 plt.ylabel(r'$\sigma_{L.S.S.}^{2}$', fontsize=40)
 myTools.deal_with_plot(False,False,True)
 
-
 mng = plt.get_current_fig_manager()
 props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
-ax.text(0.05, 0.95, r"$a=%.2e$" "\n" r"$b=%.2e$" "\n" r"$\gamma=%.2e$"%(a0,a1,a2), transform=ax.transAxes, fontsize=30, verticalalignment='top', bbox=props)
+ax.text(0.05, 0.95, r"$b=%.2e$" "\n" r"$\gamma=%.2e$"%(a1,a2), transform=ax.transAxes, fontsize=30, verticalalignment='top', bbox=props)
+#ax.text(0.05, 0.95, r"$a=%.2e$" "\n" r"$b=%.2e$" "\n" r"$\gamma=%.2e$"%(a0,a1,a2), transform=ax.transAxes, fontsize=30, verticalalignment='top', bbox=props)
 
 plt.show()
 

@@ -179,7 +179,7 @@ def plot1D(data, xTitle='-',yTitle='-',title='-',label=None):
 	plt.show()
 
 	return
-def plot2D(data, edge=None, xTitle='-',yTitle='-',zTitle='-',title='-'):
+def plot2D(data, edge=None, xTitle=None,yTitle=None,zTitle=None,title=None):
 	'''
 	'''
 	
@@ -189,12 +189,12 @@ def plot2D(data, edge=None, xTitle='-',yTitle='-',zTitle='-',title='-'):
 	plt.imshow(data, origin='lower',extent=edge, interpolation='None')
 	
 	cbar = plt.colorbar()
-	plt.xlabel(r'$'+xTitle+'$', fontsize=40)
-	plt.ylabel(r'$'+yTitle+'$', fontsize=40)
-	cbar.set_label(r'$'+zTitle+'$',size=40)
-	
-	plt.grid(True)
-	#cbar.formatter.set_powerlimits((0, 0))
+	if(xTitle is not None): plt.xlabel(r'$'+xTitle+'$', fontsize=40)
+	if(yTitle is not None): plt.ylabel(r'$'+yTitle+'$', fontsize=40)
+	if(zTitle is not None): cbar.set_label(r'$'+zTitle+'$',size=40)
+	if(title is not None): plt.title(r'$'+title+'$', fontsize=40)
+
+	deal_with_plot()
 	cbar.update_ticks()
 	plt.show()
 	
@@ -484,7 +484,7 @@ def plotCovar(covList, covNameList,nbBinX=50,nbBinY=100):
 				xTitle = '|\Delta \, |s|_{1}-|s|_{2} | \, [h^{-1}.Mpc]'
 			else:
 				xTitle = '|\Delta \, s_{\parallel,1}-s_{\parallel,2} | \, [h^{-1}.Mpc], \, for \, |\Delta \, s_{\perp}| = ' + str(i*binSize__)
-			plt.plot(tmp_xxx[c], tmp_yyy[c][i], label=r'$'+covNameList[c]+'$', marker='o')
+			plt.errorbar(tmp_xxx[c], tmp_yyy[c][i], label=r'$'+covNameList[c]+'$', marker='o')
 			#plt.plot(tmp_xxx[c], minuit_yyy, label=r'$model$', marker='o')
 
 			### Save the results of the fit
@@ -499,13 +499,12 @@ def plotCovar(covList, covNameList,nbBinX=50,nbBinY=100):
 
 	
 
-	### Get the covaraince from fit
+	### Get the covariance from fit
 	covFromFitList = [numpy.zeros(shape=(nbBin,nbBin))]*nbCov
 	corFromFitList = [numpy.zeros(shape=(nbBin,nbBin))]*nbCov
 	for c in range(0,nbCov):
 
 		meanBasment = numpy.mean( tmp_yyy[c][6:,:])
-		print meanBasment
 
 		if (nbBin==nbBin1D__):
 			for k1 in range(0,nbBin):
@@ -677,16 +676,24 @@ def plot_chi2_scan(data, edge=None, contour=False, bestFit=None, xTitle='-',yTit
 	### [1s = 2.30, 2s = 6.18, 3s = 11.83, 4s = 19.33]
 	### http://www.reid.ai/2012/09/chi-squared-distribution-table-with.html
 	if (contour):
-		pylab.contour(data, [2.30, 6.18, 11.83, 19.33, 28.74], extent=edge, linewidths=3, colors = 'red', origin='lower', hold='on') #0.57,1.47, 
+		pylab.contour(data, [2.30, 6.18, 11.83, 19.33, 28.74], extent=edge, linewidths=3, colors = 'red', origin='lower') #0.57,1.47, 
 	
 	if (bestFit is not None):
 		if (bestFit[0,:].size > 1):
-			plt.scatter(bestFit[0,1:],bestFit[1,1:],marker='+',color='white',linewidths=5, hold='on')
+			x = bestFit[0,1:][ bestFit[0,1:]!=0. ]
+			y = bestFit[1,1:][ bestFit[1,1:]!=0. ]
+			plt.scatter(x,y,marker='+',color='white',linewidths=5, hold='on') #,alpha=0.3)
 		if (bestFit[0,:].size > 0):
 			plt.scatter(bestFit[0,0],bestFit[1,0], marker='+',color='red',linewidths=10, hold='on')
-		
+
+	### Show center
+	plt.scatter([1.],[1.], marker='o',color='green',linewidths=10, hold='on')
+
 	plt.xlim(edge[:2])
 	plt.ylim(edge[2:])
+
+	plt.xlim([0.7,1.4])
+	plt.ylim([0.7,1.4])
 
 	plt.show()
 	

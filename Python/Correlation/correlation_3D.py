@@ -11,6 +11,7 @@ import subprocess
 import numpy
 import matplotlib.pyplot as plt
 from iminuit import Minuit
+import copy
 
 ### Perso lib
 import myTools
@@ -61,7 +62,7 @@ class Correlation3D:
 		"""
 		
 		if (dic is None):
-			dic = raw_dic_class
+			dic = copy.deepcopy(raw_dic_class)
 
 		### folder where data are
 		self._path_to_txt_file_folder = dic['path_to_txt_file_folder']
@@ -380,7 +381,7 @@ class Correlation3D:
 			list2D[:,i]         = xi2D[:,:,1].flatten()
 			listMu[:,i]         = xiMu[:,:,2].flatten()
 			listWe[:,:,i]       = xiWe[:,:,1]
-			#listMultipol[:,:,i] = plotMultipol(xiMu)[:,:,1]
+			listMultipol[:,:,i] = self.get_multipol(xiMu)[:,:,1]
 			'''
 			except:
 				print '   ERROR:: ', path1D+str(i)+'.txt',path2D+str(i)+'.txt'
@@ -388,40 +389,64 @@ class Correlation3D:
 				tmp_command = "clubatch \"time ; hostname ; " + commandProd + ' 5 0 ' + str(i) + ' 0 0 0 ' + "\""
 				subprocess.call(tmp_command, shell=True)
 			'''
-		
-		numpy.save(pathToSave+'list_1D',list1D)
-		numpy.save(pathToSave+'list_2D',list2D)
+
 		numpy.save(pathToSave+'list_Mu',listMu)
 		numpy.save(pathToSave+'list_We',listWe)
-		#numpy.save(pathToSave+'_list_Multipol',listMultipol)
-	
+		numpy.save(pathToSave+'list_1D',list1D)
+		numpy.save(pathToSave+'list_2D',list2D)
+		numpy.save(pathToSave+'list_Multipol',listMultipol)
+
+		covMu = numpy.cov(listMu)
 		cov1D = numpy.cov(list1D)
 		cov2D = numpy.cov(list2D)
-		covMu = numpy.cov(listMu)
 		if (realisation_type=='subsampling'):
+			covMu /= nb_realisation
 			cov1D /= nb_realisation
 			cov2D /= nb_realisation
-			covMu /= nb_realisation
-	
+
+		numpy.save(pathToSave+'cov_Mu',covMu)
 		numpy.save(pathToSave+'cov_1D',cov1D)
 		numpy.save(pathToSave+'cov_2D',cov2D)
-		numpy.save(pathToSave+'cov_Mu',covMu)
 	
+		return
+	def empty_data(self):
+
+		### Set attributes set after
+		self._meanZ = 0.
+		self._xiMul = numpy.zeros(shape=(self._nbBin1D,5,3))
+
+		### Correlations data
+		self._xiMu = numpy.zeros(shape=(self._nbBin1D,self._nbBinM,4))
+		self._xiWe = numpy.zeros(shape=(self._nbBin1D,3,3))
+		self._xi1D = numpy.zeros(shape=(self._nbBin1D,3))
+		self._xi2D = numpy.zeros(shape=(self._nbBinX2D,self._nbBinY2D,3))
+
 		return
 	def set_error_on_covar_matrix(self, realisation_type):
 
+		raw_path = self._path_to_txt_file_folder + self._prefix + '_'+ self._middlefix + '_' + realisation_type
 		### mu
-		#path = self._path_to_txt_file_folder + self._prefix + '_'+ self._middlefix + '_' + realisation_type + '_cov_Mu.npy'
-		#self._xiMu[:,:,3] = myTools.convert1DTo2D(numpy.sqrt( numpy.diag(numpy.load(path)) ),self._nbBin1D,self._nbBinM)
+		path = raw_path + '_cov_Mu.npy'
+		self._xiMu[:,:,3] = myTools.convert1DTo2D(numpy.sqrt( numpy.diag(numpy.load(path)) ),self._nbBin1D,self._nbBinM)
 		### we
-		path = self._path_to_txt_file_folder + self._prefix + '_'+ self._middlefix + '_' + realisation_type + '_cov_We.npy'
-		print numpy.load(path)
+		path = raw_path + '_list_We.npy'
+		listWe = numpy.load(path)
+		if (realisation_type=='subsampling'): coef = listWe[0,0,:].size
+		else: coef = 1.
+		for i in numpy.arange(3):
+			self._xiWe[:,i,2] = numpy.sqrt( numpy.diag(numpy.cov( listWe[:,i,:] )/coef))
 		### 1D
-		path = self._path_to_txt_file_folder + self._prefix + '_'+ self._middlefix + '_' + realisation_type + '_cov_1D.npy'
+		path = raw_path + '_cov_1D.npy'
 		self._xi1D[:,2]   = numpy.sqrt( numpy.diag(numpy.load(path)) )
 		### 2D
-		path = self._path_to_txt_file_folder + self._prefix + '_'+ self._middlefix + '_' + realisation_type + '_cov_2D.npy'
+		path = raw_path + '_cov_2D.npy'
 		self._xi2D[:,:,2] = myTools.convert1DTo2D(numpy.sqrt( numpy.diag(numpy.load(path)) ),self._nbBinX2D, self._nbBinY2D)
+		### Multipol
+		if (self._xiMul is None): self._xiMul = self.get_multipol(self._xiMu)
+		path = raw_path + '_list_Multipol.npy'
+		listMultipol = numpy.load(path)
+		for i in numpy.arange(5):
+			self._xiMul[:,i,2] = numpy.sqrt( numpy.diag(numpy.cov( listMultipol[:,i,:] )/coef))
 
 		return
 	def multiply_by_constant(self, const):
@@ -509,22 +534,29 @@ class Correlation3D:
 		result_xi[cut] = 0.
 
 		return result_xi
-	def fit_CAMB(self,dic=None):
+	def get_multipol_index(self, index):
+
+		if (self._xiMul is None): self._xiMul = self.get_multipol(self._xiMu)
+
+		xi1D = numpy.zeros(shape=(self._nbBin1D,3))
+		xi1D[:,:] = self._xiMul[:,index,:]
+
+		return xi1D
+	def fit_CAMB(self,xi1D=None,dic=None):
 		
 		### Constants
+		if (xi1D is None): xi1D = self._xi1D
 		if (dic is None):
 			dic = raw_dic_CAMB
 		
 		### Get the data
-		cut = numpy.logical_and( (self._xi1D[:,0]>=dic['start_fit']),(self._xi1D[:,0]<dic['end_fit']) )
-		xxx = self._xi1D[:,0][cut]
-		yyy = self._xi1D[:,1][cut]
-		yer = self._xi1D[:,2][cut]
-	
+		cut = numpy.logical_and( (xi1D[:,0]>=dic['start_fit']),(xi1D[:,0]<dic['end_fit']) )
+		xxx = xi1D[:,0][cut]
+		yyy = xi1D[:,1][cut]
+		yer = xi1D[:,2][cut]
 		### Get Camb
-		idx=1
-		if (dic['mulpol_index']==2):
-			idx = 2
+		if (dic['mulpol_index']==0): idx = 1
+		elif (dic['mulpol_index']==2): idx = 2
 		data_camb = numpy.loadtxt(const.pathToCamb__)
 		yyy_Camb  = numpy.interp(xxx,data_camb[1:,0],data_camb[1:,idx])
 	
@@ -789,7 +821,7 @@ output-prefix = """ + path_to_BAOFIT + """.
 			TMP_yyy = TMP_yyy[ TMP_cut ]
 			TMP_yer = TMP_yer[ TMP_cut ]
 			TMP_coef = numpy.power(TMP_xxx,x_power)
-			plt.errorbar(TMP_xxx, TMP_coef*TMP_yyy, yerr=TMP_coef*TMP_yer, fmt='o', label=r'$'+el._name+'$')
+			plt.errorbar(TMP_xxx, TMP_coef*TMP_yyy, yerr=TMP_coef*TMP_yer, label=r'$'+el._name+'$', color='red') ##, fmt='o'
 
 		if (title): plt.title(r'$'+self._title+'$', fontsize=40)
 		if (x_power==0):
@@ -804,7 +836,7 @@ output-prefix = """ + path_to_BAOFIT + """.
 		plt.show()
 		
 		return
-	def plot_we(self, x_power=0, title=True):
+	def plot_we(self, x_power=0, other=[], title=True):
 	
 		label = ['0.8 < |\mu|', '0.5 < |\mu| \leq 0.8', '|\mu| \leq 0.5']
 		
@@ -819,7 +851,17 @@ output-prefix = """ + path_to_BAOFIT + """.
 			yyy = self._xiWe[:,i,1][cut]
 			yer = self._xiWe[:,i,2][cut]
 			coef = numpy.power(xxx,x_power)
-			plt.errorbar(xxx, coef*yyy, yerr=coef*yer, fmt='o', label=r'$'+label[i]+'$')
+			plt.errorbar(xxx, coef*yyy, yerr=coef*yer, fmt='o', label=r'$Data \, '+label[i]+'$')
+
+			for el in other:
+				cut = (el._xiWe[:,i,2]>0.)
+				if ( el._xiWe[:,i,1][cut].size == 0): continue
+
+				xxx = el._xiWe[:,i,0][cut]
+				yyy = el._xiWe[:,i,1][cut]
+				yer = el._xiWe[:,i,2][cut]
+				coef = numpy.power(xxx,x_power)
+				plt.errorbar(xxx, coef*yyy, yerr=coef*yer, label=r'$Simu \,'+label[i]+'$',color='red')
 		
 			if (x_power==0):
 				plt.ylabel(r'$'+self._label+' (|s|)$', fontsize=40)
@@ -928,8 +970,9 @@ output-prefix = """ + path_to_BAOFIT + """.
 		plt.show()
 	
 		return
-	def plot_CAMB(self, dic=None, x_power=0):
-		
+	def plot_CAMB(self, xi1D=None, dic=None, x_power=0):
+
+		if (xi1D is None): xi1D = self._xi1D
 		if (dic is None):
 			dic = {
 				'mulpol_index' : 0,
@@ -944,14 +987,13 @@ output-prefix = """ + path_to_BAOFIT + """.
 			}
 
 		### Get the data
-		xxx = self._xi1D[:,0]
-		yyy = self._xi1D[:,1]
-		yer = self._xi1D[:,2]
+		xxx = xi1D[:,0]
+		yyy = xi1D[:,1]
+		yer = xi1D[:,2]
 	
 		### Get the smooth CAMB
-		idx=1
-		if (dic['mulpol_index']==2):
-			idx = 2
+		if (dic['mulpol_index']==0): idx = 1
+		elif (dic['mulpol_index']==2): idx = 2
 		data_camb = numpy.loadtxt(const.pathToCamb__)
 		yyy_Camb  = numpy.interp(xxx,data_camb[1:,0],data_camb[1:,idx])
 		cut = (data_camb[1:,0] <= numpy.amax(xxx)*1.1)
@@ -982,7 +1024,7 @@ output-prefix = """ + path_to_BAOFIT + """.
 		plt.show()
 
 		return
-	def plot_multipol(self, x_power=0):
+	def plot_multipol(self, x_power=0, other=[]):
 
 		if (self._xiMul is None):
 			self._xiMul = self.get_multipol(self._xiMu)
@@ -1001,6 +1043,16 @@ output-prefix = """ + path_to_BAOFIT + """.
 			yer = self._xiMul[:,i,2][cut]
 			coef    = numpy.power(xxx,x_power)
 			plt.errorbar(xxx, coef*yyy, yerr=coef*yer, fmt='o', label=r'$\xi_{'+str(i)+'}$',color=color[i])
+
+			for el in other:
+				cut = (el._xiMul[:,i,2]>0.)
+				if ( el._xiMul[:,i,1][cut].size == 0): continue
+
+				xxx = el._xiMul[:,i,0][cut]
+				yyy = el._xiMul[:,i,1][cut]
+				yer = el._xiMul[:,i,2][cut]
+				coef    = numpy.power(xxx,x_power)
+				plt.errorbar(xxx, coef*yyy, yerr=coef*yer, label=r'$\xi_{'+str(i)+'}$',color='red')
 	
 		plt.title(r'$'+self._title+'$', fontsize=40)
 		if (x_power==0):
@@ -1043,8 +1095,8 @@ output-prefix = """ + path_to_BAOFIT + """.
 		for i in numpy.arange( len(real) ):
 			print realisation_type[i]
 			for j in numpy.arange(real[i][0,:].size):
-				plt.errorbar(numpy.arange(real[i][:,j].size), real[i][:,j],fmt='o',color='blue',alpha=0.1)
-			plt.errorbar(numpy.arange(real[i][:,j].size), numpy.mean(real[i],axis=1),fmt='o',color='red',label=r'$Mean$')
+				plt.errorbar(numpy.arange(real[i][:,j].size), real[i][:,j],color='blue',alpha=0.1)
+			plt.errorbar(numpy.arange(real[i][:,j].size), numpy.mean(real[i],axis=1),marker='o',color='red',label=r'$Mean$')
 			plt.xlabel(r'$bin \, index$', fontsize=40)
 			plt.ylabel(r'$\xi(|s|)$', fontsize=40)
 			plt.title(r'$'+realisation_type[i]+'$', fontsize=40)
@@ -1054,12 +1106,16 @@ output-prefix = """ + path_to_BAOFIT + """.
 
 		### Plot diagonal
 		for i in numpy.arange(len(cov)):
-			plt.errorbar(numpy.arange(cov[i][0,:].size), numpy.diag(cov[i]),fmt='o',label=r'$'+realisation_type[i]+'$')
+			plt.errorbar(numpy.arange(cov[i][0,:].size), numpy.diag(cov[i]),label=r'$'+realisation_type[i]+'$')
 		plt.xlabel(r'$bin \, index$', fontsize=40)
 		plt.ylabel(r'$Var(|s|)$', fontsize=40)
 		myTools.deal_with_plot(False,False,True)
 		plt.xlim([ -1., cov[i][0,:].size+1 ])
 		plt.show()
+
+		### Plot Matrix
+		for i in numpy.arange( len(real) ):
+			myTools.plot2D(myTools.getCorrelationMatrix(cov[i]), None,None,None,None,realisation_type[i])
 
 		myTools.plotCovar(cov,realisation_type)
 
