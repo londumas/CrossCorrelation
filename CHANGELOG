@@ -15,4 +15,12 @@
 		* add dealing with co-added files
 	- GetDelta.cpp:
 		* correct bug in putReObsTogether, when testing the coordinate
-	
+
+# 2016 - 02 - 08
+	- /Mock_JMLG/ReadFits/src/GetDelta.cpp:
+		* correct bug when reading a double instead of a float
+	- /Python/Correlation/correlation_3D.py b/Python/Correlation/correlation_3D.py
+		* add saving the grid
+		* apply distortion matrix to CAMB instead of to data
+		* add a plot_slice_2d function to see slice of the 2D correlations
+		

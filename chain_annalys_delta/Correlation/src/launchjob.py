@@ -26,7 +26,7 @@ def main():
 				tmp_command = "echo \" \n ------ Start ------ \n \" " 
 				subprocess.call(tmp_command, shell=True)
 
-				tmp_command = "clubatch \"time ; hostname ; " + commandProd + ' 9 16 ' + str(k) + ' 0 ' + str(i) + " " + str(j) + "\""
+				tmp_command = "clubatch \"time ; hostname ; " + commandProd + ' 9 0 ' + str(k) + ' 0 ' + str(i) + " " + str(j) + "\""
 				subprocess.call(tmp_command, shell=True)
 
 				tmp_command = "echo " + tmp_command

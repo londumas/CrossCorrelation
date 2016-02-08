@@ -27,6 +27,7 @@
 #include <algorithm>	// std::random_shuffle
 #include <cstdlib>	// std::rand, std::srand
 
+
 ///// ROOT
 #include "TH1D.h"
 #include "fitsio.h"
@@ -92,14 +93,15 @@ const unsigned int nbBinlambdaObs__  = int(lambdaObsMax__-lambdaObsMin__);
 double distMinPixel__ = 0.;
 double distMinPixelDelta2__ = 0.;
 unsigned int idxCommand_[6] = {0};
-const std::string pathToMockJMC__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_correctedForest_withMoreMetals_test2Bugs/";
-std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_reOBS_eBOSS_Guy/";
+const std::string pathToMockJMC__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_test_problem_smoothing_empty_pixels/";
+std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_les_4645/";
+//std::string pathToSave__ = "";
 
 ///// Flags for Jean-Marc's simulations
 const bool mocks              = false;
-const bool mockJMC__          = false;
+const bool mockJMC__          = true;
 const bool mockBox__          = false;
-const bool mocksNoNoiseNoCont = false;
+const bool mocksNoNoiseNoCont = true;
 const double randomPositionOfQSOInCell__ = false;
 const double randomPositionOfQSOInCellNotBeforeCorrelation__ = false;
 //// Flags for covariance matrix estimation
@@ -110,9 +112,9 @@ const bool randomForest   = false;
 const bool doBootstraps__ = false;
 
 
-const bool doVetoLines__ = true;
+const bool doVetoLines__ = false;
 const bool nicolasEstimator__ = false;
-const bool doingCoAddSoRemoving__ = true;
+const bool doingCoAddSoRemoving__ = false;
 
 
 Correlation::Correlation(int argc, char **argv) {
@@ -143,10 +145,10 @@ Correlation::Correlation(int argc, char **argv) {
 	if (!mocks && !mockJMC__) {
 		pathForest__  = "/home/gpfs/manip/mnt/bao/hdumasde/Data/";
 		pathForest__  += forest__;
-//		pathForest__  += "/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits";
+		pathForest__  += "/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits";
 //		pathForest__  += "/FitsFile_DR12_Guy/DR12_reObs/DR12_reObs.fits";
 //		pathForest__  += "/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits";
-		pathForest__   = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/FitsFile_DR12_reOBS_eBOSS_Guy/DR12_primery/DR12_primery_reOBS_eBOSS.fits";
+//		pathForest__   = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/FitsFile_DR12_reOBS_eBOSS_Guy/DR12_primery/DR12_primery_reOBS_eBOSS.fits";
 //		pathForest__   = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/FitsFile_DR12_reOBS_Guy/DR12_primery/DR12_primery_reOBS.fits";
 //		pathForest__   = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/FitsFile_DR12_reOBS_eBOSS_noCoADD_Guy/DR12_primery/DR12_primery_reOBS_eBOSS_noCoADD.fits";
 	}
@@ -186,10 +188,10 @@ Correlation::Correlation(int argc, char **argv) {
 		if (!mocksNoNoiseNoCont) pathForest__ += "/Data/delta.fits";
 		else pathForest__ += "/Data/delta.fits";
 		
-		pathQ1__ += "/Data/QSO_withRSD.fits";
+		pathQ1__ += "/Data/QSO_noRSD.fits";
 		
-		if (!nicolasEstimator__) pathToSave__ += "/Results/";
-		else pathToSave__ += "/Results_NicolasDistortion/";
+		if (nicolasEstimator__) pathToSave__ += "/Results_NicolasDistortion/";
+		else pathToSave__ += "/Results/";
 		
 	}
 
@@ -287,6 +289,7 @@ void Correlation::xi_1D_delta_delta(void) {
 	}
 
 	std::cout << "\n  Starting\n" << std::endl;
+
 
 	for (unsigned int f=0; f<nbForest_; f++) {
 

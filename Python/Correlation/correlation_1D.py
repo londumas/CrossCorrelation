@@ -154,6 +154,7 @@ class Correlation_1D:
 		xi[:,0] = data[:,2][cut]/data[:,4][cut]
 		xi[:,1] = data[:,0][cut]/data[:,4][cut]
 		xi[:,2] = numpy.sqrt( (data[:,1][cut]/data[:,4][cut] -xi[:,1]**2. )/data[:,5][cut]  )
+		
 
 		if (init):
 			self._nbBin = nbBin
@@ -163,7 +164,7 @@ class Correlation_1D:
 
 	def plot(self, with_lines=False, verbose=False, other=[]):
 
-		cut = 2
+		cut = 0
 
 		xxx = self._xi[cut:,0]
 		yyy = self._xi[cut:,1]
@@ -258,13 +259,15 @@ dic_class = {
 
 
 ### Data
-listCorr = ['f_f_lRF_devide']
-path_to_txt_file_folder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
+#path_to_txt_file_folder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
+path_to_txt_file_folder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_test_problem_smoothing_empty_pixels/Box_000/Simu_000/Results/'
 dic_class['path_to_txt_file_folder'] = path_to_txt_file_folder
 dic_class['name'] = "LYA"
+dic_class['correlation'] = "f_f_lRF_devide"
 corrD = Correlation_1D(dic_class)
 print corrD._meanZ
 
+'''
 ### Data
 listCorr = ['f_f_lRF_devide']
 path_to_txt_file_folder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_reOBS_Guy/'
@@ -272,10 +275,10 @@ dic_class['path_to_txt_file_folder'] = path_to_txt_file_folder
 dic_class['name'] = "+reObs"
 corrD2 = Correlation_1D(dic_class)
 print corrD2._meanZ
-
+'''
 ### Data
 
-corrD.plot(True,False,[corrD2])
+corrD.plot(False,False)
 
 
 

@@ -141,6 +141,7 @@ class Correlation3D:
 		self.nb_Sub_Sampling = int(dic['nb_Sub_Sampling'])
 
 		### Set attributes set after
+		self._xi2D_grid = None
 		self._meanZ = None
 		self._xiMul = None
 
@@ -272,6 +273,7 @@ class Correlation3D:
 			save1 = data[:,1]
 			save2 = data[:,2]
 			save3 = data[:,3]
+			save4 = data[:,4]
 			save5 = data[:,5]
 			save6 = data[:,6]
 	
@@ -279,6 +281,7 @@ class Correlation3D:
 			tmp_save1  = numpy.zeros( shape=(self._nbBinX2D,self._nbBinY2D) )
 			tmp_save2  = numpy.zeros( shape=(self._nbBinX2D,self._nbBinY2D) )
 			tmp_save3  = numpy.zeros( shape=(self._nbBinX2D,self._nbBinY2D) )
+			tmp_save4  = numpy.zeros( shape=(self._nbBinX2D,self._nbBinY2D) )
 			tmp_save5  = numpy.zeros( shape=(self._nbBinX2D,self._nbBinY2D) )
 			tmp_save6  = numpy.zeros( shape=(self._nbBinX2D,self._nbBinY2D) )
 	
@@ -293,6 +296,7 @@ class Correlation3D:
 				tmp_save1[idX][idY] += save1[i]
 				tmp_save2[idX][idY] += save2[i]
 				tmp_save3[idX][idY] += save3[i]
+				tmp_save4[idX][idY] += save4[i]
 				tmp_save5[idX][idY] += save5[i]
 				tmp_save6[idX][idY] += save6[i]
 
@@ -303,6 +307,10 @@ class Correlation3D:
 
 			if (init):
 				self._meanZ = numpy.sum(data[:,4])/numpy.sum(data[:,5])
+				self._xi2D_grid = numpy.zeros( shape=(self._nbBinX2D,self._nbBinY2D,3) )
+				self._xi2D_grid[:,:,0][cut] = tmp_save2[cut] / tmp_save5[cut]
+				self._xi2D_grid[:,:,1][cut] = tmp_save3[cut] / tmp_save5[cut]
+				self._xi2D_grid[:,:,2][cut] = tmp_save4[cut] / tmp_save5[cut]
 
 		return xiMu, xiWe, xi1D, xi2D
 	def read_grid(self):
@@ -542,7 +550,22 @@ class Correlation3D:
 		xi1D[:,:] = self._xiMul[:,index,:]
 
 		return xi1D
-	def fit_CAMB(self,xi1D=None,dic=None):
+	def get_CAMB(self,distortion=True):
+
+		### Get Camb
+		xi1D = numpy.zeros(shape=(self._nbBin1D,3))
+		data_camb = numpy.loadtxt(const.pathToCamb__)
+		xi1D[:,0] = self._xi1D[:,0]
+		xi1D[:,1] = numpy.interp(xi1D[:,0],data_camb[1:,0],data_camb[1:,1])
+		xi1D[:,2] = 0.00000001
+
+		if (distortion):
+			path = self._path_to_txt_file_folder + self._prefix + '_distortionMatrix_1D_'+ self._middlefix + '.txt'
+			matrix = numpy.loadtxt(path)
+			xi1D[:,1] = numpy.dot(matrix,xi1D[:,1])
+
+		return xi1D
+	def fit_CAMB(self,xi1D=None,dic=None,distortion=True):
 		
 		### Constants
 		if (xi1D is None): xi1D = self._xi1D
@@ -558,7 +581,14 @@ class Correlation3D:
 		if (dic['mulpol_index']==0): idx = 1
 		elif (dic['mulpol_index']==2): idx = 2
 		data_camb = numpy.loadtxt(const.pathToCamb__)
-		yyy_Camb  = numpy.interp(xxx,data_camb[1:,0],data_camb[1:,idx])
+		yyy_Camb = numpy.interp(xi1D[:,0],data_camb[1:,0],data_camb[1:,idx])
+
+		if (distortion):
+			path = self._path_to_txt_file_folder + self._prefix + '_distortionMatrix_1D_'+ self._middlefix + '.txt'
+			matrix = numpy.loadtxt(path)
+			yyy_Camb = numpy.dot(matrix,yyy_Camb)
+
+		yyy_Camb = yyy_Camb[cut]
 	
 		if (dic['guess_b']):
 			b_init = numpy.mean(yyy[ (xxx<dic['min_for_guess']) ]/yyy_Camb[ (xxx<dic['max_for_guess']) ])
@@ -821,7 +851,7 @@ output-prefix = """ + path_to_BAOFIT + """.
 			TMP_yyy = TMP_yyy[ TMP_cut ]
 			TMP_yer = TMP_yer[ TMP_cut ]
 			TMP_coef = numpy.power(TMP_xxx,x_power)
-			plt.errorbar(TMP_xxx, TMP_coef*TMP_yyy, yerr=TMP_coef*TMP_yer, label=r'$'+el._name+'$', color='red') ##, fmt='o'
+			plt.errorbar(TMP_xxx, TMP_coef*TMP_yyy, yerr=TMP_coef*TMP_yer, label=r'$'+el._name+'$') #, fmt='o'
 
 		if (title): plt.title(r'$'+self._title+'$', fontsize=40)
 		if (x_power==0):
@@ -928,6 +958,35 @@ output-prefix = """ + path_to_BAOFIT + """.
 		plt.show()
 		
 		return
+	def plot_slice_2d(self,sliceX=None,sliceY=None):
+
+		if (sliceX is not None):
+			xxx = self._xi2D_grid[sliceX,:,1]
+			yyy = self._xi2D[sliceX,:,1]
+			yer = self._xi2D[sliceX,:,2]
+		elif (sliceY is not None):
+			xxx = self._xi2D_grid[:,sliceY,0]
+			yyy = self._xi2D[:,sliceY,1]
+                        yer = self._xi2D[:,sliceY,2]
+		else:
+			return
+
+		cut = (yer>0.)
+		xxx = xxx[cut]
+		yyy = yyy[cut]
+		yer = yer[cut]
+		if (xxx.size==0): return
+
+		plt.errorbar(xxx, yyy, yerr=yer, fmt='o')
+		if (sliceX is not None):
+			plt.xlabel(r'$s_{\parallel} \, [h^{-1} Mpc]$', fontsize=40)
+		else:
+			plt.xlabel(r'$s_{\perp} \, [h^{-1} Mpc]$', fontsize=40)
+		plt.ylabel(r'$'+self._label+'(\, \overrightarrow{s} \,)$',fontsize=40)	
+                myTools.deal_with_plot(False,False,False)
+                plt.show()
+
+		return
 	def plot_mu(self, x_power=0):
 	
 		xxx = self._xiMu[:,:,0]
@@ -970,7 +1029,7 @@ output-prefix = """ + path_to_BAOFIT + """.
 		plt.show()
 	
 		return
-	def plot_CAMB(self, xi1D=None, dic=None, x_power=0):
+	def plot_CAMB(self, xi1D=None, dic=None, x_power=0,distortion=True):
 
 		if (xi1D is None): xi1D = self._xi1D
 		if (dic is None):
@@ -995,20 +1054,33 @@ output-prefix = """ + path_to_BAOFIT + """.
 		if (dic['mulpol_index']==0): idx = 1
 		elif (dic['mulpol_index']==2): idx = 2
 		data_camb = numpy.loadtxt(const.pathToCamb__)
-		yyy_Camb  = numpy.interp(xxx,data_camb[1:,0],data_camb[1:,idx])
-		cut = (data_camb[1:,0] <= numpy.amax(xxx)*1.1)
-		size = cut[cut].size
-		result_1D_camb = numpy.zeros( shape=(size,3) )
-		result_1D_camb[:,0] = data_camb[1:,0][cut]
-		result_1D_camb[:,1] = dic['b']*data_camb[1:,idx][cut]+dic['roof']
-		result_1D_camb[:,2] = 0.0000000001
+
+		if (distortion):
+			result_1D_camb = numpy.zeros( shape=(self._nbBin1D,3) )
+			result_1D_camb[:,0] = xxx
+			result_1D_camb[:,1] = numpy.interp(xxx,data_camb[1:,0],data_camb[1:,idx])
+			path = self._path_to_txt_file_folder + self._prefix + '_distortionMatrix_1D_'+ self._middlefix + '.txt'
+			matrix = numpy.loadtxt(path)
+			result_1D_camb[:,1] = numpy.dot(matrix,result_1D_camb[:,1])
+		else:
+			cut = (data_camb[1:,0] <= numpy.amax(xxx)*1.1)
+			size = cut[cut].size
+			result_1D_camb = numpy.zeros( shape=(size,3) )
+			result_1D_camb[:,0] = data_camb[1:,0][cut]
+			result_1D_camb[:,1] = dic['b']*data_camb[1:,idx][cut]+dic['roof']
+			result_1D_camb[:,2] = 0.0000000001
 	
 		### Show result
 		coef = numpy.power(xxx,x_power)
 		plt.errorbar(xxx,coef*yyy,yerr=coef*yer,fmt='o')
+
+		result_1D_camb[:,1] *= yyy[7]/result_1D_camb[7,1]
 	
 		coef2 = numpy.power(result_1D_camb[:,0],x_power)
 		plt.plot(result_1D_camb[:,0],coef2*result_1D_camb[:,1],color='red')
+
+		print yyy[4]
+		print result_1D_camb[4,1]
 	
 		if (x_power==0):
 			plt.ylabel(r'$'+self._label+' (|s|)$', fontsize=40)

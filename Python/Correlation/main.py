@@ -27,6 +27,17 @@ import annalyse_many_BAOFIT
 
 def plotOne():
 
+	dic_CAMB = {
+	'mulpol_index' : 0,
+	'start_fit'   : 40.,
+	'end_fit'     : 180.,
+	'b' : -1.,
+	'roof' : 0.,
+	'fix_roof_nul' : True,
+	'guess_b' : False,
+	'min_for_guess' : 20.,
+	'max_for_guess' : 50.,
+	}
 	dic_class = {
 		'minXi': 0.,
 		'maxXi': 200.,
@@ -39,20 +50,32 @@ def plotOne():
 		'path_to_txt_file_folder': 'NOTHING',
 		'f1': 'LYA',
 		'f2': 'a',
-		'q1': 'DLA',
+		'q1': 'QSO',
 		'q2': 'a',
 		'name' : 'Data'
 	}
 	dic_CAMB  = correlation_3D.raw_dic_CAMB
-	dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_reOBS_eBOSS_noCoADD_Guy//'
+	dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_test_problem_smoothing_empty_pixels/Box_000/Simu_000/Results/'
+	#dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
 	dic_class['name'] = 'Data'
 	corr = correlation_3D.Correlation3D(dic_class)
+
+	#for el in numpy.arange(0,50): corr.plot_slice_2d(el)
+        for el in numpy.arange(0,100): corr.plot_slice_2d(None,el+40)
+
+	#corr.save_list_realisation('subsampling', 80)
+	#corr.plot_cov_cor_matrix('subsampling','1D')
+	### Fit
+	#correlation_matrix_path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Results_RandomPosInCell/xi_delta_QSO_result_cor_2D_allSubSamplingFromFit.npy'
+	#corr.send_BAOFIT('subsampling',correlation_matrix_path)
+
 	print corr._meanZ
 
-	dic_CAMB = corr.fit_CAMB()
-	corr.plot_CAMB(None,None,0)
-	corr.plot_CAMB(None,None,1)
-	corr.plot_CAMB(None,None,2)
+	'''
+	dic_CAMB = corr.fit_CAMB(None,dic_CAMB,False)
+	corr.plot_CAMB(None,dic_CAMB,0,False)
+	corr.plot_CAMB(None,dic_CAMB,1,False)
+	corr.plot_CAMB(None,dic_CAMB,2,False)
 	corr.plot_multipol(0)
 	corr.plot_multipol(1)
 	corr.plot_multipol(2)
@@ -65,6 +88,8 @@ def plotOne():
 	corr.plot_we(0)
 	corr.plot_we(1)
 	corr.plot_we(2)
+	'''
+	corr.plot_1d(0)
 	corr.plot_2d(0)
 	corr.plot_2d(1)
 	corr.plot_2d(2)
@@ -141,25 +166,25 @@ def plotBosseBOSS():
 		'size_bin_calcul_m': 0.02,
 		'correlation': 'q_f',
 		'path_to_txt_file_folder': 'NOTHING',
-		'f1': 'LYA',
+		'f1': 'CIV',
 		'f2': 'LYA',
-		'q1': 'QSO',
+		'q1': 'QSO_DR7_DR12_EBOSS',
 		'q2': 'QSO',
 		'name' : 'Data'
 	}
 	### Boss
-	dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
-	dic_class['name'] = 'BOSS \, \\times \, QSO'
+	dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_les_4645/'
+	dic_class['name'] = '<4645'
 	corr = correlation_3D.Correlation3D(dic_class)
-	corr.set_error_on_covar_matrix('subsampling')
+	#corr.set_error_on_covar_matrix('subsampling')
 	list_corr += [corr]
 	print corr._meanZ
 	### eBoss
-	dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
-	dic_class['name'] = 'BOSS \, \\times \, (QSO+DLA+CIV \, absorbers)'
-	dic_class['q1'] = 'ALL_OBJECTS'
+	dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_mor_4645/'
+	dic_class['name'] = '>4645'
+	#dic_class['q1'] = '>4645'
 	corr = correlation_3D.Correlation3D(dic_class)
-	corr.set_error_on_covar_matrix('subsampling')
+	#corr.set_error_on_covar_matrix('subsampling')
 	list_corr += [corr]
 	print corr._meanZ
 
@@ -169,7 +194,11 @@ def plotBosseBOSS():
 	list_corr[0].plot_1d(2, list_corr[1:])
 
 	return
+def look_result_data():
 
+	
+
+	return
 
 #plotBosseBOSS()
 plotOne()
@@ -203,7 +232,7 @@ dic_class = {
 	'path_to_txt_file_folder': 'NOTHING',
 	'f1': 'LYA',
 	'f2': 'LYA',
-	'q1': 'QSO',
+	'q1': 'ALL_OBJECTS',
 	'q2': 'QSO',
 	'name' : 'Data'
 }
@@ -212,6 +241,7 @@ dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Re
 corr = annalyse_BAOFIT.AnnalyseBAOFIT(dic_class, index_parameter)
 corr.print_results()
 corr.plot_chi2_scan(100,100, [0.5,1.5,0.5,1.5], False, False)
+'''
 corr.plot_data_and_fit_1d(0)
 corr.plot_data_and_fit_1d(1)
 corr.plot_data_and_fit_1d(2)
@@ -221,6 +251,7 @@ corr.plot_data_and_fit_we(2)
 corr.plot_fit_2d(0)
 corr.plot_fit_2d(1)
 corr.plot_fit_2d(2)
+'''
 corr.plot_residuals_2d(0)
 corr.plot_residuals_2d(1)
 corr.plot_residuals_2d(2)

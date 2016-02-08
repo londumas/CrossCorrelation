@@ -80,13 +80,13 @@ GetDelta::GetDelta(int argc, char** argv) {
 	pathToDataQSO__ += ".fits";
 	pathToDataQSO__ = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/spectra-expander.fits";
 	///
-	pathToDataForest__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_correctedForest_withMoreMetals_test2Bugs/Box_00";
+	pathToDataForest__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_test_problem_smoothing_empty_pixels/Box_00";
 	pathToDataForest__ += box_idx;
 	pathToDataForest__ += "/Simu_00";
 	pathToDataForest__ += sim_idx;
 	pathToDataForest__ += "/Data/mocks-*";
 	///
-	pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_correctedForest_withMoreMetals_test2Bugs/Box_00";
+	pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_test_problem_smoothing_empty_pixels/Box_00";
 	pathToSave__ += box_idx;
 	pathToSave__ += "/Simu_00";
 	pathToSave__ += sim_idx;
@@ -101,7 +101,7 @@ GetDelta::GetDelta(int argc, char** argv) {
 	isTest__  = false;
 
 	/// QSO
-	withRSD__ = true;
+	withRSD__ = false;
 	GetQSO();
 
 	std::cout << "\n"   << std::endl;
@@ -188,17 +188,17 @@ void GetDelta::GetData(void) {
 			if (!findPDF__ && tmp_nbPixels2<C_MIN_NB_PIXEL) continue;
 	
 			/// Variable from old FITS
-			double X = 0.;
-			double Y = 0.;
-			double Z = 0.;
+			float X = 0.;
+			float Y = 0.;
+			float Z = 0.;
 			float LAMBDA_OBS[tmp_nbPixels2];
 			float FLUX[tmp_nbPixels2];
 			float IVAR[tmp_nbPixels2];
 			long  AND_MASK[tmp_nbPixels2];
 			float CONTINUUM[tmp_nbPixels2];
-			fits_read_key_dbl(fitsptrSpec,"X",   &X,NULL,&sta);
-			fits_read_key_dbl(fitsptrSpec,"Y",   &Y,NULL,&sta);
-			fits_read_key_dbl(fitsptrSpec,"ZQSO",&Z,NULL,&sta);
+			fits_read_key(fitsptrSpec,TFLOAT,"X",   &X,NULL,&sta);
+			fits_read_key(fitsptrSpec,TFLOAT,"Y",   &Y,NULL,&sta);
+			fits_read_key(fitsptrSpec,TFLOAT,"ZQSO",&Z,NULL,&sta);
 			fits_read_col(fitsptrSpec,TFLOAT, 1,1,1,tmp_nbPixels2,NULL, &LAMBDA_OBS,NULL,&sta);
 			fits_read_col(fitsptrSpec,TFLOAT, 2,1,1,tmp_nbPixels2,NULL, &FLUX,      NULL,&sta);
 			fits_read_col(fitsptrSpec,TFLOAT, 3,1,1,tmp_nbPixels2,NULL, &IVAR,      NULL,&sta);
@@ -206,6 +206,9 @@ void GetDelta::GetData(void) {
 			fits_read_col(fitsptrSpec,TFLOAT, 5,1,1,tmp_nbPixels2,NULL, &CONTINUUM, NULL,&sta);
 	
 			/// Variables for new FITS
+			double XX = X;
+                        double YY = Y;
+                        double ZZ = Z;
 			double lambdaOBS[nbPixelsTemplate__];
 			double lambdaRF[nbPixelsTemplate__];
 			double norm_flux[nbPixelsTemplate__];
@@ -304,9 +307,9 @@ void GetDelta::GetData(void) {
 			double alpha = C_CONVERT_FROM_FLUX_TO_ALPHA*meanFluxForest[0]/(meanFluxForest[1]*norm);
 		
 			/// Save data in second file
-			fits_write_col(fitsptrSpec2,TDOUBLE, 4,forestIdx+1,1,1, &X, &sta2);
-			fits_write_col(fitsptrSpec2,TDOUBLE, 5,forestIdx+1,1,1, &Y, &sta2);
-			fits_write_col(fitsptrSpec2,TDOUBLE, 6,forestIdx+1,1,1, &Z, &sta2);
+			fits_write_col(fitsptrSpec2,TDOUBLE, 4,forestIdx+1,1,1, &XX, &sta2);
+			fits_write_col(fitsptrSpec2,TDOUBLE, 5,forestIdx+1,1,1, &YY, &sta2);
+			fits_write_col(fitsptrSpec2,TDOUBLE, 6,forestIdx+1,1,1, &ZZ, &sta2);
 			fits_write_col(fitsptrSpec2,TINT,    7,forestIdx+1,1,1, &nbPixelInForest, &sta2);
 			fits_write_col(fitsptrSpec2,TDOUBLE, 8,forestIdx+1,1,1, &meanForestLRF[0], &sta2);
 			fits_write_col(fitsptrSpec2,TDOUBLE, 11,forestIdx+1,1,1, &alpha, &sta2);
@@ -382,23 +385,27 @@ void GetDelta::GetQSO(void) {
 		/// Get the data
 		if (i!=0) fits_movrel_hdu(fitsptrSpec, 1,  NULL, &sta);
 
-		double X = 0.;
-		double Y = 0.;
-		double Z = 0.;
-		double V = 0.;
+		float X = 0.;
+		float Y = 0.;
+		float Z = 0.;
+		float V = 0.;
 
-		fits_read_key_dbl(fitsptrSpec,"X",   &X,NULL,&sta);
-		fits_read_key_dbl(fitsptrSpec,"Y",   &Y,NULL,&sta);
-		fits_read_key_dbl(fitsptrSpec,"ZQSO",&Z,NULL,&sta);
-		fits_read_key_dbl(fitsptrSpec,"VELOCITY",&V,NULL,&sta);
+		fits_read_key(fitsptrSpec,TFLOAT,"X",   &X,NULL,&sta);
+		fits_read_key(fitsptrSpec,TFLOAT,"Y",   &Y,NULL,&sta);
+		fits_read_key(fitsptrSpec,TFLOAT,"ZQSO",&Z,NULL,&sta);
+		fits_read_key(fitsptrSpec,TFLOAT,"VELOCITY",&V,NULL,&sta);
+
+		double XX = X;
+                double YY = Y;
+                double ZZ = Z;
 
 		/// If with RSD
-		if (withRSD__) Z += V*oneOverc_speedOfLight*(1.+Z);
+		if (withRSD__) ZZ += V*oneOverc_speedOfLight*(1.+ZZ);
 
 		/// Save the data
-		fits_write_col(fitsptrSpec2,TDOUBLE, 1,nbQSOs+1,1,1, &X, &sta2);
-		fits_write_col(fitsptrSpec2,TDOUBLE, 2,nbQSOs+1,1,1, &Y, &sta2);
-		fits_write_col(fitsptrSpec2,TDOUBLE, 3,nbQSOs+1,1,1, &Z, &sta2);
+		fits_write_col(fitsptrSpec2,TDOUBLE, 1,nbQSOs+1,1,1, &XX, &sta2);
+		fits_write_col(fitsptrSpec2,TDOUBLE, 2,nbQSOs+1,1,1, &YY, &sta2);
+		fits_write_col(fitsptrSpec2,TDOUBLE, 3,nbQSOs+1,1,1, &ZZ, &sta2);
 
 		nbQSOs ++;
 	}

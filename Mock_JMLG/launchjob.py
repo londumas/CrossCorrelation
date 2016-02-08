@@ -29,12 +29,12 @@ import cosmolopy.distance as cosmology
 
 ### Constants
 sizeMax = 300000
-sizeMaxForest = 20000 #300000
+sizeMaxForest = 300000
 nbQSO__ = 238929
-nbFor__ = 170898
+nbFor__ = 170000
 nbPixel = 645
 ratioForestToQSO__    = 1.*nbFor__/nbQSO__;
-pathToFolder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_correctedForest_withMoreMetals_test2Bugs/'
+pathToFolder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_test_problem_smoothing_empty_pixels/'
 
 
 
@@ -88,7 +88,7 @@ def main():
 				if (i==0 and j==0):
 					tbhduQSO    = create_fits_qso(sizeMax)
 					tbhduForest = create_fits_forest(sizeMaxForest)
-					tbhduQSO.writeto(path + 'Data/QSO_withRSD.fits', clobber=True)
+					tbhduQSO.writeto(path + 'Data/QSO_noRSD.fits', clobber=True)
 					tbhduForest.writeto(path + 'Data/delta.fits', clobber=True)
 				else:
 					command = 'clubatch cp ' + pathToFolder + 'Box_000/Simu_000/Data/delta.fits ' + path + 'Data/delta.fits'
@@ -110,18 +110,19 @@ def main():
 
 			elif (index_pass==2):
 			
-				cat = pyfits.open(path + 'Data/QSO_withRSD.fits', memmap=True)[1].data
+				cat = pyfits.open(path + 'Data/QSO_noRSD.fits', memmap=True)[1].data
 				print cat.size
 				cat = cat[ (cat['Z'] != 0.) ]
 				print cat.size
 				nbQSO = cat.size
-				pyfits.writeto(path + 'Data/QSO_withRSD.fits', cat, clobber=True)
+				pyfits.writeto(path + 'Data/QSO_noRSD.fits', cat, clobber=True)
 				print nbQSO
 			
 			
 				### Remove useless lines in Forest
 				cat = pyfits.open(path + 'Data/delta.fits', memmap=True)[1].data[:nbQSO]
 				print cat.size
+				'''
 				tmp_idx  = numpy.arange(cat.size)
 				tmp_bool = (cat['Z_VI'] != 0.)
 				tmp_idx = tmp_idx[ (tmp_bool) ]
@@ -133,6 +134,8 @@ def main():
 				print nbFor-int(nbQSO*ratioForestToQSO__)
 				rand = numpy.random.choice(nbFor, nbFor-int(nbQSO*ratioForestToQSO__), replace=False)
 				cat['Z_VI'][rand] = 0.
+
+				'''
 				cat = cat[ (cat['Z_VI'] != 0.) ]
 				print cat.size
 				pyfits.writeto(path + 'Data/delta.fits', cat, clobber=True)

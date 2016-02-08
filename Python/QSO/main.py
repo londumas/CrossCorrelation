@@ -345,7 +345,7 @@ def getQsoCatalogueAllObjects():
 	tbhdu.writeto('/home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/ALL_EVERY_OBJECTS_2016_01_08.fits', clobber=True)
 
 
-getQsoCatalogueAllObjects()
+#getQsoCatalogueAllObjects()
 
 #getQsoCatalogueEBOSS()
 #main()
@@ -364,6 +364,8 @@ cat = pyfits.open(path + 'all_Britt.fits', memmap=True )[1].data
 ra = numpy.append( ra, cat['RA'])
 de = numpy.append( de, cat['DEC'])
 zz = numpy.append( zz, cat['Z'])
+
+
 
 print ra.size
 
@@ -390,9 +392,6 @@ tbhdu.writeto('/home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/ALL_OBJECTS.
 '''
 
 '''
-
-'''
-
 cat3 = pyfits.open('/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits',memmap=True)[1].data
 cat3 = cat3[ cat3['Z_VI']>1.7 ]
 cat3 = cat3[ cat3['Z_VI']<7. ]
@@ -400,7 +399,7 @@ RA  = cat3['RA']
 Dec = cat3['DEC']
 plt.errorbar(RA,Dec, fmt='o')
 plt.show()
-
+'''
 import numpy as np
 import ephem
 
@@ -410,7 +409,7 @@ projection='mollweide'
 fig = plt.figure(figsize=(10, 5))
 ax = fig.add_subplot(111, projection=projection, axisbg ='white')
 
-'''
+
 cat = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/QSO_ALL_TESTS.fits')[1].data
 cat = cat[ cat['Z']>1.7 ]
 cat = cat[ cat['Z']<7. ]
@@ -419,22 +418,23 @@ Dec = cat['DEC']
 RA[ RA>180. ] -= 360.
 ax.scatter(np.radians(RA),np.radians(Dec), label=r'$DR7+DR12: \, QSO$')  # convert degrees to radians
 
+
 cat3 = pyfits.open('/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits',memmap=True)[1].data
-cat3 = cat3[ cat3['Z_VI']>1.7 ]
+cat3 = cat3[ cat3['Z_VI']>2. ]
 cat3 = cat3[ cat3['Z_VI']<7. ]
 RA  = cat3['RA']
 Dec = cat3['DEC']
 RA[ RA>180. ] -= 360.
 ax.scatter(np.radians(RA),np.radians(Dec), label=r'$DR12: \, Forest$', color='red')  # convert degrees to radians
-'''
 
-cat3 = pyfits.open('/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits',memmap=True)[1].data
-cat3 = cat3[ cat3['Z_VI']>1.7 ]
-cat3 = cat3[ cat3['Z_VI']<7. ]
-RA  = cat3['RA']
-Dec = cat3['DEC']
+
+cat4 = pyfits.open('/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits',memmap=True)[1].data
+cat4 = cat4[ cat4['Z_VI']>1.7 ]
+cat4 = cat4[ cat4['Z_VI']<7. ]
+RA  = cat4['RA']
+Dec = cat4['DEC']
 RA[ RA>180. ] -= 360.
-ax.scatter(np.radians(RA),np.radians(Dec), label=r'$eBOSS$', color='red')  # convert degrees to radian
+ax.scatter(np.radians(RA),np.radians(Dec), label=r'$eBOSS \, forest$', color='green')  # convert degrees to radian
 
 
 lon_array = np.arange(0,360)
