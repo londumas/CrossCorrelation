@@ -28,6 +28,7 @@
 #include <cstdlib>	// std::rand, std::srand
 
 
+
 ///// ROOT
 #include "TH1D.h"
 #include "fitsio.h"
@@ -94,14 +95,14 @@ double distMinPixel__ = 0.;
 double distMinPixelDelta2__ = 0.;
 unsigned int idxCommand_[6] = {0};
 const std::string pathToMockJMC__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_test_problem_smoothing_empty_pixels/";
-std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_les_4645/";
+std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/";
 //std::string pathToSave__ = "";
 
 ///// Flags for Jean-Marc's simulations
 const bool mocks              = false;
-const bool mockJMC__          = true;
+const bool mockJMC__          = false;
 const bool mockBox__          = false;
-const bool mocksNoNoiseNoCont = true;
+const bool mocksNoNoiseNoCont = false;
 const double randomPositionOfQSOInCell__ = false;
 const double randomPositionOfQSOInCellNotBeforeCorrelation__ = false;
 //// Flags for covariance matrix estimation
@@ -225,17 +226,19 @@ Correlation::Correlation(int argc, char **argv) {
 	else if (command == 11) xi_delta_QSO_lambda(doBootstraps__,idxCommand_[2]);
 	else if (command == 12) xi_delta_QSO_distortionMatrix();
 	else if (command == 13) xi_delta_QSO_distortionMatrix_1D();
-	else if (command == 14) xi_delta_QSO_Wick(idxCommand_[3]);
+	else if (command == 14) xi_delta_QSO_Metals_Models(absorber__[idxCommand_[2]],absorberName__[idxCommand_[2]]);
+	else if (command == 15) xi_delta_QSO_Wick(idxCommand_[3]);
 	//
-	else if (command == 15) xi_QSO_QSO(doBootstraps__,idxCommand_[2]);
-	else if (command == 16) xi_Q1_Q2();
+	else if (command == 16) xi_QSO_QSO(doBootstraps__,idxCommand_[2]);
+	else if (command == 17) xi_Q1_Q2();
 	//
-	else if (command == 17) xi_A_delta_delta_MockJMc();
-	else if (command == 18) xi_delta_QSO_MockJMc(doBootstraps__,idxCommand_[2]);
-	//else if (command == 19) xi_delta_QSO_lambda_MockJMc(doBootstraps__,idxCommand_[2]);
-	else if (command == 20) xi_delta_QSO_MockJMc_distortionMatrix();
-	else if (command == 21) xi_delta_QSO_MockJMc_distortionMatrix_1D();
-	else if (command == 22) xi_QSO_QSO_MockJMc(doBootstraps__,idxCommand_[2]);
+	else if (command == 18) xi_A_delta_delta_MockJMc();
+	else if (command == 19) xi_delta_QSO_MockJMc(doBootstraps__,idxCommand_[2]);
+	//else if (command == 20) xi_delta_QSO_lambda_MockJMc(doBootstraps__,idxCommand_[2]);
+	else if (command == 21) xi_delta_QSO_MockJMc_distortionMatrix();
+	else if (command == 22) xi_delta_QSO_MockJMc_distortionMatrix_1D();
+	else if (command == 23) xi_delta_QSO_Metals_Models_MockJMc(absorber__[idxCommand_[2]],absorberName__[idxCommand_[2]]);
+	else if (command == 24) xi_QSO_QSO_MockJMc(doBootstraps__,idxCommand_[2]);
 
 	std::cout << "\n\n\n\n" << std::endl;
 }
@@ -2731,6 +2734,275 @@ void Correlation::xi_delta_QSO_distortionMatrix_1D(void) {
 
 	return;
 }
+void Correlation::xi_delta_QSO_Metals_Models(double lambdaFrMetal, std::string lambdaFrMetalName) {
+
+	std::cout << "\n\n\n\n  ------ xi_delta_QSO_Metals_Models ------" << std::endl;
+	std::string command = "  ";
+	command += commandEnd__;
+	std::cout << command << "\n" << std::endl;
+
+	std::cout << "  line = " << lambdaFrMetalName << " : " << lambdaFrMetal << std::endl;
+
+	//// QSO
+	loadDataQ1();
+	if (nbQ1__==0) return;
+	//// Forest
+	loadDataForest(pathForest__);
+
+	//// Create the conversion table from redshift to distance
+	Cosmology* cosmo = new Cosmology(C_H, C_OMEGAM, C_OMEGAB);
+	TH1D* hConvertRedshDist = cosmo->createHistoConvertRedshDist(C_NBBINREDSH, C_ZEXTREMABINCONVERT0, C_ZEXTREMABINCONVERT1);
+
+	//// Get the distance if it was this metal
+	std::vector< std::vector< double > > v_r_metal(v_r__);
+	for (unsigned int i=0; i<v_r_metal.size(); i++) {
+		for (unsigned int j=0; j<v_r_metal[i].size(); j++) {
+			v_r_metal[i][j] = hConvertRedshDist->Interpolate( v_lObs__[i][j]/lambdaFrMetal-1. );
+		}
+	}
+
+	//// Empty useless vectors
+	delete cosmo;
+	v_zz__.clear();
+	v_d__.clear();
+	v_lRF__.clear();
+	v_lObs__.clear();
+	v_nb__.clear();
+
+
+	//// Get the monopole, quadrupol, exadecapol
+	std::string pathToLoad = PATHTOWORK;
+	pathToLoad += PATHTOCAMB;
+	std::ifstream fileData(pathToLoad.c_str());
+	std::vector< double > data_x;
+	std::vector< double > data_xi0;
+	std::vector< double > data_xi2;
+	std::vector< double > data_xi4;
+	std::cout << pathToLoad << std::endl;
+	while (fileData) {
+		double x;
+		double xi0;
+		double xi2;
+		double xi4;
+		fileData>>x>>xi0>>xi2>>xi4;
+		if (fileData==0) break;
+		
+		data_x.push_back(x);
+		data_xi0.push_back(xi0);
+		data_xi2.push_back(xi2);
+		data_xi4.push_back(xi4);
+	}
+	
+	const unsigned int nbBinCAMB = data_x.size();
+	//// Set to zero the last pixel
+	const double maxDistCAMB = data_x[nbBinCAMB-1];
+	data_x.push_back(data_x[nbBinCAMB-1]+1.);
+	data_xi0.push_back(0.);
+	data_xi2.push_back(0.);
+	data_xi4.push_back(0.);
+
+	//// Constants:
+	//// The space between bins is of 10 Mpc.h^-1
+	const double max          = 200.;
+
+	const unsigned int nbBin  = int(max);
+	const unsigned int nbBinX = nbBin;
+	const unsigned int nbBinY = 2*nbBin;
+	const unsigned int nbBinM = 100.;
+
+	const double maxPow2      = max*max;
+
+
+	//// Arrays for data
+	double data2D[nbBinX][nbBinY][11];
+	double dataMu[nbBin][nbBinM][11];
+
+	for (unsigned int i=0; i<nbBin; i++) {
+		for (unsigned int j=0; j<nbBinM; j++) {
+			for (unsigned int k=0; k<8; k++) {
+				dataMu[i][j][k] = 0.;
+			}
+		}
+	}
+	for (unsigned int i=0; i<nbBinX; i++) {
+		for (unsigned int j=0; j<nbBinY; j++) {
+			for (unsigned int k=0; k<8; k++) {
+				data2D[i][j][k] = 0.;
+			}
+		}
+	}
+
+	std::cout << "\n  Starting\n" << std::endl;
+
+	for (unsigned int f=0; f<nbForest_; f++) {
+	
+		//// Get number of pixels in forest
+		const unsigned int nbPixel = v_nbPixelDelta1__[f];
+		const double firstPixel    = v_r__[f][0];
+		const double lastPixel     = v_r__[f][nbPixel-1];
+		const double cosDe         = v_CosDe__[f];
+		const double sinDe         = v_SinDe__[f];
+		const double ra            = v_ra__[f];
+		const double dec           = v_de__[f];
+			
+		for (unsigned int q=0; q<nbQ1__; q++) {
+			///// Remove the correlation qso-ownForest
+			//if (fabs(ra-v_raQ1__[q])<1.e-9 && fabs(dec-v_deQ1__[q])<1.e-9 ) continue;
+			if (fabs(ra-v_raQ1__[q])<C_AUTOCORRCRIT && fabs(dec-v_deQ1__[q])<C_AUTOCORRCRIT ) continue;  // && fabs(z-v_zzQ1__[q])<0.001
+
+			///// Angle between the two directions of the qso and the lya
+			const double cosTheta = cosDe*v_CosDeQ1__[q]*cos(ra-v_raQ1__[q]) + sinDe*v_SinDeQ1__[q];
+
+			///// reject QSO with a distance too large
+			const double distTransQsoLyaPow2 = v_rQ1__[q]*v_rQ1__[q]*(1.-cosTheta*cosTheta);
+			if (distTransQsoLyaPow2 >= maxPow2) continue;
+
+			///// Parrallel distance between the qso and the lya
+			const double distParalQsoLya = v_rQ1__[q]*cosTheta;
+
+			///// Distance between the qso and the first pixel
+			const double distParalQsoFirstPixel = firstPixel - distParalQsoLya;
+			if ( distParalQsoFirstPixel >= max) continue;
+
+			///// Distance between the qso and the last pixel
+			const double distParalQsoLastPixel = lastPixel - distParalQsoLya;
+			if ( distParalQsoLastPixel <= -max) continue;
+
+			///// Transvers distance between the qso and the lya
+			const double distTransQsoLya = sqrt(distTransQsoLyaPow2);
+			const unsigned int rPerpBinIdx = int( distTransQsoLya );
+			const double zQSO = v_zzQ1__[q];
+
+			///// 'true' if first pixel of forest is further than the QSO
+			const bool infPosBool = (distParalQsoFirstPixel > 0.);
+			///// 'true' if last pixel of forest is lower than the QSO
+			const bool supPosBool = (distParalQsoLastPixel < 0.);
+
+			///// Loops over all pixels of the forest
+			for (unsigned int i=0; i<nbPixel; i++) {
+
+				unsigned int ii = i;
+				if (supPosBool) ii = nbPixel-1-i;
+	
+				const double distP = v_r__[f][ii] - distParalQsoLya;				
+
+				///// Look at the position of the Lya forest regarding the qso
+				if (fabs(distP) >= max) {
+					if (infPosBool || supPosBool) break;
+					else continue;
+				}
+
+				const double distTotPow2 = distTransQsoLyaPow2 + distP*distP;
+				const double distTot    = sqrt(distTotPow2);
+				const double distTotMetal = sqrt(distTransQsoLyaPow2 + (v_r_metal[f][ii]-distParalQsoLya)*(v_r_metal[f][ii]-distParalQsoLya) );
+
+				const double w   = v_w__[f][ii];
+				unsigned int idxBinCAMB = nbBinCAMB;
+				if (distTotMetal<maxDistCAMB) idxBinCAMB = int(distTotMetal);
+				const double wxi0 = w*data_xi0[idxBinCAMB];
+				const double wxi2 = w*data_xi2[idxBinCAMB];
+				const double wxi4 = w*data_xi4[idxBinCAMB];
+				const double wz   = w*(zQSO+v_z__[f][ii]);
+
+				if (distTot < max) {
+					const double mu         = distP/distTot;
+					const unsigned int idx  = int(distTot);
+					const unsigned int idxM = int((mu+1.)*50.);
+	
+					dataMu[idx][idxM][0] += wxi0;
+					dataMu[idx][idxM][1] += wxi2;
+					dataMu[idx][idxM][2] += wxi4;
+					dataMu[idx][idxM][3] += w*distTot;
+					dataMu[idx][idxM][4] += w*mu;
+					dataMu[idx][idxM][5] += wz;
+					dataMu[idx][idxM][6] += w;
+					dataMu[idx][idxM][7] ++;
+				}
+
+				///// Fill the histogramm of xi(r_{perp}, r_{paral}
+				const unsigned int rParralBinIdx = int(distP+max);
+				data2D[rPerpBinIdx][rParralBinIdx][0] += wxi0;
+				data2D[rPerpBinIdx][rParralBinIdx][1] += wxi2;
+				data2D[rPerpBinIdx][rParralBinIdx][2] += wxi4;
+				data2D[rPerpBinIdx][rParralBinIdx][3] += w*distTransQsoLya;
+				data2D[rPerpBinIdx][rParralBinIdx][4] += w*distP;
+				data2D[rPerpBinIdx][rParralBinIdx][5] += wz;
+				data2D[rPerpBinIdx][rParralBinIdx][6] += w;
+				data2D[rPerpBinIdx][rParralBinIdx][7] ++;
+			}
+		}
+	}
+
+	std::cout << "\n  Saving\n" << std::endl;
+
+	//// Set the prefix of different forest and QSOs
+	std::string prefix1 = forest__;
+	prefix1 += "_";
+	prefix1 += QSO__;
+	prefix1 += "_";
+	prefix1 += lambdaFrMetalName;
+
+	std::ofstream fFile;
+	std::string pathToSave;
+
+
+	///// Save the 2D cross-correlation
+	pathToSave = pathToSave__;
+	pathToSave += "xi_delta_QSO_Metals_Models_2D_";
+	pathToSave += prefix1;
+	pathToSave += ".txt";
+	std::cout << "\n  " << pathToSave << std::endl;
+	fFile.open(pathToSave.c_str());
+	fFile << std::scientific;
+	fFile.precision(14);
+	
+	///// Set the values of data
+	///// [0] for value, [1] for error, [2] for bin center
+	for (unsigned int i=0; i<nbBinX; i++) {
+		for (unsigned int j=0; j<nbBinY; j++) {
+
+			fFile << data2D[i][j][0];
+			fFile << " " << data2D[i][j][1];
+			fFile << " " << data2D[i][j][2];
+			fFile << " " << data2D[i][j][3];
+			fFile << " " << data2D[i][j][4];
+			fFile << " " << data2D[i][j][5]/2.;
+			fFile << " " << data2D[i][j][6];
+			fFile << " " << data2D[i][j][7];
+			fFile << std::endl;
+		}
+	}
+	fFile.close();
+
+	///// Save the Mu cross-correlation
+	pathToSave = pathToSave__;
+	pathToSave += "xi_delta_QSO_Metals_Models_Mu_";
+	pathToSave += prefix1;
+	pathToSave += ".txt";
+	std::cout << "\n  " << pathToSave << std::endl;
+	fFile.open(pathToSave.c_str());
+	fFile << std::scientific;
+	fFile.precision(14);
+	
+	///// Set the values of data
+	for (unsigned int i=0; i<nbBin; i++) {
+		for (unsigned int j=0; j<nbBinM; j++) {
+			
+			fFile << dataMu[i][j][0];
+			fFile << " " << dataMu[i][j][1];
+			fFile << " " << dataMu[i][j][2];
+			fFile << " " << dataMu[i][j][3];
+			fFile << " " << dataMu[i][j][4];
+			fFile << " " << dataMu[i][j][5]/2.;
+			fFile << " " << dataMu[i][j][6];
+			fFile << " " << dataMu[i][j][7];
+			fFile << std::endl;
+		}
+	}
+	fFile.close();
+
+	return;
+}
 void Correlation::xi_delta_QSO_Wick(unsigned int diagramIdx) {
 
 	//// Convert the diagram index to string
@@ -4508,6 +4780,301 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix_1D(void) {
 			fFile << value << " ";
 		}
 		fFile << std::endl;
+	}
+	fFile.close();
+
+	return;
+}
+void Correlation::xi_delta_QSO_Metals_Models_MockJMc(double lambdaFrMetal, std::string lambdaFrMetalName) {
+
+	std::cout << "\n\n\n\n  ------ xi_delta_QSO_Metals_Models_MockJMc ------" << std::endl;
+	std::string command = "  ";
+	command += commandEnd__;
+	std::cout << command << "\n" << std::endl;
+	std::cout << "  line = " << lambdaFrMetalName << " : " << lambdaFrMetal << std::endl;
+
+	//// QSO
+	loadDataQ1();
+	//// Forest
+	loadDataForest(pathForest__);
+
+	//// Create the conversion table from redshift to distance
+	Cosmology* cosmo = new Cosmology(C_H, C_OMEGAM, C_OMEGAB);
+	TH1D* hConvertRedshDist = cosmo->createHistoConvertRedshDist(C_NBBINREDSH, C_ZEXTREMABINCONVERT0, C_ZEXTREMABINCONVERT1);
+
+	//// Get the distance if it was this metal
+	std::vector< std::vector< double > > v_r_metal(v_r__);
+	for (unsigned int i=0; i<v_r_metal.size(); i++) {
+		for (unsigned int j=0; j<v_r_metal[i].size(); j++) {
+			v_r_metal[i][j] = hConvertRedshDist->Interpolate( v_lObs__[i][j]/lambdaFrMetal-1. );
+		}
+	}
+
+	delete cosmo;
+	v_CosDe__.clear();
+	v_SinDe__.clear();
+	v_zz__.clear();
+	v_d__.clear();
+	v_lRF__.clear();
+	v_lObs__.clear();
+	v_nb__.clear();
+
+
+	//// Get the monopole, quadrupol, exadecapol
+	std::string pathToLoad = PATHTOWORK;
+	pathToLoad += PATHTOCAMB;
+	std::ifstream fileData(pathToLoad.c_str());
+	std::vector< double > data_x;
+	std::vector< double > data_xi0;
+	std::vector< double > data_xi2;
+	std::vector< double > data_xi4;
+	std::cout << pathToLoad << std::endl;
+	while (fileData) {
+		double x;
+		double xi0;
+		double xi2;
+		double xi4;
+		fileData>>x>>xi0>>xi2>>xi4;
+		if (fileData==0) break;
+		
+		data_x.push_back(x);
+		data_xi0.push_back(xi0);
+		data_xi2.push_back(xi2);
+		data_xi4.push_back(xi4);
+	}
+	
+	const unsigned int nbBinCAMB = data_x.size();
+	//// Set to zero the last pixel
+	const double maxDistCAMB = data_x[nbBinCAMB-1];
+	data_x.push_back(data_x[nbBinCAMB-1]+1.);
+	data_xi0.push_back(0.);
+	data_xi2.push_back(0.);
+	data_xi4.push_back(0.);
+
+
+
+	//// Constants:
+	//// The space between bins is of 10 Mpc.h^-1
+	const double max          =  200.; // 200.;
+
+	const unsigned int nbBin  = int(max);
+	const unsigned int nbBinX = nbBin;
+	const unsigned int nbBinY = 2*nbBin;
+	const unsigned int nbBinM = 100.;
+	const double maxPow2      = max*max;
+
+
+	//// Arrays for data
+	double dataMu[nbBin][nbBinM][11];
+	double data2D[nbBinX][nbBinY][11];
+
+	for (unsigned int i=0; i<nbBin; i++) {
+		for (unsigned int j=0; j<nbBinM; j++) {
+			for (unsigned int k=0; k<8; k++) {
+				dataMu[i][j][k] = 0.;
+			}
+		}
+	}
+	for (unsigned int i=0; i<nbBinX; i++) {
+		for (unsigned int j=0; j<nbBinY; j++) {
+			for (unsigned int k=0; k<8; k++) {
+				data2D[i][j][k] = 0.;
+			}
+		}
+	}
+
+
+	//// Vectors of randomized positions in cell
+	std::vector<double> v_raRandForest;
+	std::vector<double> v_deRandForest;
+	std::vector<double> v_raRandQSO;
+	std::vector<double> v_deRandQSO;
+	if (randomPositionOfQSOInCellNotBeforeCorrelation__) {
+
+		std::srand (42);
+
+		//// Forest
+		v_raRandForest.resize(nbForest_,0.);
+		v_deRandForest.resize(nbForest_,0.);
+		for (unsigned int i=0; i<nbForest_; i++) {
+			v_raRandForest[i] = v_ra__[i] + sizeCell__*(1.*rand()/RAND_MAX-0.5);
+			v_deRandForest[i] = v_de__[i] + sizeCell__*(1.*rand()/RAND_MAX-0.5);
+		}
+
+		//// QSO
+		v_raRandQSO.resize(nbQ1__,0.);
+		v_deRandQSO.resize(nbQ1__,0.);
+		for (unsigned int i=0; i<nbQ1__; i++) {
+			v_raRandQSO[i] = v_raQ1__[i] + sizeCell__*(1.*rand()/RAND_MAX-0.5);
+			v_deRandQSO[i] = v_deQ1__[i] + sizeCell__*(1.*rand()/RAND_MAX-0.5);
+		}
+	}
+
+	std::cout << "\n  Starting\n" << std::endl;
+
+	for (unsigned int f=0; f<nbForest_; f++) {
+
+		//// Get attributs of forest
+		const unsigned int nbPixel = v_nbPixelDelta1__[f];
+		const double firstPixel    = v_r__[f][0];
+		const double lastPixel     = v_r__[f][nbPixel-1];
+		const double x = v_ra__[f];
+		const double y = v_de__[f];
+
+		
+		double x1 = x;
+		double y1 = y;
+		//// If random position in the cell
+		if (randomPositionOfQSOInCellNotBeforeCorrelation__) {
+			x1 = v_raRandForest[f];
+		 	y1 = v_deRandForest[f];
+		}
+
+		for (unsigned int q=0; q<nbQ1__; q++) {
+
+			double x2 = v_raQ1__[q];
+			double y2 = v_deQ1__[q];
+			const double z2 = v_zzQ1__[q];
+
+			//// Not in the same line of sight
+			if (x==x2 && y==y2) continue;
+
+			//// If random position in the cell
+			if (randomPositionOfQSOInCellNotBeforeCorrelation__) {
+				x2 = v_raRandQSO[q];
+				y2 = v_deRandQSO[q];
+			}
+			
+			//// Get the r_perp distance at the poxer of two
+			const double distTransQsoLyaPow2 = (x1-x2)*(x1-x2) + (y1-y2)*(y1-y2);
+			if (distTransQsoLyaPow2 >= maxPow2) continue;
+
+			//// distance of QSO
+			const double rQSO = v_rQ1__[q];
+			
+			//// Distance between the qso and the first pixel
+			if ( firstPixel-rQSO >= max) continue;
+			
+			//// Distance between the qso and the last pixel
+			if ( lastPixel-rQSO <= -max) continue;
+
+			//// Transvers distance between the qso and the lya
+			const double distTransQsoLya = sqrt(distTransQsoLyaPow2);
+			const unsigned int rPerpBinIdx = int( distTransQsoLya );
+			const double zQSO = z2;
+			
+			//// Loops over all pixels of the forest
+			for (unsigned int i=0; i<nbPixel; i++) {
+
+				const double distP = v_r__[f][i] - rQSO;
+
+				if (fabs(distP) >= max) continue;
+
+				const double distTotPow2 = distTransQsoLyaPow2 + distP*distP;
+				const double distTot    = sqrt(distTotPow2);
+				const double distTotMetal = sqrt(distTransQsoLyaPow2 + (v_r_metal[f][i]-rQSO)*(v_r_metal[f][i]-rQSO) );
+
+				const double w   = v_w__[f][i];
+				unsigned int idxBinCAMB = nbBinCAMB;
+				if (distTotMetal<maxDistCAMB) idxBinCAMB = int(distTotMetal);
+				const double wxi0 = w*data_xi0[idxBinCAMB];
+				const double wxi2 = w*data_xi2[idxBinCAMB];
+				const double wxi4 = w*data_xi4[idxBinCAMB];
+
+				if (distTot < max) {
+					const double mu         = distP/distTot;
+					const unsigned int idx  = int(distTot);
+					const unsigned int idxM = int((mu+1.)*50.);
+	
+					dataMu[idx][idxM][0] += wxi0;
+					dataMu[idx][idxM][1] += wxi2;
+					dataMu[idx][idxM][2] += wxi4;
+					dataMu[idx][idxM][3] += w*distTot;
+					dataMu[idx][idxM][4] += w*mu;
+					dataMu[idx][idxM][5] += w*(zQSO+v_z__[f][i]);
+					dataMu[idx][idxM][6] += w;
+					dataMu[idx][idxM][7] ++;
+				}
+
+				///// Fill the histogramm of xi(r_{perp}, r_{paral}
+				const unsigned int rParralBinIdx = int(distP+max);
+				data2D[rPerpBinIdx][rParralBinIdx][0] += wxi0;
+				data2D[rPerpBinIdx][rParralBinIdx][1] += wxi2;
+				data2D[rPerpBinIdx][rParralBinIdx][2] += wxi4;
+				data2D[rPerpBinIdx][rParralBinIdx][3] += w*distTransQsoLya;
+				data2D[rPerpBinIdx][rParralBinIdx][4] += w*distP;
+				data2D[rPerpBinIdx][rParralBinIdx][5] += w*(zQSO+v_z__[f][i]);
+				data2D[rPerpBinIdx][rParralBinIdx][6] += w;
+				data2D[rPerpBinIdx][rParralBinIdx][7] ++;
+			}
+		}
+	}
+
+	std::cout << "\n  Saving\n" << std::endl;
+
+	//// Set the prefix of different forest and QSOs
+	std::string prefix1 = forest__;
+	prefix1 += "_";
+	prefix1 += QSO__;
+	prefix1 += "_";
+	prefix1 += lambdaFrMetalName;
+
+	std::ofstream fFile;
+	std::string pathToSave;
+
+
+	///// Save the 2D cross-correlation
+	pathToSave = pathToSave__;
+	pathToSave += "xi_delta_QSO_Metals_Models_2D_";
+	pathToSave += prefix1;
+	pathToSave += ".txt";
+	std::cout << "\n  " << pathToSave << std::endl;
+	fFile.open(pathToSave.c_str());
+	fFile << std::scientific;
+	fFile.precision(14);
+	
+	///// Set the values of data
+	///// [0] for value, [1] for error, [2] for bin center
+	for (unsigned int i=0; i<nbBinX; i++) {
+		for (unsigned int j=0; j<nbBinY; j++) {
+
+			fFile << data2D[i][j][0];
+			fFile << " " << data2D[i][j][1];
+			fFile << " " << data2D[i][j][2];
+			fFile << " " << data2D[i][j][3];
+			fFile << " " << data2D[i][j][4];
+			fFile << " " << data2D[i][j][5]/2.;
+			fFile << " " << data2D[i][j][6];
+			fFile << " " << data2D[i][j][7];
+			fFile << std::endl;
+		}
+	}
+	fFile.close();
+
+	///// Save the Mu cross-correlation
+	pathToSave = pathToSave__;
+	pathToSave += "xi_delta_QSO_Metals_Models_Mu_";
+	pathToSave += prefix1;
+	pathToSave += ".txt";
+	std::cout << "\n  " << pathToSave << std::endl;
+	fFile.open(pathToSave.c_str());
+	fFile << std::scientific;
+	fFile.precision(14);
+	
+	///// Set the values of data
+	for (unsigned int i=0; i<nbBin; i++) {
+		for (unsigned int j=0; j<nbBinM; j++) {
+			
+			fFile << dataMu[i][j][0];
+			fFile << " " << dataMu[i][j][1];
+			fFile << " " << dataMu[i][j][2];
+			fFile << " " << dataMu[i][j][3];
+			fFile << " " << dataMu[i][j][4];
+			fFile << " " << dataMu[i][j][5]/2.;
+			fFile << " " << dataMu[i][j][6];
+			fFile << " " << dataMu[i][j][7];
+			fFile << std::endl;
+		}
 	}
 	fFile.close();
 

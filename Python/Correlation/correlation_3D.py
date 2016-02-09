@@ -15,6 +15,7 @@ import copy
 
 ### Perso lib
 import myTools
+import const_delta
 import const
 
 
@@ -312,6 +313,159 @@ class Correlation3D:
 				self._xi2D_grid[:,:,1][cut] = tmp_save3[cut] / tmp_save5[cut]
 				self._xi2D_grid[:,:,2][cut] = tmp_save4[cut] / tmp_save5[cut]
 
+		return xiMu, xiWe, xi1D, xi2D
+	def read_metal_model(self, lineName,selection=0):
+
+		path1D = self._path_to_txt_file_folder + self._prefix + '_Metals_Models_Mu_' + self._middlefix + '_' + lineName + '.txt'
+		path2D = self._path_to_txt_file_folder + self._prefix + '_Metals_Models_2D_' + self._middlefix + '_' + lineName + '.txt'
+
+		'''
+	
+		selection:
+			- 0: do all
+			- 1: only 1D
+			- 2: only 2D
+	
+		'''
+		print path1D
+
+		xi2D = numpy.zeros(shape=(self._nbBinX2D,self._nbBinY2D,3,3))
+		xiMu = numpy.zeros(shape=(self._nbBin1D,self._nbBinM,4,3))
+		xiWe = numpy.zeros(shape=(self._nbBin1D,3,3,3))
+		xi1D = numpy.zeros(shape=(self._nbBin1D,3,3))
+		
+		int_binSize = int(self._binSize)
+	
+		if (selection==0 or selection==1):
+			### Mu
+			data = numpy.loadtxt(path1D)
+			save0 = data[:,0]
+	
+			tmp_save0 = numpy.zeros( shape=(self._nbBin1D,self._nbBinM,3) )
+			tmp_save1 = numpy.zeros( shape=(self._nbBin1D,self._nbBinM,3) )
+			tmp_save2 = numpy.zeros( shape=(self._nbBin1D,self._nbBinM) )
+			tmp_save3 = numpy.zeros( shape=(self._nbBin1D,self._nbBinM) )
+			tmp_save5 = numpy.zeros( shape=(self._nbBin1D,self._nbBinM) )
+			tmp_save6 = numpy.zeros( shape=(self._nbBin1D,self._nbBinM) )
+	
+			tmp_save00 = numpy.zeros( shape=(self._nbBin1D,3,3) )
+			tmp_save11 = numpy.zeros( shape=(self._nbBin1D,3,3) )
+			tmp_save22 = numpy.zeros( shape=(self._nbBin1D,3) )
+			tmp_save33 = numpy.zeros( shape=(self._nbBin1D,3) )
+			tmp_save55 = numpy.zeros( shape=(self._nbBin1D,3) )
+			tmp_save66 = numpy.zeros( shape=(self._nbBin1D,3) )
+	
+			tmp_save000 = numpy.zeros( shape=(self._nbBin1D,3) )
+			tmp_save111 = numpy.zeros( shape=(self._nbBin1D,3) )
+			tmp_save222 = numpy.zeros(self._nbBin1D)
+			tmp_save333 = numpy.zeros(self._nbBin1D)
+			tmp_save555 = numpy.zeros(self._nbBin1D)
+			tmp_save666 = numpy.zeros(self._nbBin1D)
+	
+			binSizeY = self._nbBinM_calcul/self._nbBinM
+		
+			for i in range(0,save0.size ):
+				iX = i/self._nbBinM_calcul
+				iY = i%self._nbBinM_calcul
+	
+				### for mu
+				idX = iX/int_binSize
+				idY = iY/binSizeY
+	
+				tmp_save0[idX,idY,0] += data[i,0]
+				tmp_save0[idX,idY,1] += data[i,1]
+				tmp_save0[idX,idY,2] += data[i,2]
+				tmp_save2[idX,idY]   += data[i,3]
+				tmp_save3[idX,idY]   += data[i,4]
+				tmp_save5[idX,idY]   += data[i,6]
+				tmp_save6[idX,idY]   += data[i,7]
+
+				### for wedges
+				if (self._correlation=='q_f' or self._correlation=='f_f2'):
+					if (iY<10 or iY>90):
+						idY = 0
+					elif ( (iY>=10 and iY<25) or (iY<=90 and iY>75) ):
+						idY = 1
+					else:
+						idY = 2
+				elif (self._correlation=='q_q' or self._correlation=='f_f'):
+					if (iY>40):
+						idY = 0
+					elif (iY>25 and iY<=40):
+						idY = 1
+					else:
+						idY = 2
+	
+				tmp_save00[idX,idY,0] += data[i,0]
+				tmp_save00[idX,idY,1] += data[i,1]
+				tmp_save00[idX,idY,2] += data[i,2]
+				tmp_save22[idX,idY]   += data[i,3]
+				tmp_save33[idX,idY]   += data[i,4]
+				tmp_save55[idX,idY]   += data[i,6]
+				tmp_save66[idX,idY]   += data[i,7]
+	
+				### for xi1D
+				tmp_save000[idX,0] += data[i,0]
+				tmp_save000[idX,1] += data[i,1]
+				tmp_save000[idX,2] += data[i,2]
+				tmp_save222[idX]   += data[i,3]
+				tmp_save333[idX]   += data[i,4]
+				tmp_save555[idX]   += data[i,6]
+				tmp_save666[idX]   += data[i,7]
+
+			
+			cut = (tmp_save6>1.)
+			for i in numpy.arange(0,3):
+				xiMu[:,:,0,i][cut] = tmp_save2[cut]/tmp_save5[cut]
+				xiMu[:,:,1,i][cut] = tmp_save3[cut]/tmp_save5[cut]
+				xiMu[:,:,2,i][cut] = tmp_save0[:,:,i][cut]/tmp_save5[cut]
+				xiMu[:,:,3,i][cut] = numpy.abs(xiMu[:,:,2,i][cut])/numpy.sqrt(tmp_save6[cut])
+
+			cut = (tmp_save66>1.)
+			for i in numpy.arange(0,3):
+				xiWe[:,:,0,i][cut] = tmp_save22[cut]/tmp_save55[cut]
+				xiWe[:,:,1,i][cut] = tmp_save00[:,:,i][cut]/tmp_save55[cut]
+				xiWe[:,:,2,i][cut] = numpy.abs(xiWe[:,:,1,i][cut])/numpy.sqrt(tmp_save66[cut])
+			
+			cut = (tmp_save666>1.)
+			for i in numpy.arange(0,3):
+				xi1D[:,0,i][cut] = tmp_save222[cut]/tmp_save555[cut]
+				xi1D[:,1,i][cut] = tmp_save000[:,i][cut]/tmp_save555[cut]
+				xi1D[:,2,i][cut] = numpy.abs(xi1D[:,1,i][cut])/numpy.sqrt(tmp_save666[cut])			
+		
+		if (selection==0 or selection==2):
+			### 2D
+			data = numpy.loadtxt(path2D)
+			save0 = data[:,0]
+	
+			tmp_save0  = numpy.zeros( shape=(self._nbBinX2D,self._nbBinY2D,3) )
+			tmp_save1  = numpy.zeros( shape=(self._nbBinX2D,self._nbBinY2D,3) )
+			tmp_save2  = numpy.zeros( shape=(self._nbBinX2D,self._nbBinY2D) )
+			tmp_save3  = numpy.zeros( shape=(self._nbBinX2D,self._nbBinY2D) )
+			tmp_save5  = numpy.zeros( shape=(self._nbBinX2D,self._nbBinY2D) )
+			tmp_save6  = numpy.zeros( shape=(self._nbBinX2D,self._nbBinY2D) )
+	
+			for i in range( 0,save0.size ):
+				iX = i/self._nbBinY2D_calcul
+				iY = i%self._nbBinY2D_calcul
+	
+				idX = iX/int_binSize
+				idY = iY/int_binSize
+	
+				tmp_save0[idX,idY,0] += data[i,0]
+				tmp_save0[idX,idY,1] += data[i,1]
+				tmp_save0[idX,idY,2] += data[i,2]
+				tmp_save2[idX,idY] += data[i,3]
+				tmp_save3[idX,idY] += data[i,4]
+				tmp_save5[idX,idY] += data[i,6]
+				tmp_save6[idX,idY] += data[i,7]
+
+			cut = (tmp_save6>1.)
+			for i in numpy.arange(0,3):
+				xi2D[:,:,0,i][cut] = numpy.sqrt( (tmp_save2[cut]/tmp_save5[cut])**2. + (tmp_save3[cut]/tmp_save5[cut])**2. )
+				xi2D[:,:,1,i][cut] = tmp_save0[:,:,i][cut] / tmp_save5[cut]
+				xi2D[:,:,2,i][cut] = numpy.abs(xi2D[:,:,1,i][cut])/numpy.sqrt(tmp_save6[cut])
+		
 		return xiMu, xiWe, xi1D, xi2D
 	def read_grid(self):
 
@@ -620,6 +774,24 @@ class Correlation3D:
 		print '  chi^{2} = ', numpy.sum( numpy.power( (yyy - (yyy_Camb*dic['b']+dic['roof']) )/yer ,2.) )
 		
 		return dic
+	def write_metal_model(self):
+
+		path_to_BAOFIT = self._path_to_txt_file_folder + 'BaoFit_q_f__'+self._f1+'__'+self._q1+'/bao2D_QSO_'
+		suffix = ['.0.dat','.2.dat','.4.dat']
+
+		for el in const_delta.LYB_lines_names:
+			xiMu, xiWe, xi1D, xi2D = self.read_metal_model(el)
+
+			for i in range(0,3):
+				correlation = numpy.zeros( shape=(self._nbBin2D,2) )
+        	        	indexMatrix = numpy.arange(self._nbBin2D)
+        	        	correlation[:,0] = (indexMatrix%self._nbBinY2D)*self._nbBinX2D + indexMatrix/self._nbBinY2D
+        	        	correlation[:,1] = xi2D[:,:,1,i].flatten()
+        	        	cutCorrelation = (correlation[:,1]!=0.)
+				if (correlation[:,0][cutCorrelation].size==0): continue
+				numpy.savetxt( path_to_BAOFIT + el + suffix[i],zip(correlation[:,0][cutCorrelation],correlation[:,1][cutCorrelation]),fmt='%u %1.20e')
+
+		return
 	def write_BAOFIT_ini_and_grid(self, param):
 
 		precision = 1000.

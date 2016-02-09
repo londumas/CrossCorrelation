@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 from iminuit import Minuit
 
 ### Perso lib
+import const_delta
 import myTools
 import correlation_3D
 import annalyse_BAOFIT
@@ -41,8 +42,8 @@ def plotOne():
 	dic_class = {
 		'minXi': 0.,
 		'maxXi': 200.,
-		'nbBin': 50,
-		'nbBinM': 25,
+		'nbBin': 200,
+		'nbBinM': 100,
 		'nb_Sub_Sampling': 80,
 		'size_bin_calcul_s': 1.,
 		'size_bin_calcul_m': 0.02,
@@ -55,13 +56,26 @@ def plotOne():
 		'name' : 'Data'
 	}
 	dic_CAMB  = correlation_3D.raw_dic_CAMB
-	dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_test_problem_smoothing_empty_pixels/Box_000/Simu_000/Results/'
-	#dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
+	#dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_test_problem_smoothing_empty_pixels/Box_000/Simu_000/Results/'
+	dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
 	dic_class['name'] = 'Data'
 	corr = correlation_3D.Correlation3D(dic_class)
 
-	#for el in numpy.arange(0,50): corr.plot_slice_2d(el)
-        for el in numpy.arange(0,100): corr.plot_slice_2d(None,el+40)
+	a = 0
+	xiMu, xiWe, xi1D, xi2D = corr.read_metal_model(const_delta.LYB_lines_names[-2])
+	
+	for i in numpy.arange(2,const_delta.LYB_lines_names.size):
+		tmpxiMu, tmpxiWe, tmpxi1D, tmpxi2D = corr.read_metal_model(const_delta.LYB_lines_names[-1-i])
+		if (tmpxi2D[:,:,1,0][ (tmpxi2D[:,:,1,0]!=0.) ].size == 0): break
+
+		a += 1
+		xi2D[:,:,1,:] += tmpxi2D[:,:,1,:]
+	myTools.plot2D( xi2D[:,:,1,0] )
+	
+	corr._xi2D[:,:,:] = xi2D[:,:,:,0]
+	corr.plot_2d(0)
+	corr.plot_2d(1)
+	corr.plot_2d(2)
 
 	#corr.save_list_realisation('subsampling', 80)
 	#corr.plot_cov_cor_matrix('subsampling','1D')

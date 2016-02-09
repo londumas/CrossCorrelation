@@ -23,4 +23,8 @@
 		* add saving the grid
 		* apply distortion matrix to CAMB instead of to data
 		* add a plot_slice_2d function to see slice of the 2D correlations
+
+# 2016 - 02 - 09
+	* Add calcul of the metal templates and its corresponding PYTHON reading function.
+
 		

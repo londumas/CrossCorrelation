@@ -15,7 +15,7 @@ def main():
 
 	
 	### For mocks
-	
+	'''
 	### mock catalogue
 	for i in range(0,1):
 		### mock catalogue
@@ -37,7 +37,7 @@ def main():
 				time.sleep(1)
                 	        myTools.isReadyForNewJobs(100, 430,'time')
 		time.sleep(120)
-	
+	'''
 	'''
 	for i in range(0,10):
 		for j in range(0,10):
@@ -57,6 +57,22 @@ def main():
 
 		time.sleep(120.)
 	'''
+
+	### for metals templates
+	for k in range(0,29):
+		tmp_command = "echo \" \n ------ Start ------ \n \" " 
+		subprocess.call(tmp_command, shell=True)
+
+		tmp_command = "clubatch \"time ; hostname ; " + commandProd + ' 14 0 ' + str(k) + " 0 0 0 \""
+		subprocess.call(tmp_command, shell=True)
+
+		tmp_command = "echo " + tmp_command
+		subprocess.call(tmp_command, shell=True)
+		tmp_command = "echo " + time.ctime()
+		subprocess.call(tmp_command, shell=True)
+
+		time.sleep(10)
+		myTools.isReadyForNewJobs(100, 430,'time')
 
 	'''
 	for i in range(0,10):

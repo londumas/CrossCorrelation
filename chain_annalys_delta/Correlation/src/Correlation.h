@@ -111,6 +111,7 @@ class Correlation
 		void xi_delta_QSO_lambda(   bool doBootstraps=false, unsigned int bootIdx=0);
 		void xi_delta_QSO_distortionMatrix(void);
 		void xi_delta_QSO_distortionMatrix_1D(void);
+		void xi_delta_QSO_Metals_Models(double lambdaFrMetal, std::string lambdaFrMetalName);
 		void xi_delta_QSO_Wick(unsigned int diagramIdx);
 		//
 		void xi_QSO_QSO(bool doBootstraps=false, unsigned int bootIdx=0);
@@ -121,6 +122,7 @@ class Correlation
 		void xi_delta_QSO_lambda_MockJMc( bool doBootstraps=false, unsigned int bootIdx=0);
 		void xi_delta_QSO_MockJMc_distortionMatrix( void );
 		void xi_delta_QSO_MockJMc_distortionMatrix_1D( void );
+		void xi_delta_QSO_Metals_Models_MockJMc(double lambdaFrMetal, std::string lambdaFrMetalName);
 		void xi_QSO_QSO_MockJMc(bool doBootstraps=false, unsigned int bootIdx=0);
 };
 
@@ -153,10 +155,10 @@ const std::string forest__      = "LYA";
 const double lambdaRFLine__     = 1215.67;
 const double lambdaRFMin__      = 1040.;
 const double lambdaRFMax__      = 1200.;
-//const unsigned int nbBinRFMax__ = 647;
+const unsigned int nbBinRFMax__ = 647;
 const double alphaStart__       = 1.3;
 /// If LYA_JMC
-const unsigned int nbBinRFMax__ = 645;
+//const unsigned int nbBinRFMax__ = 645;
 
 /*
 /// If SIIV
