@@ -23,7 +23,7 @@ from const_delta import *
 
 
 ### File Jean-Marc
-path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_correctedForest_withMoreMetals_test2Bugs/Box_000/Simu_000/Data/mocks-0_1000.fits'
+path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_test_soved_shift/Box_000/Simu_000/Data/mocks-0_1000.fits'
 key = ['loglam','flux','mock_F','mock_contpca','ivar','model','mock_miscalib','and_mask','mock_ivar']
 
 cat = pyfits.open(path, memmap=True)
@@ -41,8 +41,12 @@ difLOBS = []
 difLRF = []
 
 for i in numpy.arange(1,100):
-	z  = cat[i].header['ZQSO']
-	el = cat[i].data
+
+	try:
+		z  = cat[i].header['ZQSO']
+		el = cat[i].data
+	except Exception,error:
+		continue
 
 	el = el[ (el['LOGLAM']>0.) ]
 	#el = el[ (el['IVAR']>0.) ]

@@ -80,13 +80,13 @@ GetDelta::GetDelta(int argc, char** argv) {
 	pathToDataQSO__ += ".fits";
 	pathToDataQSO__ = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/spectra-expander.fits";
 	///
-	pathToDataForest__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_test_problem_smoothing_empty_pixels/Box_00";
+	pathToDataForest__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_test_soved_shift_withMetals_withError_with_template/Box_00";
 	pathToDataForest__ += box_idx;
 	pathToDataForest__ += "/Simu_00";
 	pathToDataForest__ += sim_idx;
 	pathToDataForest__ += "/Data/mocks-*";
 	///
-	pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_test_problem_smoothing_empty_pixels/Box_00";
+	pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_test_soved_shift_withMetals_withError_with_template/Box_00";
 	pathToSave__ += box_idx;
 	pathToSave__ += "/Simu_00";
 	pathToSave__ += sim_idx;
@@ -101,7 +101,7 @@ GetDelta::GetDelta(int argc, char** argv) {
 	isTest__  = false;
 
 	/// QSO
-	withRSD__ = false;
+	withRSD__ = true;
 	GetQSO();
 
 	std::cout << "\n"   << std::endl;

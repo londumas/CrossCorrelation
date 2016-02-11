@@ -27,7 +27,7 @@ cosmo = {'omega_M_0':omegaM0__, 'omega_lambda_0':omegaLambda0__, 'omega_k_0':0.,
 
 
 ### File Jean-Marc
-cat = pyfits.open('/home/usr201/mnt/hdumasde/spectra-780-0.fits')
+cat = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation/TESTS/spectra-780-0.fits')
 print cat[0].header
 print cat[0].data
 print cat[1].header
@@ -37,10 +37,16 @@ zTST = []
 nbPixel = []
 distPixel = []
 distPixel2 = []
-for i in range(1,47): ##47
+deltaDist = []
+for i in range(1,100): ##47
 	print i
-	el = cat[i]
-	print el.header
+
+	try:
+		el = cat[i]
+	except Exception,error:
+		continue
+
+	#print el.header
 	z = el.header['ZQSO']
 	el = el.data
 	#if (el['flux'][ el['flux']<0.05 ].size==0): continue
@@ -52,15 +58,22 @@ for i in range(1,47): ##47
 	print i, el['lambda'].size, z
 	myTools.deal_with_plot(False,False,True)
 	plt.ylim([ -0.1, 1.1])
-	'''
+	
 	distPixel  = numpy.append(distPixel, [ el['lambda'][i+1]-el['lambda'][i] for i in range(0,el['lambda'].size-1) ])
 	distPixel2 = numpy.append(distPixel2, [ (el['lambda'][i+1]+el['lambda'][i])*0.5 for i in range(0,el['lambda'].size-1) ])
 	dist = cosmology.comoving_distance(el['lambda']/1215.67-1., **cosmo)*h__
-	deltaDist = [ dist[i+1]-dist[i] for i in range(0,el['lambda'].size-1) ]
-	#print el['lambda'][0],dist[0]
-	#for i in range(0,el['lambda'].size-1):
-	#	print el['lambda'][i+1], dist[i+1], distPixel[i], deltaDist[i]
+	deltaDist = numpy.append( deltaDist, [ dist[i+1]-dist[i] for i in range(0,el['lambda'].size-1) ] )
+	
+	
 	'''
+	print el['lambda'][0],dist[0]
+	for i in range(0,el['lambda'].size-1):
+		print el['lambda'][i+1], dist[i+1], distPixel[i], deltaDist[i]
+	'''
+	
+plt.show()
+
+plt.hist(deltaDist,bins=100)
 plt.show()
 
 lambdaTST = numpy.asarray(lambdaTST)

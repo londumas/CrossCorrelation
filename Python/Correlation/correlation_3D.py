@@ -161,6 +161,11 @@ class Correlation3D:
 	
 		'''
 
+		if (init):
+			print "  ||                                  ||              ||                ||              ||"
+			print "  ||  selection                       ||  nb pairs    ||  sum weight    ||  <z>         ||"
+			print "  ||                                  ||              ||                ||              ||"
+
 		xi2D = numpy.zeros(shape=(self._nbBinX2D,self._nbBinY2D,3))
 		xiMu = numpy.zeros(shape=(self._nbBin1D,self._nbBinM,4))
 		xiWe = numpy.zeros(shape=(self._nbBin1D,3,3))
@@ -216,7 +221,7 @@ class Correlation3D:
 				tmp_save3[idX][idY] += save3[i]
 				tmp_save5[idX][idY] += save5[i]
 				tmp_save6[idX][idY] += save6[i]
-
+				
 				### for wedges
 				if (self._correlation=='q_f' or self._correlation=='f_f2'):
 					if (iY<10 or iY>90):
@@ -263,7 +268,9 @@ class Correlation3D:
 			xi1D[:,0][cut] = tmp_save222[cut]/tmp_save555[cut]
 			xi1D[:,1][cut] = tmp_save000[cut]/tmp_save555[cut]
 			xi1D[:,2][cut] = numpy.sqrt( (tmp_save111[cut]/tmp_save555[cut] - xi1D[:,1][cut]*xi1D[:,1][cut])/tmp_save666[cut] )
-			
+
+			if (init):
+				print "  ||  |s| < %u                       ||  %1.4e  ||  %1.4e    ||  %1.4e  ||" % (int(self._max1D), numpy.sum(tmp_save666), numpy.sum(tmp_save555), numpy.sum(data[:,4])/numpy.sum(data[:,5]))
 			
 	
 		if (selection==0 or selection==2):
@@ -312,6 +319,10 @@ class Correlation3D:
 				self._xi2D_grid[:,:,0][cut] = tmp_save2[cut] / tmp_save5[cut]
 				self._xi2D_grid[:,:,1][cut] = tmp_save3[cut] / tmp_save5[cut]
 				self._xi2D_grid[:,:,2][cut] = tmp_save4[cut] / tmp_save5[cut]
+
+				print "  ||  |s_perp| and |s_paral| < %u    ||  %1.4e  ||  %1.4e    ||  %1.4e  ||" % (int(self._max1D),numpy.sum(tmp_save6), numpy.sum(tmp_save5), self._meanZ)
+				print "  ||                                  ||              ||                ||              ||"
+				print
 
 		return xiMu, xiWe, xi1D, xi2D
 	def read_metal_model(self, lineName,selection=0):
@@ -431,7 +442,11 @@ class Correlation3D:
 			for i in numpy.arange(0,3):
 				xi1D[:,0,i][cut] = tmp_save222[cut]/tmp_save555[cut]
 				xi1D[:,1,i][cut] = tmp_save000[:,i][cut]/tmp_save555[cut]
-				xi1D[:,2,i][cut] = numpy.abs(xi1D[:,1,i][cut])/numpy.sqrt(tmp_save666[cut])			
+				xi1D[:,2,i][cut] = numpy.abs(xi1D[:,1,i][cut])/numpy.sqrt(tmp_save666[cut])
+
+			plt.plot(xi1D[:,0,0][cut], -xi1D[:,1,0][cut])
+			plt.grid()
+			plt.show()			
 		
 		if (selection==0 or selection==2):
 			### 2D
@@ -736,6 +751,8 @@ class Correlation3D:
 		elif (dic['mulpol_index']==2): idx = 2
 		data_camb = numpy.loadtxt(const.pathToCamb__)
 		yyy_Camb = numpy.interp(xi1D[:,0],data_camb[1:,0],data_camb[1:,idx])
+		#xiMu, xiWe, xi1D, xi2D = self.read_metal_model('LYA')
+		#yyy_Camb =  xi1D[:,1,0] #numpy.interp(xi1D[:,0],data_camb[1:,0],data_camb[1:,idx])
 
 		if (distortion):
 			path = self._path_to_txt_file_folder + self._prefix + '_distortionMatrix_1D_'+ self._middlefix + '.txt'
@@ -774,13 +791,92 @@ class Correlation3D:
 		print '  chi^{2} = ', numpy.sum( numpy.power( (yyy - (yyy_Camb*dic['b']+dic['roof']) )/yer ,2.) )
 		
 		return dic
+	def fit_CAMB_2d(self, realisation_type, correlation_matrix_path=None):
+
+		### Data
+		data = self._xi2D[:,:,1].flatten()
+		### Cov
+		path_to_cov = self._path_to_txt_file_folder + self._prefix + '_'+ self._middlefix + '_' + realisation_type + '_cov_2D.npy'
+		if (correlation_matrix_path is None): correlation_matrix_path = path_to_cov
+		print '  correlation matrix path = ', correlation_matrix_path
+		cov = numpy.load(path_to_cov)
+		cor = myTools.getCorrelationMatrix( numpy.load(correlation_matrix_path) )
+		cov = myTools.getCovarianceMatrix(cor,numpy.diag(cov))
+		icov = inverse = numpy.linalg.inv(cov)
+		### LYA
+		xiMu, xiWe, xi1D, xi2D = self.read_metal_model('LYA')
+		xi0_LYA = xi2D[:,:,1,0].flatten()
+		xi2_LYA = xi2D[:,:,1,1].flatten()
+		xi4_LYA = xi2D[:,:,1,2].flatten()
+		### Si-II (1190)
+		xiMu, xiWe, xi1D, xi2D = self.read_metal_model('SiII(1190)')
+		xi0_Si2a = xi2D[:,:,1,0].flatten()
+		xi2_Si2a = xi2D[:,:,1,1].flatten()
+		xi4_Si2a = xi2D[:,:,1,2].flatten()
+		### Si-II (1193)
+		xiMu, xiWe, xi1D, xi2D = self.read_metal_model('SiII(1193)')
+		xi0_Si2b = xi2D[:,:,1,0].flatten()
+		xi2_Si2b = xi2D[:,:,1,1].flatten()
+		xi4_Si2b = xi2D[:,:,1,2].flatten()
+		### Si-III (1207)
+		xiMu, xiWe, xi1D, xi2D = self.read_metal_model('SiIII(1207)')
+		xi0_Si3 = xi2D[:,:,1,0].flatten()
+		xi2_Si3 = xi2D[:,:,1,1].flatten()
+		xi4_Si3 = xi2D[:,:,1,2].flatten()
+
+		### Chi^{2}
+		def chi2(a0,a1,a2,a3,a4,a5):
+			model = a0*xi0_LYA + a1*xi2_LYA + a2*xi4_LYA + a3*xi0_Si3 + a4*xi0_Si2a + a5*xi0_Si2b
+			return numpy.dot( numpy.dot( (data - model).T,icov),(data - model) )
+
+		m = Minuit(chi2,a0=-1.,error_a0=0.1,a1=1.,error_a1=0.1,a2=0.,error_a2=0.1,a3=0.,error_a3=0.1,a4=0.,error_a4=0.1,a5=0.,error_a5=0.1,print_level=-1, errordef=0.1, fix_a2=True) 	
+
+		print 'Starting fit'
+		m.migrad()
+
+		a0 = m.values[ 'a0' ]
+		a1 = m.values[ 'a1' ]
+		a2 = m.values[ 'a2' ]
+		a3 = m.values[ 'a3' ]
+		a4 = m.values[ 'a4' ]
+		a5 = m.values[ 'a5' ]
+		print "  a0 = ", a0
+		print "  a1 = ", a1
+		print "  a2 = ", a2
+		print "  a3 = ", a3
+		print "  a4 = ", a4
+		print "  a5 = ", a5
+
+
+		model    = a0*xi0_LYA + a1*xi2_LYA + a2*xi4_LYA + a3*xi0_Si3 + a4*xi0_Si2a + a5*xi0_Si2b
+		print '  chi^{2}  = ', numpy.dot( numpy.dot( (data - model).T,icov),(data - model) )
+		print '  nb bin   = ', data.size
+		print '  nb param = ', 6
+
+		xxx      = self._xi2D[:,:,0]
+		var      = self._xi2D[:,:,2].flatten()
+		residual = myTools.convert1DTo2D( (data-model)/var,self._nbBinX2D,self._nbBinY2D)
+		model    = myTools.convert1DTo2D(model,self._nbBinX2D,self._nbBinY2D)
+		###
+		myTools.plot2D(residual)
+		myTools.plot2D(model)
+		###
+		myTools.plot2D(residual*xxx)
+		myTools.plot2D(model*xxx)
+		###
+		myTools.plot2D(residual*xxx*xxx)
+		myTools.plot2D(model*xxx*xxx)
+
+		return
 	def write_metal_model(self):
 
-		path_to_BAOFIT = self._path_to_txt_file_folder + 'BaoFit_q_f__'+self._f1+'__'+self._q1+'/bao2D_QSO_'
+		path_to_BAOFIT = self._path_to_txt_file_folder + 'BaoFit_q_f__'+self._f1+'__'+self._q1+'/BOSSDR12QSOLyaMetal_QSO_'
 		suffix = ['.0.dat','.2.dat','.4.dat']
+		name   = ['SiII(1260)','LYA','SiIII(1207)','SiII(1193)','SiII(1190)']
+		name_to_save = ['Si2c','Lya','Si3','Si2b','Si2a']
 
-		for el in const_delta.LYB_lines_names:
-			xiMu, xiWe, xi1D, xi2D = self.read_metal_model(el)
+		for j in numpy.arange(len(name)):
+			xiMu, xiWe, xi1D, xi2D = self.read_metal_model(name[j])
 
 			for i in range(0,3):
 				correlation = numpy.zeros( shape=(self._nbBin2D,2) )
@@ -789,7 +885,16 @@ class Correlation3D:
         	        	correlation[:,1] = xi2D[:,:,1,i].flatten()
         	        	cutCorrelation = (correlation[:,1]!=0.)
 				if (correlation[:,0][cutCorrelation].size==0): continue
-				numpy.savetxt( path_to_BAOFIT + el + suffix[i],zip(correlation[:,0][cutCorrelation],correlation[:,1][cutCorrelation]),fmt='%u %1.20e')
+
+				### Get the array and sort it
+				correlation2 = numpy.zeros( shape=(self._nbBin2D,2) )
+				for k in numpy.arange(self._nbBin2D):
+					idx = correlation[k,0].astype(int)
+					correlation2[idx,0] = idx
+					correlation2[idx,1] = correlation[k,1]
+
+				cut =  (correlation2[:,1]!=0.)
+				numpy.savetxt( path_to_BAOFIT + name_to_save[j] + suffix[i],zip(correlation2[:,0][cut],correlation2[:,1][cut]),fmt='%u %1.20e')
 
 		return
 	def write_BAOFIT_ini_and_grid(self, param):
@@ -897,6 +1002,7 @@ axis3-bins = {""" + stringRedshift + """}
 # Cuts to apply before fitting
 rmin = 30
 rmax = 180
+#rperp-min = 5
 
 # Generate a second set of outputs with the additive distortion turned off
 alt-config = fix[dist*]=0
@@ -924,7 +1030,7 @@ output-prefix = """ + path_to_BAOFIT + """.
 		"""
 
 		### Constants
-		param = numpy.asarray( [1.6,-0.336,0.9,0.,0.,3.25,0.962524,3.26,1.966,1.,1.,1.,1.,0.,0.,0.,0.,0.,0.] )
+		param = numpy.asarray( [1.6,-0.351,0.9,0.,0.,3.25,0.962524,1.966,3.26,1.,1.,1.,1.,0.,0.,0.,0.,0.,0.] )
 
 		path_to_BAOFIT = self._path_to_txt_file_folder + 'BaoFit_q_f__'+self._f1+'__'+self._q1 + '/'
 		subprocess.call('mkdir ' + path_to_BAOFIT, shell=True)
@@ -1009,7 +1115,7 @@ output-prefix = """ + path_to_BAOFIT + """.
 		yyy = yyy[ cut ]
 		yer = yer[ cut ]
 		coef = numpy.power(xxx,x_power)
-		plt.errorbar(xxx, coef*yyy, yerr=coef*yer, fmt='o', label=r'$'+self._name+'$')
+		plt.errorbar(xxx, coef*yyy, yerr=coef*yer, fmt='o', label=r'$'+self._name+'$', markersize=10,linewidth=2)
 
 		for el in other:
 			TMP_xxx = el._xi1D[:,0]
@@ -1023,7 +1129,7 @@ output-prefix = """ + path_to_BAOFIT + """.
 			TMP_yyy = TMP_yyy[ TMP_cut ]
 			TMP_yer = TMP_yer[ TMP_cut ]
 			TMP_coef = numpy.power(TMP_xxx,x_power)
-			plt.errorbar(TMP_xxx, TMP_coef*TMP_yyy, yerr=TMP_coef*TMP_yer, label=r'$'+el._name+'$') #, fmt='o'
+			plt.errorbar(TMP_xxx, TMP_coef*TMP_yyy, yerr=TMP_coef*TMP_yer, label=r'$'+el._name+'$', markersize=10,linewidth=2, fmt='o')
 
 		if (title): plt.title(r'$'+self._title+'$', fontsize=40)
 		if (x_power==0):
@@ -1035,6 +1141,80 @@ output-prefix = """ + path_to_BAOFIT + """.
 		plt.xlabel(r'$|s| \, [h^{-1}.Mpc]$', fontsize=40)
 		plt.xlim([ numpy.amin(xxx)-10., numpy.amax(xxx)+10. ])
 		myTools.deal_with_plot(False,False,True)
+		plt.show()
+		
+		return
+	def plot_1d_with_residuals(self, x_power=0, other=[], title=True):
+
+		fig1 = plt.figure(1)
+		frame1=fig1.add_axes((.1,.3,.8,.6))
+
+		xxx = self._xi1D[:,0]
+		yyy = self._xi1D[:,1]
+		yer = self._xi1D[:,2]
+		
+		cut = (yer>0.)
+		if (xxx[cut].size==0):
+			return
+
+		xxx = xxx[ cut ]
+		yyy = yyy[ cut ]
+		yer = yer[ cut ]
+		coef = numpy.power(xxx,x_power)
+		frame1.errorbar(xxx, coef*yyy, yerr=coef*yer, fmt='o', label=r'$'+self._name+'$', markersize=10,linewidth=2)
+
+		for el in other:
+			TMP_xxx = el._xi1D[:,0]
+			TMP_yyy = el._xi1D[:,1]
+			TMP_yer = el._xi1D[:,2]
+		
+			TMP_cut = (TMP_yer>0.)
+			if (TMP_xxx[cut].size==0):
+				return
+			TMP_xxx = TMP_xxx[ TMP_cut ]
+			TMP_yyy = TMP_yyy[ TMP_cut ]
+			TMP_yer = TMP_yer[ TMP_cut ]
+			TMP_coef = numpy.power(TMP_xxx,x_power)
+			frame1.errorbar(TMP_xxx, TMP_coef*TMP_yyy, yerr=TMP_coef*TMP_yer, label=r'$'+el._name+'$', markersize=10,linewidth=2, fmt='o')
+
+		if (title): plt.title(r'$'+self._title+'$', fontsize=40)
+		if (x_power==0):
+			plt.ylabel(r'$'+self._label+' (|s|)$', fontsize=40)
+		if (x_power==1):
+			plt.ylabel(r'$|s|.'+self._label+' (|s|) \, [h^{-1}.Mpc]$', fontsize=40)
+		if (x_power==2):
+			plt.ylabel(r'$|s|^{2}.'+self._label+' (|s|) \, [(h^{-1}.Mpc)^{2}]$', fontsize=40)
+		plt.xlabel(r'$|s| \, [h^{-1}.Mpc]$', fontsize=40)
+		plt.xlim([ numpy.amin(xxx)-10., numpy.amax(xxx)+10. ])
+		plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+		myTools.deal_with_plot(False,False,True)
+		plt.legend(fontsize=40, numpoints=1,loc=4)
+		plt.tick_params(axis='both', which='major', labelsize=20)
+
+		###
+		frame2=fig1.add_axes((.1,.1,.8,.2))
+		frame2.errorbar([ numpy.amin(xxx)-10., numpy.amax(xxx)+10. ], [0.,0.],color='red')
+
+		for el in other:
+			TMP_xxx = el._xi1D[:,0]
+			TMP_yyy = el._xi1D[:,1]
+			TMP_yer = el._xi1D[:,2]
+		
+			TMP_cut = (TMP_yer>0.)
+			if (TMP_xxx[cut].size==0):
+				return
+			TMP_xxx = TMP_xxx[ TMP_cut ]
+			TMP_yyy = TMP_yyy[ TMP_cut ]
+			TMP_yer = TMP_yer[ TMP_cut ]
+			TMP_coef = numpy.power(TMP_xxx,x_power)
+
+			frame2.errorbar(TMP_xxx, TMP_coef*(TMP_yyy-yyy)*numpy.sqrt(2.)/numpy.sqrt( TMP_yer*TMP_yer + yer*yer), markersize=10,linewidth=2, fmt='o',label=r'$('+el._name+'-'+self._name+')/\sigma$')
+
+		plt.xlim([ numpy.amin(xxx)-10., numpy.amax(xxx)+10. ])
+		myTools.deal_with_plot(False,False,True)
+		plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+		plt.legend(fontsize=30, numpoints=1,loc=1)
+		plt.tick_params(axis='both', which='major', labelsize=20)
 		plt.show()
 		
 		return
@@ -1053,7 +1233,7 @@ output-prefix = """ + path_to_BAOFIT + """.
 			yyy = self._xiWe[:,i,1][cut]
 			yer = self._xiWe[:,i,2][cut]
 			coef = numpy.power(xxx,x_power)
-			plt.errorbar(xxx, coef*yyy, yerr=coef*yer, fmt='o', label=r'$Data \, '+label[i]+'$')
+			plt.errorbar(xxx, coef*yyy, yerr=coef*yer, fmt='o', label=r'$Data \, '+label[i]+'$', markersize=10,linewidth=2)
 
 			for el in other:
 				cut = (el._xiWe[:,i,2]>0.)
@@ -1063,7 +1243,7 @@ output-prefix = """ + path_to_BAOFIT + """.
 				yyy = el._xiWe[:,i,1][cut]
 				yer = el._xiWe[:,i,2][cut]
 				coef = numpy.power(xxx,x_power)
-				plt.errorbar(xxx, coef*yyy, yerr=coef*yer, label=r'$Simu \,'+label[i]+'$',color='red')
+				plt.errorbar(xxx, coef*yyy, yerr=coef*yer, label=r'$Simu \,'+label[i]+'$',color='red', markersize=10,linewidth=2)
 		
 			if (x_power==0):
 				plt.ylabel(r'$'+self._label+' (|s|)$', fontsize=40)
@@ -1114,6 +1294,9 @@ output-prefix = """ + path_to_BAOFIT + """.
 			cbar.set_label(r'$|s|.'+self._label+'(\, \overrightarrow{s} \,) \, [h^{-1}.Mpc]$',size=40)
 		if (x_power==2):
 			cbar.set_label(r'$|s|^{2}.'+self._label+'(\, \overrightarrow{s} \,) \, [(h^{-1}.Mpc)^{2}]$',size=40)
+
+		#cbar.set_label(r'$(\xi_{no\,metals}-\xi_{with\,metals})/\sigma$',size=40)
+		cbar.set_label(r'$\xi_{no\,metals}-\xi_{with\,metals}$',size=40)
 	
 		#plt.plot( [0.,200.],[0.,4*200.],color='white',linewidth=2 )
 		#plt.plot( [0.,200.],[0.,-4*200.],color='white',linewidth=2 )
@@ -1149,7 +1332,7 @@ output-prefix = """ + path_to_BAOFIT + """.
 		yer = yer[cut]
 		if (xxx.size==0): return
 
-		plt.errorbar(xxx, yyy, yerr=yer, fmt='o')
+		plt.errorbar(xxx, yyy, yerr=yer, fmt='o', markersize=10,linewidth=2)
 		if (sliceX is not None):
 			plt.xlabel(r'$s_{\parallel} \, [h^{-1} Mpc]$', fontsize=40)
 		else:
@@ -1234,6 +1417,8 @@ output-prefix = """ + path_to_BAOFIT + """.
 			path = self._path_to_txt_file_folder + self._prefix + '_distortionMatrix_1D_'+ self._middlefix + '.txt'
 			matrix = numpy.loadtxt(path)
 			result_1D_camb[:,1] = numpy.dot(matrix,result_1D_camb[:,1])
+			### if get the biais manually
+			result_1D_camb[:,1] *= yyy[4]/result_1D_camb[4,1]
 		else:
 			cut = (data_camb[1:,0] <= numpy.amax(xxx)*1.1)
 			size = cut[cut].size
@@ -1241,18 +1426,15 @@ output-prefix = """ + path_to_BAOFIT + """.
 			result_1D_camb[:,0] = data_camb[1:,0][cut]
 			result_1D_camb[:,1] = dic['b']*data_camb[1:,idx][cut]+dic['roof']
 			result_1D_camb[:,2] = 0.0000000001
+			### if get the biais manually
+			result_1D_camb[:,1] = data_camb[1:,idx][cut]*yyy[4]/numpy.interp(xxx[4],data_camb[1:,0],data_camb[1:,idx])
 	
 		### Show result
 		coef = numpy.power(xxx,x_power)
-		plt.errorbar(xxx,coef*yyy,yerr=coef*yer,fmt='o')
-
-		result_1D_camb[:,1] *= yyy[7]/result_1D_camb[7,1]
+		plt.errorbar(xxx,coef*yyy,yerr=coef*yer,fmt='o', markersize=10,linewidth=2)
 	
 		coef2 = numpy.power(result_1D_camb[:,0],x_power)
-		plt.plot(result_1D_camb[:,0],coef2*result_1D_camb[:,1],color='red')
-
-		print yyy[4]
-		print result_1D_camb[4,1]
+		plt.plot(result_1D_camb[:,0],coef2*result_1D_camb[:,1],color='red', markersize=10,linewidth=2)
 	
 		if (x_power==0):
 			plt.ylabel(r'$'+self._label+' (|s|)$', fontsize=40)
@@ -1286,7 +1468,7 @@ output-prefix = """ + path_to_BAOFIT + """.
 			yyy = self._xiMul[:,i,1][cut]
 			yer = self._xiMul[:,i,2][cut]
 			coef    = numpy.power(xxx,x_power)
-			plt.errorbar(xxx, coef*yyy, yerr=coef*yer, fmt='o', label=r'$\xi_{'+str(i)+'}$',color=color[i])
+			plt.errorbar(xxx, coef*yyy, yerr=coef*yer, fmt='o', label=r'$\xi_{'+str(i)+'}$',color=color[i], markersize=10,linewidth=2)
 
 			for el in other:
 				cut = (el._xiMul[:,i,2]>0.)
@@ -1296,7 +1478,7 @@ output-prefix = """ + path_to_BAOFIT + """.
 				yyy = el._xiMul[:,i,1][cut]
 				yer = el._xiMul[:,i,2][cut]
 				coef    = numpy.power(xxx,x_power)
-				plt.errorbar(xxx, coef*yyy, yerr=coef*yer, label=r'$\xi_{'+str(i)+'}$',color='red')
+				plt.errorbar(xxx, coef*yyy, yerr=coef*yer, label=r'$\xi_{'+str(i)+'}$',color='red', markersize=10,linewidth=2)
 	
 		plt.title(r'$'+self._title+'$', fontsize=40)
 		if (x_power==0):

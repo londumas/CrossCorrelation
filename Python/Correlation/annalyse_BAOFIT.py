@@ -267,7 +267,7 @@ class AnnalyseBAOFIT(correlation_3D.Correlation3D):
 		yyy = yyy[ cut ]
 		yer = yer[ cut ]
 		coef = numpy.power(xxx,x_power)
-		plt.errorbar(xxx, coef*yyy, yerr=coef*yer, fmt='o', label=r'$'+self._name+'$')
+		plt.errorbar(xxx, coef*yyy, yerr=coef*yer, fmt='o', label=r'$'+self._name+'$', markersize=10,linewidth=2)
 
 
 		### Fit
@@ -287,7 +287,7 @@ class AnnalyseBAOFIT(correlation_3D.Correlation3D):
 		xi1D_fit[:,2][cut]  = 1./numpy.sqrt(xi1D_fit[:,2][cut])
 
 		coef = numpy.power(xi1D_fit[:,0][cut],x_power)
-		plt.errorbar(xi1D_fit[:,0][cut], coef*xi1D_fit[:,1][cut], label=r'$Fit$', color='red')
+		plt.errorbar(xi1D_fit[:,0][cut], coef*xi1D_fit[:,1][cut], label=r'$Fit$', color='red',linewidth=2)
 
 		if (x_power==0):
 			plt.ylabel(r'$'+self._label+' (|s|)$', fontsize=40)
@@ -345,24 +345,24 @@ class AnnalyseBAOFIT(correlation_3D.Correlation3D):
 			yyy = self._xiWe[:,i,1][cut]
 			yer = self._xiWe[:,i,2][cut]
 			coef = numpy.power(xxx,x_power)
-			plt.errorbar(xxx, coef*yyy, yerr=coef*yer, fmt='o', label=r'$'+label[i]+'$', color=color[i])
+			plt.errorbar(xxx, coef*yyy, yerr=coef*yer, fmt='o', label=r'$'+label[i]+'$', color=color[i], markersize=10,linewidth=2)
 
 			cut = (xi1D_fit[:,i,2]>0.)
 			xxxF = xi1D_fit[:,i,0][cut]
 			yyyF = xi1D_fit[:,i,1][cut]
 			yerF = xi1D_fit[:,i,2][cut]
 			coefF = numpy.power(xxxF,x_power)
-			plt.errorbar(xxxF, coefF*yyyF, color='red')
+			plt.errorbar(xxxF, coefF*yyyF, color='red',linewidth=2)
 		
 			if (x_power==0):
 				plt.ylabel(r'$'+self._label+' (|s|)$', fontsize=40)
-				plt.legend(fontsize=30, frameon=False, numpoints=1,ncol=2, loc=4)
+				plt.legend(fontsize=40, numpoints=1,ncol=2, loc=4)
 			if (x_power==1):
 				plt.ylabel(r'$|s|.'+self._label+' (|s|) \, [h^{-1}.Mpc]$', fontsize=40)
-				plt.legend(fontsize=30, frameon=False, numpoints=1,ncol=2, loc=4)
+				plt.legend(fontsize=40, numpoints=1,ncol=2, loc=4)
 			if (x_power==2):
 				plt.ylabel(r'$|s|^{2}.'+self._label+' (|s|) \, [(h^{-1}.Mpc)^{2}]$', fontsize=40)
-				plt.legend(fontsize=30, frameon=False, numpoints=1,ncol=2, loc=2)
+				plt.legend(fontsize=40, numpoints=1,ncol=2, loc=2)
 		
 		plt.title(r'$'+self._title+'$', fontsize=40)
 		plt.xlabel(r'$|s| \, [h^{-1}.Mpc]$', fontsize=40)
@@ -456,7 +456,7 @@ class AnnalyseBAOFIT(correlation_3D.Correlation3D):
 		mng = plt.get_current_fig_manager()
 		textstr = '$nb=%u$\n$\mu=%.5e$\n$\sigma=%.5e$'%(yyy.size, numpy.mean(yyy), numpy.std(yyy))
 		props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
-		ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=30, verticalalignment='top', bbox=props)
+		ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=40, verticalalignment='top', bbox=props)
 		
 		plt.show()
 	def plot_chi2_scan(self, sizeX=100, sizeY=100, edge=None, toyMC=False, bootstrap=False):

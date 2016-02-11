@@ -15,7 +15,7 @@ def main():
 
 	
 	### For mocks
-	'''
+	
 	### mock catalogue
 	for i in range(0,1):
 		### mock catalogue
@@ -34,10 +34,10 @@ def main():
 				tmp_command = "echo " + time.ctime()
 				subprocess.call(tmp_command, shell=True)
 
-				time.sleep(1)
+				time.sleep(2)
                 	        myTools.isReadyForNewJobs(100, 430,'time')
 		time.sleep(120)
-	'''
+	
 	'''
 	for i in range(0,10):
 		for j in range(0,10):
@@ -57,7 +57,8 @@ def main():
 
 		time.sleep(120.)
 	'''
-
+	
+	'''
 	### for metals templates
 	for k in range(0,29):
 		tmp_command = "echo \" \n ------ Start ------ \n \" " 
@@ -73,7 +74,7 @@ def main():
 
 		time.sleep(10)
 		myTools.isReadyForNewJobs(100, 430,'time')
-
+	'''
 	'''
 	for i in range(0,10):
 		for j in range(0,10):

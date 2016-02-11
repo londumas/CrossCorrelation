@@ -94,17 +94,17 @@ const unsigned int nbBinlambdaObs__  = int(lambdaObsMax__-lambdaObsMin__);
 double distMinPixel__ = 0.;
 double distMinPixelDelta2__ = 0.;
 unsigned int idxCommand_[6] = {0};
-const std::string pathToMockJMC__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_test_problem_smoothing_empty_pixels/";
+const std::string pathToMockJMC__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_test_soved_shift_withMetals_withError_with_template/";
 std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/";
 //std::string pathToSave__ = "";
 
 ///// Flags for Jean-Marc's simulations
 const bool mocks              = false;
-const bool mockJMC__          = false;
+const bool mockJMC__          = true;
 const bool mockBox__          = false;
 const bool mocksNoNoiseNoCont = false;
 const double randomPositionOfQSOInCell__ = false;
-const double randomPositionOfQSOInCellNotBeforeCorrelation__ = false;
+const double randomPositionOfQSOInCellNotBeforeCorrelation__ = true;
 //// Flags for covariance matrix estimation
 const bool shuffleQSO     = false;
 const bool shuffleForest  = false;
@@ -113,8 +113,8 @@ const bool randomForest   = false;
 const bool doBootstraps__ = false;
 
 
-const bool doVetoLines__ = false;
-const bool nicolasEstimator__ = false;
+const bool doVetoLines__ = true;
+const bool nicolasEstimator__ = true;
 const bool doingCoAddSoRemoving__ = false;
 
 
@@ -189,7 +189,7 @@ Correlation::Correlation(int argc, char **argv) {
 		if (!mocksNoNoiseNoCont) pathForest__ += "/Data/delta.fits";
 		else pathForest__ += "/Data/delta.fits";
 		
-		pathQ1__ += "/Data/QSO_noRSD.fits";
+		pathQ1__ += "/Data/QSO_withRSD.fits";
 		
 		if (nicolasEstimator__) pathToSave__ += "/Results_NicolasDistortion/";
 		else pathToSave__ += "/Results/";
@@ -234,11 +234,10 @@ Correlation::Correlation(int argc, char **argv) {
 	//
 	else if (command == 18) xi_A_delta_delta_MockJMc();
 	else if (command == 19) xi_delta_QSO_MockJMc(doBootstraps__,idxCommand_[2]);
-	//else if (command == 20) xi_delta_QSO_lambda_MockJMc(doBootstraps__,idxCommand_[2]);
-	else if (command == 21) xi_delta_QSO_MockJMc_distortionMatrix();
-	else if (command == 22) xi_delta_QSO_MockJMc_distortionMatrix_1D();
-	else if (command == 23) xi_delta_QSO_Metals_Models_MockJMc(absorber__[idxCommand_[2]],absorberName__[idxCommand_[2]]);
-	else if (command == 24) xi_QSO_QSO_MockJMc(doBootstraps__,idxCommand_[2]);
+	else if (command == 20) xi_delta_QSO_MockJMc_distortionMatrix();
+	else if (command == 21) xi_delta_QSO_MockJMc_distortionMatrix_1D();
+	else if (command == 22) xi_delta_QSO_Metals_Models_MockJMc(absorber__[idxCommand_[2]],absorberName__[idxCommand_[2]]);
+	else if (command == 23) xi_QSO_QSO_MockJMc(doBootstraps__,idxCommand_[2]);
 
 	std::cout << "\n\n\n\n" << std::endl;
 }
@@ -520,7 +519,7 @@ void Correlation::xi_1DlRFDevide_delta_delta(void) {
 	///// Constants:
 	//const double min           = lambdaRFMin__/lambdaRFMax__;
 	const double max           = lambdaRFMax__/lambdaRFMin__;
-	const unsigned int nbBins  = 10000;
+	const unsigned int nbBins  = 500;
 	const double binSize = (max-1.)/nbBins;
 	const double inv_binSize = 1./binSize;
 

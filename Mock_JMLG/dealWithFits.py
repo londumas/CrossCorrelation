@@ -227,13 +227,17 @@ def saveCatalogueQSO():
 def haveAlookQSO():	
 
 #	cat = pyfits.open(path__+'QSO.fits', memmap=True)[1].data
-	cat   = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation/Box_000/Simu_000/Data/QSO_withRSD.fits', memmap=True)[1].data
+	cat   = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_test_soved_shift_withMetals/Box_000/Simu_000/Data/QSO_withRSD.fits', memmap=True)[1].data
 	#cat2  = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1536/Box_000/Simu_000/Data/QSO_noRSD.fits', memmap=True)[1].data
 
 	print cat.size
 	
 	print numpy.amin(cat['X']), numpy.amax(cat['X'])
 	print numpy.amin(cat['Y']), numpy.amax(cat['Y'])
+	print
+	print (numpy.amax(cat['X'])-numpy.amin(cat['X']))/(4.5*0.71)
+	print (numpy.amax(cat['Y'])-numpy.amin(cat['Y']))/(4.5*0.71)
+	print
 	print numpy.amin(cat['Z']), numpy.amax(cat['Z'])
 	print 1280*1280
 	print cat.size
@@ -292,9 +296,9 @@ print cat.size
 #allNeededFileds()
 #saveCatalogueQSO()
 #saveCatalogueQSOFromAscii()
-#haveAlookQSO()
+haveAlookQSO()
 #removeUselessLines()
-haveAlookForest()
+#haveAlookForest()
 
 '''
 col_xx              = pyfits.Column(name='X',  format='D', array=numpy.zeros(291271), unit='Mpc/h')

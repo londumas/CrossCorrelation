@@ -34,7 +34,7 @@ nbQSO__ = 238929
 nbFor__ = 170000
 nbPixel = 645
 ratioForestToQSO__    = 1.*nbFor__/nbQSO__;
-pathToFolder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_test_problem_smoothing_empty_pixels/'
+pathToFolder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_test_soved_shift_withMetals_withError_with_template/'
 
 
 
@@ -87,8 +87,8 @@ def main():
 
 				if (i==0 and j==0):
 					tbhduQSO    = create_fits_qso(sizeMax)
+					tbhduQSO.writeto(path + 'Data/QSO_withRSD.fits', clobber=True)
 					tbhduForest = create_fits_forest(sizeMaxForest)
-					tbhduQSO.writeto(path + 'Data/QSO_noRSD.fits', clobber=True)
 					tbhduForest.writeto(path + 'Data/delta.fits', clobber=True)
 				else:
 					command = 'clubatch cp ' + pathToFolder + 'Box_000/Simu_000/Data/delta.fits ' + path + 'Data/delta.fits'
@@ -110,12 +110,12 @@ def main():
 
 			elif (index_pass==2):
 			
-				cat = pyfits.open(path + 'Data/QSO_noRSD.fits', memmap=True)[1].data
+				cat = pyfits.open(path + 'Data/QSO_withRSD.fits', memmap=True)[1].data
 				print cat.size
 				cat = cat[ (cat['Z'] != 0.) ]
 				print cat.size
 				nbQSO = cat.size
-				pyfits.writeto(path + 'Data/QSO_noRSD.fits', cat, clobber=True)
+				pyfits.writeto(path + 'Data/QSO_withRSD.fits', cat, clobber=True)
 				print nbQSO
 			
 			
@@ -191,7 +191,7 @@ def sendCalculDelta():
 
 			if (index_pass==1):
 				### Do the fits
-				nbSpectra = 200000
+				nbSpectra = 250000
 				step  = 2000
 				first = 0
 				last  = step

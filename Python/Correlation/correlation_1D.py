@@ -160,6 +160,12 @@ class Correlation_1D:
 			self._nbBin = nbBin
 			self._meanZ = numpy.sum(data[:,3][cut])/numpy.sum(data[:,4][cut])
 
+			print "  ||              ||                ||              ||"
+			print "  || nb pairs     ||  sum weight    ||  <z>         ||"
+			print "  ||              ||                ||              ||"
+			print "  ||  %1.4e  ||  %1.4e    ||  %1.4e  ||" % (numpy.sum(data[:,5][cut]), numpy.sum(data[:,4][cut]), self._meanZ)
+			print "  ||              ||                ||              ||"
+
 		return xi
 
 	def plot(self, with_lines=False, verbose=False, other=[]):
@@ -245,7 +251,15 @@ class Correlation_1D:
 
 
 
-
+"""
+correlationType:
+	- 'f_f_r'
+	- 'f_f_lRF'
+	- 'f_f_lRF_devide' (default)
+	- 'f_f2_r'
+	- 'f_f2_lRF'
+	- 'f_f2_lRF_devide'
+"""
 dic_class = {
 	'correlation': 'f_f_lRF_devide',
 	'path_to_txt_file_folder': 'NONE',
@@ -259,31 +273,25 @@ dic_class = {
 
 
 ### Data
-#path_to_txt_file_folder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
-path_to_txt_file_folder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_test_problem_smoothing_empty_pixels/Box_000/Simu_000/Results/'
-dic_class['path_to_txt_file_folder'] = path_to_txt_file_folder
+dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
 dic_class['name'] = "LYA"
 dic_class['correlation'] = "f_f_lRF_devide"
 corrD = Correlation_1D(dic_class)
-print corrD._meanZ
-
-'''
-### Data
-listCorr = ['f_f_lRF_devide']
-path_to_txt_file_folder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_reOBS_Guy/'
-dic_class['path_to_txt_file_folder'] = path_to_txt_file_folder
-dic_class['name'] = "+reObs"
-corrD2 = Correlation_1D(dic_class)
-print corrD2._meanZ
-'''
-### Data
-
 corrD.plot(False,False)
+path_to_txt_file_folder = ''
+dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_test_soved_shift_withMetals_withError_with_template/Box_000/Simu_000/Results/'
+dic_class['name'] = "simu"
+dic_class['correlation'] = "f_f_lRF_devide"
+corrDD = Correlation_1D(dic_class)
+corrDD.plot(False,False)
+dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_test_soved_shift_withMetals_withError_with_template/Box_000/Simu_000/Results_NicolasDistortion/'
+dic_class['name'] = "simu \, nicolas"
+dic_class['correlation'] = "f_f_lRF_devide"
+corrDDD = Correlation_1D(dic_class)
+corrDDD.plot(False,False)
 
 
-
-
-
+corrD.plot(False,False,[corrDD,corrDDD])
 
 
 

@@ -114,8 +114,8 @@ def deal_with_plot(logx=False, logy=False, legend=False):
 	#plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
 	#plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
 	#plt.ticklabel_format(style='sci', axis='z', scilimits=(0,0))
-	plt.rc('font', **{'size':'30'})
-	plt.tick_params(axis='both', which='major', labelsize=30)
+	plt.rc('font', **{'size':'40'})
+	plt.tick_params(axis='both', which='major', labelsize=40)
 	
 	if (logx):
 		plt.xscale('log')
@@ -123,8 +123,13 @@ def deal_with_plot(logx=False, logy=False, legend=False):
 		plt.yscale('log')
 	#plt.tight_layout()
 	plt.grid(True, which='both')
+	plt.linewidth = 40
+
+	ax = plt.gca()
+	[i.set_linewidth(3) for i in ax.spines.itervalues()]
+
 	if (legend):
-		plt.legend(fontsize=30, frameon=False, numpoints=1,ncol=2)
+		plt.legend(fontsize=40, numpoints=1,ncol=2)
 	return
 def isReadyForNewJobs(max_nbJobsMe, max_nbJobsAll,word='echo'):
 	'''

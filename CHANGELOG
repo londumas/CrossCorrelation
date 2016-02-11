@@ -27,4 +27,11 @@
 # 2016 - 02 - 09
 	* Add calcul of the metal templates and its corresponding PYTHON reading function.
 
-		
+# 2016 - 02 - 11
+	- correlation_1D.py
+		* Add printing relevant information on init
+	- correlation_3D.py
+		* Add printing relevant information on init
+		* add a "fit_CAMB_2d" method, not perfect yet
+		* sort output for metals
+		* add a "plot_1d_with_residuals" method
