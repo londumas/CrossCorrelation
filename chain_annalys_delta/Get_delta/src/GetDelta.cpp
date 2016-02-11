@@ -50,7 +50,10 @@ const double onePlusZ0__ = 1.+z0__;
 const double halfGama__  = gama__/2.;
 const unsigned int nbBinPowErrorDelta__ = 20*int(log10(maxPowErrorDelta__) - log10(minPowErrorDelta__));
 const double dF_ = 1./nbBinsFlux__;
-
+//// Number of bins to interpolate the template
+const unsigned int nbBinInterpolTemplate__ = 10*nbPixelTemplate__;
+//// Number of bins to interpolate the mean transmission flux
+const unsigned int nbBinInterpolhDeltaVsLambdaObs__ = 10*nbBinlambdaObs__;
 
 //// Global variables
 extern void Chi2_method1(int &npar, double *gin, double &f, double *par, int iflag);
@@ -77,7 +80,7 @@ const bool doVetoLines__          = true;
 const bool setDLA__               = false;
 const bool cutNotFittedSpectra__  = true;
 const bool mocksColab__           = false;
-const bool mockJMC__              = true;
+const bool mockJMC__              = false;
 const bool putReobsTogether__     = false;
 double isReobsFlag__ = -100.;
 
@@ -818,6 +821,19 @@ void GetDelta::getHisto(unsigned int loopIdx) {
 }
 void GetDelta::updateDeltaVector(unsigned int loopIdx) {
 
+	//// Template: Array with interpolated bins nbPixelTemplate__,lambdaRFMin__-3.,lambdaRFMax__+3.
+	//double templateInterpolated[nbBinInterpolTemplate__];
+	//const double binSizeTemplate = (6.+lambdaRFMax__-lambdaRFMin__)/nbBinInterpolTemplate__;
+	//for (unsigned int i=0; i<nbBinInterpolTemplate__; i++) {
+	//	templateInterpolated[i] = hTemplate__[loopIdx]->Interpolate( lambdaRFMin__-3. +i*binSizeTemplate );
+	//}
+	//// hDeltaVsLambdaObs: Array with interpolated bins
+	//double hDeltaVsLambdaObsInterpolated[nbBinInterpolhDeltaVsLambdaObs__];
+	//const double binSizeFObs = (lambdaObsMax__-lambdaObsMin__)/nbBinInterpolhDeltaVsLambdaObs__;
+	//for (unsigned int i=0; i<nbBinInterpolhDeltaVsLambdaObs__; i++) {
+	//	hDeltaVsLambdaObsInterpolated[i] = hDeltaVsLambdaObs__[loopIdx]->Interpolate( lambdaObsMin__ +i*binSizeFObs );
+	//}
+
 	const unsigned int nbForest = v_zz__.size();
 
 	if (loopIdx==0 && ( stepDefinition == 0  || (mockJMC__ && stepDefinition<2)) ) {
@@ -836,8 +852,10 @@ void GetDelta::updateDeltaVector(unsigned int loopIdx) {
 				v_DELTA_WEIGHT__[i][j]  = std::max(0.,v_FACTORWEIGHT__[i][j]/(sigma2LSSStart+1./(etaStart*v_DELTA_IVAR__[i][j])));
 				if (v_DELTA_WEIGHT__[i][j]==0.) continue;
 
-				tmpMeanForestLambdaRF[0] += v_DELTA_WEIGHT__[i][j]*v_LAMBDA_RF__[i][j];
-				tmpMeanForestLambdaRF[1] += v_DELTA_WEIGHT__[i][j];
+				if (v_LAMBDA_RF__[i][j]>=lambdaRFMin__ && v_LAMBDA_RF__[i][j]<lambdaRFMax__) {
+					tmpMeanForestLambdaRF[0] += v_DELTA_WEIGHT__[i][j]*v_LAMBDA_RF__[i][j];
+					tmpMeanForestLambdaRF[1] += v_DELTA_WEIGHT__[i][j];
+				}
 			}
 
 			if (tmpMeanForestLambdaRF[1]!=0.) v_meanForestLambdaRF__[i] = tmpMeanForestLambdaRF[0]/tmpMeanForestLambdaRF[1];
@@ -862,8 +880,10 @@ void GetDelta::updateDeltaVector(unsigned int loopIdx) {
 				v_DELTA_WEIGHT__[i][j]  = std::max(0.,v_FACTORWEIGHT__[i][j]/(sigma2LSS+1./(eta*v_DELTA_IVAR__[i][j])));
 				if (v_DELTA_WEIGHT__[i][j]==0.) continue;
 
-				tmpMeanForestLambdaRF[0] += v_DELTA_WEIGHT__[i][j]*v_LAMBDA_RF__[i][j];
-				tmpMeanForestLambdaRF[1] += v_DELTA_WEIGHT__[i][j];
+				if (v_LAMBDA_RF__[i][j]>=lambdaRFMin__ && v_LAMBDA_RF__[i][j]<lambdaRFMax__) {
+					tmpMeanForestLambdaRF[0] += v_DELTA_WEIGHT__[i][j]*v_LAMBDA_RF__[i][j];
+					tmpMeanForestLambdaRF[1] += v_DELTA_WEIGHT__[i][j];
+				}
 			}
 
 			if (tmpMeanForestLambdaRF[1]!=0.) v_meanForestLambdaRF__[i] = tmpMeanForestLambdaRF[0]/tmpMeanForestLambdaRF[1];
@@ -1140,8 +1160,8 @@ void GetDelta::loadDataForest(std::string fitsnameSpec, unsigned int start, unsi
 
 		for (unsigned int j=0; j<nbBinRFMax__; j++) {
 
-			if (NORM_FLUX_IVAR[j]>0. && FLUX_DLA[j]>=C_DLACORR && LAMBDA_OBS[j]>=lambdaObsMin__ && LAMBDA_OBS[j]<lambdaObsMax__ && DELTA_WEIGHT[j]>0.) {
-
+			if (DELTA_WEIGHT[j]>0. && NORM_FLUX_IVAR[j]>0. && FLUX_DLA[j]>=C_DLACORR && LAMBDA_OBS[j]>=lambdaObsMin__ && LAMBDA_OBS[j]<lambdaObsMax__) {
+			
 				//// Remove veto lines
 				bool isLine = false;
 				if (doVetoLines__) {
@@ -1443,7 +1463,6 @@ void GetDelta::updateDelta(std::string fitsnameSpec, unsigned int loopIdx, unsig
 				meanDelta[1] += delta_weight[j];
 				meanDelta[2] ++;
 			}
-
 		}
 
 		//// Set the new value of 'meanForestLambdaRF' if there are some pixels

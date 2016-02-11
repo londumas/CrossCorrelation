@@ -3946,7 +3946,7 @@ void Correlation::xi_delta_QSO_MockJMc(bool doBootstraps/*=False*/, unsigned int
 	loadDataQ1();
 	//// Forest
 	loadDataForest(pathForest__,doBootstraps,bootIdx);
-	if (doBootstraps || mocksNoNoiseNoCont) {
+	if ( (doBootstraps || mocksNoNoiseNoCont) && !nicolasEstimator__) {
 		removeFalseCorrelations();
 	}
 	v_CosDe__.clear();
@@ -5809,8 +5809,6 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 		std::vector< double > v_tmp_lRF;
 		std::vector< double > v_tmp_lObs;
 
-		double tmp_meanDelta[3] = {0.};
-
 		fits_read_col(fitsptrSpec,TDOUBLE, 4,i+1,1,1,NULL,&ra,   NULL,&sta);
 		fits_read_col(fitsptrSpec,TDOUBLE, 5,i+1,1,1,NULL,&de,   NULL,&sta);
 		fits_read_col(fitsptrSpec,TDOUBLE, 6,i+1,1,1,NULL,&zz,   NULL,&sta);
@@ -5832,11 +5830,12 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 		//// If a reobs
 		if (alpha1==isReobsFlag__) continue;
 
+		double tmp_meanDelta[3] = {0.};
 		//// For Nicolas's estimator
 		double meanNeeded[5] = {0.};
 
 		for (unsigned int j=0; j<nbBinRFMax__; j++) {
-			if (DELTA_WEIGHT[j]>0. && NORM_FLUX_IVAR[j]>0. && FLUX_DLA[j]>=C_DLACORR && LAMBDA_RF[j]>=lambdaRFMin__ && LAMBDA_RF[j]<lambdaRFMax__ && LAMBDA_OBS[j]>=lambdaObsMin__ && LAMBDA_OBS[j]<lambdaObsMax__) {
+			if (DELTA_WEIGHT[j]>0. && NORM_FLUX_IVAR[j]>0. && FLUX_DLA[j]>=C_DLACORR && LAMBDA_OBS[j]>=lambdaObsMin__ && LAMBDA_OBS[j]<lambdaObsMax__ && LAMBDA_RF[j]>=lambdaRFMin__ && LAMBDA_RF[j]<lambdaRFMax__) {
 
 				//// Remove veto lines
 				bool isLine = false;

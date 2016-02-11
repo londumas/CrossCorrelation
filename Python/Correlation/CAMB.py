@@ -60,13 +60,13 @@ class CAMB:
 		
 
 		return
-
+'''
 camb = CAMB()
 camb.plot_1d(0)
 camb.plot_1d(1)
 camb.plot_1d(2)
 camb.save_in_one_file('/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Resources/CAMB/CAMB_2_25/camb.txt')
-
+'''
 
 
 

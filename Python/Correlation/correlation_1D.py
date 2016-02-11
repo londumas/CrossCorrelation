@@ -17,6 +17,7 @@ import copy
 import myTools
 import const
 import const_delta
+import CAMB
 
 class Correlation_1D:
 	
@@ -167,7 +168,43 @@ class Correlation_1D:
 			print "  ||              ||                ||              ||"
 
 		return xi
+	def fit_CAMB(self):
 
+		### Get the data
+		cut = (self._xi[:,0]>10.)
+		xxx = self._xi[:,0][cut]
+		yyy = self._xi[:,1][cut]
+		yer = self._xi[:,2][cut]
+
+		### Get CAMB
+		camb = CAMB.CAMB()._xi2
+		yyy_Camb = numpy.interp(xxx,camb[:,0],camb[:,1])
+
+		### Chi^{2}
+		def chi2(b):
+			model = yyy_Camb*b
+			return numpy.sum( numpy.power( (yyy-model)/yer ,2.) )
+	
+		### Init and perform the fit
+		m = Minuit(chi2, b=1.,error_b=0.1,print_level=-1, errordef=0.01) 	
+		m.migrad()
+
+		b = m.values['b']
+		print b
+
+		
+
+		for i in [0,1,2]:
+			coef = numpy.power(xxx,i)
+			plt.errorbar(xxx, coef*yyy, yerr=coef*yer, fmt='o')
+
+			coef = numpy.power(camb[:,0],i)
+			plt.errorbar(camb[:,0],coef*b*camb[:,1])
+			myTools.deal_with_plot(False,False,False)
+			plt.xlim([ 0., 200. ])
+			plt.show()
+
+		return
 	def plot(self, with_lines=False, verbose=False, other=[]):
 
 		cut = 0
@@ -233,7 +270,6 @@ class Correlation_1D:
 					plt.plot(xLi,yLi,color='green')
 					plt.text(line, yMax, name, rotation='vertical', fontsize=20)
 
-
 		plt.title(r'$'+self._title+'$', fontsize=40)
 		plt.xlabel(r'$'+self._xTitle+'$', fontsize=40)
 		plt.ylabel(r'$'+self._yTitle+'$', fontsize=40)
@@ -271,27 +307,34 @@ dic_class = {
 
 
 
-
+'''
 ### Data
 dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
 dic_class['name'] = "LYA"
-dic_class['correlation'] = "f_f_lRF_devide"
+dic_class['correlation'] = "f_f_r"
 corrD = Correlation_1D(dic_class)
 corrD.plot(False,False)
 path_to_txt_file_folder = ''
 dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_test_soved_shift_withMetals_withError_with_template/Box_000/Simu_000/Results/'
 dic_class['name'] = "simu"
-dic_class['correlation'] = "f_f_lRF_devide"
+dic_class['correlation'] = "f_f_r"
 corrDD = Correlation_1D(dic_class)
 corrDD.plot(False,False)
 dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_test_soved_shift_withMetals_withError_with_template/Box_000/Simu_000/Results_NicolasDistortion/'
 dic_class['name'] = "simu \, nicolas"
-dic_class['correlation'] = "f_f_lRF_devide"
+dic_class['correlation'] = "f_f_r"
 corrDDD = Correlation_1D(dic_class)
 corrDDD.plot(False,False)
+'''
+dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_test_soved_shift/Box_000/Simu_000/Results/'
+dic_class['name'] = "simu \, no \, metals"
+dic_class['correlation'] = "f_f_r"
+corrDDDD = Correlation_1D(dic_class)
+corrDDDD.fit_CAMB()
+corrDDDD.plot(False,False)
 
 
-corrD.plot(False,False,[corrDD,corrDDD])
+corrD.plot(False,False,[corrDD,corrDDD,corrDDDD])
 
 
 

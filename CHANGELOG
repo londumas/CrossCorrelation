@@ -35,3 +35,6 @@
 		* add a "fit_CAMB_2d" method, not perfect yet
 		* sort output for metals
 		* add a "plot_1d_with_residuals" method
+# 2016 - 02 - 11
+	- GetDelta.cpp
+		* correct error with mean_lambda_rf
