@@ -25,7 +25,7 @@
 #define GETDELTA_H
 
 /// Constants
-const unsigned int nbPixelsTemplate__ = 645;
+const unsigned int nbPixelsTemplate__ = 645;  //2148  //645
 const double lambdaRFMin__ = 1040.;
 const double lambdaRFMax__ = 1200.;
 const double lambdaRFLine__  = 1215.67;
@@ -76,6 +76,7 @@ class GetDelta
 		bool noNoise__;
 		bool isTest__;
 		bool withRSD__;
+		bool noMockExpander__;
 
 		/// Histogram to get the PDF
 		TProfile* hFluxVsLambdaObs__;
@@ -86,6 +87,7 @@ class GetDelta
 		void defineHistos(void);
 		void saveHistos(void);
 		void GetData(void);
+		void GetData_from_Jean_Marc_file(void);
 		void GetQSO(void);
 
 	public:

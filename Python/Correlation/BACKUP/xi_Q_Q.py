@@ -636,12 +636,12 @@ def saveOnetRealMocks(i,j):
 
 	'''
 
-	path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Box_00'+str(i)+'/Simu_00'+str(j)+'/Data/QSO_withRSD.fits'
+	path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1563/Box_00'+str(i)+'/Simu_00'+str(j)+'/Data/QSO_withRSD.fits'
 	cat = pyfits.open(path)[1].data
 	nd = cat.size
 	nr = cat.size
 	del cat
-	rawPath = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Box_00'+str(i)+'/Simu_00'+str(j)+'/Results_RandomPosInCell/'
+	rawPath = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1563/Box_00'+str(i)+'/Simu_00'+str(j)+'/Results/'
 	nbRand = 10
 	result_1D,result_2D,result_Mu,result_We,result_Multipol = getACorrelation(nd,nr,nbRand,rawPath)
 
@@ -723,174 +723,31 @@ def saveListRealMocks(ni,nj):
 
 
 
-'''
+
 i = sys.argv[5]
 j = sys.argv[6]
-saveOnetRealMocks(i,j)
-'''
+#saveOnetRealMocks(i,j)
 
 
-#saveListRealMocks(10,10)
+xi1D = numpy.load('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1563/Box_00'+str(i)+'/Simu_00'+str(j)+'/Results/xi_QSO_QSO_result_1D.npy')
+plot_Xi_1D(xi1D,0)
+plot_Xi_1D(xi1D,1)
+plot_Xi_1D(xi1D,2)
 
-rawPath = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Box_000/Simu_000/Results_RandomPosInCell/'
-result_1D = numpy.load(rawPath+'xi_QSO_QSO_result_1D.npy')
-result_2D = numpy.load(rawPath+'xi_QSO_QSO_result_2D.npy')
-result_Mu = numpy.load(rawPath+'xi_QSO_QSO_result_Mu.npy')
-result_We = numpy.load(rawPath+'xi_QSO_QSO_result_We.npy')
-result_Multipol = numpy.load(rawPath+'xi_QSO_QSO_result_Multipol.npy')
+fitCamb(xi1D,'/home/gpfs/manip/mnt0607/bao/hdumasde/Data/CAMB/CAMB_2_4/xi-z2.4.dat',0)
 
 
-rawPath = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Results_RandomPosInCell/'
-
-listBAO = numpy.load(rawPath+'xi_QSO_QSO_result_BAO.npy')
-result_1D[:,1] = numpy.mean(numpy.load(rawPath+'xi_QSO_QSO_result_1D.npy'),axis=1)
-result_1D[:,2] = numpy.sqrt(numpy.diag(numpy.load(rawPath+'xi_QSO_QSO_result_cov_1D.npy')))/numpy.sqrt(100.)
-
-result_2D[:,:,1] = myTools.convert1DTo2D( numpy.mean(numpy.load(rawPath+'xi_QSO_QSO_result_2D.npy'),axis=1), nbBinX2D__,nbBinY2D__)
-result_2D[:,:,2] = myTools.convert1DTo2D( numpy.sqrt(numpy.diag(numpy.load(rawPath+'xi_QSO_QSO_result_cov_2D.npy')))/numpy.sqrt(100.), nbBinX2D__,nbBinY2D__)
-
-result_Mu[:,:,1] = myTools.convert1DTo2D( numpy.mean(numpy.load(rawPath+'xi_QSO_QSO_result_Mu.npy'),axis=1), nbBin1D__,nbBinM__)
-result_Mu[:,:,2] = myTools.convert1DTo2D( numpy.sqrt(numpy.diag(numpy.load(rawPath+'xi_QSO_QSO_result_cov_Mu.npy')))/numpy.sqrt(100.), nbBin1D__,nbBinM__)
-
-result_Multipol[:,:,1] = numpy.mean(numpy.load(rawPath+'xi_QSO_QSO_result_Multipol.npy'),axis=2)
-result_Multipol[:,:,2] = numpy.var(numpy.load(rawPath+'xi_QSO_QSO_result_Multipol.npy'),axis=2)/numpy.sqrt(100.)
-
-result_We[:,:,1] = numpy.mean(numpy.load(rawPath+'xi_QSO_QSO_result_We.npy'),axis=2)
-result_We[:,:,2] = numpy.var(numpy.load(rawPath+'xi_QSO_QSO_result_We.npy'),axis=2)/numpy.sqrt(100.)
 
 
-### BAO
 
-### Get parameter name
-cov = numpy.load('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Results_RandomPosInCell/xi_QSO_QSO_result_cov_1D_backup.npy')
-arg_fit = {}
-arg_fit['a'] = 125.08255109750635
-arg_fit['b'] = -1.8611671002360046
-arg_fit['c'] = 0.006109139533639488
-arg_fit['A'] = 0.003731291955288748
-arg_fit['sigma'] = 9.870124119190448
-arg_fit['mean'] = 106.73882608124278
-arg_fit['fix_A'] = True
-arg_fit['fix_sigma'] = True
-arg_fit['fix_mean'] = False
-arg_fit['background'] = 'inv'
-arg_fit['cov'] = 'full'
-arg_fit['x_min'] = 60.
-arg_fit['x_max'] = 160.
-a,b,c,d,e,f,g =  myTools.fit_BAO(result_1D[:,0],result_1D[:,1],cov,arg_fit)
-plt.errorbar(result_1D[:,0],result_1D[:,0]**2.*result_1D[:,1],yerr=result_1D[:,0]**2.*result_1D[:,2],fmt='o')
-plt.plot(c[0],c[0]**2.*c[1])
-plt.plot(g[0],g[0]**2.*g[1])
-plt.show()
-paramName = [el for el in a]
 
-for i in range(0,6):
-	if (listBAO[i,1,0]==1.): continue
-	print listBAO[i,0,:]
-	print listBAO[i,1,:]
-	plt.hist(listBAO[i,0,:])
-	plt.xlabel(r'$'+paramName[i]+'$', fontsize=40)
-	plt.ylabel(r'$\#$', fontsize=40)
-	myTools.deal_with_plot(False,False,True)
-	plt.show()
-	plt.errorbar(numpy.arange(listBAO[i,0,:].size),listBAO[i,0,:],yerr=listBAO[i,1,:],fmt='o')
-	plt.xlim([ -1., listBAO[i,0,:].size ])
-	plt.xlabel(r'$param \, '+paramName[i]+'$', fontsize=40)
-	plt.ylabel(r'$\#$', fontsize=40)
-	myTools.deal_with_plot(False,False,True)
-	plt.show()
 
-idx = 0
-for i in range(0,6):
-	if (listBAO[i,1,0]==1.): continue
-	for j in range(0,i):
-		if (listBAO[j,1,0]==1.): continue
 
-		plt.errorbar(listBAO[i,0,:],listBAO[j,0,:], xerr=listBAO[i,1,:], yerr=listBAO[j,1,:],fmt='o')
-		plt.xlabel(r'$'+paramName[i]+'$', fontsize=40)
-		plt.ylabel(r'$'+paramName[j]+'$', fontsize=40)
-		myTools.deal_with_plot(False,False,True)
-		plt.show()
 
-### 1D:
-###plot_Xi_1D(result_1D, 0)
-###plot_Xi_1D(result_1D, 1)
-###plot_Xi_1D(result_1D, 2)
-result_1D[:,0] = result_We[:,0,0]
-result_1D[:,1] = result_We[:,0,1]
-result_1D[:,2] = result_We[:,0,2]
-print fitCamb(result_1D,'/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/CAMB_2_4/xi-z2.4.dat')
-result_1D[:,0] = result_We[:,1,0]
-result_1D[:,1] = result_We[:,1,1]
-result_1D[:,2] = result_We[:,1,2]
-print fitCamb(result_1D,'/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/CAMB_2_4/xi-z2.4.dat')
-result_1D[:,0] = result_We[:,2,0]
-result_1D[:,1] = result_We[:,2,1]
-result_1D[:,2] = result_We[:,2,2]
-print fitCamb(result_1D,'/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/CAMB_2_4/xi-z2.4.dat')
 
-### 2D:
-plotXi2D(result_2D, 0)
-plotXi2D(result_2D, 1)
-plotXi2D(result_2D, 2)
 
-### xiMu
-plotMu(result_Mu,0)
-plotMu(result_Mu,1)
-plotMu(result_Mu,2)
 
-### xiWe
-plotWe(result_We,0)
-plotWe(result_We,1)
-plotWe(result_We,2)
 
-### Multipol
-result_1D[:,0] = result_Multipol[:,0,0]
-result_1D[:,1] = result_Multipol[:,0,1]
-result_1D[:,2] = result_Multipol[:,0,2]
-plot_Xi_1D(result_1D, 0)
-plot_Xi_1D(result_1D, 1)
-plot_Xi_1D(result_1D, 2)
-print fitCamb(result_1D,'/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/CAMB_2_4/xi-z2.4.dat')
-### Multipol
-result_1D[:,0] = result_Multipol[:,2,0]
-result_1D[:,1] = result_Multipol[:,2,1]
-result_1D[:,2] = result_Multipol[:,2,2]
-plot_Xi_1D(result_1D, 0)
-plot_Xi_1D(result_1D, 1)
-plot_Xi_1D(result_1D, 2)
-print fitCamb(result_1D,'/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/CAMB_2_4/xi-z2.4.dat',2)
-### Multipol
 
-for rescale in range(0,3):
-	###
-	cut = (result_Multipol[:,0,2]!=0.)
-	xxx0 = result_Multipol[:,0,0][cut]
-	yyy0 = result_Multipol[:,0,1][cut]
-	yer0 = result_Multipol[:,0,2][cut]
-	###
-	cut = (result_Multipol[:,2,2]!=0.)
-	xxx1 = result_Multipol[:,2,0][cut]
-	yyy1 = result_Multipol[:,2,1][cut]
-	yer1 = result_Multipol[:,2,2][cut]
 
-	coef0 = numpy.power(xxx0,rescale)
-	coef1 = numpy.power(xxx1,rescale)
-
-	plt.errorbar(xxx0, coef0*yyy0, yerr=coef0*yer0, marker='o', label=r'$\xi_{0}$')
-	plt.errorbar(xxx1, coef1*yyy1, yerr=coef1*yer1, marker='o', label=r'$\xi_{2}$')
-
-	if (rescale==0):
-		plt.ylabel(r'$\xi^{qq} (|s|)$', fontsize=40)
-	if (rescale==1):
-		plt.ylabel(r'$|s|.\xi^{qq} (|s|) \, [h^{-1}.Mpc]$', fontsize=40)
-	if (rescale==2):
-		plt.ylabel(r'$|s|^{2}.\xi^{qq} (|s|) \, [(h^{-1}.Mpc)^{2}]$', fontsize=40)
-	
-	plt.title(r'$'+qso1__+' \, - \, '+qso1__+'$', fontsize=40)
-	plt.xlabel(r'$|s| \, [h^{-1}.Mpc]$', fontsize=40)
-	myTools.deal_with_plot(False,False,True)
-	plt.xlim([ numpy.min(xxx0)-10., numpy.max(xxx0)+10. ])
-	#plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
-	plt.show()
 

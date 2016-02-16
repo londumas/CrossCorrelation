@@ -22,18 +22,23 @@ from myTools import Get_TProfile
 from const_delta import *
 
 
+pathQSO   = '/home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/QSO_ALL_TESTS.fits'
+pathData  = '/home/gpfs/manip/mnt0607/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits'
+pathSimu  = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_test_soved_shift_withMetals_withError_with_template/Box_000/Simu_000/Data/'
+pathMocks = '/home/gpfs/manip/mnt0607/bao/hdumasde/MockV4/M3_0_0/000/mock.fits'
+
+path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/histos/'
+rawPathSimu = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_test_soved_shift_withMetals_withError_with_template/Box_000/Simu_000/Run/'
 
 
 def comparePlot():
 
-	path = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/"
-
 	'''
 	## Map data
-	catSimu = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/QSO_ALL_TESTS.fits')[1].data
-	catMock = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/MockV4/M3_0_0/000/mock.fits')[1].data
+	catSimu = pyfits.open(pathQSO)[1].data
+	catMock = pyfits.open(pathMocks)[1].data
 	plt.plot(catSimu['RA'],  catSimu['DEC'], linestyle="", marker="o",label=r'$Data \, QSO$')
-	catSimu = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits')[1].data
+	catSimu = pyfits.open(pathData)[1].data
 	plt.plot(catSimu['RA'],  catSimu['DEC'], linestyle="", marker="o",label=r'$Data \, Forest$')
 	plt.plot(catMock['RA'],  catMock['DEC'], linestyle="", marker="o",label=r'$Mock \, Forest$')
 	plt.xlabel(r'$R.A.$')
@@ -44,7 +49,7 @@ def comparePlot():
 	del catMock
 	
 	## Map simu
-	catSimu = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Box_000/Simu_000/Data/QSO_withRSD.fits')[1].data
+	catSimu = pyfits.open(pathSimu+'QSO_withRSD.fits')[1].data
 	print int((numpy.amax(catSimu['X'])-numpy.amin(catSimu['X']))/(4.5*0.71)) + 1
 	print int((numpy.amax(catSimu['Y'])-numpy.amin(catSimu['Y']))/(4.5*0.71)) + 1
 	plt.plot(catSimu['X'],  catSimu['Y'], linestyle="", marker="o",label=r'$Simu \, QSO$')
@@ -58,8 +63,8 @@ def comparePlot():
 	
 	
 	## Distribution redshift QSO
-	catData = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/QSO_ALL_TESTS.fits')[1].data
-	catSimu = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Box_000/Simu_000/Data/QSO_withRSD.fits')[1].data
+	catData = pyfits.open(pathQSO)[1].data
+	catSimu = pyfits.open(pathSimu+'QSO_withRSD.fits')[1].data
 	print '  catData = ', catData.size
 	print '  catSimu = ', catSimu.size
 	plt.hist(catData['Z'], bins=numpy.arange(1.7,4.,0.1),histtype='step',label=r'$Data$',color='blue')
@@ -72,9 +77,9 @@ def comparePlot():
 	del catSimu
 	
 	## Distribution redshift Forest
-	catData = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits')[1].data
-	catSimu = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Box_000/Simu_000/Data/delta.fits')[1].data
-	catMock = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/MockV4/M3_0_0/000/mock.fits')[1].data
+	catData = pyfits.open(pathData)[1].data
+	catSimu = pyfits.open(pathSimu+'delta.fits')[1].data
+	catMock = pyfits.open(pathMocks)[1].data
 	print '  catData = ', catData.size
 	print '  catSimu = ', catSimu.size
 	print '  catMock = ', catMock.size
@@ -90,9 +95,9 @@ def comparePlot():
 	del catMock
 
 	### Distribution ALPHA
-	catData = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits')[1].data
-	catSimu = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Box_000/Simu_000/Data/delta.fits')[1].data
-	catMock = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/MockV4/M3_0_0/000/mock.fits')[1].data
+	catData = pyfits.open(pathData)[1].data
+	catSimu = pyfits.open(pathSimu+'delta.fits')[1].data
+	catMock = pyfits.open(pathMocks)[1].data
 	#print '  catData = ', catData.size, catData[ (catData['ALPHA_2']==1.) ].size
 	#print '  catSimu = ', catSimu.size, catSimu[ (catSimu['ALPHA_2']==1.) ].size
 	#print '  catMock = ', catMock.size, catMock[ (catMock['ALPHA_2']==1.) ].size
@@ -114,9 +119,9 @@ def comparePlot():
 	del catMock
 	
 	### Distribution Beta
-	catData = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits')[1].data
-	catSimu = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Box_000/Simu_000/Data/delta.fits')[1].data
-	catMock = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/MockV4/M3_0_0/000/mock.fits')[1].data
+	catData = pyfits.open(pathData)[1].data
+	catSimu = pyfits.open(pathSimu+'delta.fits')[1].data
+	catMock = pyfits.open(pathMocks)[1].data
 	#print '  catData = ', catData.size, catData[ (catData['BETA_2']==0.) ].size
 	#print '  catSimu = ', catSimu.size, catSimu[ (catSimu['BETA_2']==0.) ].size
 	#print '  catMock = ', catMock.size, catMock[ (catMock['BETA_2']==0.) ].size
@@ -139,9 +144,9 @@ def comparePlot():
 	
 
 	### Distribution NB_PIXEL
-	catData = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits')[1].data
-	catSimu = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Box_000/Simu_000/Data/delta.fits')[1].data
-	catMock = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/MockV4/M3_0_0/000/mock.fits')[1].data
+	catData = pyfits.open(pathData)[1].data
+	catSimu = pyfits.open(pathSimu+'delta.fits')[1].data
+	catMock = pyfits.open(pathMocks)[1].data
 	print '  catData = ', catData.size
 	print '  catSimu = ', catSimu.size
 	print '  catMock = ', catMock.size
@@ -158,9 +163,9 @@ def comparePlot():
 
 
 	### Distribution MEAN_FOREST_LAMBDA_RF
-	catData = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits')[1].data
-	catSimu = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Box_000/Simu_000/Data/delta.fits')[1].data
-	catMock = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/MockV4/M3_0_0/000/mock.fits')[1].data
+	catData = pyfits.open(pathData)[1].data
+	catSimu = pyfits.open(pathSimu+'delta.fits')[1].data
+	catMock = pyfits.open(pathMocks)[1].data
 	print '  catData = ', catData.size
 	print '  catSimu = ', catSimu.size
 	print '  catMock = ', catMock.size
@@ -177,15 +182,14 @@ def comparePlot():
 
 	'''
 	
-	distribSoverN()
+	#distribSoverN()
 	
 
 	### Template
-	data = numpy.loadtxt(path + 'template.txt')
+	data = numpy.loadtxt(path + 'template_LYA.txt')
 	template = interpolate.interp1d(data[:,0],data[:,1],bounds_error=False,fill_value=0)
 	plt.errorbar(data[:,0], data[:,1], fmt='o', label=r'$Data$',color='blue') ##/template(1150.)
-	path = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/"
-	data = numpy.loadtxt(path + 'template_0_0.txt')
+	data = numpy.loadtxt(rawPathSimu + 'template_LYA_0_0.txt')
 	template = interpolate.interp1d(data[:,0],data[:,1],bounds_error=False,fill_value=0)
 	plt.errorbar(data[:,0], data[:,1], fmt='o', label=r'$Simu$',color='red')
 	plt.xlabel(r'$\lambda_{R.F.} \, [\AA]$', fontsize=40)
@@ -195,10 +199,9 @@ def comparePlot():
 	
 	
 	### delta+1 vs. lambda_RF
-	data = numpy.loadtxt(path + 'deltaVSLambdaRF.txt')
+	data = numpy.loadtxt(path + 'deltaVSLambdaRF_LYA.txt')
 	plt.errorbar(data[:,0], data[:,1], fmt='o', label=r'$Data$',color='blue')
-	path = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/"
-	data = numpy.loadtxt(path + 'deltaVSLambdaRF_0_0.txt')
+	data = numpy.loadtxt(rawPathSimu + 'deltaVSLambdaRF_LYA_0_0.txt')
 	plt.errorbar(data[:,0], data[:,1], fmt='o', label=r'$Simu$',color='red')
 	plt.xlabel(r'$\lambda_{R.F.} \, [\AA]$', fontsize=40)
 	plt.ylabel(r'$\delta$', fontsize=40)
@@ -209,9 +212,9 @@ def comparePlot():
 	
 	### delta+1 vs. lambda_Obs
 	data = numpy.loadtxt(path+'hDeltaVsLambdaObs_LYA.txt')
-	plt.errorbar(data[:,0]+3600., data[:,1], fmt='o', label=r'$Data$',color='blue')
-	data = numpy.loadtxt(path+'hDeltaVsLambdaObs_LYA_JMC_0_0.txt')
-	plt.errorbar(data[:,0]+3600., data[:,1], fmt='o', label=r'$Simu$',color='red')
+	plt.errorbar(data[:,0]+3600., data[:,1], label=r'$Data$',color='blue')
+	data = numpy.loadtxt(rawPathSimu+'hDeltaVsLambdaObs_LYA_0_0.txt')
+	plt.errorbar(data[:,0]+3600., data[:,1], label=r'$Simu$',color='red')
 	plt.xlabel(r'$\lambda_{Obs.} \, [\AA]$', fontsize=40)
 	plt.ylabel(r'$f(\lambda_{Obs.})$', fontsize=40)
 	myTools.deal_with_plot(False,False,True)
@@ -219,11 +222,10 @@ def comparePlot():
 	
 	
 	### delta vs. lambda_Obs
-	data = numpy.loadtxt(path + 'deltaVSLambdaObs.txt')
-	plt.errorbar(data[:,0], data[:,1], fmt='o', label=r'$Data$',color='blue')
-	path = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/"
-	data = numpy.loadtxt(path + 'deltaVSLambdaObs_0_0.txt')
-	plt.errorbar(data[:,0], data[:,1], fmt='o', label=r'$Simu$',color='red')
+	data = numpy.loadtxt(path + 'deltaVSLambdaObs_LYA.txt')
+	plt.errorbar(data[:-1,0], data[:-1,1], fmt='o', label=r'$Data$',color='blue')
+	data = numpy.loadtxt(rawPathSimu + 'deltaVSLambdaObs_LYA_0_0.txt')
+	plt.errorbar(data[:-1,0], data[:-1,1], fmt='o', label=r'$Simu$',color='red')
 	plt.xlabel(r'$\lambda_{Obs.} \, [\AA]$', fontsize=40)
 	plt.ylabel(r'$\delta$', fontsize=40)
 	myTools.deal_with_plot(False,False,True)
@@ -231,10 +233,9 @@ def comparePlot():
 	
 	
 	### eta
-	data = numpy.loadtxt(path + 'eta.txt')
+	data = numpy.loadtxt(path + 'eta_LYA.txt')
 	plt.errorbar(data[:,0], data[:,1], fmt='o', label=r'$Data$',color='blue')
-	path = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/"
-	data = numpy.loadtxt(path + 'eta_0_0.txt')
+	data = numpy.loadtxt(rawPathSimu + 'eta_LYA_0_0.txt')
 	plt.errorbar(data[:,0], data[:,1], fmt='o', label=r'$Simu$',color='red')
 	plt.xlabel(r'$z_{pixel}$', fontsize=40)
 	plt.ylabel(r'$\eta$', fontsize=40)
@@ -243,10 +244,9 @@ def comparePlot():
 	
 	
 	### sigma
-	data = numpy.loadtxt(path + 'sigma2LSS.txt')
+	data = numpy.loadtxt(path + 'sigma2LSS_LYA.txt')
 	plt.errorbar(data[:,0], data[:,1], fmt='o', label=r'$Data$',color='blue')
-	path = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/"
-	data = numpy.loadtxt(path + 'sigma2LSS_0_0.txt')
+	data = numpy.loadtxt(rawPathSimu + 'sigma2LSS_LYA_0_0.txt')
 	plt.errorbar(data[:,0], data[:,1], fmt='o', label=r'$Simu$',color='red')
 	plt.xlabel(r'$z_{pixel}$', fontsize=40)
 	plt.ylabel(r'$\sigma_{L.S.S.}^{2}$', fontsize=40)
@@ -262,8 +262,8 @@ def distribDelta():
 	print "------ Start ------"
 	print
 
-	name = ['/home/gpfs/manip/mnt0607/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits',
-		'/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Box_000/Simu_000/Data/delta.fits'
+	name = [pathData,
+		pathSimu+'delta.fits'
 		]
 	label = ['data','simu']
 
@@ -349,9 +349,9 @@ def distribSoverN():
 	print "------ Start ------"
 	print
 
-	name = ['/home/gpfs/manip/mnt0607/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits',
-		'/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Box_000/Simu_000/Data/delta.fits',
-		'/home/gpfs/manip/mnt0607/bao/hdumasde/MockV4/M3_0_0/000/mock.fits',
+	name = [pathData,
+		pathSimu+'delta.fits',
+		pathMocks,
 		]
 	label = ['data','simu','Mock \, pipeline']
 

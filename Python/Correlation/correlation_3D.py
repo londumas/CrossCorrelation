@@ -17,7 +17,7 @@ import copy
 import myTools
 import const_delta
 import const
-
+import CAMB
 
 raw_dic_class = {
 	'minXi': 0.,
@@ -325,6 +325,51 @@ class Correlation3D:
 				print
 
 		return xiMu, xiWe, xi1D, xi2D
+	def read_data_from_BAOFIT_data_file(self, path2D):
+
+		### 2D
+		xi2D = numpy.zeros(shape=(self._nbBinX2D,self._nbBinY2D,3))
+		data  = numpy.loadtxt(path2D+'.data')
+		for el in data:
+			i = int(el[0])
+			ix = i%self._nbBinX2D
+			iy = i/self._nbBinX2D
+			xi2D[ix,iy,1] = el[1]
+
+		'''
+		### cov
+		data = numpy.loadtxt(path2D+'.cov')
+		cut  = (data[:,0]==data[:,1])
+		idx1 = data[:,0][cut].astype(int)
+		idx2 = data[:,1][cut].astype(int)
+		var  = data[:,2][cut]
+		print numpy.array( zip(idx1,idx2,var) )
+		xi2D[idx1,idx1,2] = numpy.sqrt(var)
+		'''
+
+		self._xi2D[:,:,1] = xi2D[:,:,1]
+
+		### 1D
+		xi1D = numpy.zeros(shape=(self._nbBin1D,3))
+		for i in numpy.arange(self._nbBinX2D):
+			for j in numpy.arange(self._nbBinY2D):
+				if (self._xi2D[i,j,1]==0.): continue
+				else:
+					if (self._xi2D[i,j,0]>=self._max1D): continue
+					idx = int( self._xi2D[i,j,0]/self._binSize )
+					ivar = 1./numpy.power(self._xi2D[i,j,2],2.)
+					xi1D[idx,0] += ivar*self._xi2D[i,j,0]
+					xi1D[idx,1] += ivar*self._xi2D[i,j,1]
+					xi1D[idx,2] += ivar
+		cut = (xi1D[:,2]>0.)
+		xi1D[:,0][cut] /= xi1D[:,2][cut]
+		xi1D[:,1][cut] /= xi1D[:,2][cut]
+		xi1D[:,2][cut]  = 1./numpy.sqrt(xi1D[:,2][cut])
+
+		self._xi1D[:,:2] = xi1D[:,:2]
+		
+
+		return
 	def read_metal_model(self, lineName,selection=0):
 
 		path1D = self._path_to_txt_file_folder + self._prefix + '_Metals_Models_Mu_' + self._middlefix + '_' + lineName + '.txt'
@@ -444,9 +489,9 @@ class Correlation3D:
 				xi1D[:,1,i][cut] = tmp_save000[:,i][cut]/tmp_save555[cut]
 				xi1D[:,2,i][cut] = numpy.abs(xi1D[:,1,i][cut])/numpy.sqrt(tmp_save666[cut])
 
-			plt.plot(xi1D[:,0,0][cut], -xi1D[:,1,0][cut])
-			plt.grid()
-			plt.show()			
+			#plt.plot(xi1D[:,0,0][cut], -xi1D[:,1,0][cut])
+			#plt.grid()
+			#plt.show()			
 		
 		if (selection==0 or selection==2):
 			### 2D
@@ -870,7 +915,8 @@ class Correlation3D:
 		return
 	def write_metal_model(self):
 
-		path_to_BAOFIT = self._path_to_txt_file_folder + 'BaoFit_q_f__'+self._f1+'__'+self._q1+'/BOSSDR12QSOLyaMetal_QSO_'
+		#path_to_BAOFIT = self._path_to_txt_file_folder + 'BaoFit_q_f__'+self._f1+'__'+self._q1+'/BOSSDR12QSOLyaMetal_QSO_'
+		path_to_BAOFIT = self._path_to_txt_file_folder + 'BaoFit_q_f__'+self._f1+'__'+self._q1+'/bao2D_QSO_'
 		suffix = ['.0.dat','.2.dat','.4.dat']
 		name   = ['SiII(1260)','LYA','SiIII(1207)','SiII(1193)','SiII(1190)']
 		name_to_save = ['Si2c','Lya','Si3','Si2b','Si2a']
@@ -879,7 +925,7 @@ class Correlation3D:
 			xiMu, xiWe, xi1D, xi2D = self.read_metal_model(name[j])
 
 			for i in range(0,3):
-				correlation = numpy.zeros( shape=(self._nbBin2D,2) )
+				correlation = numpy.zeros( shape=(self._nbBin2D,4) )
         	        	indexMatrix = numpy.arange(self._nbBin2D)
         	        	correlation[:,0] = (indexMatrix%self._nbBinY2D)*self._nbBinX2D + indexMatrix/self._nbBinY2D
         	        	correlation[:,1] = xi2D[:,:,1,i].flatten()
@@ -887,14 +933,16 @@ class Correlation3D:
 				if (correlation[:,0][cutCorrelation].size==0): continue
 
 				### Get the array and sort it
-				correlation2 = numpy.zeros( shape=(self._nbBin2D,2) )
+				correlation2 = numpy.zeros( shape=(self._nbBin2D,4) )
 				for k in numpy.arange(self._nbBin2D):
 					idx = correlation[k,0].astype(int)
 					correlation2[idx,0] = idx
 					correlation2[idx,1] = correlation[k,1]
+					correlation2[idx,2] = self._minX2D+0.5*self._binSize + (idx%self._nbBinX2D)*self._binSize
+					correlation2[idx,3] = self._minY2D+0.5*self._binSize + (idx/self._nbBinX2D)*self._binSize
 
-				cut =  (correlation2[:,1]!=0.)
-				numpy.savetxt( path_to_BAOFIT + name_to_save[j] + suffix[i],zip(correlation2[:,0][cut],correlation2[:,1][cut]),fmt='%u %1.20e')
+				print path_to_BAOFIT + name_to_save[j] + suffix[i]
+				numpy.savetxt( path_to_BAOFIT + name_to_save[j] + suffix[i],zip(correlation2[:,2],correlation2[:,3],correlation2[:,1]),fmt='%u %u %1.20e')
 
 		return
 	def write_BAOFIT_ini_and_grid(self, param):
@@ -936,7 +984,7 @@ nowiggles = DR9LyaMocksLCDMSB
 
 ## k-space fit
 kspace = true
-ell-max = 6
+ell-max = 4
 
 # Model configuration
 cross-correlation = yes
@@ -944,7 +992,7 @@ anisotropic = yes
 decoupled   = yes
 custom-grid = yes
 pixelize = yes
-#dist-matrix = yes
+dist-matrix = yes
 dist-matrix-order = """+str(self._nbBin2D)+"""
 
 # Parameter setup
@@ -964,6 +1012,23 @@ model-config = value[BAO alpha-perp]=     """+param[12]+""";
 model-config = fix[gamma-scale]=          """+param[13]+""";
 model-config = fix[pixel scale]=0.7;
 
+## Metal correlations
+metal-model-interpolate = true
+metal-model-name = """+path_to_BAOFIT+"""
+model-config = value[beta Si2a]=1.4;
+model-config = value[bias Si2a]=-0.01;
+model-config = fix[beta Si2b]=1.4;
+model-config = fix[bias Si2b]=0;
+model-config = value[beta Si2c]=1.4;
+model-config = value[bias Si2c]=-0.01;
+model-config = fix[beta Si3]=1.4;
+model-config = fix[bias Si3]=0;
+model-config = gaussprior[beta Si2a] @ (0,2.8);
+#model-config = gaussprior[beta Si2b] @ (0,2.8);
+model-config = gaussprior[beta Si2c] @ (0,2.8);
+#model-config = gaussprior[beta Si3] @ (0,2.8);
+
+
 ## 2D chisq scan in BAO parameters
 model-config = binning[BAO alpha-parallel] ={0.5:1.5}*100
 model-config = binning[BAO alpha-perp]     ={0.5:1.5}*100	
@@ -972,7 +1037,7 @@ model-config = binning[BAO alpha-perp]     ={0.5:1.5}*100
 zref = 2.3
 
 ## Maximum allowed radial dilation (increases the range that model needs to cover)
-dilmin = 0.5
+dilmin = 0.01
 dilmax = 2.5
 
 ## Non-linear broadening with 1+f = (SigmaNL-par)/(SigmaNL-perp)
@@ -1000,7 +1065,7 @@ axis3-bins = {""" + stringRedshift + """}
 ### Analysis Options #########################################
 
 # Cuts to apply before fitting
-rmin = 30
+rmin = 40
 rmax = 180
 #rperp-min = 5
 
@@ -1078,7 +1143,6 @@ output-prefix = """ + path_to_BAOFIT + """.
 			numpy.savetxt( path_to_BAOFIT + 'cov',zip(covarianceMatrix[:,0][cutCovarMatrix],covarianceMatrix[:,1][cutCovarMatrix],covarianceMatrix[:,2][cutCovarMatrix]),fmt='%u %u %1.20e')
 			del cov, covarianceMatrix, cutCovarMatrix
 
-			'''
 			### Save .dmat
 			print '  Saving .dmat'
 			dmatData = numpy.loadtxt(path_to_distortion_matrix)
@@ -1089,7 +1153,7 @@ output-prefix = """ + path_to_BAOFIT + """.
 			cutDistortionMatrix = (distortionMatrix[:,2]!=0.)
 			numpy.savetxt( path_to_BAOFIT + 'dmat',zip(distortionMatrix[:,0][cutDistortionMatrix], distortionMatrix[:,1][cutDistortionMatrix], distortionMatrix[:,2][cutDistortionMatrix]),fmt='%u %u %1.20e')
 			del dmatData, distortionMatrix, cutDistortionMatrix
-			'''
+			
 
 		### Send the fit (#--parameter-scan'   ### --toymc-samples 10000)
 		command = const.path_to_BAOFIT_bin__ + ' -i ' + path_to_BAOFIT + 'ini'
@@ -1138,6 +1202,7 @@ output-prefix = """ + path_to_BAOFIT + """.
 			plt.ylabel(r'$|s|.'+self._label+' (|s|) \, [h^{-1}.Mpc]$', fontsize=40)
 		if (x_power==2):
 			plt.ylabel(r'$|s|^{2}.'+self._label+' (|s|) \, [(h^{-1}.Mpc)^{2}]$', fontsize=40)
+		plt.legend(fontsize=30, frameon=False, numpoints=1,ncol=2, loc=2)
 		plt.xlabel(r'$|s| \, [h^{-1}.Mpc]$', fontsize=40)
 		plt.xlim([ numpy.amin(xxx)-10., numpy.amax(xxx)+10. ])
 		myTools.deal_with_plot(False,False,True)
@@ -1294,9 +1359,6 @@ output-prefix = """ + path_to_BAOFIT + """.
 			cbar.set_label(r'$|s|.'+self._label+'(\, \overrightarrow{s} \,) \, [h^{-1}.Mpc]$',size=40)
 		if (x_power==2):
 			cbar.set_label(r'$|s|^{2}.'+self._label+'(\, \overrightarrow{s} \,) \, [(h^{-1}.Mpc)^{2}]$',size=40)
-
-		#cbar.set_label(r'$(\xi_{no\,metals}-\xi_{with\,metals})/\sigma$',size=40)
-		cbar.set_label(r'$\xi_{no\,metals}-\xi_{with\,metals}$',size=40)
 	
 		#plt.plot( [0.,200.],[0.,4*200.],color='white',linewidth=2 )
 		#plt.plot( [0.,200.],[0.,-4*200.],color='white',linewidth=2 )
@@ -1406,28 +1468,32 @@ output-prefix = """ + path_to_BAOFIT + """.
 		yer = xi1D[:,2]
 	
 		### Get the smooth CAMB
-		if (dic['mulpol_index']==0): idx = 1
-		elif (dic['mulpol_index']==2): idx = 2
-		data_camb = numpy.loadtxt(const.pathToCamb__)
+		if (dic['mulpol_index']==0): camb = CAMB.CAMB()._xi0
+		elif (dic['mulpol_index']==2): camb = CAMB.CAMB()._xi2
 
 		if (distortion):
 			result_1D_camb = numpy.zeros( shape=(self._nbBin1D,3) )
 			result_1D_camb[:,0] = xxx
-			result_1D_camb[:,1] = numpy.interp(xxx,data_camb[1:,0],data_camb[1:,idx])
+			result_1D_camb[:,1] = numpy.interp(xxx,camb[:,0],camb[:,1])
+
+			#coef2 = numpy.power(result_1D_camb[:,0],x_power)
+			#plt.plot(result_1D_camb[:,0],coef2*result_1D_camb[:,1]*yyy[4]/result_1D_camb[4,1],color='green', markersize=10,linewidth=2)
+
 			path = self._path_to_txt_file_folder + self._prefix + '_distortionMatrix_1D_'+ self._middlefix + '.txt'
 			matrix = numpy.loadtxt(path)
 			result_1D_camb[:,1] = numpy.dot(matrix,result_1D_camb[:,1])
 			### if get the biais manually
-			result_1D_camb[:,1] *= yyy[4]/result_1D_camb[4,1]
+			#result_1D_camb[:,1] *= yyy[4]/result_1D_camb[4,1]
+			result_1D_camb[:,1] = dic['b']*result_1D_camb[:,1] + dic['roof']
 		else:
-			cut = (data_camb[1:,0] <= numpy.amax(xxx)*1.1)
+			cut = (camb[:,0] <= numpy.amax(xxx)*1.1)
 			size = cut[cut].size
 			result_1D_camb = numpy.zeros( shape=(size,3) )
-			result_1D_camb[:,0] = data_camb[1:,0][cut]
-			result_1D_camb[:,1] = dic['b']*data_camb[1:,idx][cut]+dic['roof']
+			result_1D_camb[:,0] = camb[:,0][cut]
+			result_1D_camb[:,1] = dic['b']*camb[:,1][cut]+dic['roof']
 			result_1D_camb[:,2] = 0.0000000001
 			### if get the biais manually
-			result_1D_camb[:,1] = data_camb[1:,idx][cut]*yyy[4]/numpy.interp(xxx[4],data_camb[1:,0],data_camb[1:,idx])
+			result_1D_camb[:,1] = camb[:,1][cut]*yyy[4]/numpy.interp(xxx[4],camb[:,0],camb[:,1])
 	
 		### Show result
 		coef = numpy.power(xxx,x_power)

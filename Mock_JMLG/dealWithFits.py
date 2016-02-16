@@ -77,7 +77,7 @@ def removeUselessLines():
 	return
 def haveAlookForest():	
 
-	cat = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_test_problem_smoothing_empty_pixels/Box_000/Simu_000/Data/delta.fits', memmap=True)[1].data[0:50000]
+	cat = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1563/Box_000/Simu_000/Data/delta.fits', memmap=True)[1].data[0:10000]
 	cat2 = pyfits.open('/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits', memmap=True)[1].data[0:10000]
 
 	print cat.size
@@ -227,7 +227,7 @@ def saveCatalogueQSO():
 def haveAlookQSO():	
 
 #	cat = pyfits.open(path__+'QSO.fits', memmap=True)[1].data
-	cat   = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_test_soved_shift_withMetals/Box_000/Simu_000/Data/QSO_withRSD.fits', memmap=True)[1].data
+	cat   = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1563/Box_000/Simu_000/Data/QSO_withRSD.fits', memmap=True)[1].data
 	#cat2  = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1536/Box_000/Simu_000/Data/QSO_noRSD.fits', memmap=True)[1].data
 
 	print cat.size
@@ -296,9 +296,9 @@ print cat.size
 #allNeededFileds()
 #saveCatalogueQSO()
 #saveCatalogueQSOFromAscii()
-haveAlookQSO()
+#haveAlookQSO()
 #removeUselessLines()
-#haveAlookForest()
+haveAlookForest()
 
 '''
 col_xx              = pyfits.Column(name='X',  format='D', array=numpy.zeros(291271), unit='Mpc/h')

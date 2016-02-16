@@ -248,7 +248,9 @@ def meanDelta():
 	#path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_reObs/DR12_reObs.fits'
 	#path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits'
 
-	cat = pyfits.open(path, memmap=True)[1].data
+	#path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_test_soved_shift_withMetals_withError_with_template/Box_000/Simu_000/Data/delta.fits'
+
+	cat = pyfits.open(path, memmap=True)[1].data[:50000]
 
 	cat = cat[ numpy.logical_and( numpy.logical_and(  numpy.logical_and( cat['ALPHA_2']!=alphaStart__, cat['BETA_2']!=0.),  numpy.abs(cat['ALPHA_2'])<=39.5 ), numpy.abs(cat['BETA_2'])<=0.25 ) ]
 	#cat = cat[ numpy.logical_or( numpy.logical_or(  numpy.logical_or( cat['ALPHA_2']==alphaStart__, cat['BETA_2']==0.),  numpy.abs(cat['ALPHA_2'])>=39.5 ), numpy.abs(cat['BETA_2'])>=0.25 ) ]
@@ -280,6 +282,12 @@ def meanDelta():
 	cat['DELTA_WEIGHT'][ (cat['FLUX_DLA']<0.8) ] = 0.
 	cat['DELTA_WEIGHT'][ (cat['LAMBDA_RF']<lambdaRFMin__) ] = 0.
 	cat['DELTA_WEIGHT'][ (cat['LAMBDA_RF']>lambdaRFMax__) ] = 0.
+
+	for lines in skyLines__:
+		cut = numpy.logical_and( cat["LAMBDA_OBS"]>lines[0] , cat["LAMBDA_OBS"]<lines[1] )
+		cat['DELTA'][ cut ]        = 0.
+		cat['NORM_FLUX'][ cut ]    = 0.
+		cat['DELTA_WEIGHT'][ cut ] = 0.
 	
 	print cat.size
 	cut_noForestPixel = numpy.logical_and(cat['DELTA_WEIGHT']>0., numpy.logical_and( (cat['LAMBDA_RF']>=lambdaRFMin__) , (cat['LAMBDA_RF']<lambdaRFMax__) )).astype(int)
@@ -321,13 +329,14 @@ def meanDelta():
 	plt.ylabel(r'$\alpha$', fontsize=40)
 	myTools.deal_with_plot(False,False,True)
 	plt.show()
-	
+	'''
 	### < \delta >
 	plt.hist(meanDelta,bins=1000)
 	plt.xlabel(r'$< \delta >$', fontsize=40)
 	plt.ylabel(r'$\#$', fontsize=40)
 	myTools.deal_with_plot(False,False,True)
 	plt.show()
+	'''
 	### \chi^{2}/NDF
 	plt.hist(cat['ALPHA_1'],bins=1000)
 	plt.xlabel(r'$\chi^{2}/N.D.F.$', fontsize=40)
@@ -336,8 +345,8 @@ def meanDelta():
 	plt.show()
 	'''
 	### <SNR> vs. <delta>
-	plt.errorbar(numpy.abs(meanDelta[meanDLA==1.]),meanSNR[meanDLA==1.],fmt='o')
-	plt.errorbar(numpy.abs(meanDelta[meanDLA!=1.]),meanSNR[meanDLA!=1.],fmt='o',color='red')
+	plt.errorbar(numpy.abs(meanDelta[meanDLA==1.]),meanSNR[meanDLA==1.],fmt='o',label='noDLA')
+	plt.errorbar(numpy.abs(meanDelta[meanDLA!=1.]),meanSNR[meanDLA!=1.],fmt='o',color='red',label='withDLA')
 	plt.errorbar(numpy.abs(meanDelta[ (cat['BETA_1']==-600) ]),meanSNR[ (cat['BETA_1']==-600) ],fmt='o',color='green')
 	plt.xlabel(r'$|<\delta>|$', fontsize=40)
 	plt.ylabel(r'$<SNR>$', fontsize=40)
@@ -428,12 +437,12 @@ def meanDelta():
 	plt.show()
 	'''
 	
-	cat = cat[ meanSNR>30. ]
-	meanDelta = meanDelta[ meanSNR>30. ]
-	meanSNR = meanSNR[ meanSNR>30. ]
-	#cat = cat[ numpy.abs(meanDelta)>0.5 ]
-	#meanDelta = meanDelta[ numpy.abs(meanDelta)>0.5 ]
-	#meanSNR = meanSNR[ numpy.abs(meanDelta)>0.5 ]
+	#cat = cat[ meanSNR>10. ]
+	#meanDelta = meanDelta[ meanSNR>10. ]
+	#meanSNR = meanSNR[ meanSNR>10. ]
+	cat = cat[ numpy.abs(meanDelta)>0.5 ]
+	meanDelta = meanDelta[ numpy.abs(meanDelta)>0.5 ]
+	meanSNR = meanSNR[ numpy.abs(meanDelta)>0.5 ]
 	#meanDelta = meanDelta[cat['Z_VI']>4 ]
 	#meanSNR = meanSNR[ cat['Z_VI']>4 ]
 	#cat = cat[ cat['Z_VI']>4 ]
@@ -469,6 +478,52 @@ def meanDelta():
 		plt.ylabel(r'$Normalized \, flux$', fontsize=40)
 		plt.show()
 	
+
+	return
+
+def plot_spectra_i_want():
+
+	a = [(1113, 6880, 56543, 401), (1268, 7135, 56564, 740), (9054, 4371, 55830, 186), (9456, 4225, 55455, 542), (9772, 5706, 56165, 114), (10274, 4660, 56191, 732), (10712, 3736, 55214, 562), (11438, 5699, 55953, 716), (11571, 6598, 56574, 732), (11595, 5131, 55835, 964), (11817, 5126, 55923, 608), (12811, 4669, 55831, 478), (12822, 5126, 55923, 940), (14199, 5127, 55889, 259), (18604, 4271, 55507, 642), (21207, 6369, 56217, 759), (21893, 7235, 56603, 172), (22124, 6781, 56599, 338), (22421, 4386, 55540, 996), (22515, 7337, 56686, 469), (23135, 6782, 56576, 972), (26235, 4506, 55568, 524), (26253, 3753, 55486, 712), (29403, 4457, 55858, 582), (29789, 7301, 56746, 456), (30040, 7300, 56707, 958), (30228, 5151, 56567, 538), (31602, 7328, 56715, 986), (34099, 7310, 56693, 110), (36714, 5714, 56660, 534), (37090, 7294, 56739, 478), (38348, 5177, 56245, 63), (38477, 5293, 55953, 634), (39606, 3817, 55277, 480), (41143, 7304, 56745, 122), (43833, 5729, 56598, 926), (44308, 5771, 56011, 744), (48284, 5316, 55955, 424), (51273, 5806, 56310, 18), (53378, 5784, 56029, 582), (54163, 4637, 55616, 596), (55262, 7284, 56683, 74), (56907, 7384, 56715, 732), (65093, 5350, 56009, 636), (66059, 4635, 55615, 812), (66875, 7096, 56683, 828), (67066, 7096, 56683, 142), (69147, 7105, 56740, 184), (71081, 7380, 56753, 54), (75784, 6430, 56299, 282), (77339, 4849, 55945, 958), (78388, 4648, 55673, 792), (78707, 3841, 55572, 514), (81092, 7115, 56667, 554), (82314, 4654, 55659, 37), (82491, 6407, 56311, 480), (82560, 6644, 56384, 437), (87902, 4749, 55633, 764), (92656, 5982, 56074, 926), (94664, 6636, 56367, 16), (95437, 3793, 55214, 328), (97960, 7417, 56753, 718), (99968, 5989, 56312, 996), (102521, 5864, 56047, 576), (102799, 7117, 56685, 426), (104110, 6817, 56455, 559), (106206, 7408, 56780, 895), (107148, 7406, 56805, 586), (110132, 5862, 56045, 264), (112709, 6006, 56105, 356), (113375, 6629, 56365, 556), (115627, 3857, 55272, 250), (116506, 7027, 56448, 472), (117014, 3855, 55268, 546), (117936, 7339, 56739, 452), (120992, 3859, 55246, 230), (122107, 6015, 56096, 82), (124381, 5904, 56046, 500), (128042, 6046, 56096, 212), (128945, 6024, 56088, 778), (130722, 6795, 56425, 594), (132755, 4013, 55629, 846), (135990, 3959, 55679, 674), (138103, 3943, 55336, 441), (141591, 3931, 55350, 802), (142016, 6042, 56101, 50), (142259, 6043, 56096, 396), (143367, 4961, 55719, 671), (143629, 3940, 55327, 40), (145175, 4727, 55693, 293), (145606, 5203, 56034, 88), (147205, 5005, 55751, 526), (147802, 6314, 56191, 492), (151194, 4983, 55836, 531), (152393, 4984, 55827, 240), (154281, 5143, 55828, 44), (154306, 4085, 55452, 986), (154571, 4195, 55452, 377), (155657, 4375, 55889, 866), (155958, 5147, 55854, 843), (159034, 5024, 55854, 822), (164417, 4288, 55501, 924), (165147, 6590, 56273, 871), (166294, 6148, 56209, 185), (168214, 6305, 56563, 846)]
+
+
+	path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits'
+	cat = pyfits.open(path, memmap=True)[1].data[:50000]
+
+	for ell in a:
+		#el = cat[ numpy.logical_and(  numpy.logical_and(cat['PLATE']==ell[1],cat['MJD']==ell[2]),cat['FIBERID']==ell[3]) ]
+		#if (el.size==0): break
+		#el = el[0]
+		el = cat[ell[0]]
+
+		cut = numpy.logical_and( (el['DELTA_WEIGHT']>0.), el['FLUX_DLA']>0.8 )
+		for lines in skyLines__:
+                                cut[ numpy.logical_and( el["LAMBDA_OBS"]>lines[0] , el["LAMBDA_OBS"]<lines[1] ) ] = False 
+		template = (el['ALPHA_2']+el['BETA_2']*(el['LAMBDA_RF'][cut]-el['MEAN_FOREST_LAMBDA_RF']))*el['TEMPLATE'][cut]
+
+		test = el['NORM_FLUX'][cut]/(el['DELTA'][cut]*el['FLUX_DLA'][cut]+1.)
+
+		if (test[ test<=0. ].size!=0):
+			continue
+		print el['ALPHA_2'], el['BETA_2'], el['Z_VI'], test[0], test[-1], numpy.mean(el['NORM_FLUX'][cut]/numpy.power(el['NORM_FLUX_IVAR'][cut],-0.5))
+
+		#myTools.plotOnSpectra_plate(el['PLATE'], el['MJD'], el['FIBERID'])
+		#myTools.plotOnSpectra_spec(el['PLATE'], el['MJD'], el['FIBERID'],el['Z_VI'])
+
+		plt.errorbar(el['LAMBDA_RF'][cut],el['NORM_FLUX'][cut],yerr=numpy.power(el['NORM_FLUX_IVAR'][cut],-0.5),label='$Data$')
+		#plt.plot(el['LAMBDA_RF'][cut],numpy.power(el['NORM_FLUX_IVAR'][cut],-0.5),label='flux err')
+		plt.plot(el['LAMBDA_RF'][cut],el['DELTA'][cut],label='delta')
+		#plt.plot(el['LAMBDA_RF'][cut],numpy.power(el['DELTA_IVAR'][cut],-0.5),label='delta err')
+		#plt.plot(el['LAMBDA_RF'][cut],el['DELTA_WEIGHT'][cut],label='delta weight')
+		if (numpy.mean(el['FLUX_DLA'][cut])!=1.): plt.plot(el['LAMBDA_RF'][cut],el['FLUX_DLA'][cut],label='DLA')
+		
+		
+		#plt.plot(el['LAMBDA_RF'][cut],template,label=r'$QSO \, continuum$',color='red')
+		plt.plot(el['LAMBDA_RF'][cut],el['NORM_FLUX'][cut]/(el['DELTA'][cut]+1.),label=r'$QSO \, continuum$')
+
+		myTools.deal_with_plot(False,False,False)
+		plt.xlabel(r'$\lambda_{R.F.} \, [\AA]$', fontsize=40)
+		plt.ylabel(r'$Normalized \, flux$', fontsize=40)
+		plt.show()
 
 	return
 
@@ -633,7 +688,7 @@ def testCosmo():
 
 
 
-
+#plot_spectra_i_want()
 #lookNotFittedSpectra()
 #distribSomething()
 meanDelta()

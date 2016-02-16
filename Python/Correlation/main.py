@@ -57,11 +57,13 @@ def plotOne():
 		'q2': 'a',
 		'name' : 'Data'
 	}
-	dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_test_soved_shift_withMetals_withError_with_template/Box_000/Simu_000/Results_NicolasDistortion/'
-	#dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
+	dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1563/Box_000/Simu_000/Results/'
+	#dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator/'
+	#dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/TESTS/'
 	dic_class['name'] = 'Data'
 	corr = correlation_3D.Correlation3D(dic_class)
 	#corr.write_metal_model()
+	#corr.read_data_from_BAOFIT_data_file('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/TESTS/Nicolas_Correlation/xcf_dr12_v5_8_guy_c2_baseline_projected')
 
 	'''
 	a = 0
@@ -72,12 +74,13 @@ def plotOne():
 		if (tmpxi2D[:,:,1,0][ (tmpxi2D[:,:,1,0]!=0.) ].size == 0): break
 
 		coef = 1.
-		if ( const_delta.LYB_lines_names[-1-i]=="LYA" ): continue
+		if ( const_delta.LYB_lines_names[-1-i]=="LYA" ): coef = 100.
 		tmpxi2D[:,:,1,:] *= coef
 
 		a += 1
 		xi2D[:,:,1,:] += tmpxi2D[:,:,1,:]
-	myTools.plot2D( xi2D[:,:,1,0] )
+		corr._xi2D[:,:,:] = tmpxi2D[:,:,:,0]
+		corr.plot_2d(0)
 	
 	corr._xi2D[:,:,:] = xi2D[:,:,:,0]
 	corr.plot_2d(0)
@@ -88,18 +91,16 @@ def plotOne():
 	#corr.plot_cov_cor_matrix('subsampling','1D')
 	### Fit
 	#correlation_matrix_path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Results_RandomPosInCell/xi_delta_QSO_result_cor_2D_allSubSamplingFromFit.npy'
-	#corr.send_BAOFIT('subsampling',correlation_matrix_path,True)
+	#corr.send_BAOFIT('subsampling',correlation_matrix_path,False)
 	#corr.set_error_on_covar_matrix('subsampling')
 	#corr.fit_CAMB_2d('subsampling', correlation_matrix_path)
 
-	dic_CAMB = corr.fit_CAMB(None,dic_CAMB,True)
-	corr.plot_CAMB(None,dic_CAMB,0,True)
-	corr.plot_CAMB(None,dic_CAMB,1,True)
-	corr.plot_CAMB(None,dic_CAMB,2,True)
-	corr.plot_multipol(0)
-	corr.plot_multipol(1)
-	corr.plot_multipol(2)
+	dic_CAMB = corr.fit_CAMB(None,dic_CAMB,False)
+	corr.plot_CAMB(None,dic_CAMB,0,False)
+	corr.plot_CAMB(None,dic_CAMB,1,False)
+	corr.plot_CAMB(None,dic_CAMB,2,False)
 
+	
 	corr.plot_1d(0)
 	corr.plot_1d(1)
 	corr.plot_1d(2)
@@ -189,19 +190,21 @@ def plotBosseBOSS():
 		'name' : 'Data'
 	}
 	### Boss
-	dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_test_soved_shift/Box_000/Simu_000/Results_withRSD_withRandomPosition/'
-	dic_class['name'] = 'no \, metals'
+	dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1563/Box_000/Simu_000/Results/'
+	dic_class['name'] = 'no \, projected'
 	corr = correlation_3D.Correlation3D(dic_class)
-	corr.set_error_on_covar_matrix('subsampling')
+	#corr.set_error_on_covar_matrix('subsampling')
 	list_corr += [corr]
-	print corr._meanZ
-	### eBoss
-	dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_test_soved_shift_withMetals/Box_000/Simu_000/Results_withRSD_withRandomPosition/'
-	dic_class['name'] = 'with \, metal'
+	### Boss
+	dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
+	dic_class['name'] = 'projected'
 	corr = correlation_3D.Correlation3D(dic_class)
-	corr.set_error_on_covar_matrix('subsampling')
+	#corr.set_error_on_covar_matrix('subsampling')
 	list_corr += [corr]
-	print corr._meanZ
+
+	list_corr[0].plot_1d(0, list_corr[1:])
+	list_corr[0].plot_1d(1, list_corr[1:])
+	list_corr[0].plot_1d(2, list_corr[1:])
 
 	'''
 	list_corr[0].plot_we(0, list_corr[1:])
@@ -240,8 +243,8 @@ def look_result_data():
 
 	return
 
-#plotBosseBOSS()
-plotOne()
+plotBosseBOSS()
+#plotOne()
 #plotMany()
 
 ### Send parameter scan
@@ -277,6 +280,7 @@ dic_class = {
 	'name' : 'Data'
 }
 dic_class['name'] = 'Data'
+#dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
 dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_test_soved_shift_withMetals_withError_with_template/Box_000/Simu_000/Results_NicolasDistortion/'
 corr = annalyse_BAOFIT.AnnalyseBAOFIT(dic_class, index_parameter)
 corr.print_results()

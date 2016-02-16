@@ -57,18 +57,23 @@ skyLines__ = numpy.log10(skyLines__)
 ### Correlation lines
 MGII_lines_names  = numpy.array(['MgI',   'MgII_a',  'MgII_b',  'FeII_a',      'FeII_b',      'MnII',   'FeII_c',      'FeII_d',      'FeII_e'])
 MGII_lines        = numpy.array([2852.96, 2803.5324, 2796.3511, 2600.1724835,  2586.6495659,  2576.877, 2382.7641781,  2374.4603294,  2344.2129601])
+lambda_RF_line_MGII = 2803.5324
 ###
 CIV_lines_names   = numpy.append( MGII_lines_names, numpy.array(['AlIII(1863)' ,  'AlIII(1855)' , 'AlII(1671)' ,   'FeII(1609)',  'CIV(1551)' ,   'CIV(1548)',   'SiII(1527)']))
 CIV_lines         = numpy.append( MGII_lines, numpy.array([      1862.79113,  1854.71829, 1670.7886, 1608.4511, 1550.77845, 1548.2049, 1526.70698 ]))
+lambda_RF_line_CIV = 1548.2049
 ###
 SIIV_lines_names  = numpy.append( CIV_lines_names, numpy.array(['SiIV(1403)',   'SiIV(1394)',   'CII(1335)' ,'SiII(1304)',    'OI(1302)',     'SiII(1260)',   'NV(1243)',   'NV(1239)']))
 SIIV_lines        = numpy.append( CIV_lines, numpy.array([      1402.77291, 1393.76018, 1335., 1304.3702,   1302.1685,  1260.4221,  1242.804, 1238.821]))
+lambda_RF_line_SIIV = 1393.76018
 ###
 LYA_lines_names   = numpy.append( SIIV_lines_names, numpy.array(['LYA'   ,'SiIII(1207)',  'SiII(1193)',  'SiII(1190)']))
 LYA_lines         = numpy.append( SIIV_lines, numpy.array([      1215.67 ,1206.500, 1193.2897, 1190.4158]))
+lambda_RF_line_LYA = 1215.67
 ###
 LYB_lines_names   = numpy.append( LYA_lines_names, numpy.array(['LYB']))
 LYB_lines         = numpy.append( LYA_lines, numpy.array([1025.7223]))
+lambda_RF_line_LYB = 1025.7223
 
 
 if (forest__ == 'LYB'):

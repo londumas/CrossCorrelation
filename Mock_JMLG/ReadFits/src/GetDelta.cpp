@@ -54,10 +54,14 @@ const double lambdaRFTemplateMax__ = lambdaRFMax__+3.;
 long  Bit16 = 1;
 const double findPDF__ = false; 
 bool hasCont = true;
-const bool doVetoLines__          = true;
+const bool doVetoLines__ = true;
 
 
 GetDelta::GetDelta(int argc, char** argv) {
+
+	isTest__  = false;
+	withRSD__ = true;
+	noMockExpander__ = false;
 
 	std::cout << std::scientific;
 	std::cout.precision(15);
@@ -73,20 +77,21 @@ GetDelta::GetDelta(int argc, char** argv) {
 
 
 	///
-	pathToDataQSO__ = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/v1547/fits/spectra-78";
+	pathToDataQSO__ = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/v1563/fits/spectra-780";
 	pathToDataQSO__ += box_idx;
 	pathToDataQSO__ += "-";
 	pathToDataQSO__ += sim_idx;
 	pathToDataQSO__ += ".fits";
-	pathToDataQSO__ = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/spectra-expander.fits";
 	///
-	pathToDataForest__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_test_soved_shift_withMetals_withError_with_template/Box_00";
+	pathToDataForest__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1563/Box_00";
 	pathToDataForest__ += box_idx;
 	pathToDataForest__ += "/Simu_00";
 	pathToDataForest__ += sim_idx;
-	pathToDataForest__ += "/Data/mocks-*";
+	pathToDataForest__ += "/Raw/mocks-*";
 	///
-	pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_test_soved_shift_withMetals_withError_with_template/Box_00";
+	pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1563";
+	if (noMockExpander__) pathToSave__ += "_noMockExpander";
+	pathToSave__ += "/Box_00";
 	pathToSave__ += box_idx;
 	pathToSave__ += "/Simu_00";
 	pathToSave__ += sim_idx;
@@ -98,18 +103,14 @@ GetDelta::GetDelta(int argc, char** argv) {
 	std::cout << "  " << pathToSave__ << std::endl;
 	std::cout << "\n"   << std::endl;
 
-	isTest__  = false;
-
 	/// QSO
-	withRSD__ = true;
 	GetQSO();
 
 	std::cout << "\n"   << std::endl;
 
 	/// Delta
-	noCont__  = false;
-	noNoise__ = false;
-	GetData();
+	if (noMockExpander__) GetData_from_Jean_Marc_file();
+	else GetData();
 
 	if (findPDF__) saveHistos();
 	std::cout << "\n\n" << std::endl;
@@ -281,7 +282,7 @@ void GetDelta::GetData(void) {
 			if (nbPixel>nbPixelsTemplate__)  std::cout << "  GetDelta::GetData::  ERROR: nbPixel>nbPixelsTemplate__ " << nbPixel << " " << nbPixelsTemplate__ << std::endl;
 	
 			/// Normalisation zone
-			if ( normFactor[0]<= 0. || nbPixel<=C_MIN_NB_PIXEL ||  meanForestLRF[1]<C_MIN_NB_PIXEL) {
+			if ( normFactor[0]<= 0. || nbPixel<C_MIN_NB_PIXEL ||  meanForestLRF[1]<C_MIN_NB_PIXEL) {
 				//std::cout << Z << " " << NORM_FACTOR_nb << " " << NORM_FACTOR << " " << nbPixelTemplate << " " << NB_PIXEL << std::endl;
 				continue;
 			}
@@ -331,6 +332,144 @@ void GetDelta::GetData(void) {
 	fits_close_file(fitsptrSpec2,&sta2);
 	std::cout << "  nb forest =  " << forestIdx << std::endl;
 
+}
+void GetDelta::GetData_from_Jean_Marc_file(void) {
+
+	/// Fits file where to save
+	TString TSfitsnameSpec2 = pathToSave__;
+	TSfitsnameSpec2 += "delta.fits";
+	std::cout << "  " << TSfitsnameSpec2 << std::endl;
+	int sta2    = 0;
+	fitsfile* fitsptrSpec2;
+	fits_open_table(&fitsptrSpec2,TSfitsnameSpec2, READWRITE, &sta2);
+
+	/// index of forest
+	unsigned int forestIdx = 0;
+
+	/// Get the file
+	std::cout << "  file = " << pathToDataQSO__ << std::endl;
+	const TString TSfitsnameSpec = pathToDataQSO__;
+	int sta = 0;
+	fitsfile* fitsptrSpec;
+	fits_open_table(&fitsptrSpec,TSfitsnameSpec, READONLY, &sta);
+
+	/// Get the number of spectra
+	int tmp_nbSpectra = 0;
+	unsigned int nbSpectra = 0;
+	if (isTest__) nbSpectra = 1000;
+	else {
+		fits_get_num_hdus(fitsptrSpec, &tmp_nbSpectra, &sta);
+		nbSpectra = tmp_nbSpectra-1;
+	}
+	std::cout << "  nbSpectra = " << nbSpectra << std::endl;
+	
+	/// Set to the first HDU
+	fits_movabs_hdu(fitsptrSpec, 2,  NULL, &sta);
+		
+	/// Get the data
+	for (unsigned int f=0; f<nbSpectra; f++) {
+	
+		/// Move to next HDU
+		if (f!=0) fits_movrel_hdu(fitsptrSpec, 1,  NULL, &sta);
+	
+		/// Get the number of pixels in this HDU
+		long tmp_nbPixels = 0;
+		fits_get_num_rows(fitsptrSpec, &tmp_nbPixels, &sta);
+		const unsigned int tmp_nbPixels2 = tmp_nbPixels;
+		if (!findPDF__ && tmp_nbPixels2<C_MIN_NB_PIXEL) continue;
+	
+		/// Variable from old FITS
+		float X = 0.;
+		float Y = 0.;
+		float Z = 0.;
+		float LAMBDA_OBS[tmp_nbPixels2];
+		float FLUX[tmp_nbPixels2];
+		fits_read_key(fitsptrSpec,TFLOAT,"X",   &X,NULL,&sta);
+		fits_read_key(fitsptrSpec,TFLOAT,"Y",   &Y,NULL,&sta);
+		fits_read_key(fitsptrSpec,TFLOAT,"ZQSO",&Z,NULL,&sta);
+		fits_read_col(fitsptrSpec,TFLOAT, 1,1,1,tmp_nbPixels2,NULL, &LAMBDA_OBS,NULL,&sta);
+		fits_read_col(fitsptrSpec,TFLOAT, 2,1,1,tmp_nbPixels2,NULL, &FLUX,      NULL,&sta);
+
+		/// Variables for new FITS
+		double XX = X;
+		double YY = Y;
+		double ZZ = Z;
+		double lambdaOBS[nbPixelsTemplate__];
+		double lambdaRF[nbPixelsTemplate__];
+		double norm_flux[nbPixelsTemplate__];
+		double norm_flux_ivar[nbPixelsTemplate__];
+		double delta[nbPixelsTemplate__];
+		double delta_ivar[nbPixelsTemplate__];
+		double delta_weight[nbPixelsTemplate__];
+		double continuum[nbPixelsTemplate__];
+		unsigned int nbPixel = 0;
+		double meanForestLRF[2] = {0.};
+		const double oneOverOnePlusZ = 1./(1.+Z);
+
+		for (unsigned int p=0; p<tmp_nbPixels2; p++) {
+
+			/// bad pixels
+			if (LAMBDA_OBS[p]<lambdaObsMin__ || LAMBDA_OBS[p]>=lambdaObsMax__) continue;
+
+			const double lambdaRFd = LAMBDA_OBS[p]*oneOverOnePlusZ;
+			if (lambdaRFd<lambdaRFMin__ || lambdaRFd>=lambdaRFMax__) continue;
+
+			//// Remove veto lines
+			bool isLine = false;
+			if (doVetoLines__) {
+				for (unsigned int k=0; k<nbVetoLines__; k++) {
+					 if (LAMBDA_OBS[p]>=vetoLine__[2*k] && LAMBDA_OBS[p]<vetoLine__[2*k+1]) {
+						isLine = true;
+						break;
+					}
+				}
+			}
+			if (isLine) continue;
+
+			lambdaOBS[nbPixel]      = LAMBDA_OBS[p];
+			lambdaRF[nbPixel]       = lambdaRFd;
+			norm_flux[nbPixel]      = FLUX[p];
+			norm_flux_ivar[nbPixel] = 1.;
+			continuum[nbPixel]      = 1.;
+			delta[nbPixel]           = FLUX[p];
+			delta_ivar[nbPixel]      = 1.;
+			delta_weight[nbPixel]    = 1.;
+			nbPixel ++;
+
+			meanForestLRF[0] += lambdaRFd;
+			meanForestLRF[1] ++;
+		}
+
+		if (nbPixel>nbPixelsTemplate__)  std::cout << "  GetDelta::GetData::  ERROR: nbPixel>nbPixelsTemplate__ " << nbPixel << " " << nbPixelsTemplate__ << std::endl;
+		if (nbPixel<C_MIN_NB_PIXEL) continue;
+
+		/// Number of pixels in forest
+		unsigned int nbPixelInForest = nbPixel;
+		/// Get the mean lambda_RF
+		meanForestLRF[0] /= meanForestLRF[1];
+		/// Get the mean_flux_in_forest
+		double alpha = 1.;
+
+		/// Save data in second file
+		fits_write_col(fitsptrSpec2,TDOUBLE, 4,forestIdx+1,1,1, &XX, &sta2);
+		fits_write_col(fitsptrSpec2,TDOUBLE, 5,forestIdx+1,1,1, &YY, &sta2);
+		fits_write_col(fitsptrSpec2,TDOUBLE, 6,forestIdx+1,1,1, &ZZ, &sta2);
+		fits_write_col(fitsptrSpec2,TINT,    7,forestIdx+1,1,1, &nbPixelInForest, &sta2);
+		fits_write_col(fitsptrSpec2,TDOUBLE, 8,forestIdx+1,1,1, &meanForestLRF[0], &sta2);
+		fits_write_col(fitsptrSpec2,TDOUBLE, 11,forestIdx+1,1,1, &alpha, &sta2);
+		fits_write_col(fitsptrSpec2,TDOUBLE, 13,forestIdx+1,1,nbPixel, &lambdaOBS, &sta2);
+		fits_write_col(fitsptrSpec2,TDOUBLE, 14,forestIdx+1,1,nbPixel, &lambdaRF, &sta2);
+		fits_write_col(fitsptrSpec2,TDOUBLE, 15,forestIdx+1,1,nbPixel, &norm_flux,       &sta2);
+		fits_write_col(fitsptrSpec2,TDOUBLE, 16,forestIdx+1,1,nbPixel, &norm_flux_ivar,   &sta2);
+		fits_write_col(fitsptrSpec2,TDOUBLE, 18,forestIdx+1,1,nbPixel, &delta,       &sta2);
+		fits_write_col(fitsptrSpec2,TDOUBLE, 19,forestIdx+1,1,nbPixel, &delta_ivar,   &sta2);
+		fits_write_col(fitsptrSpec2,TDOUBLE, 20,forestIdx+1,1,nbPixel, &delta_weight,   &sta2);
+		fits_write_col(fitsptrSpec2,TDOUBLE, 21,forestIdx+1,1,nbPixel, &continuum,   &sta2);
+		forestIdx ++;
+	}
+		
+	fits_close_file(fitsptrSpec,&sta);
+	std::cout << "  nb forest =  " << forestIdx << std::endl;
 }
 void GetDelta::GetQSO(void) {
 	const TString TSfitsnameSpec = pathToDataQSO__;

@@ -43,7 +43,7 @@
 std::string pathToTxt__    = "";
 std::string pathToPDF__    = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/";
 const std::string pathToDLACat__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/DLA_all.fits";
-const std::string pathToMockJMC__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_test_soved_shift_withMetals_withError_with_template/";
+const std::string pathToMockJMC__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1563/";
 const unsigned int nbPixelTemplate__ = int(lambdaRFMax__-lambdaRFMin__)+6;
 const unsigned int nbBinlambdaObs__  = int(lambdaObsMax__-lambdaObsMin__);
 const double onePlusZ0__ = 1.+z0__;
@@ -51,9 +51,9 @@ const double halfGama__  = gama__/2.;
 const unsigned int nbBinPowErrorDelta__ = 20*int(log10(maxPowErrorDelta__) - log10(minPowErrorDelta__));
 const double dF_ = 1./nbBinsFlux__;
 //// Number of bins to interpolate the template
-const unsigned int nbBinInterpolTemplate__ = 10*nbPixelTemplate__;
+//const unsigned int nbBinInterpolTemplate__ = 10*nbPixelTemplate__;
 //// Number of bins to interpolate the mean transmission flux
-const unsigned int nbBinInterpolhDeltaVsLambdaObs__ = 10*nbBinlambdaObs__;
+//const unsigned int nbBinInterpolhDeltaVsLambdaObs__ = 10*nbBinlambdaObs__;
 
 //// Global variables
 extern void Chi2_method1(int &npar, double *gin, double &f, double *par, int iflag);
@@ -80,7 +80,7 @@ const bool doVetoLines__          = true;
 const bool setDLA__               = false;
 const bool cutNotFittedSpectra__  = true;
 const bool mocksColab__           = false;
-const bool mockJMC__              = false;
+const bool mockJMC__              = true;
 const bool putReobsTogether__     = false;
 double isReobsFlag__ = -100.;
 
@@ -110,7 +110,8 @@ GetDelta::GetDelta(int argc, char** argv) {
 		str = argv[6];
 		stepAnnalyse    = atoi( str.c_str() );
 	}
-
+	unsigned int start = atoi( startFit.c_str() );
+	unsigned int end   = atoi( endFit.c_str() );
 
 
 
@@ -118,11 +119,11 @@ GetDelta::GetDelta(int argc, char** argv) {
 		pathForest__   = "/home/gpfs/manip/mnt/bao/hdumasde/Data/";
 		pathForest__  += forest__;
 		pathToTxt__    = pathForest__;
-		pathForest__  += "/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits";
+		pathForest__  += "/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits";  //_method1
 //		pathForest__  += "/FitsFile_DR12_Guy/DR12_reObs/DR12_reObs.fits";
 //		pathForest__  += "/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits";
 
-//		pathToTxt__   += "/FitsFile_DR12_Guy/DR12_primery/histos/";
+		pathToTxt__   += "/FitsFile_DR12_Guy/DR12_primery/histos/";  //_method1
 //		pathToTxt__   += "/FitsFile_DR12_Guy/DR12_reObs/histos/";
 //		pathToTxt__   += "/FitsFile_eBOSS_Guy/all_eBOSS_primery/histos/";
 
@@ -173,11 +174,11 @@ GetDelta::GetDelta(int argc, char** argv) {
 	defineHistos();
 
 	//// Set the DLA values
-	if (setDLA__) updateDLA(pathForest__,0,0);
+	if (setDLA__) updateDLA(pathForest__,start,end);
 
 	if (stepAnnalyse==0) {
 
-		loadDataForest(pathForest__,0,0,cutNotFittedSpectra__);
+		loadDataForest(pathForest__,start,end,cutNotFittedSpectra__);
 
 		//// Find the template
 		for (unsigned int i=0; i<nbLoop__; i++) {
@@ -187,7 +188,7 @@ GetDelta::GetDelta(int argc, char** argv) {
 		}
 
 		//// Save changes
-		updateDelta(pathForest__,nbLoop__-1,0,0);
+		updateDelta(pathForest__,nbLoop__-1,start,end);
 
 		// put re-obs together
 		if (putReobsTogether__) putReobsTogether(pathForest__,nbLoop__-1);
@@ -411,11 +412,14 @@ void GetDelta::getHisto(unsigned int loopIdx) {
 	fitWeight->SetParLimits(1, 0., 1000.);
 
 	const unsigned int nbForest = v_zz__.size();
+	double meanDelta[4] = {0.};
 	double meanDelta_Zero[3] = {0.};
 	
 	for (unsigned int f=0; f<nbForest; f++) {
 
 		const unsigned int nb = v_nbPixel__[f];
+		if (nb==0) continue;
+		else meanDelta[3] ++;
 
 		for (unsigned int p=0; p<nb; p++) {
 
@@ -483,17 +487,18 @@ void GetDelta::getHisto(unsigned int loopIdx) {
 
 
 	//// Get the number of pixels and the mean delta
-	double meanDelta[3] = {0.};
 	for (unsigned int i=0; i<nbBinlambdaObs__; i++) {
 		meanDelta[0] += deltaVSLambdaObs[i][0];
 		meanDelta[1] += deltaVSLambdaObs[i][1];
 		meanDelta[2] += deltaVSLambdaObs[i][3];
 	}
-	std::cout << "  < delta >       = " << meanDelta[0]/meanDelta[1] << std::endl;
-	std::cout << "  sum(w_i)        = " << meanDelta[1]              << std::endl;
-	std::cout << "  nb pixel        = " << (long long unsigned int)meanDelta[2]              << std::endl;
-	std::cout << "  nb pixel (w==0) = " << (long long unsigned int)meanDelta_Zero[2]         << std::endl;
-	std::cout << "  all pixel       = " << (long long unsigned int)(meanDelta[2]+meanDelta_Zero[2]) << "\n" << std::endl;
+	std::cout << "  nb forest (good) = " << (long long unsigned int)(meanDelta[3]) << std::endl;
+	std::cout << "  nb forest (bad)  = " << (long long unsigned int)(nbForest-meanDelta[3]) << std::endl;
+	std::cout << "  < delta >        = " << meanDelta[0]/meanDelta[1] << std::endl;
+	std::cout << "  sum(w_i)         = " << meanDelta[1]              << std::endl;
+	std::cout << "  nb pixel         = " << (long long unsigned int)meanDelta[2]              << std::endl;
+	std::cout << "  nb pixel (w==0)  = " << (long long unsigned int)meanDelta_Zero[2]         << std::endl;
+	std::cout << "  all pixel        = " << (long long unsigned int)(meanDelta[2]+meanDelta_Zero[2]) << "\n" << std::endl;
 
 
 
@@ -839,6 +844,7 @@ void GetDelta::updateDeltaVector(unsigned int loopIdx) {
 	if (loopIdx==0 && ( stepDefinition == 0  || (mockJMC__ && stepDefinition<2)) ) {
 		for (unsigned int i=0; i<nbForest; i++) {
 
+			bool templateHasNegative = false;
 			const unsigned int nb = v_nbPixel__[i];
 			double tmpMeanForestLambdaRF[2] = {0.};
 
@@ -855,16 +861,21 @@ void GetDelta::updateDeltaVector(unsigned int loopIdx) {
 				if (v_LAMBDA_RF__[i][j]>=lambdaRFMin__ && v_LAMBDA_RF__[i][j]<lambdaRFMax__) {
 					tmpMeanForestLambdaRF[0] += v_DELTA_WEIGHT__[i][j]*v_LAMBDA_RF__[i][j];
 					tmpMeanForestLambdaRF[1] += v_DELTA_WEIGHT__[i][j];
+
+					if ( (v_alpha2__[i] + v_beta2__[i]*(v_LAMBDA_RF__[i][j]-v_meanForestLambdaRF__[i])) <= 0.) templateHasNegative = true;
 				}
 			}
 
 			if (tmpMeanForestLambdaRF[1]!=0.) v_meanForestLambdaRF__[i] = tmpMeanForestLambdaRF[0]/tmpMeanForestLambdaRF[1];
 			else std::cout << "  GetDelta::updateDeltaVector::  ERROR::  tmpMeanForestLambdaRF[1]==0. , forest = " << i << std::endl;
+
+			//if (templateHasNegative) v_nbPixel__[i] = 0;
 		}
 	}
 	else {
 		for (unsigned int i=0; i<nbForest; i++) {
 
+			bool templateHasNegative = false;
 			const unsigned int nb = v_nbPixel__[i];
 			double tmpMeanForestLambdaRF[2] = {0.};
 
@@ -883,11 +894,15 @@ void GetDelta::updateDeltaVector(unsigned int loopIdx) {
 				if (v_LAMBDA_RF__[i][j]>=lambdaRFMin__ && v_LAMBDA_RF__[i][j]<lambdaRFMax__) {
 					tmpMeanForestLambdaRF[0] += v_DELTA_WEIGHT__[i][j]*v_LAMBDA_RF__[i][j];
 					tmpMeanForestLambdaRF[1] += v_DELTA_WEIGHT__[i][j];
+
+					if ( (v_alpha2__[i] + v_beta2__[i]*(v_LAMBDA_RF__[i][j]-v_meanForestLambdaRF__[i])) <= 0.) templateHasNegative = true;
 				}
 			}
 
 			if (tmpMeanForestLambdaRF[1]!=0.) v_meanForestLambdaRF__[i] = tmpMeanForestLambdaRF[0]/tmpMeanForestLambdaRF[1];
 			else std::cout << "  GetDelta::updateDeltaVector::  ERROR::  tmpMeanForestLambdaRF[1]==0. , forest = " << i << std::endl;
+
+			//if (templateHasNegative) v_nbPixel__[i] = 0;
 		}
 	}
 
@@ -1343,7 +1358,7 @@ void GetDelta::updateDLA(std::string fitsnameSpec, unsigned int start, unsigned 
 
 		// match with DLA catalog
 		unsigned int NbDLA=0;
-		float zabsDLA[NbDLA0__], NHIDLA[NbDLA0__];
+		double zabsDLA[NbDLA0__], NHIDLA[NbDLA0__];
 		for (unsigned int iii=0; iii<NbDLA0__; iii++){
 			zabsDLA[iii]=0.0;
 			NHIDLA[iii]=0.0;
@@ -1398,7 +1413,8 @@ void GetDelta::updateDelta(std::string fitsnameSpec, unsigned int loopIdx, unsig
 
 	std::cout << "  number of loaded forest = " << nLines << std::endl;
 
-	double meanDelta[3] = {0.};
+	long long unsigned int nbForest = 0;
+	double meanDelta[3]  = {0.};
 	double meanDelta_Zero[3] = {0.};
 
 	//// Load data
@@ -1414,10 +1430,10 @@ void GetDelta::updateDelta(std::string fitsnameSpec, unsigned int loopIdx, unsig
 		double NORM_FLUX[nbBinRFMax__];
 		double NORM_FLUX_IVAR[nbBinRFMax__];
 		double FLUX_DLA[nbBinRFMax__];
-		double DELTA[nbBinRFMax__];
-		double DELTA_IVAR[nbBinRFMax__];
-		double DELTA_WEIGHT[nbBinRFMax__];
-		double TEMPLATE[nbBinRFMax__];
+		//double DELTA[nbBinRFMax__];
+		//double DELTA_IVAR[nbBinRFMax__];
+		//double DELTA_WEIGHT[nbBinRFMax__];
+		//double TEMPLATE[nbBinRFMax__];
 
 		fits_read_col(fitsptrSpec,TDOUBLE, 8, i+1,1,1,NULL,&meanForestLambdaRF,   NULL,&sta);
 		fits_read_col(fitsptrSpec,TDOUBLE, 11,i+1,1,1,NULL,&alpha2,               NULL,&sta);
@@ -1428,23 +1444,29 @@ void GetDelta::updateDelta(std::string fitsnameSpec, unsigned int loopIdx, unsig
 		fits_read_col(fitsptrSpec,TDOUBLE, 15,i+1,1,nbBinRFMax__,NULL, &NORM_FLUX,       NULL,&sta);
 		fits_read_col(fitsptrSpec,TDOUBLE, 16,i+1,1,nbBinRFMax__,NULL, &NORM_FLUX_IVAR,  NULL,&sta);
 		fits_read_col(fitsptrSpec,TDOUBLE, 17,i+1,1,nbBinRFMax__,NULL, &FLUX_DLA,        NULL,&sta);
-		fits_read_col(fitsptrSpec,TDOUBLE, 18,i+1,1,nbBinRFMax__,NULL, &DELTA,           NULL,&sta);
-		fits_read_col(fitsptrSpec,TDOUBLE, 19,i+1,1,nbBinRFMax__,NULL, &DELTA_IVAR,      NULL,&sta);
-		fits_read_col(fitsptrSpec,TDOUBLE, 20,i+1,1,nbBinRFMax__,NULL, &DELTA_WEIGHT,    NULL,&sta);
-		fits_read_col(fitsptrSpec,TDOUBLE, 21,i+1,1,nbBinRFMax__,NULL, &TEMPLATE,        NULL,&sta);
+		//fits_read_col(fitsptrSpec,TDOUBLE, 18,i+1,1,nbBinRFMax__,NULL, &DELTA,           NULL,&sta);
+		//fits_read_col(fitsptrSpec,TDOUBLE, 19,i+1,1,nbBinRFMax__,NULL, &DELTA_IVAR,      NULL,&sta);
+		//fits_read_col(fitsptrSpec,TDOUBLE, 20,i+1,1,nbBinRFMax__,NULL, &DELTA_WEIGHT,    NULL,&sta);
+		//fits_read_col(fitsptrSpec,TDOUBLE, 21,i+1,1,nbBinRFMax__,NULL, &TEMPLATE,        NULL,&sta);
 
 		if (v_fromFitsIndexToVectorIndex__[i]!=-1) meanForestLambdaRF =  v_meanForestLambdaRF__[ v_fromFitsIndexToVectorIndex__[i] ];
 		double tmp_template[nbBinRFMax__];
 		double delta[nbBinRFMax__];
 		double delta_ivar[nbBinRFMax__];
 		double delta_weight[nbBinRFMax__];
+		long double meanLambda[4] = {0.};
+		bool templateHasNegative = false;
 
 		for (unsigned int j=0; j<nbBinRFMax__; j++) {
 
-			if (NORM_FLUX_IVAR[j]<=0. || FLUX_DLA[j]<=C_FLUX_DLA_IS_ZERO) continue; 
+			if (NORM_FLUX_IVAR[j]<=0. || FLUX_DLA[j]<=C_FLUX_DLA_IS_ZERO) {
+				delta_ivar[j]   = 0.;
+				delta_weight[j] = 0.;
+				continue; 
+			}
 
 			tmp_template[j]         = hTemplate__[loopIdx]->Interpolate(LAMBDA_RF[j]);
-			const double tmp_template2 = (alpha2+beta2*(LAMBDA_RF[j]-meanForestLambdaRF))*tmp_template[j]*hDeltaVsLambdaObs__[loopIdx]->Interpolate(LAMBDA_OBS[j]);
+			const long double tmp_template2 = (alpha2+beta2*(LAMBDA_RF[j]-meanForestLambdaRF))*tmp_template[j]*hDeltaVsLambdaObs__[loopIdx]->Interpolate(LAMBDA_OBS[j]);
 			delta[j]                = ( NORM_FLUX[j]/tmp_template2 -1. )/FLUX_DLA[j];
 			delta_ivar[j]           = NORM_FLUX_IVAR[j]*tmp_template2*tmp_template2*FLUX_DLA[j]*FLUX_DLA[j];
 
@@ -1453,20 +1475,46 @@ void GetDelta::updateDelta(std::string fitsnameSpec, unsigned int loopIdx, unsig
 			const double sigma2LSS  = grSig__[loopIdx]->Eval(zi);
 			delta_weight[j]         = std::max(0.,pow( (zi+1.)/onePlusZ0__, halfGama__)/(sigma2LSS+1./(eta*delta_ivar[j])));
 			if (delta_weight[j]<=0.) {
-				//std::cout << "  GetDelta::updateDelta:: ERROR:: delta_weight[j]<=0.  , " << i << " " << j << " " << zi  << " " << LAMBDA_OBS[j] << " " << sigma2LSS << " " << eta << " " << delta_ivar[j] << " " << FLUX_DLA[j] << " " << NORM_FLUX_IVAR[j] << std::endl;
+				delta_ivar[j]   = 0.;
+				delta_weight[j] = 0.;
 				if (LAMBDA_RF[j] >= lambdaRFMin__ && LAMBDA_RF[j] < lambdaRFMax__) meanDelta_Zero[2] ++;
 				continue;
 			}
 
-			if (v_fromFitsIndexToVectorIndex__[i]!=-1 && delta_weight[j]>0. && NORM_FLUX_IVAR[j]>0. && FLUX_DLA[j]>=C_DLACORR && LAMBDA_RF[j]>=lambdaRFMin__ && LAMBDA_RF[j]<lambdaRFMax__ && LAMBDA_OBS[j]>=lambdaObsMin__ && LAMBDA_OBS[j]<lambdaObsMax__ && DELTA_WEIGHT[j]>0.) {
-				meanDelta[0] += delta_weight[j]*delta[j];
-				meanDelta[1] += delta_weight[j];
-				meanDelta[2] ++;
+			if (v_fromFitsIndexToVectorIndex__[i]!=-1 && FLUX_DLA[j]>=C_DLACORR && LAMBDA_OBS[j]>=lambdaObsMin__ && LAMBDA_OBS[j]<lambdaObsMax__ && LAMBDA_RF[j]>=lambdaRFMin__ && LAMBDA_RF[j]<lambdaRFMax__) {
+
+				//// Remove veto lines
+				bool isLine = false;
+				if (doVetoLines__) {
+					for (unsigned int k=0; k<nbVetoLines__; k++) {
+						 if (LAMBDA_OBS[j]>=vetoLine__[2*k] && LAMBDA_OBS[j]<vetoLine__[2*k+1]) {
+							isLine = true;
+							break;
+						}
+					}
+				}
+				if (isLine) continue;
+
+				//// Get if the template is even one time negative
+				if ( alpha2+beta2*(LAMBDA_RF[j]-meanForestLambdaRF) <= 0.) templateHasNegative = true;
+
+				meanLambda[0] += delta_weight[j]*delta[j];
+				meanLambda[1] += delta_weight[j]*LAMBDA_RF[j];
+				meanLambda[2] += delta_weight[j];
+				meanLambda[3] ++;
 			}
 		}
 
+		if (meanLambda[3]>=C_MIN_NB_PIXEL && !templateHasNegative) {
+			nbForest++;
+			meanDelta[0] += meanLambda[0];
+			meanDelta[1] += meanLambda[2];
+			meanDelta[2] += meanLambda[3];
+		}
+
 		//// Set the new value of 'meanForestLambdaRF' if there are some pixels
-		if (v_fromFitsIndexToVectorIndex__[i]!=-1) {
+		if (v_fromFitsIndexToVectorIndex__[i]!=-1 && meanLambda[3]>0.) {
+			meanForestLambdaRF = meanLambda[1]/meanLambda[2];
 			fits_write_col(fitsptrSpec,TDOUBLE, 8,i+1,1,1, &meanForestLambdaRF, &sta);
 		}
 
@@ -1474,11 +1522,11 @@ void GetDelta::updateDelta(std::string fitsnameSpec, unsigned int loopIdx, unsig
 		fits_write_col(fitsptrSpec,TDOUBLE, 19,i+1,1,nbBinRFMax__, &delta_ivar,   &sta);
 		fits_write_col(fitsptrSpec,TDOUBLE, 20,i+1,1,nbBinRFMax__, &delta_weight, &sta);
 		fits_write_col(fitsptrSpec,TDOUBLE, 21,i+1,1,nbBinRFMax__, &tmp_template, &sta);
-
-
 	}
 
 	fits_close_file(fitsptrSpec,&sta);
+
+	std::cout << "  number of good   forest = " << nbForest << std::endl;
 
 	std::cout << "  \n\n--- Step = " << loopIdx+1 << std::endl;
 	std::cout << "  < delta >       = " << meanDelta[0]/meanDelta[1] << std::endl;
@@ -1770,7 +1818,7 @@ void GetDelta::sumFlux (double& f1, double& s1, double f2, double s2) {
 
 
 
-double GetDelta::VoigtProfile(float nhi, float lamb, float z_abs) {
+double GetDelta::VoigtProfile(double nhi, double lamb, double z_abs) {
 
 	const double gamma = 6.625e8;
 	const double f = 0.4164;

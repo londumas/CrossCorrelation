@@ -15,7 +15,7 @@ from iminuit import Minuit
 ### Perso lib
 import myTools
 import const
-
+import const_delta
 
 raw_dic_class = {
 	'min_l1_over_l2': 0.40,
@@ -59,6 +59,44 @@ class CorrelationLambda:
 		self._f1 = dic['f1']
 		self._f2 = dic['f2']
 		self._q1 = dic['q']
+
+		### Get lines
+		if   (self._f1=='LYB'):
+			self._line_RF = const_delta.lambda_RF_line_LYB
+			self._lines1 = const_delta.LYB_lines
+			self._name_line1 = const_delta.LYB_lines_names
+		elif (self._f1=='LYA'):
+			self._line_RF = const_delta.lambda_RF_line_LYA
+			self._lines1 = const_delta.LYA_lines
+			self._name_line1 = const_delta.LYA_lines_names
+		elif (self._f1=='SIIV'):
+			self._line_RF = const_delta.lambda_RF_line_SIIV
+			self._lines1 = const_delta.SIIV_lines
+			self._name_line1 = const_delta.SIIV_lines_names
+		elif (self._f1=='CIV'):
+			self._line_RF = const_delta.lambda_RF_line_CIV
+			self._lines1 = const_delta.CIV_lines
+			self._name_line1 = const_delta.CIV_lines_names
+		elif (self._f1=='MGII'):
+			self._line_RF = const_delta.lambda_RF_line_MGII
+			self._lines1 = const_delta.MGII_lines
+			self._name_line1 = const_delta.MGII_lines_names
+	
+		if   (self._f2=='LYB'):
+			self._lines2 = const_delta.LYB_lines
+			self._name_line2 = const_delta.LYB_lines_names
+		elif (self._f2=='LYA'):
+			self._lines2 = const_delta.LYA_lines
+			self._name_line2 = const_delta.LYA_lines_names
+		elif (self._f2=='SIIV'):
+			self._lines2 = const_delta.SIIV_lines
+			self._name_line2 = const_delta.SIIV_lines_names
+		elif (self._f2=='CIV'):
+			self._lines2 = const_delta.CIV_lines
+			self._name_line2 = const_delta.CIV_lines_names
+		elif (self._f2=='MGII'):
+			self._lines2 = const_delta.MGII_lines
+			self._name_line2 = const_delta.MGII_lines_names
 
 		### folder where data are
 		self._path_to_txt_file_folder = dic['path_to_txt_file_folder']
@@ -170,18 +208,18 @@ class CorrelationLambda:
 			tmp_save555[iX] += save5[i]
 			tmp_save666[iX] += save6[i]
 		
-		cut = (tmp_save6!=0.)
+		cut = (tmp_save6>1.)
 		xiMu[:,:,0][cut] = tmp_save2[cut]/tmp_save5[cut]
 		xiMu[:,:,1][cut] = tmp_save3[cut]/tmp_save5[cut]
 		xiMu[:,:,2][cut] = tmp_save0[cut]/tmp_save5[cut]
 		xiMu[:,:,3][cut] = numpy.sqrt( (tmp_save1[cut]/tmp_save5[cut] - xiMu[:,:,2][cut]*xiMu[:,:,2][cut])/tmp_save6[cut])
 	
-		cut = (tmp_save66!=0.)
+		cut = (tmp_save66>1.)
 		xiWe[:,:,0][cut] = tmp_save22[cut]/tmp_save55[cut]
 		xiWe[:,:,1][cut] = tmp_save00[cut]/tmp_save55[cut]
 		xiWe[:,:,2][cut] = numpy.sqrt( (tmp_save11[cut]/tmp_save55[cut] - xiWe[:,:,1][cut]*xiWe[:,:,1][cut])/tmp_save66[cut] )
 	
-		cut = (tmp_save666!=0.)
+		cut = (tmp_save666>1.)
 		xi1D[:,0][cut] = tmp_save222[cut]/tmp_save555[cut]
 		xi1D[:,1][cut] = tmp_save000[cut]/tmp_save555[cut]
 		xi1D[:,2][cut] = numpy.sqrt( (tmp_save111[cut]/tmp_save555[cut] - xi1D[:,1][cut]*xi1D[:,1][cut])/tmp_save666[cut] )
@@ -195,21 +233,47 @@ class CorrelationLambda:
 		yer = self._xi1D[:,2][cut]
 		plt.errorbar(xxx, yyy, yerr=yer, fmt='o', label=r'$'+self._name+'$')
 
-		'''
 		if (with_lines):
-			yMin    = numpy.min(yyy)
-			yMax    = numpy.max(yyy)
-			nbLines = lines.size
-			for i in range(0,nbLines):
-				line = lines[i]/lambdaRFLine
-				if (line<min1D__ or line>max1D__): continue
-				if (verbose) print ' ||  QSO - ', names[i], ' || ', line, ' || ', lambdaRFLine, ' || ', lines[i], ' || '
-				xLi  = [line,line]
-				yLi  = [yMin,yMax]
-				name = 'QSO - ' + names[i]
-				plt.plot(xLi,yLi,color='green',linewidth=2)
-				plt.text(line, 0.7*yMin, name, rotation='vertical', fontsize=20)
-		'''
+
+			if (verbose): print ' ||  name_1 - name_2 || line || lambda_rf_1 || lamnda_rf_2 || '
+
+			xMin = numpy.min(xxx)
+			xMax = numpy.max(xxx)
+			yMin = numpy.min(yyy)
+			yMax = numpy.max(yyy)
+			yLi = [yMin,yMax]
+			nbLines1 = self._lines1.size
+
+			for i in range(0,nbLines1):
+
+				if (self._correlation=='f_f'):
+					nbLines2 = i
+				if (self._correlation=='q_f'):
+					nbLines2 = 1
+				else:
+					nbLines2 = self._lines2.size
+
+				for j in range(0,nbLines2):
+
+					if (self._correlation=='q_f'):
+						line = self._lines1[i]/self._line_RF
+					else:
+						line = self._lines2[j]/self._lines1[i]
+						if (line<xMin or line>xMax): line = 1./line
+					if (line<xMin or line>xMax): continue
+					xLi = [line,line]
+					plt.plot(xLi,yLi,color='green')
+
+					if (self._correlation=='q_f'):
+						if (verbose): print ' ||  ', self._name_line1[i] ,' - QSO || ', line, ' || ', self._lines1[i], ' || ', self._line_RF, ' || '
+						name = self._name_line1[i]+' - QSO'
+					else:
+						if (verbose): print ' ||  ', self._name_line1[i] ,' - ', self._name_line2[j], ' || ', line, ' || ', self._lines1[i], ' || ', self._lines2[j], ' || '
+						name = self._name_line1[i]+' - ' + self._name_line2[j]
+		
+					plt.text(line, yMax, name, rotation='vertical', fontsize=20)
+
+
 
 		plt.title(r'$'+self._title+'$', fontsize=40)
 		plt.xlabel(r'$'+self._xTitle+'$', fontsize=40)
@@ -220,27 +284,9 @@ class CorrelationLambda:
 		return
 	def plot_we(self, with_lines=False, verbose=False):
 	
-		label = ["theta < 0.0001", "0.0001 < theta < 0.0002"]
-
-		'''
-		yMin    = 0.
-		yMax    = 0.005
-		nbLines = lines.size
-		for i in range(0,nbLines):
-			for j in range(0,i):
-				#if ( lines[i]!=1550.77845 and lines[j]!=1550.77845 and lines[i]!=1548.2049 and lines[j]!=1548.2049 ): continue
-				#if ( lines[i]!=1402.77291 and lines[j]!=1402.77291 and lines[i]!=1393.76018 and lines[j]!=1393.76018 ): continue
-				if ( lines[i]!=1215.67 and lines[j]!=1215.67): continue
-				line = max( lines[i]/lines[j], lines[j]/lines[i])
-				if (line<min1D__ or line>max1D__): continue
-				xLi  = [line,line]
-				yLi  = [yMin,yMax]
-				name = names[i] + ' - ' + names[j]
-				plt.plot(xLi,yLi,color='green',linewidth=2)
-				plt.text(line, yMax, name, rotation='vertical', fontsize=20)
-		'''
+		label = ["\\theta < 0.0001", "0.0001 < \\theta < 0.0002", "0.0002 < \\theta < 0.0003"]
 	
-		for i in numpy.arange(2):
+		for i in numpy.arange(3):
 
 			cut = (self._xiWe[:,i,2]>0.)
 			if (self._xiWe[:,i,0][cut].size==0):
@@ -251,6 +297,46 @@ class CorrelationLambda:
 			yer = self._xiWe[:,i,2][cut]
 			
 			plt.errorbar(xxx, yyy, yerr=yer, fmt='o', label=r'$'+label[i]+'$')
+
+		if (with_lines):
+
+			if (verbose): print ' ||  name_1 - name_2 || line || lambda_rf_1 || lamnda_rf_2 || '
+
+			xMin = numpy.min(xxx)
+			xMax = numpy.max(xxx)
+			yMin = numpy.min(yyy)
+			yMax = numpy.max(yyy)
+			yLi = [yMin,yMax]
+			nbLines1 = self._lines1.size
+
+			for i in range(0,nbLines1):
+
+				if (self._correlation=='f_f'):
+					nbLines2 = i
+				if (self._correlation=='q_f'):
+					nbLines2 = 1
+				else:
+					nbLines2 = self._lines2.size
+
+				for j in range(0,nbLines2):
+
+					if (self._correlation=='q_f'):
+						line = self._lines1[i]/self._line_RF
+					else:
+						line = self._lines2[j]/self._lines1[i]
+						if (line<xMin or line>xMax): line = 1./line
+					if (line<xMin or line>xMax): continue
+					xLi = [line,line]
+					plt.plot(xLi,yLi,color='green')
+
+					if (self._correlation=='q_f'):
+						if (verbose): print ' ||  ', self._name_line1[i] ,' - QSO || ', line, ' || ', self._lines1[i], ' || ', self._line_RF, ' || '
+						name = self._name_line1[i]+' - QSO'
+					else:
+						if (verbose): print ' ||  ', self._name_line1[i] ,' - ', self._name_line2[j], ' || ', line, ' || ', self._lines1[i], ' || ', self._lines2[j], ' || '
+						name = self._name_line1[i]+' - ' + self._name_line2[j]
+		
+					plt.text(line, yMax, name, rotation='vertical', fontsize=20)
 
 		plt.title(r'$'+self._title+'$', fontsize=40)
 		plt.xlabel(r'$'+self._xTitle+'$', fontsize=40)
@@ -341,10 +427,10 @@ dic['min_visual_z'] = -0.002
 dic['max_visual_z'] = 0.002
 '''
 
-dic['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_reOBS_eBOSS_Guy/'
+dic['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
 a = CorrelationLambda(dic)
-a.plot_1d()
-a.plot_we()
+a.plot_1d(True)
+a.plot_we(True)
 a.plot_mu()
 
 

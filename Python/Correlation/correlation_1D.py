@@ -212,7 +212,7 @@ class Correlation_1D:
 		xxx = self._xi[cut:,0]
 		yyy = self._xi[cut:,1]
 		yer = self._xi[cut:,2]
-		plt.errorbar(xxx, yyy, yerr=yer, marker='o', label=r'$'+self._name+'$')
+		plt.errorbar(xxx, yyy, yerr=yer, marker='o', label=r'$'+self._name+'$', markersize=8,linewidth=2)
 
 		xMin = numpy.amin(xxx)
 		xMax = numpy.amax(xxx)
@@ -226,7 +226,7 @@ class Correlation_1D:
 				TMP_xxx = el._xi[cut:,0]
 			TMP_yyy = el._xi[cut:,1]
 			TMP_yer = el._xi[cut:,2]
-			plt.errorbar(TMP_xxx, TMP_yyy, yerr=TMP_yer, marker='o', label=r'$'+el._name+'$')
+			plt.errorbar(TMP_xxx, TMP_yyy, yerr=TMP_yer, marker='o', label=r'$'+el._name+'$', markersize=8,linewidth=2)
 
 			xMin = min(xMin, numpy.amin(TMP_xxx) )
 			xMax = max(xMax, numpy.amax(TMP_xxx) )
@@ -307,38 +307,12 @@ dic_class = {
 
 
 
-'''
 ### Data
-dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
+dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1563/Box_000/Simu_000/Results/'
 dic_class['name'] = "LYA"
-dic_class['correlation'] = "f_f_r"
+dic_class['correlation'] = "f_f_lRF_devide"
 corrD = Correlation_1D(dic_class)
-corrD.plot(False,False)
-path_to_txt_file_folder = ''
-dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_test_soved_shift_withMetals_withError_with_template/Box_000/Simu_000/Results/'
-dic_class['name'] = "simu"
-dic_class['correlation'] = "f_f_r"
-corrDD = Correlation_1D(dic_class)
-corrDD.plot(False,False)
-dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_test_soved_shift_withMetals_withError_with_template/Box_000/Simu_000/Results_NicolasDistortion/'
-dic_class['name'] = "simu \, nicolas"
-dic_class['correlation'] = "f_f_r"
-corrDDD = Correlation_1D(dic_class)
-corrDDD.plot(False,False)
-'''
-dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_test_soved_shift/Box_000/Simu_000/Results/'
-dic_class['name'] = "simu \, no \, metals"
-dic_class['correlation'] = "f_f_r"
-corrDDDD = Correlation_1D(dic_class)
-corrDDDD.fit_CAMB()
-corrDDDD.plot(False,False)
-
-
-corrD.plot(False,False,[corrDD,corrDDD,corrDDDD])
-
-
-
-
+corrD.plot()
 
 
 

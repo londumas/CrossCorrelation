@@ -38,3 +38,35 @@
 # 2016 - 02 - 11
 	- GetDelta.cpp
 		* correct error with mean_lambda_rf
+
+# 2016 - 02 - 16
+	- Add reading the raw files from Jean-Marc
+	- bigger marker and lines in all Python
+	- correct a possible error with r > 200 in "annalyse_BAOFIT.py"
+	- "Correlation3D" class:
+		* add a "read_data_from_BAOFIT_data_file" method to the "Correlation3D" class
+		* correct .ini file generation file with metals
+	- Correlation.cpp:
+		* no more float
+		* put long double sometime
+		* correct error for the distortion matrix, when reading the lambda_rf value
+	- GetDelta.cpp:
+		* no more float
+		* correct small error when getting mean_lambda_rf
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

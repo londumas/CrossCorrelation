@@ -276,6 +276,7 @@ class AnnalyseBAOFIT(correlation_3D.Correlation3D):
 			for j in numpy.arange(self._nbBinY2D):
 				if (self._xi2D_fit[i,j,8]<=0.): continue
 				else:
+					if (self._xi2D_fit[i,j,3]>=self._max1D): continue
 					idx = int( self._xi2D_fit[i,j,3]/self._binSize )
 					ivar = 1./(self._xi2D_fit[i,j,8]*self._xi2D_fit[i,j,8])
 					xi1D_fit[idx,0] += ivar*self._xi2D_fit[i,j,3]

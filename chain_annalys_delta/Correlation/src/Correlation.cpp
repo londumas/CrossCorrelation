@@ -94,8 +94,8 @@ const unsigned int nbBinlambdaObs__  = int(lambdaObsMax__-lambdaObsMin__);
 double distMinPixel__ = 0.;
 double distMinPixelDelta2__ = 0.;
 unsigned int idxCommand_[6] = {0};
-const std::string pathToMockJMC__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_test_soved_shift_withMetals_withError_with_template/";
-std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/";
+const std::string pathToMockJMC__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1563/";
+std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/TESTS/";
 //std::string pathToSave__ = "";
 
 ///// Flags for Jean-Marc's simulations
@@ -114,7 +114,7 @@ const bool doBootstraps__ = false;
 
 
 const bool doVetoLines__ = true;
-const bool nicolasEstimator__ = true;
+const bool nicolasEstimator__ = false;
 const bool doingCoAddSoRemoving__ = false;
 
 
@@ -146,7 +146,7 @@ Correlation::Correlation(int argc, char **argv) {
 	if (!mocks && !mockJMC__) {
 		pathForest__  = "/home/gpfs/manip/mnt/bao/hdumasde/Data/";
 		pathForest__  += forest__;
-		pathForest__  += "/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits";
+		pathForest__  += "/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits";  //_method1
 //		pathForest__  += "/FitsFile_DR12_Guy/DR12_reObs/DR12_reObs.fits";
 //		pathForest__  += "/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits";
 //		pathForest__   = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/FitsFile_DR12_reOBS_eBOSS_Guy/DR12_primery/DR12_primery_reOBS_eBOSS.fits";
@@ -1628,7 +1628,7 @@ void Correlation::xi_delta_QSO(bool doBootstraps/*=False*/, unsigned int bootIdx
 	if (nbQ1__==0) return;
 	///// Forest
 	loadDataForest(pathForest__,doBootstraps,bootIdx);
-	if (doBootstraps || doingCoAddSoRemoving__) removeFalseCorrelations();
+	if (!nicolasEstimator__ && (doBootstraps || doingCoAddSoRemoving__) ) removeFalseCorrelations();
 
 	///// Empty useless vectors
 	v_zz__.clear();
@@ -1746,8 +1746,8 @@ void Correlation::xi_delta_QSO(bool doBootstraps/*=False*/, unsigned int bootIdx
 		const double coefRA = 1./(raMax-raMin);
 		const double coefDE = 1./(deMax-deMin);
 		for (unsigned int i=0; i<nbQ1__; i++) {
-			const float ra = (float)rand()/(float)(RAND_MAX*coefRA) +raMin;
-			const float de = (float)rand()/(float)(RAND_MAX*coefDE) +deMin;
+			const double ra = (double)rand()/(double)(RAND_MAX*coefRA) +raMin;
+			const double de = (double)rand()/(double)(RAND_MAX*coefDE) +deMin;
 			v_raQ1__[i]    = ra;
 			v_deQ1__[i]    = de;
 			v_CosDeQ1__[i] = cos(de);
@@ -5779,6 +5779,7 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 
 	double meanDelta[3] = {0.};
 	double meanDelta_Nicolas[3] = {0.};
+	double meanDelta_Nicolas_overForests[4] = {0.};
 
 	//// Load data
 	for (unsigned int i=0; i<nbForest_; i++) {
@@ -5832,7 +5833,7 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 
 		double tmp_meanDelta[3] = {0.};
 		//// For Nicolas's estimator
-		double meanNeeded[5] = {0.};
+		long double meanNeeded[5] = {0.};
 
 		for (unsigned int j=0; j<nbBinRFMax__; j++) {
 			if (DELTA_WEIGHT[j]>0. && NORM_FLUX_IVAR[j]>0. && FLUX_DLA[j]>=C_DLACORR && LAMBDA_OBS[j]>=lambdaObsMin__ && LAMBDA_OBS[j]<lambdaObsMax__ && LAMBDA_RF[j]>=lambdaRFMin__ && LAMBDA_RF[j]<lambdaRFMax__) {
@@ -5890,19 +5891,24 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 
 		//// For Nicolas's estimator
 		if (nicolasEstimator__) {
-			const double meanDelta   = meanNeeded[0]/meanNeeded[4];
-			const double meanLambda  = meanNeeded[1]/meanNeeded[4];
-			const double numerator   = meanNeeded[3]-meanLambda*meanNeeded[0];
-			const double denominator = meanNeeded[2]-meanLambda*meanLambda*meanNeeded[4];
-			const double coef        = numerator/denominator;
+			const long double meanDelta   = meanNeeded[0]/meanNeeded[4];
+			const long double meanLambda  = meanNeeded[1]/meanNeeded[4];
+			const long double numerator   = meanNeeded[3]-meanLambda*meanNeeded[0];
+			const long double denominator = meanNeeded[2]-meanLambda*meanLambda*meanNeeded[4];
+			const long double coef        = numerator/denominator;
 			for (unsigned int j=0; j<tmp_nb; j++) {
-				v_tmp_d[j] -= meanDelta+(LAMBDA_RF[j]-meanLambda)*coef;
+				v_tmp_d[j] -= meanDelta+(v_tmp_lRF[j]-meanLambda)*coef;
+
 
 				//// Get Nb Pixel in forest
 				meanDelta_Nicolas[0] += v_tmp_w[j]*v_tmp_d[j];
 				meanDelta_Nicolas[1] += v_tmp_w[j];
 				meanDelta_Nicolas[2] ++;
 			}
+			meanDelta_Nicolas_overForests[0] += meanDelta;
+			meanDelta_Nicolas_overForests[1] += coef;
+			meanDelta_Nicolas_overForests[2] += meanLambda-meanForestLambdaRF;
+			meanDelta_Nicolas_overForests[3] ++;
 		}
 
 		//// If not dealing with Jean-Marc's simulations
@@ -5943,9 +5949,12 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 	std::cout << "  nb pixel        = " << (long long unsigned int)meanDelta[2]              << std::endl;
 
 	if (nicolasEstimator__) {
-		std::cout << "  < delta_Nicolas >       = " << meanDelta_Nicolas[0]/meanDelta_Nicolas[1] << std::endl;
-		std::cout << "  sum(w_i)_Nicolas        = " << meanDelta_Nicolas[1]              << std::endl;
-		std::cout << "  nb pixel_Nicolas        = " << (long long unsigned int)meanDelta_Nicolas[2]              << std::endl;
+		std::cout << "  < delta_Nicolas >              = " << meanDelta_Nicolas[0]/meanDelta_Nicolas[1] << std::endl;
+		std::cout << "  sum(w_i)_Nicolas               = " << meanDelta_Nicolas[1]              << std::endl;
+		std::cout << "  nb pixel_Nicolas               = " << (long long unsigned int)meanDelta_Nicolas[2]              << std::endl;
+		std::cout << "  < <delta> >                    = " << meanDelta_Nicolas_overForests[0]/meanDelta_Nicolas_overForests[3] << std::endl;
+		std::cout << "  < coef >                       = " << meanDelta_Nicolas_overForests[1]/meanDelta_Nicolas_overForests[3] << std::endl;
+		std::cout << "  < lambda > - < lambda >_before = " << meanDelta_Nicolas_overForests[2]/meanDelta_Nicolas_overForests[3] << std::endl;
 	}
 
 	fits_close_file(fitsptrSpec,&sta);

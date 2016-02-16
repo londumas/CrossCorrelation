@@ -40,8 +40,8 @@
 
 Tools::Tools(int argc, char** argv) {
 
-	//get_Ra_Dec_DLA();
-	get_Catalogue();
+	get_Ra_Dec_DLA();
+	//get_Catalogue();
 	//get_flux_vs_lambdaObs();
 	//get_weigted_covar_matrix();
 
@@ -51,15 +51,14 @@ Tools::~Tools(void) {
 
 void Tools::get_Ra_Dec_DLA(void) {
 
-	std::string fitsnameSpec = "/home/gpfs/manip/mnt/bao/hdumasde/Data/Catalogue/DR12Q_v2_10.fits";
+	std::string forest_file = "/home/gpfs/manip/mnt/bao/hdumasde/Data/Catalogue/DR12Q_v2_10.fits";
+	std::string DLA_file    = "/home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/DLA_all.fits";
 
 	/// Get the list of DLA
+	const TString TSfitsnameSpec2 = DLA_file;
+	std::cout << TSfitsnameSpec2 << std::endl;
 	int sta2 = 0;
 	long nrows2 = 0;
-
-	const TString TSfitsnameSpec2 = "/home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/DLA_all.fits";
-	std::cout << TSfitsnameSpec2 << std::endl;
-
 	fitsfile* fitsptrSpec2;
 	fits_open_table(&fitsptrSpec2,TSfitsnameSpec2, READONLY, &sta2); //READONLY // READWRITE
 	fits_get_num_rows(fitsptrSpec2, &nrows2, &sta2);
@@ -83,13 +82,13 @@ void Tools::get_Ra_Dec_DLA(void) {
 	}
 	fits_close_file(fitsptrSpec2,&sta2);
 
-	const TString TSfitsnameSpec = fitsnameSpec;
-	std::cout << fitsnameSpec << std::endl;
+
 
 	/// Variables for FITS
+	const TString TSfitsnameSpec = forest_file;
+	std::cout << TSfitsnameSpec << std::endl;
 	int sta = 0;
 	long nrows = 0;
-
 	fitsfile* fitsptrSpec;
 	fits_open_table(&fitsptrSpec,TSfitsnameSpec, READONLY, &sta); //READONLY // READWRITE
 	fits_get_num_rows(fitsptrSpec, &nrows, &sta);
@@ -151,7 +150,6 @@ void Tools::get_Ra_Dec_DLA(void) {
 	}
 
 	fits_close_file(fitsptrSpec,&sta);
-
 
 	/// Look how many DLA have not been found
 	for (unsigned int i=0; i<NbDLACat; i++) {

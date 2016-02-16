@@ -29,12 +29,12 @@ import cosmolopy.distance as cosmology
 
 ### Constants
 sizeMax = 300000
-sizeMaxForest = 300000
+sizeMaxForest = 100000
 nbQSO__ = 238929
 nbFor__ = 170000
-nbPixel = 645
+nbPixel = 645   ###2148  ###645
 ratioForestToQSO__    = 1.*nbFor__/nbQSO__;
-pathToFolder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_test_soved_shift_withMetals_withError_with_template/'
+pathToFolder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1563/' ##noMockExpander
 
 
 
@@ -61,7 +61,7 @@ def main():
 
 	## Create the folders
 	#####################
-	#subprocess.call('mkdir ' +pathToFolder+'Results/', shell=True)
+	subprocess.call('mkdir ' +pathToFolder+'Results/', shell=True)
 
 	for i in range(0,1):		
 
@@ -69,7 +69,7 @@ def main():
 
 		## Create the folders
 		#####################
-		#subprocess.call('mkdir ' +path, shell=True)
+		subprocess.call('mkdir ' +path, shell=True)
 
 		for j in range(0,1):
 
@@ -78,6 +78,7 @@ def main():
 
 			if (index_pass==0):
 				subprocess.call('mkdir ' + path, shell=True)
+				subprocess.call('mkdir ' + path + 'Raw', shell=True)
 				subprocess.call('mkdir ' + path + 'Data', shell=True)
 				subprocess.call('mkdir ' + path + 'Run', shell=True)
 				subprocess.call('mkdir ' + path + 'Results', shell=True)

@@ -39,7 +39,7 @@ def main():
 	forest = 'LYA'
 	alphaStart__ = 1.3
 	reObs = False
-	eBOSS = True
+	eBOSS = False
 	method = '' #'_method1'
 
 	print
@@ -95,9 +95,10 @@ def main():
 		elif (eBOSS):
 			folder = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_eBOSS_Guy/all_eBOSS_primery/histos/'
 		else:
-			folder = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/histos/'
+			folder = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/histos'+method+'/'
 		scheme = 'alphaAndBeta_'+forest+'_'
 		lenScheme = len(scheme)
+		print folder
 
 		tmp_command = "rm " + folder + scheme + 'all.txt'
 		subprocess.call(tmp_command, shell=True)
@@ -210,22 +211,22 @@ def main():
 		
 		plt.hist(alpha[ (chi>0.) ],bins=1000,label='alpha')
 		plt.show()
-		plt.hist(numpy.abs(alpha[ (chi>0.) ])/alphaErr[ (chi>0.) ],bins=1000,label='alpha')
-		plt.show()
-		plt.errorbar(chi[ (chi>0.) ],alpha[ (chi>0.) ],fmt='o')
-		plt.show()
-		plt.errorbar(chi[ (chi>0.) ],alphaErr[ (chi>0.) ],fmt='o')
-		plt.show()
-		plt.errorbar(chi[ (chi>0.) ],numpy.abs(alpha[ (chi>0.) ])/alphaErr[ (chi>0.) ],fmt='o')
-		plt.show()
+		#plt.hist(numpy.abs(alpha[ (chi>0.) ])/alphaErr[ (chi>0.) ],bins=1000,label='alpha')
+		#plt.show()
+		#plt.errorbar(chi[ (chi>0.) ],alpha[ (chi>0.) ],fmt='o')
+		#plt.show()
+		#plt.errorbar(chi[ (chi>0.) ],alphaErr[ (chi>0.) ],fmt='o')
+		#plt.show()
+		#plt.errorbar(chi[ (chi>0.) ],numpy.abs(alpha[ (chi>0.) ])/alphaErr[ (chi>0.) ],fmt='o')
+		#plt.show()
 		plt.hist(beta[ (chi>0.) ],bins=1000,label='beta')
 		plt.show()
-		plt.errorbar(chi[ (chi>0.) ],beta[ (chi>0.) ],fmt='o')
-		plt.show()
-		plt.errorbar(chi[ (chi>0.) ],betaErr[ (chi>0.) ],fmt='o')
-		plt.show()
-		plt.errorbar(chi[ (chi>0.) ],numpy.abs(beta[ (chi>0.) ])/betaErr[ (chi>0.) ],fmt='o')
-		plt.show()
+		#plt.errorbar(chi[ (chi>0.) ],beta[ (chi>0.) ],fmt='o')
+		#plt.show()
+		#plt.errorbar(chi[ (chi>0.) ],betaErr[ (chi>0.) ],fmt='o')
+		#plt.show()
+		#plt.errorbar(chi[ (chi>0.) ],numpy.abs(beta[ (chi>0.) ])/betaErr[ (chi>0.) ],fmt='o')
+		#plt.show()
 		plt.hist(chi[ (chi>0.) ]/nbPixel[ (chi>0.) ],bins=1000,label='chi2')
 		plt.show()
 		
@@ -236,7 +237,8 @@ def main():
 		elif (eBOSS):
 			path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits'
 		else:
-			path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits'
+			path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/DR12_primery'+method+'.fits'
+		print path
 
 		file_cat = pyfits.open(path,mode='update')
 		cat      = file_cat[1].data
@@ -245,11 +247,15 @@ def main():
 		print '  nb spectra         : ', cat.size
 		print '  alpha diff         : ', cat['ALPHA_2']-alpha
 		print '  beta diff          : ', cat['BETA_2']-beta
+		print
 		
-		plt.hist(cat['ALPHA_2']-alpha,bins=1000,label='alpha')
+		plt.hist( (cat['ALPHA_2']-alpha)[ (chi>0.) ],bins=1000,label='alpha')
 		plt.show()
-		plt.hist(cat['BETA_2']-beta,bins=1000,label='beta')
+		plt.hist( (cat['BETA_2']-beta)[ (chi>0.) ],bins=1000,label='beta')
 		plt.show()
+
+		cut = numpy.logical_and( numpy.abs(cat['ALPHA_2']-alpha)>1.e-4, chi>0. )
+		print zip( idx[cut], cat['PLATE'][cut],cat['MJD'][cut],cat['FIBERID'][cut]  )
 		
 		cat['ALPHA_2'] = alpha
 		cat['BETA_2']  = beta
