@@ -64,8 +64,14 @@
 # 2016 - 02 - 17
 	- Correlation.cpp:
 		* Remove saving xi_q_q_1D, becuase information is already in xi_q_q_mu
-
-
+# 2016 - 02 - 17
+	- Correlation.cpp:
+		* Add conting removed forest
+		* Add Nicolas projection for the second set of forests
+	- GetDelta.cpp:
+		* Add conting removed forest
+		* Add calculating mean_lambda_rf when loading the data
+		* Add calculating and saving mean_lambda_rf even for bad forests
 
 
 

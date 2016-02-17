@@ -80,7 +80,7 @@ const bool doVetoLines__          = true;
 const bool setDLA__               = false;
 const bool cutNotFittedSpectra__  = true;
 const bool mocksColab__           = false;
-const bool mockJMC__              = true;
+const bool mockJMC__              = false;
 const bool putReobsTogether__     = false;
 double isReobsFlag__ = -100.;
 
@@ -976,7 +976,8 @@ void GetDelta::fitForests(unsigned int begin, unsigned int end) {
 
 		if (NbPixMeth2==0) continue;
 
-		mygMinuit->mnparm(0, "alpha", v_alpha2__[f], 0.1, minAlpha__, maxAlpha__, iflag);
+		//mygMinuit->mnparm(0, "alpha", v_alpha2__[f], 0.1, minAlpha__, maxAlpha__, iflag);
+		mygMinuit->mnparm(0, "alpha", 2.21373091860848e+00, 0.1, minAlpha__, maxAlpha__, iflag);
 		mygMinuit->mnparm(1, "beta" , v_beta2__[f],  0.1, minBeta__,  maxBeta__,  iflag);
 
 		// Minimization
@@ -1022,6 +1023,11 @@ void GetDelta::fitForests(unsigned int begin, unsigned int end) {
 
 	//// index  alpha  beta  chi^{2}  error_alpha   error_beta   iflag
 	for (unsigned int i=0; i<nbForest; i++) {
+
+//std::cout << i+begin << " " << v_alpha[i] << " " << v_alpha2__[i] << " " << v_alpha[i]-v_alpha2__[i] << std::endl;
+//std::cout << i+begin << " " << v_beta[i]  << " " << v_beta2__[i] << " " << v_beta[i]-v_beta2__[i] << std::endl;
+//std::cout << v_chi2[i]/(v_nbPixel[i]-2.) << std::endl;
+
 		fFile << i+begin;
 		fFile << " " << v_alpha[i];
 		fFile << " " << v_beta[i];
@@ -1117,13 +1123,14 @@ void GetDelta::loadDataForest(std::string fitsnameSpec, unsigned int start, unsi
 
 	std::cout << "  number of loaded forest = " << nLines-start << std::endl;
 
+	long unsigned int nbCutted[5] = {0}; 
 	double meanDelta[3] = {0.};
 	v_fromFitsIndexToVectorIndex__.resize(nrows,-1);
 
 	//// Load data
 	for (unsigned int i=start; i<nLines; i++) { //nLines
 
-		double tmp_meanDelta[3] = {0.};
+		long double tmp_meanDelta[4] = {0.};
 
 		//// Variables for data in FITS
 		double zz = 0.;
@@ -1156,7 +1163,12 @@ void GetDelta::loadDataForest(std::string fitsnameSpec, unsigned int start, unsi
 		fits_read_col(fitsptrSpec,TDOUBLE, 20,i+1,1,nbBinRFMax__,NULL, &DELTA_WEIGHT,    NULL,&sta);
 		fits_read_col(fitsptrSpec,TDOUBLE, 21,i+1,1,nbBinRFMax__,NULL, &TEMPLATE,        NULL,&sta);
 
-		if (stepDefinition >= 2 && cutNotFittedSpectra==true && ( (alpha2 == alphaStart__ && beta2 == betaStart__) || (fabs(alpha2)>=maxAlpha__-0.5) || (fabs(beta2)>=maxBeta__-0.05) ) ) continue;
+		if (stepDefinition >= 2 && cutNotFittedSpectra==true && ( (alpha2 == alphaStart__ && beta2 == betaStart__) || (fabs(alpha2)>=maxAlpha__-0.5) || (fabs(beta2)>=maxBeta__-0.05) ) ) {
+			if (alpha2 == alphaStart__ && beta2 == betaStart__) nbCutted[0] ++;
+			else if (fabs(alpha2)>=maxAlpha__-0.5) nbCutted[1] ++;
+			else if (fabs(beta2)>=maxBeta__-0.05) nbCutted[2] ++;
+			continue;
+		}
 
 		//// Vector with data
 		bool templateHasNegative = false;
@@ -1213,10 +1225,11 @@ void GetDelta::loadDataForest(std::string fitsnameSpec, unsigned int start, unsi
 				v_tmp_factorWeight.push_back(pow((zi+1.)/onePlusZ0__, halfGama__) );
 
 				///// Get Nb Pixel in forest
-				if (DELTA_WEIGHT[j]>0. && LAMBDA_RF[j]>=lambdaRFMin__ && LAMBDA_RF[j]<lambdaRFMax__) {
+				if (LAMBDA_RF[j]>=lambdaRFMin__ && LAMBDA_RF[j]<lambdaRFMax__) {
 					tmp_meanDelta[0] += DELTA_WEIGHT[j]*DELTA[j];
 					tmp_meanDelta[1] += DELTA_WEIGHT[j];
 					tmp_meanDelta[2] ++;
+					tmp_meanDelta[3] += DELTA_WEIGHT[j]*LAMBDA_RF[j];
 
 					tmp_nb++;
 					if ( alpha2+beta2*(LAMBDA_RF[j]-meanForestLambdaRF) <= 0.) templateHasNegative = true;
@@ -1224,7 +1237,11 @@ void GetDelta::loadDataForest(std::string fitsnameSpec, unsigned int start, unsi
 			}
 		}
 
-		if (cutNotFittedSpectra==true && (tmp_nb<C_MIN_NB_PIXEL || templateHasNegative ) ) continue;
+		if (cutNotFittedSpectra==true && (tmp_nb<C_MIN_NB_PIXEL || templateHasNegative ) ) {
+			if (tmp_nb<C_MIN_NB_PIXEL) nbCutted[3] ++;
+			else if (templateHasNegative) nbCutted[4] ++;
+			continue;
+		}
 
 		///// Get Nb Pixel in forest
 		meanDelta[0] += tmp_meanDelta[0];
@@ -1232,7 +1249,7 @@ void GetDelta::loadDataForest(std::string fitsnameSpec, unsigned int start, unsi
 		meanDelta[2] += tmp_meanDelta[2];
 
 		v_zz__.push_back(zz);
-		v_meanForestLambdaRF__.push_back(meanForestLambdaRF);
+		v_meanForestLambdaRF__.push_back(tmp_meanDelta[3]/tmp_meanDelta[1]);
 		v_alpha2__.push_back(alpha2);
 		v_beta2__.push_back(beta2);
 		v_nbPixel__.push_back(v_tmp_18.size());
@@ -1255,6 +1272,7 @@ void GetDelta::loadDataForest(std::string fitsnameSpec, unsigned int start, unsi
 	fits_close_file(fitsptrSpec,&sta);
 
 	std::cout << "  number of good   forest = " << v_zz__.size() << std::endl;
+	for (unsigned int i=0; i<5; i++) std::cout << "  lost n°" << i << " = " << nbCutted[i] << std::endl;
 
 	std::cout << "  \n\n--- Step = -1 " << std::endl;
 	std::cout << "  < delta >       = " << meanDelta[0]/meanDelta[1] << std::endl;
@@ -1481,7 +1499,7 @@ void GetDelta::updateDelta(std::string fitsnameSpec, unsigned int loopIdx, unsig
 				continue;
 			}
 
-			if (v_fromFitsIndexToVectorIndex__[i]!=-1 && FLUX_DLA[j]>=C_DLACORR && LAMBDA_OBS[j]>=lambdaObsMin__ && LAMBDA_OBS[j]<lambdaObsMax__ && LAMBDA_RF[j]>=lambdaRFMin__ && LAMBDA_RF[j]<lambdaRFMax__) {
+			if (FLUX_DLA[j]>=C_DLACORR && LAMBDA_OBS[j]>=lambdaObsMin__ && LAMBDA_OBS[j]<lambdaObsMax__ && LAMBDA_RF[j]>=lambdaRFMin__ && LAMBDA_RF[j]<lambdaRFMax__) {
 
 				//// Remove veto lines
 				bool isLine = false;
@@ -1505,7 +1523,7 @@ void GetDelta::updateDelta(std::string fitsnameSpec, unsigned int loopIdx, unsig
 			}
 		}
 
-		if (meanLambda[3]>=C_MIN_NB_PIXEL && !templateHasNegative) {
+		if (meanLambda[3]>=C_MIN_NB_PIXEL && !templateHasNegative && alpha2!=alphaStart__ && beta2!=betaStart__ && (fabs(alpha2)<maxAlpha__-0.5) && (fabs(beta2)<maxBeta__-0.05) ) {
 			nbForest++;
 			meanDelta[0] += meanLambda[0];
 			meanDelta[1] += meanLambda[2];
@@ -1513,7 +1531,7 @@ void GetDelta::updateDelta(std::string fitsnameSpec, unsigned int loopIdx, unsig
 		}
 
 		//// Set the new value of 'meanForestLambdaRF' if there are some pixels
-		if (v_fromFitsIndexToVectorIndex__[i]!=-1 && meanLambda[3]>0.) {
+		if (meanLambda[3]>0.) {
 			meanForestLambdaRF = meanLambda[1]/meanLambda[2];
 			fits_write_col(fitsptrSpec,TDOUBLE, 8,i+1,1,1, &meanForestLambdaRF, &sta);
 		}

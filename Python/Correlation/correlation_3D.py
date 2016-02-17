@@ -62,7 +62,7 @@ class Correlation3D:
 	
 		"""
 	
-		verbose__ = False	
+		verbose__ = True	
 	
 		if (dic is None):
 			dic = copy.deepcopy(raw_dic_class)

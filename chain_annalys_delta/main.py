@@ -82,7 +82,7 @@ def main():
 			last  = last  + step
 		
 			#myTools.isReadyForNewJobs(150, 430)
-			time.sleep(0.5)
+			time.sleep(0.2)
 
 
 	
@@ -91,11 +91,11 @@ def main():
 		### Put files of alpha and beta together
 
 		if (reObs):
-			folder = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_reObs/histos/'
+			folder = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest+'/FitsFile_DR12_Guy/DR12_reObs/histos/'
 		elif (eBOSS):
-			folder = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_eBOSS_Guy/all_eBOSS_primery/histos/'
+			folder = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest+'/FitsFile_eBOSS_Guy/all_eBOSS_primery/histos/'
 		else:
-			folder = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/histos'+method+'/'
+			folder = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest+'/FitsFile_DR12_Guy/DR12_primery/histos'+method+'/'
 		scheme = 'alphaAndBeta_'+forest+'_'
 		lenScheme = len(scheme)
 		print folder
@@ -152,6 +152,12 @@ def main():
 		print '  nb spectra         : ', alpha.size
 		print '  alpha              : ', alpha
 		print '  beta               : ', beta
+		print '  < alpha >          : ', numpy.mean(alpha)
+		print '  min(alpha)         : ', numpy.min(alpha)
+		print '  max(alpha)         : ', numpy.max(alpha)
+		print '  < beta >           : ', numpy.mean(beta)
+		print '  min(beta)          : ', numpy.min(beta)
+		print '  max(beta)          : ', numpy.max(beta)
 		print
 		print
 		##
@@ -233,11 +239,11 @@ def main():
 		
 		### Put the new alpha and beta in fits file
 		if (reObs):
-			path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_reObs/DR12_reObs.fits'
+			path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest+'/FitsFile_DR12_Guy/DR12_reObs/DR12_reObs.fits'
 		elif (eBOSS):
-			path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits'
+			path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest+'/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits'
 		else:
-			path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/DR12_primery'+method+'.fits'
+			path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest+'/FitsFile_DR12_Guy/DR12_primery/DR12_primery'+method+'.fits'
 		print path
 
 		file_cat = pyfits.open(path,mode='update')
@@ -248,13 +254,20 @@ def main():
 		print '  alpha diff         : ', cat['ALPHA_2']-alpha
 		print '  beta diff          : ', cat['BETA_2']-beta
 		print
-		
-		plt.hist( (cat['ALPHA_2']-alpha)[ (chi>0.) ],bins=1000,label='alpha')
+
+		cut = numpy.logical_and( numpy.logical_and( numpy.logical_and( chi>0., numpy.logical_and( numpy.logical_and(  numpy.logical_and( alpha!=alphaStart__, beta!=0.),  numpy.abs(alpha)<=39.5 ), numpy.abs(beta)<=0.25 ) ),  numpy.abs(cat['ALPHA_2'])<=39.5 ), numpy.abs(cat['BETA_2'])<=0.25 )
+		a = (cat['ALPHA_2']-alpha)[cut]
+		print numpy.mean(a), numpy.min(a), numpy.max(a)
+		a = (cat['BETA_2']-beta)[cut]
+		print numpy.mean(a), numpy.min(a), numpy.max(a)
+
+		plt.hist( (cat['ALPHA_2']-alpha)[cut],bins=1000,label='alpha')
 		plt.show()
-		plt.hist( (cat['BETA_2']-beta)[ (chi>0.) ],bins=1000,label='beta')
+		plt.hist( (cat['BETA_2']-beta)[cut],bins=1000,label='beta')
 		plt.show()
 
-		cut = numpy.logical_and( numpy.abs(cat['ALPHA_2']-alpha)>1.e-4, chi>0. )
+		cut = numpy.logical_and( numpy.abs(cat['ALPHA_2']-alpha)>0.05, chi>0. )
+		print idx[cut].size
 		print zip( idx[cut], cat['PLATE'][cut],cat['MJD'][cut],cat['FIBERID'][cut]  )
 		
 		cat['ALPHA_2'] = alpha

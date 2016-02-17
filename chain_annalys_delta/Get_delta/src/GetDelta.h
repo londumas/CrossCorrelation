@@ -43,14 +43,14 @@ const std::string forest__  = "LYA";
 const double lambdaRFLine__  = 1215.67;
 const double lambdaRFMin__   = 1040.;
 const double lambdaRFMax__   = 1200.;
-//const unsigned int nbBinRFMax__   = 647;
+const unsigned int nbBinRFMax__   = 647;
 const double alphaStart__ = 1.3;
 #define C_NBBINZ 12
 #define C_ZEXTREMA0 2.
 #define C_ZEXTREMA1 4.5
 
 /// If LYA_JMC
-const unsigned int nbBinRFMax__ = 645;
+//const unsigned int nbBinRFMax__ = 645;
 
 /*
 /// If SIIV
@@ -125,7 +125,7 @@ const double maxBeta__  =  0.3;
 
 /// Max values of DLA
 const unsigned int NbDLA0__ = 15;
-const unsigned int nbLoop__ = 10;
+const unsigned int nbLoop__ = 50;
 
 class GetDelta
 {

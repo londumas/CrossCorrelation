@@ -95,16 +95,16 @@ double distMinPixel__ = 0.;
 double distMinPixelDelta2__ = 0.;
 unsigned int idxCommand_[6] = {0};
 const std::string pathToMockJMC__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1563/";
-std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/TESTS/";
+std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator/";  //_nicolasEstimator
 //std::string pathToSave__ = "";
 
 ///// Flags for Jean-Marc's simulations
 const bool mocks              = false;
-const bool mockJMC__          = true;
+const bool mockJMC__          = false;
 const bool mockBox__          = false;
 const bool mocksNoNoiseNoCont = false;
 const double randomPositionOfQSOInCell__ = false;
-const double randomPositionOfQSOInCellNotBeforeCorrelation__ = true;
+const double randomPositionOfQSOInCellNotBeforeCorrelation__ = false;
 //// Flags for covariance matrix estimation
 const bool shuffleQSO     = false;
 const bool shuffleForest  = false;
@@ -5685,6 +5685,7 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 		std::cout << "\n\n" << std::endl;
 	}
 
+	long unsigned int nbCutted[5] = {0}; 
 	double meanDelta[3] = {0.};
 	double meanDelta_Nicolas[3] = {0.};
 	double meanDelta_Nicolas_overForests[4] = {0.};
@@ -5699,6 +5700,7 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 		double de = 0.;
 		double zz = 0.;
 		double alpha1, alpha2, beta2;
+		double meanForestLambdaRF = 0.;
 
 		double DELTA[nbBinRFMax__];
 		double DELTA_WEIGHT[nbBinRFMax__];
@@ -5707,16 +5709,6 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 		double NORM_FLUX[nbBinRFMax__];
 		double NORM_FLUX_IVAR[nbBinRFMax__];
 		double FLUX_DLA[nbBinRFMax__];
-
-		//// Vector with data
-		double meanForestLambdaRF = 0.;
-		bool templateHasNegative = false;
-		std::vector< double > v_tmp_r;
-		std::vector< double > v_tmp_d;
-		std::vector< double > v_tmp_w;
-		std::vector< double > v_tmp_z;
-		std::vector< double > v_tmp_lRF;
-		std::vector< double > v_tmp_lObs;
 
 		fits_read_col(fitsptrSpec,TDOUBLE, 4,i+1,1,1,NULL,&ra,   NULL,&sta);
 		fits_read_col(fitsptrSpec,TDOUBLE, 5,i+1,1,1,NULL,&de,   NULL,&sta);
@@ -5734,14 +5726,25 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 		fits_read_col(fitsptrSpec,TDOUBLE, 18,i+1,1,nbBinRFMax__,NULL, &DELTA,           NULL,&sta);
 		fits_read_col(fitsptrSpec,TDOUBLE, 20,i+1,1,nbBinRFMax__,NULL, &DELTA_WEIGHT,    NULL,&sta);
 
-		if (!mocksNoNoiseNoCont && ( (alpha2 == alphaStart__ && beta2 == 0.) || (fabs(alpha2)>=maxAlpha__-0.5) || (fabs(beta2)>=maxBeta__-0.05) ) ) continue;
-		
+		if (!mocksNoNoiseNoCont && ( (alpha2 == alphaStart__ && beta2 == betaStart__) || (fabs(alpha2)>=maxAlpha__-0.5) || (fabs(beta2)>=maxBeta__-0.05) ) ) {
+			if (alpha2 == alphaStart__ && beta2 == betaStart__) nbCutted[0] ++;
+			else if (fabs(alpha2)>=maxAlpha__-0.5) nbCutted[1] ++;
+			else if (fabs(beta2)>=maxBeta__-0.05) nbCutted[2] ++;
+			continue;
+		}
+
 		//// If a reobs
 		if (alpha1==isReobsFlag__) continue;
 
+		bool templateHasNegative = false;
 		double tmp_meanDelta[3] = {0.};
-		//// For Nicolas's estimator
 		long double meanNeeded[5] = {0.};
+		std::vector< double > v_tmp_r;
+		std::vector< double > v_tmp_d;
+		std::vector< double > v_tmp_w;
+		std::vector< double > v_tmp_z;
+		std::vector< double > v_tmp_lRF;
+		std::vector< double > v_tmp_lObs;
 
 		for (unsigned int j=0; j<nbBinRFMax__; j++) {
 			if (DELTA_WEIGHT[j]>0. && NORM_FLUX_IVAR[j]>0. && FLUX_DLA[j]>=C_DLACORR && LAMBDA_OBS[j]>=lambdaObsMin__ && LAMBDA_OBS[j]<lambdaObsMax__ && LAMBDA_RF[j]>=lambdaRFMin__ && LAMBDA_RF[j]<lambdaRFMax__) {
@@ -5787,15 +5790,16 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 		}
 
 		const unsigned int tmp_nb = v_tmp_r.size();
-		if (tmp_nb<C_MIN_NB_PIXEL || templateHasNegative ) continue;
+		if (tmp_nb<C_MIN_NB_PIXEL || templateHasNegative ) {
+			if (tmp_nb<C_MIN_NB_PIXEL) nbCutted[3] ++;
+			else if (templateHasNegative) nbCutted[4] ++;
+			continue;
+		}
 
 		//// Get Nb Pixel in forest
 		meanDelta[0] += tmp_meanDelta[0];
 		meanDelta[1] += tmp_meanDelta[1];
 		meanDelta[2] += tmp_meanDelta[2];
-
-		//// Set array for the number a pixel is taken inside a pair
-		std::vector< unsigned int > v_tmp_nb(tmp_nb,0);
 
 		//// For Nicolas's estimator
 		if (nicolasEstimator__) {
@@ -5832,7 +5836,6 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 			de += randPositionDE;
 		}
 
-
 		v_ra__.push_back(ra);
 		v_de__.push_back(de);
 		v_CosDe__.push_back(cos(de));
@@ -5846,11 +5849,14 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 		v_z__.push_back(v_tmp_z);
 		v_lRF__.push_back(v_tmp_lRF);
 		v_lObs__.push_back(v_tmp_lObs);
+
+		std::vector< unsigned int > v_tmp_nb(tmp_nb,0);
 		v_nb__.push_back(v_tmp_nb);
 	}
 
 	nbForest_ = v_ra__.size();
 	std::cout << "  number of good forest   = " << nbForest_ << std::endl;
+	for (unsigned int i=0; i<5; i++) std::cout << "  lost n°" << i << " = " << nbCutted[i] << std::endl;
 
 	std::cout << "  < delta >       = " << meanDelta[0]/meanDelta[1] << std::endl;
 	std::cout << "  sum(w_i)        = " << meanDelta[1]              << std::endl;
@@ -5901,7 +5907,10 @@ void Correlation::loadDataDelta2(int dataNeeded/*=100*/) {
 	std::cout << "  number of        forest = " << nrows << std::endl;
 	std::cout << "  number of loaded forest = " << nbForest2__ << std::endl;
 
+	long unsigned int nbCutted[5] = {0};
 	double meanDelta[3] = {0.};
+	double meanDelta_Nicolas[3] = {0.};
+	double meanDelta_Nicolas_overForests[4] = {0.};
 
 	//// Load data
 	for (unsigned int i=0; i<nbForest2__; i++) {
@@ -5911,6 +5920,7 @@ void Correlation::loadDataDelta2(int dataNeeded/*=100*/) {
 		double de = 0.;
 		double zz = 0.;
 		double alpha2, beta2;
+		double meanForestLambdaRF = 0.;
 
 		double LAMBDA_OBS[nbBinRFMaxDelta2__];
 		double LAMBDA_RF[nbBinRFMaxDelta2__];
@@ -5919,18 +5929,6 @@ void Correlation::loadDataDelta2(int dataNeeded/*=100*/) {
 		double FLUX_DLA[nbBinRFMaxDelta2__];
 		double DELTA[nbBinRFMaxDelta2__];
 		double DELTA_WEIGHT[nbBinRFMaxDelta2__];
-
-		//// Vector with data
-		double meanForestLambdaRF = 0.;
-		bool templateHasNegative = false;
-		std::vector< double > v_tmp_r;
-		std::vector< double > v_tmp_d;
-		std::vector< double > v_tmp_w;
-		std::vector< double > v_tmp_z;
-		std::vector< double > v_tmp_lRF;
-		std::vector< double > v_tmp_lObs;
-
-		double tmp_meanDelta[3] = {0.};
 
 		fits_read_col(fitsptrSpec,TDOUBLE, 4,i+1,1,1,NULL,&ra,   NULL,&sta);
 		fits_read_col(fitsptrSpec,TDOUBLE, 5,i+1,1,1,NULL,&de,   NULL,&sta);
@@ -5947,10 +5945,26 @@ void Correlation::loadDataDelta2(int dataNeeded/*=100*/) {
 		fits_read_col(fitsptrSpec,TDOUBLE, 18,i+1,1,nbBinRFMaxDelta2__,NULL, &DELTA,           NULL,&sta);
 		fits_read_col(fitsptrSpec,TDOUBLE, 20,i+1,1,nbBinRFMaxDelta2__,NULL, &DELTA_WEIGHT,    NULL,&sta);
 
-		if (!mocksNoNoiseNoCont && ( (alpha2 == alphaStart__ && beta2 == 0.) || (fabs(alpha2)>=maxAlpha__-0.5) || (fabs(beta2)>=maxBeta__-0.05) ) ) continue;
+		if (!mocksNoNoiseNoCont && ( (alpha2 == alphaStart__ && beta2 == betaStart__) || (fabs(alpha2)>=maxAlpha__-0.5) || (fabs(beta2)>=maxBeta__-0.05) ) ) {
+			if (alpha2 == alphaStart__ && beta2 == betaStart__) nbCutted[0] ++;
+			else if (fabs(alpha2)>=maxAlpha__-0.5) nbCutted[1] ++;
+			else if (fabs(beta2)>=maxBeta__-0.05) nbCutted[2] ++;
+			continue;
+		}
+
+		bool templateHasNegative = false;
+		long double meanNeeded[5] = {0.};
+		double tmp_meanDelta[3] = {0.};
+		std::vector< double > v_tmp_r;
+		std::vector< double > v_tmp_d;
+		std::vector< double > v_tmp_w;
+		std::vector< double > v_tmp_z;
+		std::vector< double > v_tmp_lRF;
+		std::vector< double > v_tmp_lObs;
 
 		for (unsigned int j=0; j<nbBinRFMaxDelta2__; j++) {
-			if (DELTA_WEIGHT[j]>0. && NORM_FLUX_IVAR[j]>0. && FLUX_DLA[j]>=C_DLACORR && LAMBDA_RF[j]>=lambdaRFMinDelta2__ && LAMBDA_RF[j]<lambdaRFMaxDelta2__ && LAMBDA_OBS[j]>=lambdaObsMin__ && LAMBDA_OBS[j]<lambdaObsMax__) {
+
+			if (DELTA_WEIGHT[j]>0. && NORM_FLUX_IVAR[j]>0. && FLUX_DLA[j]>=C_DLACORR && LAMBDA_OBS[j]>=lambdaObsMin__ && LAMBDA_OBS[j]<lambdaObsMax__ && LAMBDA_RF[j]>=lambdaRFMinDelta2__ && LAMBDA_RF[j]<lambdaRFMaxDelta2__) {
 
 				//// Remove veto lines
 				bool isLine = false;
@@ -5967,10 +5981,6 @@ void Correlation::loadDataDelta2(int dataNeeded/*=100*/) {
 				//// Get if the template is even one time negative
 				if ( alpha2+beta2*(LAMBDA_RF[j]-meanForestLambdaRF) <= 0.) templateHasNegative = true;
 
-				tmp_meanDelta[0] += DELTA_WEIGHT[j]*DELTA[j];
-				tmp_meanDelta[1] += DELTA_WEIGHT[j];
-				tmp_meanDelta[2] ++;
-
 				const double zi = LAMBDA_OBS[j]/lambdaRFLineDelta2__ -1.;
 				v_tmp_r.push_back(hConvertRedshDist->Interpolate(zi));
 				v_tmp_d.push_back(DELTA[j]);
@@ -5978,18 +5988,55 @@ void Correlation::loadDataDelta2(int dataNeeded/*=100*/) {
 				v_tmp_z.push_back(zi);
 				v_tmp_lRF.push_back(LAMBDA_RF[j]);
 				v_tmp_lObs.push_back(LAMBDA_OBS[j]);
+
+				tmp_meanDelta[0] += DELTA_WEIGHT[j]*DELTA[j];
+				tmp_meanDelta[1] += DELTA_WEIGHT[j];
+				tmp_meanDelta[2] ++;
+
+				//// For Nicolas's estimator
+				if (nicolasEstimator__) {
+					meanNeeded[0] += DELTA_WEIGHT[j]*DELTA[j];
+					meanNeeded[1] += DELTA_WEIGHT[j]*LAMBDA_RF[j];
+					meanNeeded[2] += DELTA_WEIGHT[j]*LAMBDA_RF[j]*LAMBDA_RF[j];
+					meanNeeded[3] += DELTA_WEIGHT[j]*LAMBDA_RF[j]*DELTA[j];
+					meanNeeded[4] += DELTA_WEIGHT[j];
+				}
 			}
 		}
 
-
-
 		const unsigned int tmp_nb = v_tmp_r.size();
-		if (tmp_nb<C_MIN_NB_PIXEL || templateHasNegative ) continue;
+		if (tmp_nb<C_MIN_NB_PIXEL || templateHasNegative ) {
+			if (tmp_nb<C_MIN_NB_PIXEL) nbCutted[3] ++;
+			else if (templateHasNegative) nbCutted[4] ++;
+			continue;
+		}
 
 		//// Get Nb Pixel in forest
 		meanDelta[0] += tmp_meanDelta[0];
 		meanDelta[1] += tmp_meanDelta[1];
 		meanDelta[2] += tmp_meanDelta[2];
+
+		//// For Nicolas's estimator
+		if (nicolasEstimator__) {
+			const long double meanDelta   = meanNeeded[0]/meanNeeded[4];
+			const long double meanLambda  = meanNeeded[1]/meanNeeded[4];
+			const long double numerator   = meanNeeded[3]-meanLambda*meanNeeded[0];
+			const long double denominator = meanNeeded[2]-meanLambda*meanLambda*meanNeeded[4];
+			const long double coef        = numerator/denominator;
+			for (unsigned int j=0; j<tmp_nb; j++) {
+				v_tmp_d[j] -= meanDelta+(v_tmp_lRF[j]-meanLambda)*coef;
+
+
+				//// Get Nb Pixel in forest
+				meanDelta_Nicolas[0] += v_tmp_w[j]*v_tmp_d[j];
+				meanDelta_Nicolas[1] += v_tmp_w[j];
+				meanDelta_Nicolas[2] ++;
+			}
+			meanDelta_Nicolas_overForests[0] += meanDelta;
+			meanDelta_Nicolas_overForests[1] += coef;
+			meanDelta_Nicolas_overForests[2] += meanLambda-meanForestLambdaRF;
+			meanDelta_Nicolas_overForests[3] ++;
+		}
 
 		ra = ra*C_DEGTORAD;
 		de = de*C_DEGTORAD;
@@ -6013,10 +6060,20 @@ void Correlation::loadDataDelta2(int dataNeeded/*=100*/) {
 	
 	nbForest2__ = v_raDelta2__.size();
 	std::cout << "  number of good forest   = " << nbForest2__ << std::endl;
+	for (unsigned int i=0; i<5; i++) std::cout << "  lost n°" << i << " = " << nbCutted[i] << std::endl;
 
 	std::cout << "  < delta >       = " << meanDelta[0]/meanDelta[1] << std::endl;
 	std::cout << "  sum(w_i)        = " << meanDelta[1]              << std::endl;
 	std::cout << "  nb pixel        = " << (long long unsigned int)meanDelta[2]              << std::endl;
+
+	if (nicolasEstimator__) {
+		std::cout << "  < delta_Nicolas >              = " << meanDelta_Nicolas[0]/meanDelta_Nicolas[1] << std::endl;
+		std::cout << "  sum(w_i)_Nicolas               = " << meanDelta_Nicolas[1]              << std::endl;
+		std::cout << "  nb pixel_Nicolas               = " << (long long unsigned int)meanDelta_Nicolas[2]              << std::endl;
+		std::cout << "  < <delta> >                    = " << meanDelta_Nicolas_overForests[0]/meanDelta_Nicolas_overForests[3] << std::endl;
+		std::cout << "  < coef >                       = " << meanDelta_Nicolas_overForests[1]/meanDelta_Nicolas_overForests[3] << std::endl;
+		std::cout << "  < lambda > - < lambda >_before = " << meanDelta_Nicolas_overForests[2]/meanDelta_Nicolas_overForests[3] << std::endl;
+	}
 
 	delete hConvertRedshDist;
 

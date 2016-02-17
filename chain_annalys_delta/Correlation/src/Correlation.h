@@ -127,6 +127,7 @@ class Correlation
 
 const double lambdaObsMin__   = 3600.; //
 const double lambdaObsMax__   = 7235.; //10326.;  //7235.; //
+const double betaStart__ = 0.;
 const double maxAlpha__   = 40.;
 const double maxBeta__  =  0.3;
 const double maxCorrelation__ = 200.;
@@ -154,10 +155,10 @@ const std::string forest__      = "LYA";
 const double lambdaRFLine__     = 1215.67;
 const double lambdaRFMin__      = 1040.;
 const double lambdaRFMax__      = 1200.;
-//const unsigned int nbBinRFMax__ = 647;
+const unsigned int nbBinRFMax__ = 647;
 const double alphaStart__       = 1.3;
 /// If LYA_JMC
-const unsigned int nbBinRFMax__ = 645;
+//const unsigned int nbBinRFMax__ = 645;
 
 /*
 /// If SIIV

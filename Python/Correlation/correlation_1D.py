@@ -177,7 +177,7 @@ class Correlation_1D:
 		yer = self._xi[:,2][cut]
 
 		### Get CAMB
-		camb = CAMB.CAMB()._xi2
+		camb = CAMB.CAMB()._xi0
 		yyy_Camb = numpy.interp(xxx,camb[:,0],camb[:,1])
 
 		### Chi^{2}
@@ -190,9 +190,8 @@ class Correlation_1D:
 		m.migrad()
 
 		b = m.values['b']
+		#b = 0.01
 		print b
-
-		
 
 		for i in [0,1,2]:
 			coef = numpy.power(xxx,i)
@@ -202,6 +201,7 @@ class Correlation_1D:
 			plt.errorbar(camb[:,0],coef*b*camb[:,1])
 			myTools.deal_with_plot(False,False,False)
 			plt.xlim([ 0., 200. ])
+
 			plt.show()
 
 		return
@@ -249,7 +249,7 @@ class Correlation_1D:
 
 				for j in range(0,nbLines2):
 
-					if ( self._lines1[i]!=1215.67 and self._lines2[j]!=1215.67 ): continue
+					#if ( self._lines1[i]!=1215.67 and self._lines2[j]!=1215.67 ): continue
 					#if ( self._name_line1[i][:4]!='SiII' and self._name_line2[j][:4]!='SiII' ): continue
 					#if ( self._name_line1[i]=='SiII(1304)' or self._name_line2[j]=='SiII(1304)' ): continue
 
@@ -311,26 +311,15 @@ dic_class = {
 dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
 dic_class['name'] = "data"
 dic_class['correlation'] = "f_f_lRF_devide"
+dic_class['f1'] = "LYA"
 corrD = Correlation_1D(dic_class)
-corrD.plot()
-### Data
-dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_test_soved_shift_withMetals_withError_with_template/Box_000/Simu_000/Results/'
-dic_class['name'] = "simu \, before"
+dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator/'
+dic_class['name'] = "data"
 dic_class['correlation'] = "f_f_lRF_devide"
-corrDDD = Correlation_1D(dic_class)
-corrDDD.plot()
-### Data
-dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1563/Box_000/Simu_000/Results/'
-dic_class['name'] = "simu"
-dic_class['correlation'] = "f_f_lRF_devide"
+dic_class['f1'] = "LYA"
 corrDD = Correlation_1D(dic_class)
-corrDD.plot()
 
-corrD.plot(False,False,[corrDDD,corrDD])
-
-
-
-
+corrD.plot(False,False,[corrDD])
 
 
 
