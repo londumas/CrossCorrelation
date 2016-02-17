@@ -197,6 +197,7 @@ class Correlation3DQ(correlation_3D.Correlation3D):
 			### Mu:
 			xiMu = numpy.array(dd_Mu)
 			cut = (xiMu[:,:,1]>0.)
+			xiMu[:,:,1] = numpy.arange(self._minM,self._maxM,1./self._nbBinM) + 1./self._nbBinM/2.
 			xiMu[:,:,2][cut] = (dd_Mu[:,:,2][cut] -2.*dr_Mu[:,:,2][cut] + rr_Mu[:,:,2][cut])/rr_Mu[:,:,2][cut]
 			xiMu[:,:,3][cut] = numpy.sqrt(dd_Mu[:,:,2][cut]*coefDD)/(coefDD*rr_Mu[:,:,2][cut])
 
@@ -282,12 +283,14 @@ corr = Correlation3DQ(dic_class,dic_Q)
 
 print corr._meanZ
 
+corr.plot_slice_2d(0)
+corr.plot_slice_2d(1)
+corr.plot_slice_2d(None,0)
+
 dic_CAMB = corr.fit_CAMB(None,dic_CAMB,False)
 corr.plot_CAMB(None,dic_CAMB,0,False)
 corr.plot_CAMB(None,dic_CAMB,1,False)
 corr.plot_CAMB(None,dic_CAMB,2,False)
-
-'''
 corr.plot_1d(0)
 corr.plot_1d(1)
 corr.plot_1d(2)
@@ -300,7 +303,6 @@ corr.plot_2d(2)
 corr.plot_mu(0)
 corr.plot_mu(1)
 corr.plot_mu(2)
-'''
 corr.plot_multipol(0)
 corr.plot_multipol(1)
 corr.plot_multipol(2)

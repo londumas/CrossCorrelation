@@ -57,7 +57,10 @@
 # 2016 - 02 - 17
 	- correlation_3D_Q.py:
 		* finished and corrected some bugs, still one with multipol.
-
+# 2016 - 02 - 17
+	- correlation_3D_Q.py:
+		* Correct bog with multipol linked to the fact that with simulations the 'mu'
+			coordinate has no meaning.
 
 
 

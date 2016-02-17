@@ -713,7 +713,8 @@ class Correlation3D:
 				'xi1' : False,
 				'xi2' : True,
 				'xi3' : False,
-				'xi4' : False
+				'xi4' : False,
+				'plot' : False
 			}
 		nameArray = [ 'xi0','xi1','xi2','xi3','xi4']
 		nbXi = len(nameArray)
@@ -755,6 +756,17 @@ class Correlation3D:
 			for j in numpy.arange(0,nbXi):
 				result_xi[i,j,1] = m.values[ nameArray[j] ]
 				result_xi[i,j,2] = m.errors[ nameArray[j] ]
+
+			if (dic['plot']):
+				xi0 = m.values[ nameArray[0] ]
+				xi1 = m.values[ nameArray[1] ]
+				xi2 = m.values[ nameArray[2] ]
+				xi3 = m.values[ nameArray[3] ]
+				xi4 = m.values[ nameArray[4] ]
+				print xi0,xi1,xi2,xi3,xi4
+				plt.errorbar(xxxMu,tmpyyy,yerr=tmpyer, fmt='o')
+				plt.errorbar(xxxMu,(xi0 - 0.5*xi2 + 0.375*xi4) + (xi1-1.5*xi3)*xxxMuPower1 + (1.5*xi2 - 3.75*xi4)*xxxMuPower2 + 2.5*xi3*xxxMuPower3 + 4.375*xi4*xxxMuPower4)
+				plt.show()
 
 		cut = (result_xi[:,:,2]==0.1)
 		result_xi[cut] = 0.

@@ -308,13 +308,25 @@ dic_class = {
 
 
 ### Data
-dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1563/Box_000/Simu_000/Results/'
-dic_class['name'] = "LYA"
+dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
+dic_class['name'] = "data"
 dic_class['correlation'] = "f_f_lRF_devide"
 corrD = Correlation_1D(dic_class)
 corrD.plot()
+### Data
+dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_test_soved_shift_withMetals_withError_with_template/Box_000/Simu_000/Results/'
+dic_class['name'] = "simu \, before"
+dic_class['correlation'] = "f_f_lRF_devide"
+corrDDD = Correlation_1D(dic_class)
+corrDDD.plot()
+### Data
+dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1563/Box_000/Simu_000/Results/'
+dic_class['name'] = "simu"
+dic_class['correlation'] = "f_f_lRF_devide"
+corrDD = Correlation_1D(dic_class)
+corrDD.plot()
 
-
+corrD.plot(False,False,[corrDDD,corrDD])
 
 
 
