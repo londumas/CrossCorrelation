@@ -190,7 +190,7 @@ def plotBosseBOSS():
 		'name' : 'Data'
 	}
 	### Boss
-	dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt/bao/hdumasde/Mock_JMLG/v1563/Box_000/Simu_000/Results_NicolasDistortion/'
+	dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt/bao/hdumasde/Mock_JMLG/v1563/Box_000/Simu_000/Results/'
 	dic_class['name'] = 'no \, projected'
 	corr = correlation_3D.Correlation3D(dic_class)
 	#corr.set_error_on_covar_matrix('subsampling')
@@ -243,8 +243,8 @@ def look_result_data():
 
 	return
 
-plotBosseBOSS()
-#plotOne()
+#plotBosseBOSS()
+plotOne()
 #plotMany()
 
 ### Send parameter scan

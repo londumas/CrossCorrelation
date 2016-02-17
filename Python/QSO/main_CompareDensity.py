@@ -684,11 +684,11 @@ def bias_evolution():
 	myTools.deal_with_plot(False,False,True)
 	plt.show()
 
-plot_all_cat_Forest()
-plot_all_cat()
+#plot_all_cat_Forest()
+#plot_all_cat()
 
 
-#bias_evolution()
+bias_evolution()
 
 
 

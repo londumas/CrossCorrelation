@@ -54,7 +54,9 @@
 		* no more float
 		* correct small error when getting mean_lambda_rf
 
-
+# 2016 - 02 - 17
+	- correlation_3D_Q.py:
+		* finished and corrected some bugs, still one with multipol.
 
 
 
