@@ -61,6 +61,23 @@
 	- correlation_3D_Q.py:
 		* Correct bog with multipol linked to the fact that with simulations the 'mu'
 			coordinate has no meaning.
+# 2016 - 02 - 17
+	- Correlation.cpp:
+		* Remove saving xi_q_q_1D, becuase information is already in xi_q_q_mu
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -5223,57 +5223,10 @@ void Correlation::xi_QSO_QSO_MockJMc(bool doBootstraps/*=false*/, unsigned int b
 	
 	std::cout << "\n  Saving\n" << std::endl;
 
-	// 1D
 	std::ofstream fFile;
-	std::string pathToSave = pathToSave__;
-	pathToSave += "xi_QSO_QSO_1D_";
-	pathToSave += QSO__;
-	if (randomQSO) {
-		pathToSave += "_RR_";
-		pathToSave += strBootIdx;
-	}
-	else {
-		pathToSave += "_DD";
-	}
-	pathToSave += ".txt";
-	std::cout << "\n  " << pathToSave << std::endl;
-	fFile.open(pathToSave.c_str());
-	fFile << std::scientific;
-	fFile.precision(14);
-
+	std::string pathToSave;
 	long double sumOne = 0.;
 	long double meanZ = 0.;
-
-	//// Set the values of data
-	for (unsigned int i=0; i<nbBin; i++) {
-
-		long double save0 = 0.;
-		long double save1 = 0.;
-		long double save2 = 0.;
-		long double save3 = 0.;
-
-		for (unsigned int j=0; j<nbBinM; j++) {
-			save0 += dataMu[i][j][0];
-			save1 += dataMu[i][j][1];
-			save2 += dataMu[i][j][2];
-			save3 += dataMu[i][j][3];
-		}
-
-		fFile << save0;
-		fFile << " " << save1;
-		fFile << " " << save2;
-		fFile << " " << save3/2.;
-		fFile << std::endl;
-
-		sumOne += save0;
-		meanZ  += save3/2.;
-	}
-	fFile.close();
-
-	//// Get mean redshift of pairs
-	std::cout << "  < z >           = " << meanZ/sumOne << " +- " << 0. << std::endl;
-	std::cout << "  number of pairs = " << sumOne          << std::endl;
-
 
 	//// 2D
 	pathToSave = pathToSave__;
@@ -5415,51 +5368,6 @@ void Correlation::xi_QSO_QSO_MockJMc(bool doBootstraps/*=false*/, unsigned int b
 		}
 
 		std::cout << "\n  Saving\n" << std::endl;
-
-		//// 1D
-		pathToSave = pathToSave__;
-		pathToSave += "xi_QSO_QSO_1D_";
-		pathToSave += QSO__;
-		pathToSave += "_DR_";
-		pathToSave += strBootIdx;
-		pathToSave += ".txt";
-		std::cout << "\n  " << pathToSave << std::endl;
-		fFile.open(pathToSave.c_str());
-		fFile << std::scientific;
-		fFile.precision(14);
-
-		long double sumOne = 0.;
-		long double meanZ  = 0.;
-
-		//// Set the values of data
-		for (unsigned int i=0; i<nbBin; i++) {
-
-			long double save0 = 0.;
-			long double save1 = 0.;
-			long double save2 = 0.;
-			long double save3 = 0.;
-
-			for (unsigned int j=0; j<nbBinM; j++) {
-				save0 += dataMu[i][j][0];
-				save1 += dataMu[i][j][1];
-				save2 += dataMu[i][j][2];
-				save3 += dataMu[i][j][3];
-			}
-
-			fFile << save0;
-			fFile << " " << save1;
-			fFile << " " << save2;
-			fFile << " " << save3/2.;
-			fFile << std::endl;
-
-			sumOne += save0;
-			meanZ  += save3/2.;
-		}
-		fFile.close();
-
-		std::cout << "  < z >           = " << meanZ/sumOne << " +- " << 0. << std::endl;
-		std::cout << "  number of pairs = " << sumOne          << std::endl;
-
 
 		//// 2D
 		pathToSave = pathToSave__;

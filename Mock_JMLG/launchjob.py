@@ -29,7 +29,7 @@ import cosmolopy.distance as cosmology
 
 ### Constants
 sizeMax = 300000
-sizeMaxForest = 100000
+sizeMaxForest = 300000
 nbQSO__ = 238929
 nbFor__ = 170000
 nbPixel = 645   ###2148  ###645
