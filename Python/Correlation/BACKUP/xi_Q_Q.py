@@ -39,7 +39,7 @@ nbBin2D__  = nbBinX2D__*nbBinY2D__
 nbBinM__ = 50;
 
 
-path1 = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/new_2560-pixel-spectra/'
+#path1 = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/new_2560-pixel-spectra/'
 
 
 
@@ -726,13 +726,13 @@ def saveListRealMocks(ni,nj):
 
 i = sys.argv[5]
 j = sys.argv[6]
-#saveOnetRealMocks(i,j)
+saveOnetRealMocks(i,j)
 
 
 xi1D = numpy.load('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1563/Box_00'+str(i)+'/Simu_00'+str(j)+'/Results/xi_QSO_QSO_result_1D.npy')
-plot_Xi_1D(xi1D,0)
-plot_Xi_1D(xi1D,1)
-plot_Xi_1D(xi1D,2)
+#plot_Xi_1D(xi1D,0)
+#plot_Xi_1D(xi1D,1)
+#plot_Xi_1D(xi1D,2)
 
 fitCamb(xi1D,'/home/gpfs/manip/mnt0607/bao/hdumasde/Data/CAMB/CAMB_2_4/xi-z2.4.dat',0)
 

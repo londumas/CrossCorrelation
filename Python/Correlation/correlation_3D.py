@@ -50,7 +50,7 @@ raw_dic_CAMB = {
 
 
 class Correlation3D:
-	
+
 	def __init__(self, dic=None):
 		"""
 		
@@ -61,7 +61,9 @@ class Correlation3D:
 			- 'f_f2'
 	
 		"""
-		
+	
+		verbose__ = False	
+	
 		if (dic is None):
 			dic = copy.deepcopy(raw_dic_class)
 
@@ -100,13 +102,13 @@ class Correlation3D:
 			self._prefix = 'xi_A_delta_delta2'
 			self._middlefix = self._f1+'_'+self._f2
 		else:
-			print "  Correlation_3D::__init__::  ERROR:  'correlation' is incorrect "
+			if (verbose__): print "  Correlation_3D::__init__::  ERROR:  'correlation' is incorrect "
 			return
 		path1D = self._path_to_txt_file_folder + self._prefix + '_Mu_' + self._middlefix + '.txt'
 		path2D = self._path_to_txt_file_folder + self._prefix + '_2D_' + self._middlefix + '.txt'
 
 		print
-		print '  path1D = ', path1D
+		if (verbose__): print '  path1D = ', path1D
 
 		### 1D
 		self._min1D   = float(dic['minXi'])
@@ -161,10 +163,12 @@ class Correlation3D:
 	
 		'''
 
+		verbose__ = False
+
 		if (init):
-			print "  ||                                  ||              ||                ||              ||"
-			print "  ||  selection                       ||  nb pairs    ||  sum weight    ||  <z>         ||"
-			print "  ||                                  ||              ||                ||              ||"
+			if (verbose__): print "  ||                                  ||              ||                ||              ||"
+			if (verbose__): print "  ||  selection                       ||  nb pairs    ||  sum weight    ||  <z>         ||"
+			if (verbose__): print "  ||                                  ||              ||                ||              ||"
 
 		xi2D = numpy.zeros(shape=(self._nbBinX2D,self._nbBinY2D,3))
 		xiMu = numpy.zeros(shape=(self._nbBin1D,self._nbBinM,4))
@@ -270,7 +274,7 @@ class Correlation3D:
 			xi1D[:,2][cut] = numpy.sqrt( (tmp_save111[cut]/tmp_save555[cut] - xi1D[:,1][cut]*xi1D[:,1][cut])/tmp_save666[cut] )
 
 			if (init):
-				print "  ||  |s| < %u                       ||  %1.4e  ||  %1.4e    ||  %1.4e  ||" % (int(self._max1D), numpy.sum(tmp_save666), numpy.sum(tmp_save555), numpy.sum(data[:,4])/numpy.sum(data[:,5]))
+				if (verbose__): print "  ||  |s| < %u                       ||  %1.4e  ||  %1.4e    ||  %1.4e  ||" % (int(self._max1D), numpy.sum(tmp_save666), numpy.sum(tmp_save555), numpy.sum(data[:,4])/numpy.sum(data[:,5]))
 			
 	
 		if (selection==0 or selection==2):
@@ -320,9 +324,9 @@ class Correlation3D:
 				self._xi2D_grid[:,:,1][cut] = tmp_save3[cut] / tmp_save5[cut]
 				self._xi2D_grid[:,:,2][cut] = tmp_save4[cut] / tmp_save5[cut]
 
-				print "  ||  |s_perp| and |s_paral| < %u    ||  %1.4e  ||  %1.4e    ||  %1.4e  ||" % (int(self._max1D),numpy.sum(tmp_save6), numpy.sum(tmp_save5), self._meanZ)
-				print "  ||                                  ||              ||                ||              ||"
-				print
+				if (verbose__): print "  ||  |s_perp| and |s_paral| < %u    ||  %1.4e  ||  %1.4e    ||  %1.4e  ||" % (int(self._max1D),numpy.sum(tmp_save6), numpy.sum(tmp_save5), self._meanZ)
+				if (verbose__): print "  ||                                  ||              ||                ||              ||"
+				if (verbose__): print
 
 		return xiMu, xiWe, xi1D, xi2D
 	def read_data_from_BAOFIT_data_file(self, path2D):
