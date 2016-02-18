@@ -85,7 +85,10 @@
 			I calcul it only when saving and updating the delta, at the end.
 			Now the alpha and beta converges
 
-
+# 2016 - 02 - 18
+	- GetDelta.cpp:
+		* Add 100 bins at the end of "hDeltaVsLambdaObs__" in order to avoid
+			the interpolation problem at the edge.
 
 
 

@@ -244,9 +244,9 @@ void GetDelta::defineHistos() {
 		TString name = "hDeltaVsLambdaObs_";
 		name += i;
 
-		hDeltaVsLambdaObs__[i] = new TH1D(name,"",nbBinlambdaObs__,lambdaObsMin__,lambdaObsMax__);
+		hDeltaVsLambdaObs__[i] = new TH1D(name,"",nbBinlambdaObs__+100,lambdaObsMin__,lambdaObsMax__+100.);
 		R_dealWithPlots_1D(hDeltaVsLambdaObs__[i], "#lambda_{Obs.} (A)", "Mean transmission flux", "Method2: mean transmission flux");
-		for (unsigned int j=0; j<nbBinlambdaObs__; j++) {
+		for (unsigned int j=0; j<nbBinlambdaObs__+100; j++) {
 			hDeltaVsLambdaObs__[i]->SetBinContent(j+1,1.);
 			hDeltaVsLambdaObs__[i]->SetBinError(j+1,0.);
 		}
@@ -639,7 +639,7 @@ void GetDelta::getHisto(unsigned int loopIdx) {
 	unsigned int nbEmptyPixels_m2 = 0;
 	double valueFirstNotEmptyPixels = 0.;
 	unsigned int idxFirstNotEmptyPixels = 0;
-	for (unsigned int i=0; i<nbBinlambdaObs__; i++) {
+	for (unsigned int i=0; i<nbBinlambdaObs__+100; i++) {
 
 		if (valueFirstNotEmptyPixels==0. && hDeltaVsLambdaObs__[loopIdx]->GetBinError(i+1)!=0.) {
 			valueFirstNotEmptyPixels = hDeltaVsLambdaObs__[loopIdx]->GetBinContent(i+1);
@@ -647,7 +647,7 @@ void GetDelta::getHisto(unsigned int loopIdx) {
 		}
 		
 		// If empty and not the last pixel
-		if (hDeltaVsLambdaObs__[loopIdx]->GetBinError(i+1) == 0. && i!=nbBinlambdaObs__-1) {
+		if (hDeltaVsLambdaObs__[loopIdx]->GetBinError(i+1) == 0. && i!=nbBinlambdaObs__+100-1) {
 			if (nbEmptyPixels_m2 == 0 && i!=0) {
 				xxx1_value_m2 = hDeltaVsLambdaObs__[loopIdx]->GetBinCenter(i);
 				yyy1_value_m2 = hDeltaVsLambdaObs__[loopIdx]->GetBinContent(i);
@@ -686,7 +686,7 @@ void GetDelta::getHisto(unsigned int loopIdx) {
 				}
 				
 				// If the last pixel is also empty
-				if (i==nbBinlambdaObs__-1) {
+				if (i==nbBinlambdaObs__+100-1) {
 					hDeltaVsLambdaObs__[loopIdx]->SetBinContent(i+1, value_m2);
 					//hDeltaVsLambdaObs__[loopIdx]->SetBinError(i+1, maxError_m2);
 				}
@@ -701,7 +701,7 @@ void GetDelta::getHisto(unsigned int loopIdx) {
 			}
 		}
 	}
-	
+
 	//// Set values for the last pixels
 	for (unsigned int i=0; i<idxFirstNotEmptyPixels; i++) {
 		hDeltaVsLambdaObs__[loopIdx]->SetBinContent(i+1, valueFirstNotEmptyPixels);
@@ -717,7 +717,7 @@ void GetDelta::getHisto(unsigned int loopIdx) {
 	fFile << std::scientific;
 	fFile.precision(14);
 
-	for (unsigned int i=0; i<nbBinlambdaObs__; i++) {
+	for (unsigned int i=0; i<nbBinlambdaObs__+100; i++) {
 		fFile << i;
 		fFile << " " << hDeltaVsLambdaObs__[loopIdx]->GetBinContent(i+1);
 		fFile << " " << hDeltaVsLambdaObs__[loopIdx]->GetBinError(i+1) << std::endl;
