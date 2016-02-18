@@ -79,7 +79,11 @@
 		* remove useless « randomPositionOfQSOInCell » variable
 	- correlation_3D_Q.py:
 		* correct calculation of coordinate position for xiMu
-
+# 2016 - 02 - 18
+	- GetDelta.cpp:
+		* Correct error induced by calculating the < lambda_RF > at each step.
+			I calcul it only when saving and updating the delta, at the end.
+			Now the alpha and beta converges
 
 
 

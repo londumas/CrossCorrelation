@@ -265,7 +265,7 @@ dic_Q = {
 	'nb_random' : 10,
 	'estimator' : 'LS',
 	'path_to_cat' : '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1563/Box_000/Simu_000/Data/QSO_withRSD.fits',
-	'load_from_txt' : True
+	'load_from_txt' : False
 }
 dic_CAMB = {
 	'mulpol_index' : 0,

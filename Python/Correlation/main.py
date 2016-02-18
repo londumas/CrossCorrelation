@@ -58,7 +58,7 @@ def plotOne():
 		'name' : 'Data'
 	}
 	#dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1563/Box_000/Simu_000/Results_NicolasDistortion/'
-	dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator/' ##_nicolasEstimator
+	dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_method1_nicolasEstimator/' ##_nicolasEstimator
 	#dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/TESTS/'
 	dic_class['name'] = 'Data'
 	corr = correlation_3D.Correlation3D(dic_class)
@@ -190,14 +190,14 @@ def plotBosseBOSS():
 		'name' : 'Data'
 	}
 	### Boss
-	dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
+	dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator/'
 	dic_class['name'] = 'data \, no projected'
 	corr = correlation_3D.Correlation3D(dic_class)
 	#corr.set_error_on_covar_matrix('subsampling')
 	list_corr += [corr]
 	### Boss
-	dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator/'
-	dic_class['name'] = 'data \, projected'
+	dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/TESTS/'
+	dic_class['name'] = 'dataM1'
 	corr = correlation_3D.Correlation3D(dic_class)
 	#corr.set_error_on_covar_matrix('subsampling')
 	list_corr += [corr]
@@ -243,8 +243,8 @@ def look_result_data():
 
 	return
 
-#plotBosseBOSS()
-plotOne()
+plotBosseBOSS()
+#plotOne()
 #plotMany()
 
 ### Send parameter scan

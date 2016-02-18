@@ -40,7 +40,7 @@ def main():
 	alphaStart__ = 1.3
 	reObs = False
 	eBOSS = False
-	method = '_method1'
+	method = '' #'_method1'
 
 	print
 	print "------ Start ------"
@@ -256,6 +256,15 @@ def main():
 		print
 
 		cut = numpy.logical_and( numpy.logical_and( numpy.logical_and( chi>0., numpy.logical_and( numpy.logical_and(  numpy.logical_and( alpha!=alphaStart__, beta!=0.),  numpy.abs(alpha)<=39.5 ), numpy.abs(beta)<=0.25 ) ),  numpy.abs(cat['ALPHA_2'])<=39.5 ), numpy.abs(cat['BETA_2'])<=0.25 )
+
+		cut2 = numpy.logical_and( numpy.abs(cat['ALPHA_2']-alpha)>0.1, cut )
+		print idx[cut2].size
+		print zip( idx[cut2], cat['PLATE'][cut2],cat['MJD'][cut2],cat['FIBERID'][cut2]  )
+
+		cut2 = numpy.logical_and( numpy.abs(cat['BETA_2']-beta)>0.01, cut )
+		print idx[cut2].size
+		print zip( idx[cut2], cat['PLATE'][cut2],cat['MJD'][cut2],cat['FIBERID'][cut2]  )
+
 		a = (cat['ALPHA_2']-alpha)[cut]
 		print numpy.mean(a), numpy.min(a), numpy.max(a)
 		a = (cat['BETA_2']-beta)[cut]
@@ -265,10 +274,6 @@ def main():
 		plt.show()
 		plt.hist( (cat['BETA_2']-beta)[cut],bins=1000,label='beta', log=True)
 		plt.show()
-
-		cut = numpy.logical_and( numpy.abs(cat['ALPHA_2']-alpha)>0.05, chi>0. )
-		print idx[cut].size
-		print zip( idx[cut], cat['PLATE'][cut],cat['MJD'][cut],cat['FIBERID'][cut]  )
 		
 		cat['ALPHA_2'] = alpha
 		cat['BETA_2']  = beta

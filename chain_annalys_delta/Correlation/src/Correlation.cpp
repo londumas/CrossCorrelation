@@ -95,19 +95,19 @@ double distMinPixel__ = 0.;
 double distMinPixelDelta2__ = 0.;
 unsigned int idxCommand_[6] = {0};
 const std::string pathToMockJMC__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1563/";
-std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator/";  //_nicolasEstimator
+std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator/";  //_nicolasEstimator   //_method1
 //std::string pathToSave__ = "";
 
 ///// Flags for Jean-Marc's simulations
 const bool mocks              = false;
-const bool mockJMC__          = true;
+const bool mockJMC__          = false;
 const bool mockBox__          = false;
 const bool mocksNoNoiseNoCont = false;
-const double randomPositionOfQSOInCellNotBeforeCorrelation__ = true;
+const double randomPositionOfQSOInCellNotBeforeCorrelation__ = false;
 //// Flags for covariance matrix estimation
 const bool shuffleQSO     = false;
 const bool shuffleForest  = false;
-const bool randomQSO      = true;
+const bool randomQSO      = false;
 const bool randomForest   = false;
 const bool doBootstraps__ = false;
 
@@ -5728,6 +5728,7 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 		bool templateHasNegative = false;
 		double tmp_meanDelta[3] = {0.};
 		long double meanNeeded[5] = {0.};
+		long double SNR[2] = {0.};
 		std::vector< double > v_tmp_r;
 		std::vector< double > v_tmp_d;
 		std::vector< double > v_tmp_w;
@@ -5736,6 +5737,7 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 		std::vector< double > v_tmp_lObs;
 
 		for (unsigned int j=0; j<nbBinRFMax__; j++) {
+
 			if (DELTA_WEIGHT[j]>0. && NORM_FLUX_IVAR[j]>0. && FLUX_DLA[j]>=C_DLACORR && LAMBDA_OBS[j]>=lambdaObsMin__ && LAMBDA_OBS[j]<lambdaObsMax__ && LAMBDA_RF[j]>=lambdaRFMin__ && LAMBDA_RF[j]<lambdaRFMax__) {
 
 				//// Remove veto lines
@@ -5766,6 +5768,10 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 				tmp_meanDelta[0] += DELTA_WEIGHT[j]*DELTA[j];
 				tmp_meanDelta[1] += DELTA_WEIGHT[j];
 				tmp_meanDelta[2] ++;
+
+				//// SNR
+				SNR[0] += NORM_FLUX[j]*sqrt(NORM_FLUX_IVAR[j]);
+				SNR[1] ++;
 
 				//// For Nicolas's estimator
 				if (nicolasEstimator__) {
@@ -5798,8 +5804,8 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 			const long double denominator = meanNeeded[2]-meanLambda*meanLambda*meanNeeded[4];
 			const long double coef        = numerator/denominator;
 			for (unsigned int j=0; j<tmp_nb; j++) {
-				v_tmp_d[j] -= meanDelta+(v_tmp_lRF[j]-meanLambda)*coef;
 
+				v_tmp_d[j] -= meanDelta+(v_tmp_lRF[j]-meanLambda)*coef;
 
 				//// Get Nb Pixel in forest
 				meanDelta_Nicolas[0] += v_tmp_w[j]*v_tmp_d[j];
