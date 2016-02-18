@@ -40,7 +40,7 @@ def main():
 	alphaStart__ = 1.3
 	reObs = False
 	eBOSS = False
-	method = '' #'_method1'
+	method = '_method1'
 
 	print
 	print "------ Start ------"
@@ -215,7 +215,7 @@ def main():
 
 		numpy.savetxt(folder+scheme+'all.txt', zip(idx,alpha,beta,chi))
 		
-		plt.hist(alpha[ (chi>0.) ],bins=1000,label='alpha')
+		plt.hist(alpha[ (chi>0.) ],bins=1000,label='alpha', log=True)
 		plt.show()
 		#plt.hist(numpy.abs(alpha[ (chi>0.) ])/alphaErr[ (chi>0.) ],bins=1000,label='alpha')
 		#plt.show()
@@ -225,7 +225,7 @@ def main():
 		#plt.show()
 		#plt.errorbar(chi[ (chi>0.) ],numpy.abs(alpha[ (chi>0.) ])/alphaErr[ (chi>0.) ],fmt='o')
 		#plt.show()
-		plt.hist(beta[ (chi>0.) ],bins=1000,label='beta')
+		plt.hist(beta[ (chi>0.) ],bins=1000,label='beta', log=True)
 		plt.show()
 		#plt.errorbar(chi[ (chi>0.) ],beta[ (chi>0.) ],fmt='o')
 		#plt.show()
@@ -233,7 +233,7 @@ def main():
 		#plt.show()
 		#plt.errorbar(chi[ (chi>0.) ],numpy.abs(beta[ (chi>0.) ])/betaErr[ (chi>0.) ],fmt='o')
 		#plt.show()
-		plt.hist(chi[ (chi>0.) ]/nbPixel[ (chi>0.) ],bins=1000,label='chi2')
+		plt.hist(chi[ (chi>0.) ]/nbPixel[ (chi>0.) ],bins=1000,label='chi2', log=True)
 		plt.show()
 		
 		
@@ -261,9 +261,9 @@ def main():
 		a = (cat['BETA_2']-beta)[cut]
 		print numpy.mean(a), numpy.min(a), numpy.max(a)
 
-		plt.hist( (cat['ALPHA_2']-alpha)[cut],bins=1000,label='alpha')
+		plt.hist( (cat['ALPHA_2']-alpha)[cut],bins=1000,label='alpha', log=True)
 		plt.show()
-		plt.hist( (cat['BETA_2']-beta)[cut],bins=1000,label='beta')
+		plt.hist( (cat['BETA_2']-beta)[cut],bins=1000,label='beta', log=True)
 		plt.show()
 
 		cut = numpy.logical_and( numpy.abs(cat['ALPHA_2']-alpha)>0.05, chi>0. )

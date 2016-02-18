@@ -72,7 +72,13 @@
 		* Add conting removed forest
 		* Add calculating mean_lambda_rf when loading the data
 		* Add calculating and saving mean_lambda_rf even for bad forests
-
+# 2016 - 02 - 18
+	- Correlation.cpp:
+		* Correct randomization of QSOs positions in cells for the QSO-QSO correlation
+			in Jean6marc's mocks
+		* remove useless « randomPositionOfQSOInCell » variable
+	- correlation_3D_Q.py:
+		* correct calculation of coordinate position for xiMu
 
 
 

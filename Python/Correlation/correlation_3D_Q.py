@@ -55,8 +55,7 @@ class Correlation3DQ(correlation_3D.Correlation3D):
 		binSizeY = self._nbBinM_calcul/self._nbBinM
 
 		### Mu
-		data = numpy.loadtxt(path1D)
-	
+		data = numpy.loadtxt(path1D)	
 		save0 = data[:,0]
 	
 		for i in range(0,save0.size):
@@ -89,8 +88,8 @@ class Correlation3DQ(correlation_3D.Correlation3D):
 	
 		### Mu
 		cut = (xiMu[:,:,1]>0.)
-		xiMu[:,:,0][cut] /= xiMu[:,:,1][cut]
-		xiMu[:,:,1][cut] /= xiMu[:,:,1][cut]
+		xiMu[:,:,0][cut] /= xiMu[:,:,2][cut]
+		xiMu[:,:,1][cut] /= xiMu[:,:,2][cut]
 		xiMu[:,:,2][cut] /= coef
 		xiMu[:,:,3][cut]  = numpy.sqrt(xiMu[:,:,2][cut])
 		### we
@@ -128,6 +127,7 @@ class Correlation3DQ(correlation_3D.Correlation3D):
 		if (init):
 			self._meanZ = numpy.sum(data[:,3])/numpy.sum(data[:,0])
 			self._xi2D_grid = numpy.zeros( shape=(self._nbBinX2D,self._nbBinY2D,3) )
+			cut = (xi2D[:,:,1]>0.)
 			self._xi2D_grid[:,:,0][cut] = sPerp[cut] / xi2D[:,:,1][cut]
 			self._xi2D_grid[:,:,1][cut] = sPara[cut] / xi2D[:,:,1][cut]
 			self._xi2D_grid[:,:,2][cut] = sZ[cut] / xi2D[:,:,1][cut]
@@ -197,7 +197,6 @@ class Correlation3DQ(correlation_3D.Correlation3D):
 			### Mu:
 			xiMu = numpy.array(dd_Mu)
 			cut = (xiMu[:,:,1]>0.)
-			xiMu[:,:,1] = numpy.arange(self._minM,self._maxM,1./self._nbBinM) + 1./self._nbBinM/2.
 			xiMu[:,:,2][cut] = (dd_Mu[:,:,2][cut] -2.*dr_Mu[:,:,2][cut] + rr_Mu[:,:,2][cut])/rr_Mu[:,:,2][cut]
 			xiMu[:,:,3][cut] = numpy.sqrt(dd_Mu[:,:,2][cut]*coefDD)/(coefDD*rr_Mu[:,:,2][cut])
 
@@ -255,7 +254,7 @@ dic_class = {
 	'size_bin_calcul_s': 1.,
 	'size_bin_calcul_m': 0.02,
 	'correlation': 'q_q',
-	'path_to_txt_file_folder': '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1563/Box_000/Simu_000/Results/',
+	'path_to_txt_file_folder': '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1563/Box_000/Simu_000/Results_NicolasDistortion/',
 	'f1': 'LYA',
 	'f2': 'LYA',
 	'q1': 'QSO',
@@ -266,7 +265,7 @@ dic_Q = {
 	'nb_random' : 10,
 	'estimator' : 'LS',
 	'path_to_cat' : '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1563/Box_000/Simu_000/Data/QSO_withRSD.fits',
-	'load_from_txt' : False
+	'load_from_txt' : True
 }
 dic_CAMB = {
 	'mulpol_index' : 0,

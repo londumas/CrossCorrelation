@@ -100,15 +100,14 @@ std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/Fi
 
 ///// Flags for Jean-Marc's simulations
 const bool mocks              = false;
-const bool mockJMC__          = false;
+const bool mockJMC__          = true;
 const bool mockBox__          = false;
 const bool mocksNoNoiseNoCont = false;
-const double randomPositionOfQSOInCell__ = false;
-const double randomPositionOfQSOInCellNotBeforeCorrelation__ = false;
+const double randomPositionOfQSOInCellNotBeforeCorrelation__ = true;
 //// Flags for covariance matrix estimation
 const bool shuffleQSO     = false;
 const bool shuffleForest  = false;
-const bool randomQSO      = false;
+const bool randomQSO      = true;
 const bool randomForest   = false;
 const bool doBootstraps__ = false;
 
@@ -5089,7 +5088,6 @@ void Correlation::xi_QSO_QSO_MockJMc(bool doBootstraps/*=false*/, unsigned int b
 	loadDataQ1();
 
 	//// If doing with random
-
 	std::stringstream convert;
 	convert << bootIdx;
 	const std::string strBootIdx = convert.str();
@@ -5108,16 +5106,8 @@ void Correlation::xi_QSO_QSO_MockJMc(bool doBootstraps/*=false*/, unsigned int b
 		while (nbQSO<nbQ1__) {
 
 			//// Pick a QSO on the grid
-			double x = 0.;
-			double y = 0.;
-			if (randomPositionOfQSOInCell__) {
-				x = sizeCell__*sizeGridX__*rand()/RAND_MAX;
-				y = sizeCell__*sizeGridY__*rand()/RAND_MAX;
-			}
-			else {	
-				x = sizeCell__*(int(  1.*sizeGridX__*rand()/RAND_MAX) + 0.5);
-				y = sizeCell__*(int(  1.*sizeGridY__*rand()/RAND_MAX) + 0.5);
-			}
+			double x = sizeCell__*(int(  1.*sizeGridX__*rand()/RAND_MAX) + 0.5);
+			double y = sizeCell__*(int(  1.*sizeGridY__*rand()/RAND_MAX) + 0.5);
 			const double r = v_rQ1__[nbQSO];
 			const double z = v_zzQ1__[nbQSO];
 
@@ -5145,6 +5135,18 @@ void Correlation::xi_QSO_QSO_MockJMc(bool doBootstraps/*=false*/, unsigned int b
 		dataY.clear();
 		dataR.clear();
 		dataZ.clear();
+	}
+
+
+	///// Vectors of randomized positions in cell
+	if (randomPositionOfQSOInCellNotBeforeCorrelation__) {
+
+		std::srand (42);
+
+		for (unsigned int i=0; i<nbQ1__; i++) {
+			v_raQ1__[i] += sizeCell__*(1.*rand()/RAND_MAX-0.5);
+			v_deQ1__[i] += sizeCell__*(1.*rand()/RAND_MAX-0.5);
+		}
 	}
 
 
@@ -5346,7 +5348,7 @@ void Correlation::xi_QSO_QSO_MockJMc(bool doBootstraps/*=false*/, unsigned int b
 				
 				//// 1D
 				if (distTotPow2<maxPow2) {
-				const double distTot    = sqrt(distTotPow2);
+					const double distTot    = sqrt(distTotPow2);
 					const double mu         = rPara/distTot;
 					const unsigned int idx  = int(distTot);
 					
@@ -5511,9 +5513,6 @@ void Correlation::loadDataQ1(void) {
 
 	delete cosmo;
 
-	//// Constants
-	if (randomPositionOfQSOInCell__) std::srand(42);
-
 	//// Variables for FITS
 	const TString TSfitsnameSpec = pathQ1__;
 	std::cout << "  pathToFits = " << pathQ1__ << std::endl;
@@ -5550,13 +5549,6 @@ void Correlation::loadDataQ1(void) {
 		if (!mockJMC__ && !mockBox__) {
 			ra *= C_DEGTORAD;
 			de *= C_DEGTORAD;
-		}
-		//// If find a random position of the QSO or forest in the cell
-		if (randomPositionOfQSOInCell__) {
-			const double randPositionRA = sizeCell__*(1.*rand()/RAND_MAX-0.5);
-			ra += randPositionRA;
-			const double randPositionDE = sizeCell__*(1.*rand()/RAND_MAX-0.5);
-			de += randPositionDE;
 		}
 
 		//// Store the data
@@ -5643,9 +5635,6 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 	distMinPixel__ = cosmo->GetMinDistPixels(lambdaObsMin__, lambdaRFLine__);
 
 	delete cosmo;
-
-	//// Constants
-	if (randomPositionOfQSOInCell__) std::srand(42);
 
 	//// Variables for FITS
 	const TString TSfitsnameSpec = pathToFits;
@@ -5827,13 +5816,6 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 		if (!mockJMC__) {
 			ra *= C_DEGTORAD;
 			de *= C_DEGTORAD;
-		}
-		//// If find a random position of the QSO or forest in the cell
-		if (randomPositionOfQSOInCell__) {
-			const double randPositionRA = sizeCell__*(1.*rand()/RAND_MAX-0.5);
-			ra += randPositionRA;
-			const double randPositionDE = sizeCell__*(1.*rand()/RAND_MAX-0.5);
-			de += randPositionDE;
 		}
 
 		v_ra__.push_back(ra);

@@ -125,7 +125,7 @@ const double maxBeta__  =  0.3;
 
 /// Max values of DLA
 const unsigned int NbDLA0__ = 15;
-const unsigned int nbLoop__ = 50;
+const unsigned int nbLoop__ = 10;
 
 class GetDelta
 {

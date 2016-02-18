@@ -75,7 +75,7 @@ std::string pathMoreForHist__ = "";
 //// Flags
 unsigned int stepDefinition = 1000;
 unsigned int stepAnnalyse   = 1000;
-const unsigned int methodIndex__ = 2;
+const unsigned int methodIndex__ = 1;
 const bool doVetoLines__          = true;
 const bool setDLA__               = false;
 const bool cutNotFittedSpectra__  = true;
@@ -119,11 +119,11 @@ GetDelta::GetDelta(int argc, char** argv) {
 		pathForest__   = "/home/gpfs/manip/mnt/bao/hdumasde/Data/";
 		pathForest__  += forest__;
 		pathToTxt__    = pathForest__;
-		pathForest__  += "/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits";  //_method1
+		pathForest__  += "/FitsFile_DR12_Guy/DR12_primery/DR12_primery_method1.fits";  //_method1
 //		pathForest__  += "/FitsFile_DR12_Guy/DR12_reObs/DR12_reObs.fits";
 //		pathForest__  += "/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits";
 
-		pathToTxt__   += "/FitsFile_DR12_Guy/DR12_primery/histos/";  //_method1
+		pathToTxt__   += "/FitsFile_DR12_Guy/DR12_primery/histos_method1/";  //_method1
 //		pathToTxt__   += "/FitsFile_DR12_Guy/DR12_reObs/histos/";
 //		pathToTxt__   += "/FitsFile_eBOSS_Guy/all_eBOSS_primery/histos/";
 
@@ -1023,11 +1023,6 @@ void GetDelta::fitForests(unsigned int begin, unsigned int end) {
 
 	//// index  alpha  beta  chi^{2}  error_alpha   error_beta   iflag
 	for (unsigned int i=0; i<nbForest; i++) {
-
-//std::cout << i+begin << " " << v_alpha[i] << " " << v_alpha2__[i] << " " << v_alpha[i]-v_alpha2__[i] << std::endl;
-//std::cout << i+begin << " " << v_beta[i]  << " " << v_beta2__[i] << " " << v_beta[i]-v_beta2__[i] << std::endl;
-//std::cout << v_chi2[i]/(v_nbPixel[i]-2.) << std::endl;
-
 		fFile << i+begin;
 		fFile << " " << v_alpha[i];
 		fFile << " " << v_beta[i];
