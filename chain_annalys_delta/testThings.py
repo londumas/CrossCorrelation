@@ -251,6 +251,7 @@ def meanDelta():
 	#path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1563/Box_000/Simu_000/Data/delta.fits'
 
 	cat = pyfits.open(path, memmap=True)[1].data
+	cat = cat[ cat['Z_VI']>5.2 ]
 
 	cat = cat[ numpy.logical_and( numpy.logical_and(  numpy.logical_and( cat['ALPHA_2']!=alphaStart__, cat['BETA_2']!=0.),  numpy.abs(cat['ALPHA_2'])<=39.5 ), numpy.abs(cat['BETA_2'])<=0.25 ) ]
 	#cat = cat[ numpy.logical_or( numpy.logical_or(  numpy.logical_or( cat['ALPHA_2']==alphaStart__, cat['BETA_2']==0.),  numpy.abs(cat['ALPHA_2'])>=39.5 ), numpy.abs(cat['BETA_2'])>=0.25 ) ]
@@ -313,7 +314,7 @@ def meanDelta():
 	cat['DELTA_WEIGHT'][ (cat['DELTA_WEIGHT']>0.) ] = 1.
 	meanSNR = numpy.average( cat['NORM_FLUX']*numpy.sqrt(cat['NORM_FLUX_IVAR']), weights=cat['DELTA_WEIGHT'],axis=1)
 
-	
+	'''
 	### \alpha vs. <flux>
 	xxx = meanFlux
 	yyy = cat['ALPHA_2']
@@ -329,7 +330,7 @@ def meanDelta():
 	plt.ylabel(r'$\alpha$', fontsize=40)
 	myTools.deal_with_plot(False,False,True)
 	plt.show()
-	
+	'''
 	### < \delta >
 	plt.hist(meanDelta,bins=1000)
 	plt.xlabel(r'$< \delta >$', fontsize=40)
@@ -440,9 +441,9 @@ def meanDelta():
 	#cat = cat[ meanSNR>10. ]
 	#meanDelta = meanDelta[ meanSNR>10. ]
 	#meanSNR = meanSNR[ meanSNR>10. ]
-	cat = cat[ numpy.abs(meanDelta)>0.5 ]
-	meanDelta = meanDelta[ numpy.abs(meanDelta)>0.5 ]
-	meanSNR = meanSNR[ numpy.abs(meanDelta)>0.5 ]
+	#cat = cat[ numpy.abs(meanDelta)>0.5 ]
+	#meanDelta = meanDelta[ numpy.abs(meanDelta)>0.5 ]
+	#meanSNR = meanSNR[ numpy.abs(meanDelta)>0.5 ]
 	#meanDelta = meanDelta[cat['Z_VI']>4 ]
 	#meanSNR = meanSNR[ cat['Z_VI']>4 ]
 	#cat = cat[ cat['Z_VI']>4 ]
@@ -721,10 +722,10 @@ def testCosmo():
 
 
 
-plot_spectra_i_want()
+#plot_spectra_i_want()
 #lookNotFittedSpectra()
 #distribSomething()
-#meanDelta()
+meanDelta()
 #distribPixelZ()
 #lookTemplate()
 #distribSpaceLambda()

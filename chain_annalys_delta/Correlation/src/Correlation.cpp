@@ -95,7 +95,7 @@ double distMinPixel__ = 0.;
 double distMinPixelDelta2__ = 0.;
 unsigned int idxCommand_[6] = {0};
 const std::string pathToMockJMC__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1563/";
-std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator/";  //_nicolasEstimator   //_method1
+std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/";  //_nicolasEstimator   //_method1
 //std::string pathToSave__ = "";
 
 ///// Flags for Jean-Marc's simulations
@@ -107,13 +107,13 @@ const double randomPositionOfQSOInCellNotBeforeCorrelation__ = false;
 //// Flags for covariance matrix estimation
 const bool shuffleQSO     = false;
 const bool shuffleForest  = false;
-const bool randomQSO      = false;
+const bool randomQSO      = true;
 const bool randomForest   = false;
 const bool doBootstraps__ = false;
 
 
 const bool doVetoLines__ = true;
-const bool nicolasEstimator__ = true;
+const bool nicolasEstimator__ = false;
 const bool doingCoAddSoRemoving__ = false;
 
 
@@ -3321,6 +3321,46 @@ void Correlation::xi_QSO_QSO(bool doBootstraps/*=false*/, unsigned int bootIdx/*
 	convert << bootIdx;
 	const std::string strBootIdx = convert.str();
 
+	//// Keep the data
+	std::vector<double> dataRa(v_raQ1__);
+	std::vector<double> dataCoDe(v_CosDeQ1__);
+	std::vector<double> dataSiDe(v_SinDeQ1__);
+
+	///// Needed to randomize the QSO
+	if (randomQSO) {
+
+		std::cout << "  Random QSO " << bootIdx << std::endl;
+		std::srand (bootIdx*10);
+
+		///// Get the edge of the sky
+		double raMin = *std::min_element(v_raQ1__.begin(), v_raQ1__.end());
+		double raMax = *std::max_element(v_raQ1__.begin(), v_raQ1__.end());
+		double deMin = *std::min_element(v_deQ1__.begin(), v_deQ1__.end());
+		double deMax = *std::max_element(v_deQ1__.begin(), v_deQ1__.end());
+		raMin = raMin*0.99;
+		raMax = std::min(raMax*1.01,2.*M_PI);
+		deMin = std::max(deMin*1.01,-M_PI);
+		deMax = std::min(deMax*1.01,M_PI);
+		std::cout << "  " << raMin << " " << raMax << " " << deMin << " " << deMax << std::endl;
+
+		const double coefRA = 1./(raMax-raMin);
+		const double coefDE = 1./(deMax-deMin);
+		for (unsigned int i=0; i<nbQ1__; i++) {
+			const float ra = (float)rand()/(float)(RAND_MAX*coefRA) +raMin;
+			const float de = (float)rand()/(float)(RAND_MAX*coefDE) +deMin;
+			v_raQ1__[i]    = ra;
+			v_deQ1__[i]    = de;
+			v_CosDeQ1__[i] = cos(de);
+			v_SinDeQ1__[i] = sin(de);
+		}
+	}
+	else {
+		dataRa.clear();
+		dataCoDe.clear();
+		dataSiDe.clear();
+	}
+
+
 
 	//// Constants:
 	const double max          = 200.;
@@ -3365,7 +3405,6 @@ void Correlation::xi_QSO_QSO(bool doBootstraps/*=false*/, unsigned int bootIdx/*
 			const double distTransQsoQsoPow2 = rr1*rr1*(1.-cosTheta*cosTheta);
 			if (distTransQsoQsoPow2 >= maxPow2) continue;
 
-
 			//// Parrallel distance between the two QSOs
 			const double rPara = fabs(rr1*cosTheta-v_rQ1__[q2]);
 			if (rPara >= max) continue;
@@ -3400,63 +3439,23 @@ void Correlation::xi_QSO_QSO(bool doBootstraps/*=false*/, unsigned int bootIdx/*
 	
 	std::cout << "\n  Saving\n" << std::endl;
 
-	// 1D
 	std::ofstream fFile;
-	std::string pathToSave = pathToSave__;
-	pathToSave += "xi_QSO_QSO_1D_";
-	pathToSave += QSO__;
+	std::string pathToSave;
+	std::string prefix = QSO__;
 	if (randomQSO) {
-		pathToSave += "_randomQSO_";
-		pathToSave += strBootIdx;;
+		prefix += "_RR_";
+		prefix += strBootIdx;
 	}
-	pathToSave += ".txt";
-	std::cout << "\n  " << pathToSave << std::endl;
-	fFile.open(pathToSave.c_str());
-	fFile << std::scientific;
-	fFile.precision(14);
+	else prefix += "_DD";
+
 
 	long double sumOne = 0.;
 	long double meanZ = 0.;
 
-	//// Set the values of data
-	for (unsigned int i=0; i<nbBin; i++) {
-
-		long double save0 = 0.;
-		long double save1 = 0.;
-		long double save2 = 0.;
-		long double save3 = 0.;
-
-		for (unsigned int j=0; j<nbBinM; j++) {
-			save0 += dataMu[i][j][0];
-			save1 += dataMu[i][j][1];
-			save2 += dataMu[i][j][2];
-			save3 += dataMu[i][j][3];
-		}
-
-		fFile << save0;
-		fFile << " " << save1;
-		fFile << " " << save2;
-		fFile << " " << save3/2.;
-		fFile << std::endl;
-
-		sumOne += save0;
-		meanZ  += save3/2.;
-	}
-	fFile.close();
-
-	//// Get mean redshift of pairs
-	std::cout << "  < z >           = " << meanZ/sumOne << " +- " << 0. << std::endl;
-	std::cout << "  number of pairs = " << sumOne          << std::endl;
-
-
 	//// 2D
 	pathToSave = pathToSave__;
 	pathToSave += "xi_QSO_QSO_2D_";
-	pathToSave += QSO__;
-	if (randomQSO) {
-		pathToSave += "_randomQSO_";
-		pathToSave += strBootIdx;;
-	}
+	pathToSave += prefix;
 	pathToSave += ".txt";
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
@@ -3489,11 +3488,7 @@ void Correlation::xi_QSO_QSO(bool doBootstraps/*=false*/, unsigned int bootIdx/*
 	// Mu
 	pathToSave = pathToSave__;
 	pathToSave += "xi_QSO_QSO_Mu_";
-	pathToSave += QSO__;
-	if (randomQSO) {
-		pathToSave += "_randomQSO_";
-		pathToSave += strBootIdx;;
-	}
+	pathToSave += prefix;
 	pathToSave += ".txt";
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
@@ -3511,6 +3506,138 @@ void Correlation::xi_QSO_QSO(bool doBootstraps/*=false*/, unsigned int bootIdx/*
 		}
 	}
 	fFile.close();
+
+
+	//// Doing the correlation random - data
+	if (randomQSO) {
+	
+		//// Reset values to zero
+		for (unsigned int i=0; i<nbBin; i++) {
+			for (unsigned int j=0; j<nbBinM; j++) {
+				for (unsigned int k=0; k<4; k++) {
+					dataMu[i][j][k] = 0.;
+				}
+			}
+		}
+		for (unsigned int i=0; i<nbBin; i++) {
+			for (unsigned int j=0; j<nbBin; j++) {
+				for (unsigned int k=0; k<4; k++) {
+					data2D[i][j][k] = 0.;
+				}
+			}
+		}
+
+		std::cout << "\n  Starting\n" << std::endl;
+
+		for (unsigned int q1=0; q1<nbQ1__; q1++) {
+
+			const double ra1 = dataRa[q1];
+			const double cosDe1 = dataCoDe[q1];
+			const double sinDe1 = dataSiDe[q1];
+			const double zz1 = v_zzQ1__[q1];
+			const double rr1 = v_rQ1__[q1];
+	
+			for (unsigned int q2=0; q2<nbQ1__; q2++) {
+	
+				//// Angle between the two directions of thes QSOs
+				const double cosTheta = cosDe1*v_CosDeQ1__[q2]*cos(ra1-v_raQ1__[q2]) + sinDe1*v_SinDeQ1__[q2];
+				
+				//// Transvers distance between the two QSOs
+				const double distTransQsoQsoPow2 = rr1*rr1*(1.-cosTheta*cosTheta);
+				if (distTransQsoQsoPow2 >= maxPow2) continue;
+	
+				//// Parrallel distance between the two QSOs
+				const double rPara = fabs(rr1*cosTheta-v_rQ1__[q2]);
+				if (rPara >= max) continue;
+				const unsigned int idxPara = int(rPara);
+	
+				//// Transvers distance between the two QSOs
+				const double rPerp   = sqrt(distTransQsoQsoPow2);
+				const unsigned int idxPerp = int(rPerp);
+	
+				const double distTotPow2 = distTransQsoQsoPow2 + rPara*rPara;
+	
+				//// 1D
+				if (distTotPow2<maxPow2) {
+					const double distTot    = sqrt(distTotPow2);
+					const double mu         = rPara/distTot;
+					const unsigned int idx  = int(distTot);
+					const unsigned int idxM = int(50.*mu);
+	
+					dataMu[idx][idxM][0] ++;
+					dataMu[idx][idxM][1] += distTot;
+					dataMu[idx][idxM][2] += mu;
+					dataMu[idx][idxM][3] += zz1+v_zzQ1__[q2];
+				}
+	
+				//// 2D
+				data2D[idxPerp][idxPara][0] ++;
+				data2D[idxPerp][idxPara][1] += rPerp;
+				data2D[idxPerp][idxPara][2] += rPara;
+				data2D[idxPerp][idxPara][3] += zz1+v_zzQ1__[q2];
+			}
+		}
+		
+		std::cout << "\n  Saving\n" << std::endl;
+	
+		prefix = QSO__;
+		prefix += "_DR_";
+		prefix += strBootIdx;
+		prefix += ".txt";
+	
+		//// 2D
+		pathToSave = pathToSave__;
+		pathToSave += "xi_QSO_QSO_2D_";
+		pathToSave += prefix;
+		std::cout << "\n  " << pathToSave << std::endl;
+		fFile.open(pathToSave.c_str());
+		fFile << std::scientific;
+		fFile.precision(14);
+	
+		sumOne = 0.;
+		meanZ  = 0.;
+	
+		//// Set the values of data
+		for (unsigned int i=0; i<nbBin; i++) {
+			for (unsigned int j=0; j<nbBin; j++) {
+				fFile << data2D[i][j][0];
+				fFile << " " << data2D[i][j][1];
+				fFile << " " << data2D[i][j][2];
+				fFile << " " << data2D[i][j][3]/2.;
+				fFile << std::endl;
+	
+				sumOne += data2D[i][j][0];
+				meanZ  += data2D[i][j][3]/2.;
+			}
+		}
+		fFile.close();
+	
+		//// Get mean redshift of pairs
+		std::cout << "  < z >           = " << meanZ/sumOne << " +- " << 0. << std::endl;
+		std::cout << "  number of pairs = " << sumOne          << std::endl;
+	
+	
+		// Mu
+		pathToSave = pathToSave__;
+		pathToSave += "xi_QSO_QSO_Mu_";
+		pathToSave += prefix;
+		std::cout << "\n  " << pathToSave << std::endl;
+		fFile.open(pathToSave.c_str());
+		fFile << std::scientific;
+		fFile.precision(14);
+	
+		//// Set the values of data
+		for (unsigned int i=0; i<nbBin; i++) {
+			for (unsigned int j=0; j<nbBinM; j++) {
+				fFile << dataMu[i][j][0];
+				fFile << " " << dataMu[i][j][1];
+				fFile << " " << dataMu[i][j][2];
+				fFile << " " << dataMu[i][j][3]/2.;
+				fFile << std::endl;
+			}
+		}
+		fFile.close();
+	}
 
 	return;
 }

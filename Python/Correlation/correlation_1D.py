@@ -310,12 +310,12 @@ dic_class = {
 ### Data
 dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
 dic_class['name'] = "data"
-dic_class['correlation'] = "f_f_r"
+dic_class['correlation'] = "f_f_lRF_devide"
 dic_class['f1'] = "LYA"
 corrD = Correlation_1D(dic_class)
 dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator/'
 dic_class['name'] = "dataM1"
-dic_class['correlation'] = "f_f_r"
+dic_class['correlation'] = "f_f_lRF_devide"
 dic_class['f1'] = "LYA"
 corrDD = Correlation_1D(dic_class)
 

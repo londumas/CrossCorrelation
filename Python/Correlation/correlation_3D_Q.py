@@ -259,7 +259,7 @@ dic_class = {
 	'f2': 'LYA',
 	'q1': 'QSO',
 	'q2': 'QSO',
-	'name' : 'Data'
+	'name' : 'Mocks'
 }
 dic_Q = {
 	'nb_random' : 10,
@@ -278,13 +278,20 @@ dic_CAMB = {
 	'min_for_guess' : 20.,
 	'max_for_guess' : 50.,
 }
+
+### For data
+corr2 = Correlation3DQ(dic_class,dic_Q)
+
+### For data
+dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
+dic_Q['nb_random'] = 1
+dic_Q['path_to_cat'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/QSO_ALL_TESTS.fits'
+dic_Q['load_from_txt'] = True
 corr = Correlation3DQ(dic_class,dic_Q)
 
-print corr._meanZ
-
-corr.plot_slice_2d(0)
-corr.plot_slice_2d(1)
-corr.plot_slice_2d(None,0)
+corr.plot_1d(0,[corr2])
+corr.plot_1d(1,[corr2])
+corr.plot_1d(2,[corr2])
 
 dic_CAMB = corr.fit_CAMB(None,dic_CAMB,False)
 corr.plot_CAMB(None,dic_CAMB,0,False)

@@ -53,7 +53,7 @@ def plotOne():
 		'path_to_txt_file_folder': 'NOTHING',
 		'f1': 'LYA',
 		'f2': 'a',
-		'q1': 'QSO',
+		'q1': 'ALL_OBJECTS',
 		'q2': 'a',
 		'name' : 'Data'
 	}
@@ -92,7 +92,7 @@ def plotOne():
 	### Fit
 	#correlation_matrix_path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Results_RandomPosInCell/xi_delta_QSO_result_cor_2D_allSubSamplingFromFit.npy'
 	#corr.send_BAOFIT('subsampling',correlation_matrix_path,False)
-	corr.set_error_on_covar_matrix('subsampling')
+	#corr.set_error_on_covar_matrix('subsampling')
 	#corr.fit_CAMB_2d('subsampling', correlation_matrix_path)
 
 	dic_CAMB = corr.fit_CAMB(None,dic_CAMB,False)
@@ -181,7 +181,7 @@ def plotBosseBOSS():
 		'nb_Sub_Sampling': 80,
 		'size_bin_calcul_s': 1.,
 		'size_bin_calcul_m': 0.02,
-		'correlation': 'q_f',
+		'correlation': 'f_f',
 		'path_to_txt_file_folder': 'NOTHING',
 		'f1': 'LYA',
 		'f2': 'LYA',
@@ -243,8 +243,8 @@ def look_result_data():
 
 	return
 
-#plotBosseBOSS()
-plotOne()
+plotBosseBOSS()
+#plotOne()
 #plotMany()
 
 ### Send parameter scan

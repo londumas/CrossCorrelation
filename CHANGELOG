@@ -89,7 +89,10 @@
 	- GetDelta.cpp:
 		* Add 100 bins at the end of "hDeltaVsLambdaObs__" in order to avoid
 			the interpolation problem at the edge.
-
+# 2016 - 02 - 18 - (10h08)
+	- Correlation.cpp:
+		* Complete the xi_QSO_QSO function for data in order to have my one (but crappy)
+			auto correlation of QSOs
 
 
 
