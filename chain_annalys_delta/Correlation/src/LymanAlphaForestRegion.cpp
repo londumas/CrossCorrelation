@@ -695,7 +695,7 @@ void LymanForest::SaveRegionMap(std::string pathToSave) {
 	std::ofstream fFile;
 	fFile.open(pathToSave.c_str());
 	fFile << std::scientific;
-	fFile.precision(17);
+	fFile.precision(std::numeric_limits<double>::digits10);
 
 	//const double piTimes2   = M_PI*2.;
 	double radToDeg = 1.;

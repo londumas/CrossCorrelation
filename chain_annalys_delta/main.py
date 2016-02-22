@@ -255,24 +255,26 @@ def main():
 		print '  beta diff          : ', cat['BETA_2']-beta
 		print
 
-		cut = numpy.logical_and( numpy.logical_and( numpy.logical_and( chi>0., numpy.logical_and( numpy.logical_and(  numpy.logical_and( alpha!=alphaStart__, beta!=0.),  numpy.abs(alpha)<=39.5 ), numpy.abs(beta)<=0.25 ) ),  numpy.abs(cat['ALPHA_2'])<=39.5 ), numpy.abs(cat['BETA_2'])<=0.25 )
+		#cut = numpy.logical_and( numpy.logical_and( numpy.logical_and( chi>0., numpy.logical_and( numpy.logical_and(  numpy.logical_and( alpha!=alphaStart__, beta!=0.),  numpy.abs(alpha)<=39.5 ), numpy.abs(beta)<=0.25 ) ),  numpy.abs(cat['ALPHA_2'])<=39.5 ), numpy.abs(cat['BETA_2'])<=0.25 )
 
-		cut2 = numpy.logical_and( numpy.abs(cat['ALPHA_2']-alpha)>0.1, cut )
+		#cut2 = numpy.logical_and( numpy.abs(cat['ALPHA_2']-alpha)>0.1, cut )
+		cut2 = numpy.abs(cat['ALPHA_2']-alpha)>0.01
 		print idx[cut2].size
-		print zip( idx[cut2], cat['PLATE'][cut2],cat['MJD'][cut2],cat['FIBERID'][cut2]  )
+		print zip(idx[cut2])
 
-		cut2 = numpy.logical_and( numpy.abs(cat['BETA_2']-beta)>0.01, cut )
+		#cut2 = numpy.logical_and( numpy.abs(cat['BETA_2']-beta)>0.01, cut )
+		cut2 = numpy.abs(cat['BETA_2']-beta)>0.01
 		print idx[cut2].size
-		print zip( idx[cut2], cat['PLATE'][cut2],cat['MJD'][cut2],cat['FIBERID'][cut2]  )
+		print zip(idx[cut2])
 
-		a = (cat['ALPHA_2']-alpha)[cut]
+		a = (cat['ALPHA_2']-alpha)
 		print numpy.mean(a), numpy.min(a), numpy.max(a)
-		a = (cat['BETA_2']-beta)[cut]
+		a = (cat['BETA_2']-beta)
 		print numpy.mean(a), numpy.min(a), numpy.max(a)
 
-		plt.hist( (cat['ALPHA_2']-alpha)[cut],bins=1000,label='alpha', log=True)
+		plt.hist( (cat['ALPHA_2']-alpha),bins=1000,label='alpha', log=True)
 		plt.show()
-		plt.hist( (cat['BETA_2']-beta)[cut],bins=1000,label='beta', log=True)
+		plt.hist( (cat['BETA_2']-beta),bins=1000,label='beta', log=True)
 		plt.show()
 		
 		cat['ALPHA_2'] = alpha

@@ -45,7 +45,7 @@ ROOT = ../../../Root/Library
 MATH = ../../../Cpp/Library
 CONSTANTS = ../../../Constants
 
-INC = tools.h $(ROOT)/RootHistoFunctions.h $(MATH)/mathFunctions.h $(CONSTANTS)/globalValues.h
+INC = tools.h $(ROOT)/RootHistoFunctions.h $(MATH)/mathFunctions.h $(CONSTANTS)/globalValues.h ../../../chain_annalys_delta/Correlation/src/Cosmology.h
 #TTreeSpectra.h
 MYLIBS = $(LIBS) -lc $(GLIBS)
 
@@ -63,7 +63,7 @@ echo:
 main: $(BIN)/main.exe
 	@echo "building main.exe"
 
-$(BIN)/main.exe: $(OBJ)/main.o $(OBJ)/tools.o $(OBJ)/RootHistoFunctions.o $(OBJ)/mathFunctions.o
+$(BIN)/main.exe: $(OBJ)/main.o $(OBJ)/tools.o $(OBJ)/RootHistoFunctions.o $(OBJ)/mathFunctions.o $(OBJ)/Cosmology.o
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(MYLIBS)
 
 $(OBJ)/main.o: main.cpp $(INC)
@@ -71,6 +71,9 @@ $(OBJ)/main.o: main.cpp $(INC)
 
 $(OBJ)/tools.o: tools.cpp $(INC)
 	$(CXX) $(CXXFLAGS) -c -o $@ tools.cpp
+
+$(OBJ)/Cosmology.o: ../../../chain_annalys_delta/Correlation/src/Cosmology.cpp $(INC)
+	$(CXX) $(CXXFLAGS) -c -o $@ ../../../chain_annalys_delta/Correlation/src/Cosmology.cpp
 	
 $(OBJ)/RootHistoFunctions.o: $(ROOT)/RootHistoFunctions.cpp $(INC)
 	$(CXX) $(CXXFLAGS) -c -o $@ $(ROOT)/RootHistoFunctions.cpp

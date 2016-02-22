@@ -21,6 +21,8 @@
 #include "../../../Root/Library/RootHistoFunctions.h"
 #include "../../../Cpp/Library/mathFunctions.h"
 #include "../../../Constants/globalValues.h"
+#include "../../../chain_annalys_delta/Correlation/src/Cosmology.h"
+
 
 #include <fstream>
 #include <iostream>	// std::cout
@@ -40,7 +42,8 @@
 
 Tools::Tools(int argc, char** argv) {
 
-	get_Ra_Dec_DLA();
+	//get_Ra_Dec_DLA();
+	look_DLA();
 	//get_Catalogue();
 	//get_flux_vs_lambdaObs();
 	//get_weigted_covar_matrix();
@@ -171,6 +174,182 @@ void Tools::get_Ra_Dec_DLA(void) {
 
 
 	return;
+}
+void Tools::look_DLA(void) {
+
+	const std::string pathToDLACat__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/DLA_all.fits";
+	const std::string pathForest__   = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA//FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits";
+	unsigned int start = 0;
+	unsigned int end   = 0;
+
+	Cosmology* cosmo = new Cosmology(C_H, C_OMEGAM, C_OMEGAB);
+	TH1D* hConvertRedshDist = cosmo->createHistoConvertRedshDist(C_NBBINREDSH, C_ZEXTREMABINCONVERT0, C_ZEXTREMABINCONVERT1);
+
+	TProfile* h_norm_flux            = new TProfile("h_norm_flux","" ,8000,-8000.,8000.);
+	TProfile* h_delta                = new TProfile("h_delta",""     ,8000,-8000.,8000.);
+	TProfile* h_delta_vs_dist        = new TProfile("h_delta_vs_dist",""     ,8000,-8000.,8000.);
+	TProfile* h_correction           = new TProfile("h_correction","",8000,-8000.,8000.);
+
+	TProfile* h_delta_vs_ratio       = new TProfile("h_delta_vs_ratio","",8000,0.,5.);
+
+	//// Get the list of DLA
+	int sta2 = 0;
+	long nrows2 = 0;
+
+	const TString TSfitsnameSpec2 = pathToDLACat__;
+	std::cout << "  " << TSfitsnameSpec2 << std::endl;
+
+	fitsfile* fitsptrSpec2;
+	fits_open_table(&fitsptrSpec2,TSfitsnameSpec2, READONLY, &sta2); //READONLY // READWRITE
+	fits_get_num_rows(fitsptrSpec2, &nrows2, &sta2);
+
+	std::cout << "  number of DLA = " << nrows2 << std::endl;
+
+	// list of DLA
+	const unsigned int NbDLACat = nrows2;
+	//unsigned int DLAplate[NbDLACat], DLAmjd[NbDLACat], DLAfiber[NbDLACat];
+	double raDLACat[NbDLACat], deDLACat[NbDLACat], zabsDLACat[NbDLACat], NHIDLACat[NbDLACat];
+
+	for (unsigned int i=0; i<NbDLACat; i++) {
+		fits_read_col(fitsptrSpec2,TDOUBLE, 1, i+1,1,1,NULL,&raDLACat[i],    NULL,&sta2);
+		fits_read_col(fitsptrSpec2,TDOUBLE, 2, i+1,1,1,NULL,&deDLACat[i],    NULL,&sta2);
+		fits_read_col(fitsptrSpec2,TDOUBLE, 3, i+1,1,1,NULL,&zabsDLACat[i],  NULL,&sta2);
+		fits_read_col(fitsptrSpec2,TDOUBLE, 7, i+1,1,1,NULL,&NHIDLACat[i],   NULL,&sta2);
+	}
+	fits_close_file(fitsptrSpec2,&sta2);
+
+	const TString TSfitsnameSpec = pathForest__;
+	std::cout << "  " << pathForest__ << std::endl;
+
+	//// Variables for FITS
+	int sta = 0;
+	long nrows = 0;
+
+	fitsfile* fitsptrSpec;
+	fits_open_table(&fitsptrSpec,TSfitsnameSpec, READONLY, &sta);
+	fits_get_num_rows(fitsptrSpec, &nrows, &sta);
+	
+	unsigned int nLines = end;
+	if (end == 0) nLines = nrows;
+
+	std::cout << "  number of forest = " << nLines << std::endl;
+	
+	//// Get number of detected DLA
+	unsigned int nbDLAAllCat = 0;
+
+	//// Load data
+	for (unsigned int i=start; i<nLines; i++) {
+
+		//// Variables for data in FITS
+		double ra, de, zz;
+		double meanForestLambdaRF = 0.;
+		double alpha2 = 0.;
+		double beta2  = 0.;
+
+		double LAMBDA_OBS[nbBinRFMax__];  
+		double LAMBDA_RF[nbBinRFMax__];
+		double NORM_FLUX[nbBinRFMax__];
+		double NORM_FLUX_IVAR[nbBinRFMax__];
+		double FLUX_DLA[nbBinRFMax__];
+		double DELTA[nbBinRFMax__];
+		double DELTA_IVAR[nbBinRFMax__];
+		double DELTA_WEIGHT[nbBinRFMax__];
+		double TEMPLATE[nbBinRFMax__];
+		
+		fits_read_col(fitsptrSpec,TDOUBLE, 4,i+1,1,1,NULL,&ra,   NULL,&sta);
+		fits_read_col(fitsptrSpec,TDOUBLE, 5,i+1,1,1,NULL,&de,   NULL,&sta);
+		fits_read_col(fitsptrSpec,TDOUBLE, 6, i+1,1,1,NULL,&zz,                   NULL,&sta);
+		fits_read_col(fitsptrSpec,TDOUBLE, 8, i+1,1,1,NULL,&meanForestLambdaRF,   NULL,&sta);
+		fits_read_col(fitsptrSpec,TDOUBLE, 11,i+1,1,1,NULL,&alpha2,               NULL,&sta);
+		fits_read_col(fitsptrSpec,TDOUBLE, 12,i+1,1,1,NULL,&beta2,                NULL,&sta);
+
+		fits_read_col(fitsptrSpec,TDOUBLE, 13,i+1,1,nbBinRFMax__,NULL, &LAMBDA_OBS,      NULL,&sta);
+		fits_read_col(fitsptrSpec,TDOUBLE, 14,i+1,1,nbBinRFMax__,NULL, &LAMBDA_RF,       NULL,&sta);
+		fits_read_col(fitsptrSpec,TDOUBLE, 15,i+1,1,nbBinRFMax__,NULL, &NORM_FLUX,       NULL,&sta);
+		fits_read_col(fitsptrSpec,TDOUBLE, 16,i+1,1,nbBinRFMax__,NULL, &NORM_FLUX_IVAR,  NULL,&sta);
+		fits_read_col(fitsptrSpec,TDOUBLE, 17,i+1,1,nbBinRFMax__,NULL, &FLUX_DLA,        NULL,&sta);
+		fits_read_col(fitsptrSpec,TDOUBLE, 18,i+1,1,nbBinRFMax__,NULL, &DELTA,           NULL,&sta);
+		fits_read_col(fitsptrSpec,TDOUBLE, 19,i+1,1,nbBinRFMax__,NULL, &DELTA_IVAR,      NULL,&sta);
+		fits_read_col(fitsptrSpec,TDOUBLE, 20,i+1,1,nbBinRFMax__,NULL, &DELTA_WEIGHT,    NULL,&sta);
+		fits_read_col(fitsptrSpec,TDOUBLE, 21,i+1,1,nbBinRFMax__,NULL, &TEMPLATE,        NULL,&sta);
+
+		if ((alpha2 == alphaStart__ && beta2 == betaStart__) || (fabs(alpha2)>=maxAlpha__-0.5) || (fabs(beta2)>=maxBeta__-0.05) ) {
+			continue;
+		}
+
+		// match with DLA catalog
+		unsigned int NbDLA=0;
+		double zabsDLA[NbDLA0__], NHIDLA[NbDLA0__];
+		for (unsigned int iii=0; iii<NbDLA0__; iii++){
+			zabsDLA[iii]=0.0;
+			NHIDLA[iii]=0.0;
+		}
+		for (unsigned int iii=0; iii<NbDLACat; iii++) {
+
+			if (ra!=raDLACat[iii] || de!=deDLACat[iii]) continue;
+
+			zabsDLA[NbDLA]   = zabsDLACat[iii];
+			NHIDLA[NbDLA]    = NHIDLACat[iii];
+
+			// compute DLA flux 
+			for (unsigned int p=0; p<nbBinRFMax__; p++) {  //C_DLACORR
+
+				if (DELTA_WEIGHT[p]>0. && NORM_FLUX_IVAR[p]>0. && FLUX_DLA[p]>C_DLACORR && LAMBDA_OBS[p]>=lambdaObsMin__ && LAMBDA_OBS[p]<lambdaObsMax__ && LAMBDA_RF[p]>=lambdaRFMin__ && LAMBDA_RF[p]<lambdaRFMax__) {
+					// Fill histos
+					const double l = (zabsDLA[NbDLA]+1.)*lambdaRFLine__;
+					h_norm_flux->Fill(LAMBDA_OBS[p]-l, NORM_FLUX[p],DELTA_WEIGHT[p]);
+					h_delta->Fill(LAMBDA_OBS[p]-l, DELTA[p],DELTA_WEIGHT[p]);
+					h_delta_vs_dist->Fill(hConvertRedshDist->Interpolate(LAMBDA_OBS[p]/lambdaRFLine__-1.)-hConvertRedshDist->Interpolate(zabsDLA[NbDLA]), DELTA[p],DELTA_WEIGHT[p]);
+					h_correction->Fill(LAMBDA_OBS[p]-l,  VoigtProfile(NHIDLA[NbDLA],LAMBDA_OBS[p],zabsDLA[NbDLA]),DELTA_WEIGHT[p]);
+					h_delta_vs_ratio->Fill(LAMBDA_OBS[p]/l , DELTA[p],DELTA_WEIGHT[p]);
+				}
+			}
+			NbDLA++;
+			if (NbDLA>NbDLA0__) {
+				std::cout << "  GetDelta::updateDLA::  ERROR:  NbDLA>NbDLA0__" << NbDLA << " " << NbDLA0__ << std::endl;
+				break;
+			}
+		}
+		nbDLAAllCat += NbDLA;
+	}
+
+	fits_close_file(fitsptrSpec,&sta);
+
+	std::cout << "  nbDLAAllCat = " << nbDLAAllCat << std::endl;
+
+
+	R_plot1D(h_norm_flux,"h_norm_flux");
+	R_plot1D(h_delta,"h_delta");
+	R_plot1D(h_delta_vs_dist,"h_delta_vs_dist");
+	R_plot1D(h_correction,"h_correction");
+	R_plot1D(h_delta_vs_ratio,"h_delta_vs_ratio");
+
+	return;
+
+	return;
+}
+double Tools::VoigtProfile(double nhi, double lamb, double z_abs) {
+
+	const double gamma = 6.625e8;
+	const double f = 0.4164;
+
+	const double c1000 = 299792458.0; //m/s
+	double b = 30.*1000.; // 30 km/s parametre Doppler
+	nhi += 0.1;  // correction to tune distribution
+	const double NN = pow(10.,nhi);
+	const double larf = lamb/(1.+z_abs);
+
+	const double u = (c1000/b)*(lambdaRFLine__/larf-1.);
+
+	const double a = lambdaRFLine__*1.e-10*gamma/(4.*M_PI*b);
+	const double sig = sqrt(2.);
+	const double H = TMath::Voigt(u,sig,a*2.);  // in root factor 2....
+	b/=1000.;
+	const double tau = 1.497e-15*NN*f*larf*H/b;
+
+	double prof=exp(-tau);
+
+	return prof;
 }
 void Tools::get_Catalogue(void) {
 	/// Path to save

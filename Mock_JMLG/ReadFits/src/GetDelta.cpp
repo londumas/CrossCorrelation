@@ -64,7 +64,7 @@ GetDelta::GetDelta(int argc, char** argv) {
 	noMockExpander__ = false;
 
 	std::cout << std::scientific;
-	std::cout.precision(15);
+	std::cout.precision(std::numeric_limits<double>::digits10);
 	if (findPDF__) defineHistos();
 
 	// Init the bit
@@ -598,7 +598,7 @@ void GetDelta::saveHistos() {
 	std::ofstream fFile;
 	fFile.open("/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/FluxPDF_mocksJMC.txt");
 	fFile << std::scientific;
-	fFile.precision(17);
+	fFile.precision(std::numeric_limits<double>::digits10);
 	for (unsigned int i=0; i<nbBinsFlux__; i++){
 		for (unsigned int j=0; j<nbBinsRedshift__; j++){
 			fFile << hFluxPDF__->GetBinContent(i+1,j+1) << " ";
@@ -610,7 +610,7 @@ void GetDelta::saveHistos() {
 	/// Save mean transmission flux
 	fFile.open("/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/hDeltaVsLambdaObs_LYA_JMC.txt");
 	fFile << std::scientific;
-	fFile.precision(17);
+	fFile.precision(std::numeric_limits<double>::digits10);
 	for (unsigned int i=0; i<nbBinlambdaObs__; i++){
 		fFile << i << " " << hFluxVsLambdaObs__->GetBinCenter(i+1) << " " << hFluxVsLambdaObs__->GetBinContent(i+1) << std::endl;
 	}

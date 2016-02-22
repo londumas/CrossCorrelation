@@ -93,7 +93,16 @@
 	- Correlation.cpp:
 		* Complete the xi_QSO_QSO function for data in order to have my one (but crappy)
 			auto correlation of QSOs
-
+# 2016 - 02 - 22 - (09h07)
+	- everywhere:
+		* change the precision to something not arbitrary but to the full precision of a double
+	- Cpp/Tools:
+		* add a "look_DLA" method to see how the delta of forests with DLA are.
+	- Correlation.cpp:
+		* correct the way to find "< <delta> >" and "< coef >"
+	- GetDelta.cpp:
+		* correct the way to deal with DLA. Correct the templat instead of the delta, and fit for it also
+		* set to zero very high DLA and set to one very low DLA
 
 
 

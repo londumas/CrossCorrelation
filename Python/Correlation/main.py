@@ -49,16 +49,16 @@ def plotOne():
 		'nb_Sub_Sampling': 80,
 		'size_bin_calcul_s': 1.,
 		'size_bin_calcul_m': 0.02,
-		'correlation': 'q_f',
+		'correlation': 'f_f',
 		'path_to_txt_file_folder': 'NOTHING',
 		'f1': 'LYA',
 		'f2': 'a',
-		'q1': 'ALL_OBJECTS',
+		'q1': 'QSO',
 		'q2': 'a',
 		'name' : 'Data'
 	}
 	#dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1563/Box_000/Simu_000/Results_NicolasDistortion/'
-	dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/' ##_nicolasEstimator
+	dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator/' ##_nicolasEstimator
 	#dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/TESTS/'
 	dic_class['name'] = 'Data'
 	corr = correlation_3D.Correlation3D(dic_class)
@@ -95,10 +95,10 @@ def plotOne():
 	#corr.set_error_on_covar_matrix('subsampling')
 	#corr.fit_CAMB_2d('subsampling', correlation_matrix_path)
 
-	dic_CAMB = corr.fit_CAMB(None,dic_CAMB,False)
-	corr.plot_CAMB(None,dic_CAMB,0,False)
-	corr.plot_CAMB(None,dic_CAMB,1,False)
-	corr.plot_CAMB(None,dic_CAMB,2,False)
+	dic_CAMB = corr.fit_CAMB(None,dic_CAMB,True)
+	corr.plot_CAMB(None,dic_CAMB,0,True)
+	corr.plot_CAMB(None,dic_CAMB,1,True)
+	corr.plot_CAMB(None,dic_CAMB,2,True)
 
 	
 	corr.plot_1d(0)
@@ -243,8 +243,8 @@ def look_result_data():
 
 	return
 
-plotBosseBOSS()
-#plotOne()
+#plotBosseBOSS()
+plotOne()
 #plotMany()
 
 ### Send parameter scan

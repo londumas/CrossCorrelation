@@ -103,7 +103,6 @@ class Correlation3DQ(correlation_3D.Correlation3D):
 		xi1D[:,1][cut] /= coef
 		xi1D[:,2][cut]  = numpy.sqrt(xi1D[:,1][cut])
 		
-		
 		### 2D
 		data = numpy.loadtxt(path2D)
 		save0 = data[:,0]
@@ -209,6 +208,15 @@ class Correlation3DQ(correlation_3D.Correlation3D):
 			### 1D:
 			xi1D = numpy.array(dd_1D)
 			cut = (xi1D[:,1]>0.)
+			
+			rr_1D[:,1][cut] *= dd_1D[-1,1]/rr_1D[-1,1]
+			dr_1D[:,1][cut] *= dd_1D[-1,1]/dr_1D[-1,1]
+			plt.errorbar(dd_1D[:,0][cut], dd_1D[:,1][cut],label='DD')
+			plt.errorbar(dd_1D[:,0][cut], dr_1D[:,1][cut],label='DR')
+			plt.errorbar(dd_1D[:,0][cut], rr_1D[:,1][cut],label='RR')
+			myTools.deal_with_plot(False,False,True)
+			plt.show()
+			
 			xi1D[:,1][cut] = (dd_1D[:,1][cut]-2.*dr_1D[:,1][cut]+rr_1D[:,1][cut])/rr_1D[:,1][cut]
 			xi1D[:,2][cut] = numpy.sqrt(dd_1D[:,1][cut]*coefDD)/(coefDD*rr_1D[:,1][cut])
 
@@ -284,7 +292,7 @@ corr2 = Correlation3DQ(dic_class,dic_Q)
 
 ### For data
 dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
-dic_Q['nb_random'] = 1
+dic_Q['nb_random'] = 5
 dic_Q['path_to_cat'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/QSO_ALL_TESTS.fits'
 dic_Q['load_from_txt'] = True
 corr = Correlation3DQ(dic_class,dic_Q)

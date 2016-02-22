@@ -28,7 +28,6 @@
 #include <cstdlib>	// std::rand, std::srand
 
 
-
 ///// ROOT
 #include "TH1D.h"
 #include "fitsio.h"
@@ -107,9 +106,9 @@ const double randomPositionOfQSOInCellNotBeforeCorrelation__ = false;
 //// Flags for covariance matrix estimation
 const bool shuffleQSO     = false;
 const bool shuffleForest  = false;
-const bool randomQSO      = true;
+const bool randomQSO      = false;
 const bool randomForest   = false;
-const bool doBootstraps__ = false;
+const bool doBootstraps__ = true;
 
 
 const bool doVetoLines__ = true;
@@ -120,7 +119,7 @@ const bool doingCoAddSoRemoving__ = false;
 Correlation::Correlation(int argc, char **argv) {
 
 	std::cout << std::scientific;
-	std::cout.precision(14);
+	std::cout.precision(std::numeric_limits<double>::digits10);
 
 	// command
 
@@ -138,7 +137,7 @@ Correlation::Correlation(int argc, char **argv) {
 	
 
 	///// Set the number of forest to work on
-	nbForest_   = 0;
+	nbForest_   = 1000;
 	nbForest2__ = 0;
 	nbQ1__      = 0;
 	nbQ2__      = 0;
@@ -345,7 +344,7 @@ void Correlation::xi_1D_delta_delta(void) {
 	std::cout << "\n  pathToSave = " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
 	fFile << std::scientific;
-	fFile.precision(14);
+	fFile.precision(std::numeric_limits<double>::digits10);
 
 	long double sumOne = 0.;
 	long double sumZZZ = 0.;
@@ -466,7 +465,7 @@ void Correlation::xi_1DlRF_delta_delta(void) {
 	std::cout << "\n  pathToSave = " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
 	fFile << std::scientific;
-	fFile.precision(14);
+	fFile.precision(std::numeric_limits<double>::digits10);
 
 	long double sumOne = 0.;
 	long double sumZZZ = 0.;
@@ -586,7 +585,7 @@ void Correlation::xi_1DlRFDevide_delta_delta(void) {
 	std::cout << "\n  pathToSave = " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
 	fFile << std::scientific;
-	fFile.precision(14);
+	fFile.precision(std::numeric_limits<double>::digits10);
 
 	long double sumOne = 0.;
 	long double sumZZZ = 0.;
@@ -703,7 +702,7 @@ void Correlation::xi_1D_delta_delta2(void) {
 	std::cout << "\n  pathToSave = " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
 	fFile << std::scientific;
-	fFile.precision(14);
+	fFile.precision(std::numeric_limits<double>::digits10);
 
 	long double sumOne = 0.;
 	long double sumZZZ = 0.;
@@ -822,7 +821,7 @@ void Correlation::xi_1DlRFDevide_delta_delta2(void) {
 	std::cout << "\n  pathToSave = " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
 	fFile << std::scientific;
-	fFile.precision(14);
+	fFile.precision(std::numeric_limits<double>::digits10);
 
 	long double sumOne = 0.;
 	long double sumZZZ = 0.;
@@ -1002,7 +1001,7 @@ void Correlation::xi_A_delta_delta(void) {
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
 	fFile << std::scientific;
-	fFile.precision(14);
+	fFile.precision(std::numeric_limits<double>::digits10);
 	
 	///// Set the values of data
 	///// [0] for value, [1] for error, [2] for bin center
@@ -1037,7 +1036,7 @@ void Correlation::xi_A_delta_delta(void) {
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
 	fFile << std::scientific;
-	fFile.precision(14);
+	fFile.precision(std::numeric_limits<double>::digits10);
 
 	for (unsigned int i=0; i<nbBin; i++) {
 		for (unsigned int j=0; j<nbBinM; j++) {
@@ -1170,7 +1169,7 @@ void Correlation::xi_A_delta_delta_lambda(void) {
 	std::cout << "\n  " << tmp_pathToSave << std::endl;
 	fFile.open(tmp_pathToSave.c_str());
 	fFile << std::scientific;
-	fFile.precision(14);
+	fFile.precision(std::numeric_limits<double>::digits10);
 
 	for (unsigned int i=0; i<nbBin; i++) {
 		for (unsigned int j=0; j<nbBinM; j++) {
@@ -1374,7 +1373,7 @@ void Correlation::xi_A_delta_delta2( unsigned int bootIdx/*=0*/ ) {
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
 	fFile << std::scientific;
-	fFile.precision(14);
+	fFile.precision(std::numeric_limits<double>::digits10);
 
 	sumZZZ = 0.;
 	sumWeg = 0.;
@@ -1415,7 +1414,7 @@ void Correlation::xi_A_delta_delta2( unsigned int bootIdx/*=0*/ ) {
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
 	fFile << std::scientific;
-	fFile.precision(14);
+	fFile.precision(std::numeric_limits<double>::digits10);
 
 	for (unsigned int i=0; i<nbBin; i++) {
 		for (unsigned int j=0; j<nbBinM; j++) {
@@ -1582,7 +1581,7 @@ void Correlation::xi_A_delta_delta2_lambda(void) {
 	std::cout << "\n  " << tmp_pathToSave << std::endl;
 	fFile.open(tmp_pathToSave.c_str());
 	fFile << std::scientific;
-	fFile.precision(14);
+	fFile.precision(std::numeric_limits<double>::digits10);
 
 	for (unsigned int i=0; i<nbBin; i++) {
 		for (unsigned int j=0; j<nbBinM; j++) {
@@ -1917,7 +1916,7 @@ void Correlation::xi_delta_QSO(bool doBootstraps/*=False*/, unsigned int bootIdx
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
 	fFile << std::scientific;
-	fFile.precision(14);
+	fFile.precision(std::numeric_limits<double>::digits10);
 
 	sumOne = 0.;
 	sumZZZ = 0.;
@@ -1960,7 +1959,7 @@ void Correlation::xi_delta_QSO(bool doBootstraps/*=False*/, unsigned int bootIdx
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
 	fFile << std::scientific;
-	fFile.precision(14);
+	fFile.precision(std::numeric_limits<double>::digits10);
 	
 	///// Set the values of data
 	for (unsigned int i=0; i<nbBin; i++) {
@@ -2096,7 +2095,7 @@ void Correlation::xi_delta_QSO_theta(bool doBootstraps/*=False*/, unsigned int b
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
 	fFile << std::scientific;
-	fFile.precision(14);
+	fFile.precision(std::numeric_limits<double>::digits10);
 
 	long double sumOne = 0.;
 	long double sumWeg = 0.;
@@ -2262,7 +2261,7 @@ void Correlation::xi_delta_QSO_lambda(bool doBootstraps/*=False*/, unsigned int 
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
 	fFile << std::scientific;
-	fFile.precision(14);
+	fFile.precision(std::numeric_limits<double>::digits10);
 
 	///// Set the values of data
 	for (unsigned int i=0; i<nbBin; i++) {
@@ -2495,7 +2494,7 @@ void Correlation::xi_delta_QSO_distortionMatrix(void) {
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
 	fFile << std::scientific;
-	fFile.precision(14);
+	fFile.precision(std::numeric_limits<double>::digits10);
 	
 	///// Set the values of data
 	///// [0] for value, [1] for error, [2] for bin center
@@ -2716,7 +2715,7 @@ void Correlation::xi_delta_QSO_distortionMatrix_1D(void) {
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
 	fFile << std::scientific;
-	fFile.precision(14);
+	fFile.precision(std::numeric_limits<double>::digits10);
 	
 	///// Set the values of data
 	//// [0] for value, [1] for error, [2] for bin center
@@ -2952,7 +2951,7 @@ void Correlation::xi_delta_QSO_Metals_Models(double lambdaFrMetal, std::string l
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
 	fFile << std::scientific;
-	fFile.precision(14);
+	fFile.precision(std::numeric_limits<double>::digits10);
 	
 	///// Set the values of data
 	///// [0] for value, [1] for error, [2] for bin center
@@ -2980,7 +2979,7 @@ void Correlation::xi_delta_QSO_Metals_Models(double lambdaFrMetal, std::string l
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
 	fFile << std::scientific;
-	fFile.precision(14);
+	fFile.precision(std::numeric_limits<double>::digits10);
 	
 	///// Set the values of data
 	for (unsigned int i=0; i<nbBin; i++) {
@@ -3278,7 +3277,7 @@ void Correlation::xi_delta_QSO_Wick(unsigned int diagramIdx) {
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
 	fFile << std::scientific;
-	fFile.precision(14);
+	fFile.precision(std::numeric_limits<double>::digits10);
 
 	for (unsigned int i=0; i<nbBin; i++) {
 		fFile << i << " " << i;
@@ -3460,7 +3459,7 @@ void Correlation::xi_QSO_QSO(bool doBootstraps/*=false*/, unsigned int bootIdx/*
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
 	fFile << std::scientific;
-	fFile.precision(14);
+	fFile.precision(std::numeric_limits<double>::digits10);
 
 	sumOne = 0.;
 	meanZ  = 0.;
@@ -3493,7 +3492,7 @@ void Correlation::xi_QSO_QSO(bool doBootstraps/*=false*/, unsigned int bootIdx/*
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
 	fFile << std::scientific;
-	fFile.precision(14);
+	fFile.precision(std::numeric_limits<double>::digits10);
 
 	//// Set the values of data
 	for (unsigned int i=0; i<nbBin; i++) {
@@ -3592,7 +3591,7 @@ void Correlation::xi_QSO_QSO(bool doBootstraps/*=false*/, unsigned int bootIdx/*
 		std::cout << "\n  " << pathToSave << std::endl;
 		fFile.open(pathToSave.c_str());
 		fFile << std::scientific;
-		fFile.precision(14);
+		fFile.precision(std::numeric_limits<double>::digits10);
 	
 		sumOne = 0.;
 		meanZ  = 0.;
@@ -3624,7 +3623,7 @@ void Correlation::xi_QSO_QSO(bool doBootstraps/*=false*/, unsigned int bootIdx/*
 		std::cout << "\n  " << pathToSave << std::endl;
 		fFile.open(pathToSave.c_str());
 		fFile << std::scientific;
-		fFile.precision(14);
+		fFile.precision(std::numeric_limits<double>::digits10);
 	
 		//// Set the values of data
 		for (unsigned int i=0; i<nbBin; i++) {
@@ -3740,7 +3739,7 @@ void Correlation::xi_Q1_Q2(void) {
 	std::cout << "\n  " << tmp_pathToSave << std::endl;
 	fFile.open(tmp_pathToSave.c_str());
 	fFile << std::scientific;
-	fFile.precision(14);
+	fFile.precision(std::numeric_limits<double>::digits10);
 
 	long double sumOne = 0.;
 
@@ -3786,7 +3785,7 @@ void Correlation::xi_Q1_Q2(void) {
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
 	fFile << std::scientific;
-	fFile.precision(14);
+	fFile.precision(std::numeric_limits<double>::digits10);
 	
 	//// Set the values of data
 	//// [0] for value, [1] for error, [2] for bin center
@@ -4002,7 +4001,7 @@ void Correlation::xi_A_delta_delta_MockJMc(void) {
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
 	fFile << std::scientific;
-	fFile.precision(14);
+	fFile.precision(std::numeric_limits<double>::digits10);
 
 	sumZZZ = 0.;
 	sumWeg = 0.;
@@ -4042,7 +4041,7 @@ void Correlation::xi_A_delta_delta_MockJMc(void) {
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
 	fFile << std::scientific;
-	fFile.precision(14);
+	fFile.precision(std::numeric_limits<double>::digits10);
 
 	for (unsigned int i=0; i<nbBin; i++) {
 		for (unsigned int j=0; j<nbBinM; j++) {
@@ -4324,7 +4323,7 @@ void Correlation::xi_delta_QSO_MockJMc(bool doBootstraps/*=False*/, unsigned int
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
 	fFile << std::scientific;
-	fFile.precision(14);
+	fFile.precision(std::numeric_limits<double>::digits10);
 
 	sumZZZ = 0.;
 	sumWeg = 0.;
@@ -4367,7 +4366,7 @@ void Correlation::xi_delta_QSO_MockJMc(bool doBootstraps/*=False*/, unsigned int
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
 	fFile << std::scientific;
-	fFile.precision(14);
+	fFile.precision(std::numeric_limits<double>::digits10);
 	
 	//// Set the values of data
 	for (unsigned int i=0; i<nbBin; i++) {
@@ -4649,7 +4648,7 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix(void) {
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
 	fFile << std::scientific;
-	fFile.precision(14);
+	fFile.precision(std::numeric_limits<double>::digits10);
 	
 	//// Set the values of data
 	//// [0] for value, [1] for error, [2] for bin center
@@ -4894,7 +4893,7 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix_1D(void) {
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
 	fFile << std::scientific;
-	fFile.precision(14);
+	fFile.precision(std::numeric_limits<double>::digits10);
 	
 	//// Set the values of data
 	//// [0] for value, [1] for error, [2] for bin center
@@ -5156,7 +5155,7 @@ void Correlation::xi_delta_QSO_Metals_Models_MockJMc(double lambdaFrMetal, std::
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
 	fFile << std::scientific;
-	fFile.precision(14);
+	fFile.precision(std::numeric_limits<double>::digits10);
 	
 	///// Set the values of data
 	///// [0] for value, [1] for error, [2] for bin center
@@ -5184,7 +5183,7 @@ void Correlation::xi_delta_QSO_Metals_Models_MockJMc(double lambdaFrMetal, std::
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
 	fFile << std::scientific;
-	fFile.precision(14);
+	fFile.precision(std::numeric_limits<double>::digits10);
 	
 	///// Set the values of data
 	for (unsigned int i=0; i<nbBin; i++) {
@@ -5372,7 +5371,7 @@ void Correlation::xi_QSO_QSO_MockJMc(bool doBootstraps/*=false*/, unsigned int b
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
 	fFile << std::scientific;
-	fFile.precision(14);
+	fFile.precision(std::numeric_limits<double>::digits10);
 
 	sumOne = 0.;
 	meanZ  = 0.;
@@ -5412,7 +5411,7 @@ void Correlation::xi_QSO_QSO_MockJMc(bool doBootstraps/*=false*/, unsigned int b
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
 	fFile << std::scientific;
-	fFile.precision(14);
+	fFile.precision(std::numeric_limits<double>::digits10);
 
 	//// Set the values of data
 	for (unsigned int i=0; i<nbBin; i++) {
@@ -5508,7 +5507,7 @@ void Correlation::xi_QSO_QSO_MockJMc(bool doBootstraps/*=false*/, unsigned int b
 		std::cout << "\n  " << pathToSave << std::endl;
 		fFile.open(pathToSave.c_str());
 		fFile << std::scientific;
-		fFile.precision(14);
+		fFile.precision(std::numeric_limits<double>::digits10);
 
 		sumOne = 0.;
 		meanZ  = 0.;
@@ -5542,7 +5541,7 @@ void Correlation::xi_QSO_QSO_MockJMc(bool doBootstraps/*=false*/, unsigned int b
 		std::cout << "\n  " << pathToSave << std::endl;
 		fFile.open(pathToSave.c_str());
 		fFile << std::scientific;
-		fFile.precision(14);
+		fFile.precision(std::numeric_limits<double>::digits10);
 
 		//// Set the values of data
 		for (unsigned int i=0; i<nbBin; i++) {
@@ -5855,7 +5854,7 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 		bool templateHasNegative = false;
 		double tmp_meanDelta[3] = {0.};
 		long double meanNeeded[5] = {0.};
-		long double SNR[2] = {0.};
+		//long double SNR[2] = {0.};
 		std::vector< double > v_tmp_r;
 		std::vector< double > v_tmp_d;
 		std::vector< double > v_tmp_w;
@@ -5897,8 +5896,8 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 				tmp_meanDelta[2] ++;
 
 				//// SNR
-				SNR[0] += NORM_FLUX[j]*sqrt(NORM_FLUX_IVAR[j]);
-				SNR[1] ++;
+				//SNR[0] += NORM_FLUX[j]*sqrt(NORM_FLUX_IVAR[j]);
+				//SNR[1] ++;
 
 				//// For Nicolas's estimator
 				if (nicolasEstimator__) {
@@ -5938,11 +5937,11 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 				meanDelta_Nicolas[0] += v_tmp_w[j]*v_tmp_d[j];
 				meanDelta_Nicolas[1] += v_tmp_w[j];
 				meanDelta_Nicolas[2] ++;
+				meanDelta_Nicolas_overForests[0] += v_tmp_w[j]*meanDelta;
+				meanDelta_Nicolas_overForests[1] += v_tmp_w[j]*coef;
+				meanDelta_Nicolas_overForests[2] += v_tmp_w[j]*(meanLambda-meanForestLambdaRF);
+				meanDelta_Nicolas_overForests[3] += v_tmp_w[j];
 			}
-			meanDelta_Nicolas_overForests[0] += meanDelta;
-			meanDelta_Nicolas_overForests[1] += coef;
-			meanDelta_Nicolas_overForests[2] += meanLambda-meanForestLambdaRF;
-			meanDelta_Nicolas_overForests[3] ++;
 		}
 
 		//// If not dealing with Jean-Marc's simulations

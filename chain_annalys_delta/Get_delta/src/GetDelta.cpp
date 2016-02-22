@@ -87,7 +87,7 @@ double isReobsFlag__ = -100.;
 GetDelta::GetDelta(int argc, char** argv) {
 
 	std::cout << std::scientific;
-	std::cout.precision(14);
+	std::cout.precision(std::numeric_limits<double>::digits10);
 
 
 
@@ -522,7 +522,7 @@ void GetDelta::getHisto(unsigned int loopIdx) {
 	tmp_pathToSave += ".txt";
 	fFile.open(tmp_pathToSave.c_str());
 	fFile << std::scientific;
-	fFile.precision(14);
+	fFile.precision(std::numeric_limits<double>::digits10);
 
 	//// Template (m2)
 	for (unsigned int i=0; i<nbPixelTemplate__; i++) {
@@ -549,7 +549,7 @@ void GetDelta::getHisto(unsigned int loopIdx) {
 	tmp_pathToSave += ".txt";
 	fFile.open(tmp_pathToSave.c_str());
 	fFile << std::scientific;
-	fFile.precision(14);
+	fFile.precision(std::numeric_limits<double>::digits10);
 
 	unsigned int loopIdxForHist1 = loopIdx-1;
 	if (loopIdx==0) loopIdxForHist1 = nbLoop__;
@@ -584,7 +584,7 @@ void GetDelta::getHisto(unsigned int loopIdx) {
 	tmp_pathToSave += ".txt";
 	fFile.open(tmp_pathToSave.c_str());
 	fFile << std::scientific;
-	fFile.precision(14);
+	fFile.precision(std::numeric_limits<double>::digits10);
 
 	for (unsigned int i=0; i<nbPixelTemplate__; i++) {
 		fFile << i;
@@ -603,7 +603,7 @@ void GetDelta::getHisto(unsigned int loopIdx) {
 	tmp_pathToSave += ".txt";
 	fFile.open(tmp_pathToSave.c_str());
 	fFile << std::scientific;
-	fFile.precision(14);
+	fFile.precision(std::numeric_limits<double>::digits10);
 
 	unsigned int loopIdxForHist = loopIdx-1;
 	if (loopIdx==0) loopIdxForHist = nbLoop__;
@@ -715,7 +715,7 @@ void GetDelta::getHisto(unsigned int loopIdx) {
 	tmp_pathToSave += ".txt";
 	fFile.open(tmp_pathToSave.c_str());
 	fFile << std::scientific;
-	fFile.precision(14);
+	fFile.precision(std::numeric_limits<double>::digits10);
 
 	for (unsigned int i=0; i<nbBinlambdaObs__+100; i++) {
 		fFile << i;
@@ -733,7 +733,7 @@ void GetDelta::getHisto(unsigned int loopIdx) {
 	tmp_pathToSave += ".txt";
 	fFile1.open(tmp_pathToSave.c_str());
 	fFile1 << std::scientific;
-	fFile1.precision(14);
+	fFile1.precision(std::numeric_limits<double>::digits10);
 	tmp_pathToSave  = pathToTxt__;
 	tmp_pathToSave += "sigma2LSS_";
 	tmp_pathToSave += forest__;
@@ -741,7 +741,7 @@ void GetDelta::getHisto(unsigned int loopIdx) {
 	tmp_pathToSave += ".txt";
 	fFile2.open(tmp_pathToSave.c_str());
 	fFile2 << std::scientific;
-	fFile2.precision(14);
+	fFile2.precision(std::numeric_limits<double>::digits10);
 
 
 
@@ -849,9 +849,9 @@ void GetDelta::updateDeltaVector(unsigned int loopIdx) {
 			for (unsigned int j=0; j<nb; j++) {
 
 				v_TEMPLATE__[i][j]          = hTemplate__[loopIdx]->Interpolate(v_LAMBDA_RF__[i][j]);
-				const double tmp_template2  = (v_alpha2__[i] + v_beta2__[i]*(v_LAMBDA_RF__[i][j]-v_meanForestLambdaRF__[i]))*v_TEMPLATE__[i][j]*hDeltaVsLambdaObs__[loopIdx]->Interpolate(v_LAMBDA_OBS__[i][j]);
-				v_DELTA__[i][j]             = ( v_NORM_FLUX__[i][j]/tmp_template2 -1. )/v_FLUX_DLA__[i][j];
-				v_DELTA_IVAR__[i][j]        = v_NORM_FLUX_IVAR__[i][j]*tmp_template2*tmp_template2*v_FLUX_DLA__[i][j]*v_FLUX_DLA__[i][j];
+				const long double tmp_template2 = (v_alpha2__[i] + v_beta2__[i]*(v_LAMBDA_RF__[i][j]-v_meanForestLambdaRF__[i]))*v_TEMPLATE__[i][j]*hDeltaVsLambdaObs__[loopIdx]->Interpolate(v_LAMBDA_OBS__[i][j])*v_FLUX_DLA__[i][j];
+				v_DELTA__[i][j]             = v_NORM_FLUX__[i][j]/tmp_template2 -1.;
+				v_DELTA_IVAR__[i][j]        = v_NORM_FLUX_IVAR__[i][j]*tmp_template2*tmp_template2;
 
 				v_DELTA_WEIGHT__[i][j]  = std::max(0.,v_FACTORWEIGHT__[i][j]/(sigma2LSSStart+1./(etaStart*v_DELTA_IVAR__[i][j])));
 			}
@@ -865,9 +865,9 @@ void GetDelta::updateDeltaVector(unsigned int loopIdx) {
 			for (unsigned int j=0; j<nb; j++) {
 
 				v_TEMPLATE__[i][j]          = hTemplate__[loopIdx]->Interpolate(v_LAMBDA_RF__[i][j]);
-				const double tmp_template2  = (v_alpha2__[i] + v_beta2__[i]*(v_LAMBDA_RF__[i][j]-v_meanForestLambdaRF__[i]))*v_TEMPLATE__[i][j]*hDeltaVsLambdaObs__[loopIdx]->Interpolate(v_LAMBDA_OBS__[i][j]);
-				v_DELTA__[i][j]             = ( v_NORM_FLUX__[i][j]/tmp_template2 -1. )/v_FLUX_DLA__[i][j];
-				v_DELTA_IVAR__[i][j]        = v_NORM_FLUX_IVAR__[i][j]*tmp_template2*tmp_template2*v_FLUX_DLA__[i][j]*v_FLUX_DLA__[i][j];
+				const long double tmp_template2 = (v_alpha2__[i] + v_beta2__[i]*(v_LAMBDA_RF__[i][j]-v_meanForestLambdaRF__[i]))*v_TEMPLATE__[i][j]*hDeltaVsLambdaObs__[loopIdx]->Interpolate(v_LAMBDA_OBS__[i][j])*v_FLUX_DLA__[i][j];
+				v_DELTA__[i][j]             = v_NORM_FLUX__[i][j]/tmp_template2 -1.;
+				v_DELTA_IVAR__[i][j]        = v_NORM_FLUX_IVAR__[i][j]*tmp_template2*tmp_template2;
 
 				const double eta        = grEta__[loopIdx]->Eval(v_ZZZ__[i][j]);
 				const double sigma2LSS  = grSig__[loopIdx]->Eval(v_ZZZ__[i][j]);
@@ -928,7 +928,7 @@ void GetDelta::fitForests(unsigned int begin, unsigned int end) {
 				LambdaMeth2[NbPixMeth2]   = v_LAMBDA_RF__[f][p];
 				FluxErrMeth2[NbPixMeth2]  = 1./sqrt(v_NORM_FLUX_IVAR__[f][p]);
 				FluxMeth2[NbPixMeth2]     = v_NORM_FLUX__[f][p]/FluxErrMeth2[NbPixMeth2];
-				FluxMeanMeth2[NbPixMeth2] = v_TEMPLATE__[f][p]/FluxErrMeth2[NbPixMeth2];
+				FluxMeanMeth2[NbPixMeth2] = v_TEMPLATE__[f][p]*v_FLUX_DLA__[f][p]/FluxErrMeth2[NbPixMeth2];
 
 				if (methodIndex__==2) {
 					double zpix = v_ZZZ__[f][p];
@@ -985,7 +985,7 @@ void GetDelta::fitForests(unsigned int begin, unsigned int end) {
 	pathToSave += ".txt";
 	fFile.open(pathToSave.c_str());
 	fFile << std::scientific;
-	fFile.precision(14);
+	fFile.precision(std::numeric_limits<double>::digits10);
 
 	std::cout << "  pathToSave = " << pathToSave << std::endl;
 
@@ -1367,6 +1367,13 @@ void GetDelta::updateDLA(std::string fitsnameSpec, unsigned int start, unsigned 
 				break;
 			}
 		}
+
+
+		for (unsigned int p=0; p<nbBinRFMax__; p++) {
+                        if (FluxDLA[p]<=0.000000000000001) FluxDLA[p] = 0.;
+			else if (FluxDLA[p]>=0.999999999999999) FluxDLA[p] = 1.;
+		}
+
 		//// Save
 		if (NbDLA!=0) fits_write_col(fitsptrSpec,TDOUBLE, 17,i+1,1,nbBinRFMax__, &FluxDLA, &sta);
 		nbDLAAllCat += NbDLA;
@@ -1441,9 +1448,9 @@ void GetDelta::updateDelta(std::string fitsnameSpec, unsigned int loopIdx, unsig
 			}
 
 			tmp_template[j]         = hTemplate__[loopIdx]->Interpolate(LAMBDA_RF[j]);
-			const long double tmp_template2 = (alpha2+beta2*(LAMBDA_RF[j]-meanForestLambdaRF))*tmp_template[j]*hDeltaVsLambdaObs__[loopIdx]->Interpolate(LAMBDA_OBS[j]);
-			delta[j]                = ( NORM_FLUX[j]/tmp_template2 -1. )/FLUX_DLA[j];
-			delta_ivar[j]           = NORM_FLUX_IVAR[j]*tmp_template2*tmp_template2*FLUX_DLA[j]*FLUX_DLA[j];
+			const long double tmp_template2 = (alpha2+beta2*(LAMBDA_RF[j]-meanForestLambdaRF))*tmp_template[j]*hDeltaVsLambdaObs__[loopIdx]->Interpolate(LAMBDA_OBS[j])*FLUX_DLA[j];
+			delta[j]                = NORM_FLUX[j]/tmp_template2 -1.;
+			delta_ivar[j]           = NORM_FLUX_IVAR[j]*tmp_template2*tmp_template2;
 
 			const double zi         = LAMBDA_OBS[j]/lambdaRFLine__-1.;
 			const double eta        = grEta__[loopIdx]->Eval(zi);
@@ -1810,19 +1817,18 @@ double GetDelta::VoigtProfile(double nhi, double lamb, double z_abs) {
 	const double c1000 = 299792458.0; //m/s
 	double b = 30.*1000.; // 30 km/s parametre Doppler
 	nhi += 0.1;  // correction to tune distribution
-	const double NN = pow(10,nhi);
-	const double larf = lamb/(1+z_abs);
+	const double NN = pow(10.,nhi);
+	const double larf = lamb/(1.+z_abs);
 
-	const double u = (c1000/b)*(lambdaRFLine__/larf-1);
+	const double u = (c1000/b)*(lambdaRFLine__/larf-1.);
 
-	const double a = lambdaRFLine__*1e-10*gamma/(4*M_PI*b);
-	const double sig = sqrt(2.0);
-	const double H = TMath::Voigt(u,sig,a*2.0);  // in root factor 2....
+	const double a = lambdaRFLine__*1.e-10*gamma/(4.*M_PI*b);
+	const double sig = sqrt(2.);
+	const double H = TMath::Voigt(u,sig,a*2.);  // in root factor 2....
 	b/=1000.;
 	const double tau = 1.497e-15*NN*f*larf*H/b;
 
 	double prof=exp(-tau);
-	if(prof>0.999)prof=1.0;
 
 	return prof;
 }

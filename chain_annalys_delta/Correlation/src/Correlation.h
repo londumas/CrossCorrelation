@@ -128,8 +128,8 @@ class Correlation
 const double lambdaObsMin__   = 3600.; //
 const double lambdaObsMax__   = 7235.; //10326.;  //7235.; //
 const double betaStart__ = 0.;
-const double maxAlpha__   = 40.;
-const double maxBeta__  =  0.3;
+const double maxAlpha__   = 100.;
+const double maxBeta__  =  0.6;
 const double maxCorrelation__ = 200.;
 const double isReobsFlag__ = -100.;
 const unsigned int sizeGridX__   = 2560;
