@@ -207,16 +207,7 @@ class Correlation3DQ(correlation_3D.Correlation3D):
 
 			### 1D:
 			xi1D = numpy.array(dd_1D)
-			cut = (xi1D[:,1]>0.)
-			
-			rr_1D[:,1][cut] *= dd_1D[-1,1]/rr_1D[-1,1]
-			dr_1D[:,1][cut] *= dd_1D[-1,1]/dr_1D[-1,1]
-			plt.errorbar(dd_1D[:,0][cut], dd_1D[:,1][cut],label='DD')
-			plt.errorbar(dd_1D[:,0][cut], dr_1D[:,1][cut],label='DR')
-			plt.errorbar(dd_1D[:,0][cut], rr_1D[:,1][cut],label='RR')
-			myTools.deal_with_plot(False,False,True)
-			plt.show()
-			
+			cut = (xi1D[:,1]>0.)			
 			xi1D[:,1][cut] = (dd_1D[:,1][cut]-2.*dr_1D[:,1][cut]+rr_1D[:,1][cut])/rr_1D[:,1][cut]
 			xi1D[:,2][cut] = numpy.sqrt(dd_1D[:,1][cut]*coefDD)/(coefDD*rr_1D[:,1][cut])
 
@@ -262,18 +253,18 @@ dic_class = {
 	'size_bin_calcul_s': 1.,
 	'size_bin_calcul_m': 0.02,
 	'correlation': 'q_q',
-	'path_to_txt_file_folder': '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1563/Box_000/Simu_000/Results_NicolasDistortion/',
+	'path_to_txt_file_folder': '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_2016_02_22/Box_000/Simu_000/Results_NicolasDistortion/',
 	'f1': 'LYA',
 	'f2': 'LYA',
 	'q1': 'QSO',
 	'q2': 'QSO',
-	'name' : 'Mocks'
+	'name' : 'new \, Mocks'
 }
 dic_Q = {
 	'nb_random' : 10,
 	'estimator' : 'LS',
-	'path_to_cat' : '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1563/Box_000/Simu_000/Data/QSO_withRSD.fits',
-	'load_from_txt' : False
+	'path_to_cat' : '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_2016_02_22/Box_000/Simu_000/Data/QSO_withRSD.fits',
+	'load_from_txt' : True
 }
 dic_CAMB = {
 	'mulpol_index' : 0,
@@ -288,15 +279,21 @@ dic_CAMB = {
 }
 
 ### For data
+corr = Correlation3DQ(dic_class,dic_Q)
+dic_class['name'] = 'v1547'
+dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Box_000/Simu_000/Results/'
+dic_Q['path_to_cat'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Box_000/Simu_000/Data/QSO_withRSD.fits'
 corr2 = Correlation3DQ(dic_class,dic_Q)
 
 ### For data
+'''
 dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
 dic_Q['nb_random'] = 5
 dic_Q['path_to_cat'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/QSO_ALL_TESTS.fits'
 dic_Q['load_from_txt'] = True
-corr = Correlation3DQ(dic_class,dic_Q)
 
+corr = Correlation3DQ(dic_class,dic_Q)
+'''
 corr.plot_1d(0,[corr2])
 corr.plot_1d(1,[corr2])
 corr.plot_1d(2,[corr2])

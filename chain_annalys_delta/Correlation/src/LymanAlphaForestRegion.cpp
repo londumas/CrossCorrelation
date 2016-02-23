@@ -25,8 +25,9 @@
 
 #include <fstream>
 #include <iostream>	// std::cout
-#include <sstream>	//stringstream
+#include <sstream>	// stringstream
 #include <cmath>
+#include <limits>	// numeric_limits
 
 // Nb of allowed tries in a 'while' loop before ending
 long unsigned int nbAllowedTriesWhileLoop_ = 1000000;

@@ -21,6 +21,7 @@
 
 #include "../../../Root/Library/RootHistoFunctions.h"
 #include "../../../Cpp/Library/mathFunctions.h"
+#include "../../../Constants/constants.h"
 #include "../../../Constants/globalValues.h"
 
 #include <fstream>
@@ -82,14 +83,15 @@ GetDelta::GetDelta(int argc, char** argv) {
 	pathToDataQSO__ += "-";
 	pathToDataQSO__ += sim_idx;
 	pathToDataQSO__ += ".fits";
+	pathToDataQSO__ = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/spectra-expander2.fits";
 	///
-	pathToDataForest__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1563/Box_00";
+	pathToDataForest__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_2016_02_22/Box_00";
 	pathToDataForest__ += box_idx;
 	pathToDataForest__ += "/Simu_00";
 	pathToDataForest__ += sim_idx;
 	pathToDataForest__ += "/Raw/mocks-*";
 	///
-	pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1563";
+	pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_2016_02_22";
 	if (noMockExpander__) pathToSave__ += "_noMockExpander";
 	pathToSave__ += "/Box_00";
 	pathToSave__ += box_idx;
@@ -189,6 +191,9 @@ void GetDelta::GetData(void) {
 			if (!findPDF__ && tmp_nbPixels2<C_MIN_NB_PIXEL) continue;
 	
 			/// Variable from old FITS
+			unsigned int plate;
+			unsigned int mjd;
+			unsigned int fiberid;
 			float X = 0.;
 			float Y = 0.;
 			float Z = 0.;
@@ -197,6 +202,9 @@ void GetDelta::GetData(void) {
 			float IVAR[tmp_nbPixels2];
 			long  AND_MASK[tmp_nbPixels2];
 			float CONTINUUM[tmp_nbPixels2];
+			fits_read_key(fitsptrSpec,TINT,"PLATE",  &plate,NULL,&sta);
+			fits_read_key(fitsptrSpec,TINT,"MJD",    &mjd,NULL,&sta);
+			fits_read_key(fitsptrSpec,TINT,"FIBERID",&fiberid,NULL,&sta);
 			fits_read_key(fitsptrSpec,TFLOAT,"X",   &X,NULL,&sta);
 			fits_read_key(fitsptrSpec,TFLOAT,"Y",   &Y,NULL,&sta);
 			fits_read_key(fitsptrSpec,TFLOAT,"ZQSO",&Z,NULL,&sta);
@@ -308,6 +316,9 @@ void GetDelta::GetData(void) {
 			double alpha = C_CONVERT_FROM_FLUX_TO_ALPHA*meanFluxForest[0]/(meanFluxForest[1]*norm);
 		
 			/// Save data in second file
+			fits_write_col(fitsptrSpec2,TINT,    1,forestIdx+1,1,1, &plate, &sta2);
+			fits_write_col(fitsptrSpec2,TINT,    2,forestIdx+1,1,1, &mjd, &sta2);
+			fits_write_col(fitsptrSpec2,TINT,    3,forestIdx+1,1,1, &fiberid, &sta2);
 			fits_write_col(fitsptrSpec2,TDOUBLE, 4,forestIdx+1,1,1, &XX, &sta2);
 			fits_write_col(fitsptrSpec2,TDOUBLE, 5,forestIdx+1,1,1, &YY, &sta2);
 			fits_write_col(fitsptrSpec2,TDOUBLE, 6,forestIdx+1,1,1, &ZZ, &sta2);
@@ -475,7 +486,7 @@ void GetDelta::GetQSO(void) {
 	const TString TSfitsnameSpec = pathToDataQSO__;
 
 	/// Constants
-	const double oneOverc_speedOfLight = 1./c_speedOfLight__;
+	const double oneOverc_speedOfLight = 1./(C_C_LIGHT/1000);
 
 	/// Fits file where to save
 	TString TSfitsnameSpec2 = pathToSave__;

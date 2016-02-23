@@ -103,6 +103,41 @@
 	- GetDelta.cpp:
 		* correct the way to deal with DLA. Correct the templat instead of the delta, and fit for it also
 		* set to zero very high DLA and set to one very low DLA
+# 2016 - 02 - 23 - (09h45)
+	- deleted useless files.
+	- constants.h:
+		* change speed of light dimension
+		* change h0 value
+	- tools.cpp:
+		* add a "get_delta_nicolas" method
+	- Mock_JMC:
+		* add plate, mjd, fiber
+		* only dealing with 647 pixels as data
+	- Correlation.h:
+		* change size cell for mocks
+	- GetDelta.cpp:
+		* add pixels low and high for interpolation
+		* change value of lambda to lambda-<lambda> in fits
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

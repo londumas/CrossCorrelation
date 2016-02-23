@@ -93,7 +93,7 @@ const unsigned int nbBinlambdaObs__  = int(lambdaObsMax__-lambdaObsMin__);
 double distMinPixel__ = 0.;
 double distMinPixelDelta2__ = 0.;
 unsigned int idxCommand_[6] = {0};
-const std::string pathToMockJMC__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1563/";
+const std::string pathToMockJMC__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_2016_02_22/";
 std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/";  //_nicolasEstimator   //_method1
 //std::string pathToSave__ = "";
 
@@ -108,7 +108,7 @@ const bool shuffleQSO     = false;
 const bool shuffleForest  = false;
 const bool randomQSO      = false;
 const bool randomForest   = false;
-const bool doBootstraps__ = true;
+const bool doBootstraps__ = false;
 
 
 const bool doVetoLines__ = true;
@@ -137,7 +137,7 @@ Correlation::Correlation(int argc, char **argv) {
 	
 
 	///// Set the number of forest to work on
-	nbForest_   = 1000;
+	nbForest_   = 0;
 	nbForest2__ = 0;
 	nbQ1__      = 0;
 	nbQ2__      = 0;
@@ -150,6 +150,7 @@ Correlation::Correlation(int argc, char **argv) {
 //		pathForest__   = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/FitsFile_DR12_reOBS_eBOSS_Guy/DR12_primery/DR12_primery_reOBS_eBOSS.fits";
 //		pathForest__   = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/FitsFile_DR12_reOBS_Guy/DR12_primery/DR12_primery_reOBS.fits";
 //		pathForest__   = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/FitsFile_DR12_reOBS_eBOSS_noCoADD_Guy/DR12_primery/DR12_primery_reOBS_eBOSS_noCoADD.fits";
+//pathForest__   = "/home/gpfs/manip/mnt0607/bao/hdumasde/Data/LYA/DR12_Nicolas/delta.fits";
 	}
 	else if (mocks) {
 		pathForest__   = "/home/gpfs/manip/mnt0607/bao/hdumasde/MockV4/M3_0_";
@@ -4071,7 +4072,7 @@ void Correlation::xi_delta_QSO_MockJMc(bool doBootstraps/*=False*/, unsigned int
 	loadDataQ1();
 	//// Forest
 	loadDataForest(pathForest__,doBootstraps,bootIdx);
-	if ( (doBootstraps || mocksNoNoiseNoCont) && !nicolasEstimator__) {
+	if ( !nicolasEstimator__ && (doBootstraps || mocksNoNoiseNoCont) ) {
 		removeFalseCorrelations();
 	}
 	v_CosDe__.clear();
@@ -5801,9 +5802,13 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 	}
 
 	long unsigned int nbCutted[5] = {0}; 
-	double meanDelta[3] = {0.};
-	double meanDelta_Nicolas[3] = {0.};
-	double meanDelta_Nicolas_overForests[4] = {0.};
+	long double meanDelta[3] = {0.};
+	long double meanDelta_Nicolas[7] = {0.};
+
+TH1D* h_delta = new TH1D("h_delta","",20000,-5000.,5000.);
+TH1D* h_meandelta = new TH1D("h_meandelta","",1000,-10.,10.);
+TH1D* h_fluxDLA = new TH1D("h_fluxDLA","",10000,-1.,2.);
+
 
 	//// Load data
 	for (unsigned int i=0; i<nbForest_; i++) {
@@ -5852,7 +5857,7 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 		if (alpha1==isReobsFlag__) continue;
 
 		bool templateHasNegative = false;
-		double tmp_meanDelta[3] = {0.};
+		long double tmp_meanDelta[3] = {0.};
 		long double meanNeeded[5] = {0.};
 		//long double SNR[2] = {0.};
 		std::vector< double > v_tmp_r;
@@ -5889,7 +5894,7 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 
 				//// Get if the template is even one time negative
 				if ( alpha2+beta2*(LAMBDA_RF[j]-meanForestLambdaRF) <= 0.) templateHasNegative = true;
-
+h_fluxDLA->Fill(FLUX_DLA[j]);
 				//// Get Nb Pixel in forest
 				tmp_meanDelta[0] += DELTA_WEIGHT[j]*DELTA[j];
 				tmp_meanDelta[1] += DELTA_WEIGHT[j];
@@ -5931,17 +5936,21 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 			const long double coef        = numerator/denominator;
 			for (unsigned int j=0; j<tmp_nb; j++) {
 
-				v_tmp_d[j] -= meanDelta+(v_tmp_lRF[j]-meanLambda)*coef;
-
+				v_tmp_d[j] = v_tmp_d[j] - meanDelta - (v_tmp_lRF[j]-meanLambda)*coef;
+h_delta->Fill(v_tmp_d[j],v_tmp_w[j]);
 				//// Get Nb Pixel in forest
 				meanDelta_Nicolas[0] += v_tmp_w[j]*v_tmp_d[j];
-				meanDelta_Nicolas[1] += v_tmp_w[j];
-				meanDelta_Nicolas[2] ++;
-				meanDelta_Nicolas_overForests[0] += v_tmp_w[j]*meanDelta;
-				meanDelta_Nicolas_overForests[1] += v_tmp_w[j]*coef;
-				meanDelta_Nicolas_overForests[2] += v_tmp_w[j]*(meanLambda-meanForestLambdaRF);
-				meanDelta_Nicolas_overForests[3] += v_tmp_w[j];
+				meanDelta_Nicolas[1] += v_tmp_w[j]*meanDelta;
+				meanDelta_Nicolas[2] += v_tmp_w[j]*coef;
+				meanDelta_Nicolas[3] += v_tmp_w[j]*(v_tmp_lRF[j]-meanLambda)*coef;
+				meanDelta_Nicolas[4] += v_tmp_w[j]*(meanLambda-meanForestLambdaRF);
+				meanDelta_Nicolas[5] += v_tmp_w[j];
+				meanDelta_Nicolas[6] ++;
 			}
+
+h_meandelta->Fill(meanDelta);
+if (fabs(meanDelta)>0.3) std::cout << i << ",";
+
 		}
 
 		//// If not dealing with Jean-Marc's simulations
@@ -5977,17 +5986,22 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 	std::cout << "  nb pixel        = " << (long long unsigned int)meanDelta[2]              << std::endl;
 
 	if (nicolasEstimator__) {
-		std::cout << "  < delta_Nicolas >              = " << meanDelta_Nicolas[0]/meanDelta_Nicolas[1] << std::endl;
-		std::cout << "  sum(w_i)_Nicolas               = " << meanDelta_Nicolas[1]              << std::endl;
-		std::cout << "  nb pixel_Nicolas               = " << (long long unsigned int)meanDelta_Nicolas[2]              << std::endl;
-		std::cout << "  < <delta> >                    = " << meanDelta_Nicolas_overForests[0]/meanDelta_Nicolas_overForests[3] << std::endl;
-		std::cout << "  < coef >                       = " << meanDelta_Nicolas_overForests[1]/meanDelta_Nicolas_overForests[3] << std::endl;
-		std::cout << "  < lambda > - < lambda >_before = " << meanDelta_Nicolas_overForests[2]/meanDelta_Nicolas_overForests[3] << std::endl;
+		std::cout << "  < delta_Nicolas >              = " << meanDelta_Nicolas[0]/meanDelta_Nicolas[5] << std::endl;
+		std::cout << "  < <delta> >                    = " << meanDelta_Nicolas[1]/meanDelta_Nicolas[5] << std::endl;
+		std::cout << "  < coef >                       = " << meanDelta_Nicolas[2]/meanDelta_Nicolas[5] << std::endl;
+		std::cout << "  < (l_i-l).coef >               = " << meanDelta_Nicolas[3]/meanDelta_Nicolas[5] << std::endl;
+		std::cout << "  < lambda > - < lambda >_before = " << meanDelta_Nicolas[4]/meanDelta_Nicolas[5] << std::endl;
+		std::cout << "  sum(w_i)_Nicolas               = " << meanDelta_Nicolas[5] << std::endl;
+		std::cout << "  nb pixel_Nicolas               = " << (long long unsigned int)meanDelta_Nicolas[6] << std::endl;
 	}
 
 	fits_close_file(fitsptrSpec,&sta);
 
 	delete hConvertRedshDist;
+
+R_plot1D(h_meandelta);
+R_plot1D(h_fluxDLA);
+R_plot1D(h_delta);
 
 	return;
 }
@@ -6022,9 +6036,8 @@ void Correlation::loadDataDelta2(int dataNeeded/*=100*/) {
 	std::cout << "  number of loaded forest = " << nbForest2__ << std::endl;
 
 	long unsigned int nbCutted[5] = {0};
-	double meanDelta[3] = {0.};
-	double meanDelta_Nicolas[3] = {0.};
-	double meanDelta_Nicolas_overForests[4] = {0.};
+	long double meanDelta[3] = {0.};
+	long double meanDelta_Nicolas[7] = {0.};
 
 	//// Load data
 	for (unsigned int i=0; i<nbForest2__; i++) {
@@ -6068,7 +6081,7 @@ void Correlation::loadDataDelta2(int dataNeeded/*=100*/) {
 
 		bool templateHasNegative = false;
 		long double meanNeeded[5] = {0.};
-		double tmp_meanDelta[3] = {0.};
+		long double tmp_meanDelta[3] = {0.};
 		std::vector< double > v_tmp_r;
 		std::vector< double > v_tmp_d;
 		std::vector< double > v_tmp_w;
@@ -6143,13 +6156,13 @@ void Correlation::loadDataDelta2(int dataNeeded/*=100*/) {
 
 				//// Get Nb Pixel in forest
 				meanDelta_Nicolas[0] += v_tmp_w[j]*v_tmp_d[j];
-				meanDelta_Nicolas[1] += v_tmp_w[j];
-				meanDelta_Nicolas[2] ++;
+				meanDelta_Nicolas[1] += v_tmp_w[j]*meanDelta;
+				meanDelta_Nicolas[2] += v_tmp_w[j]*coef;
+				meanDelta_Nicolas[3] += v_tmp_w[j]*(v_tmp_lRF[j]-meanLambda)*coef;
+				meanDelta_Nicolas[4] += v_tmp_w[j]*(meanLambda-meanForestLambdaRF);
+				meanDelta_Nicolas[5] += v_tmp_w[j];
+				meanDelta_Nicolas[6] ++;
 			}
-			meanDelta_Nicolas_overForests[0] += meanDelta;
-			meanDelta_Nicolas_overForests[1] += coef;
-			meanDelta_Nicolas_overForests[2] += meanLambda-meanForestLambdaRF;
-			meanDelta_Nicolas_overForests[3] ++;
 		}
 
 		ra = ra*C_DEGTORAD;
@@ -6181,12 +6194,13 @@ void Correlation::loadDataDelta2(int dataNeeded/*=100*/) {
 	std::cout << "  nb pixel        = " << (long long unsigned int)meanDelta[2]              << std::endl;
 
 	if (nicolasEstimator__) {
-		std::cout << "  < delta_Nicolas >              = " << meanDelta_Nicolas[0]/meanDelta_Nicolas[1] << std::endl;
-		std::cout << "  sum(w_i)_Nicolas               = " << meanDelta_Nicolas[1]              << std::endl;
-		std::cout << "  nb pixel_Nicolas               = " << (long long unsigned int)meanDelta_Nicolas[2]              << std::endl;
-		std::cout << "  < <delta> >                    = " << meanDelta_Nicolas_overForests[0]/meanDelta_Nicolas_overForests[3] << std::endl;
-		std::cout << "  < coef >                       = " << meanDelta_Nicolas_overForests[1]/meanDelta_Nicolas_overForests[3] << std::endl;
-		std::cout << "  < lambda > - < lambda >_before = " << meanDelta_Nicolas_overForests[2]/meanDelta_Nicolas_overForests[3] << std::endl;
+		std::cout << "  < delta_Nicolas >              = " << meanDelta_Nicolas[0]/meanDelta_Nicolas[5] << std::endl;
+		std::cout << "  < <delta> >                    = " << meanDelta_Nicolas[1]/meanDelta_Nicolas[5] << std::endl;
+		std::cout << "  < coef >                       = " << meanDelta_Nicolas[2]/meanDelta_Nicolas[5] << std::endl;
+		std::cout << "  < (l_i-l).coef >               = " << meanDelta_Nicolas[3]/meanDelta_Nicolas[5] << std::endl;
+		std::cout << "  < lambda > - < lambda >_before = " << meanDelta_Nicolas[4]/meanDelta_Nicolas[5] << std::endl;
+		std::cout << "  sum(w_i)_Nicolas               = " << meanDelta_Nicolas[5] << std::endl;
+		std::cout << "  nb pixel_Nicolas               = " << (long long unsigned int)meanDelta_Nicolas[6] << std::endl;
 	}
 
 	delete hConvertRedshDist;

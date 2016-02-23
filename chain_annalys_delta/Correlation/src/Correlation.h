@@ -135,7 +135,7 @@ const double isReobsFlag__ = -100.;
 const unsigned int sizeGridX__   = 2560;
 const unsigned int sizeGridY__   = 1920;
 const unsigned int sizeGridZ__   = 512;
-const double sizeCell__         = 4.5*0.71;  //3.195; // in Mpc.h^-1 ( = 4.5*0.71 ) ///0.3195
+const double sizeCell__         = 4.5*0.7;  //3.195; // in Mpc.h^-1 ( = 4.5*0.71 ) ///0.3195
 
 
 
@@ -157,8 +157,6 @@ const double lambdaRFMin__      = 1040.;
 const double lambdaRFMax__      = 1200.;
 const unsigned int nbBinRFMax__ = 647;
 const double alphaStart__       = 1.3;
-/// If LYA_JMC
-//const unsigned int nbBinRFMax__ = 645;
 
 /*
 /// If SIIV

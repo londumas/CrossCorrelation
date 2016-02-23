@@ -32,9 +32,9 @@ sizeMax = 300000
 sizeMaxForest = 300000
 nbQSO__ = 238929
 nbFor__ = 170000
-nbPixel = 645   ###2148  ###645
+nbPixel = 647   ###2148
 ratioForestToQSO__    = 1.*nbFor__/nbQSO__;
-pathToFolder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1563/' ##noMockExpander
+pathToFolder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_2016_02_22/' ##noMockExpander
 
 
 
@@ -61,7 +61,8 @@ def main():
 
 	## Create the folders
 	#####################
-	subprocess.call('mkdir ' +pathToFolder+'Results/', shell=True)
+	if (index_pass==0):
+		subprocess.call('mkdir ' +pathToFolder+'Results/', shell=True)
 
 	for i in range(0,1):		
 
@@ -69,7 +70,8 @@ def main():
 
 		## Create the folders
 		#####################
-		subprocess.call('mkdir ' +path, shell=True)
+		if (index_pass==0):
+			subprocess.call('mkdir ' +path, shell=True)
 
 		for j in range(0,1):
 
@@ -110,7 +112,8 @@ def main():
 				'''
 
 			elif (index_pass==2):
-			
+
+				print path + 'Data/QSO_withRSD.fits'
 				cat = pyfits.open(path + 'Data/QSO_withRSD.fits', memmap=True)[1].data
 				print cat.size
 				cat = cat[ (cat['Z'] != 0.) ]

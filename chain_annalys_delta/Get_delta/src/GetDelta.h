@@ -49,9 +49,6 @@ const double alphaStart__ = 1.3;
 #define C_ZEXTREMA0 2.
 #define C_ZEXTREMA1 4.5
 
-/// If LYA_JMC
-//const unsigned int nbBinRFMax__ = 645;
-
 /*
 /// If SIIV
 const std::string forest__  = "SIIV";

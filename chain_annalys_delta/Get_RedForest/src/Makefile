@@ -43,10 +43,11 @@ GLIBS         = $(ROOTGLIBS) $(SYSLIBS) -lMinuit  -lTreePlayer -lMLP  -L$(CFITSI
 
 BIN = ../bin
 OBJ = ../obj
-ROOT = $(WORKDIR)/Code/Root/Library
-MATH = $(WORKDIR)/Code/Cpp/Library
+ROOT = ../../../Root/Library
+MATH = ../../../Cpp/Library
+CONSTANTS = ../../../Constants
 
-INC = Constants.h GetDelta.h $(ROOT)/RootHistoFunctions.h $(MATH)/mathFunctions.h 
+INC = Constants.h GetDelta.h $(ROOT)/RootHistoFunctions.h $(MATH)/mathFunctions.h  $(CONSTANTS)/constants.h $(CONSTANTS)/globalValues.h
 #TTreeSpectra.h
 MYLIBS = $(LIBS) -lc $(GLIBS)
 

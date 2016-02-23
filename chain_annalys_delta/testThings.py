@@ -245,6 +245,7 @@ def meanDelta():
 		lambdaRFMax__      = 2790.
 
 	path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest+'/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits'
+	path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Data/LYA/DR12_Nicolas/delta.fits'
 	#path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_reObs/DR12_reObs.fits'
 	#path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits'
 
@@ -252,11 +253,15 @@ def meanDelta():
 
 	cat = pyfits.open(path, memmap=True)[1].data
 
-	cat = cat[ numpy.logical_and( numpy.logical_and(  numpy.logical_and( cat['ALPHA_2']!=alphaStart__, cat['BETA_2']!=0.),  numpy.abs(cat['ALPHA_2'])<=99.5 ), numpy.abs(cat['BETA_2'])<=0.55 ) ]
+	#cat = cat[ numpy.logical_and( numpy.logical_and(  numpy.logical_and( cat['ALPHA_2']!=alphaStart__, cat['BETA_2']!=0.),  numpy.abs(cat['ALPHA_2'])<=99.5 ), numpy.abs(cat['BETA_2'])<=0.55 ) ]
 	#cat = cat[ numpy.logical_or( numpy.logical_or(  numpy.logical_or( cat['ALPHA_2']==alphaStart__, cat['BETA_2']==0.),  numpy.abs(cat['ALPHA_2'])>=99.5 ), numpy.abs(cat['BETA_2'])>=0.55 ) ]
 	print cat.size
 	print cat[ (cat['BETA_1']==-600.) ].size
 
+	plt.hist(cat['Z_VI'],bins=100)
+	plt.show()
+	plt.plot(cat['RA'],cat['DEC'],marker='o')
+	plt.show()
 
 
 	print '  nb |alpha| > 39.5  = ', cat[ (cat['ALPHA_2']>39.5) ].size
@@ -283,12 +288,15 @@ def meanDelta():
 	cat['DELTA_WEIGHT'][ (cat['LAMBDA_RF']<lambdaRFMin__) ] = 0.
 	cat['DELTA_WEIGHT'][ (cat['LAMBDA_RF']>lambdaRFMax__) ] = 0.
 
+	'''
 	for lines in skyLines__:
 		cut = numpy.logical_and( cat["LAMBDA_OBS"]>lines[0] , cat["LAMBDA_OBS"]<lines[1] )
 		cat['DELTA'][ cut ]        = 0.
 		cat['NORM_FLUX'][ cut ]    = 0.
 		cat['DELTA_WEIGHT'][ cut ] = 0.
-	
+	'''
+
+
 	print cat.size
 	cut_noForestPixel = numpy.logical_and(cat['DELTA_WEIGHT']>0., numpy.logical_and( (cat['LAMBDA_RF']>=lambdaRFMin__) , (cat['LAMBDA_RF']<lambdaRFMax__) )).astype(int)
 	len_forest = numpy.sum(cut_noForestPixel,axis=1)
@@ -302,7 +310,7 @@ def meanDelta():
 
 	### Get the mean delta
 	meanDelta = numpy.average( cat['DELTA'], weights=cat['DELTA_WEIGHT'],axis=1)
-	print meanDelta.size
+	print numpy.min(meanDelta), numpy.max(meanDelta)
 	print meanDelta[ numpy.isfinite(meanDelta) ].size
 
 	### Get mean flux_DLA
@@ -489,12 +497,13 @@ def meanDelta():
 
 def plot_spectra_i_want():
 
-	a = [(1385,), (2316,), (2681,), (2894,), (3262,), (3338,), (3665,), (3687,), (4051,), (4388,), (4852,), (5205,), (5515,), (5617,), (7192,), (7319,), (8105,), (9846,), (10860,), (11099,), (11500,), (11950,), (12455,), (12903,), (12926,), (13360,), (13408,), (14326,), (14356,), (15911,), (16833,), (17388,), (17550,), (17702,), (18595,), (19973,), (20285,), (20730,), (21074,), (22024,), (22908,), (23169,), (23294,), (23544,), (23788,), (25029,), (25099,), (25958,), (27100,), (27767,), (28748,), (30573,), (31691,), (32584,), (33414,), (34102,), (35342,), (36173,), (37542,), (37597,), (37819,), (38516,), (39335,), (40855,), (41371,), (41456,), (41789,), (42041,), (42308,), (42314,), (42429,), (42455,), (42492,), (42519,), (42597,), (43690,), (43831,), (44382,), (45383,), (45767,), (46582,), (47217,), (48055,), (49266,), (49979,), (51099,), (51389,), (51609,), (52514,), (53935,), (54926,), (55003,), (57003,), (57318,), (57998,), (58102,), (58219,), (58749,), (58993,), (60505,), (60519,), (60547,), (60632,), (61540,), (62518,), (63242,), (63842,), (66059,), (68485,), (68626,), (68635,), (69212,), (70682,), (71000,), (71832,), (72347,), (72360,), (72455,), (72745,), (73833,), (74370,), (75138,), (75525,), (75535,), (76255,), (77441,), (78642,), (79009,), (79210,), (79274,), (80818,), (81164,), (81182,), (81844,), (82052,), (82082,), (82094,), (82886,), (83623,), (84769,), (85500,), (88677,), (88881,), (88902,), (90500,), (90620,), (92000,), (92366,), (93585,), (93776,), (94604,), (95103,), (95911,), (96083,), (96891,), (97105,), (97257,), (97460,), (98647,), (98714,), (98800,), (99139,), (99998,), (100057,), (102288,), (102773,), (103382,), (103899,), (104093,), (104489,), (104532,), (106365,), (106973,), (107725,), (108091,), (108362,), (109240,), (110075,), (110879,), (111037,), (112384,), (112602,), (113563,), (113675,), (114947,), (116485,), (116539,), (116934,), (117000,), (118971,), (119699,), (120500,), (121500,), (121620,), (122051,), (123115,), (123346,), (123884,), (123901,), (124174,), (125183,), (125944,), (126011,), (126727,), (128001,), (128135,), (130411,), (131098,), (131271,), (131830,), (133156,), (133576,), (135176,), (135439,), (135459,), (135688,), (137255,), (137576,), (138121,), (138193,), (138456,), (138969,), (139244,), (140054,), (140503,), (140631,), (140860,), (141160,), (141600,), (141765,), (142042,), (142685,), (143060,), (144148,), (144645,), (145633,), (146339,), (147686,), (148724,), (148898,), (149015,), (149644,), (149769,), (149805,), (150149,), (151023,), (151622,), (153086,), (153143,), (155596,), (155789,), (156713,), (157692,), (159277,), (161590,), (162049,), (162309,), (163717,), (164579,), (165110,), (165201,), (165531,), (165663,), (166419,), (166465,), (167023,), (167483,), (167955,), (168128,), (168600,), (169275,), (169469,)]
+	a = [(5814,), (8887,), (10565,), (11871,), (11901,), (13536,), (14923,), (20576,), (20794,), (22106,), (24657,), (28252,), (29292,), (30806,), (32400,), (33330,), (38477,), (39353,), (41529,), (44466,), (47785,), (52274,), (53214,), (61417,), (62002,), (64708,), (66255,), (67584,), (68941,), (69147,), (71081,), (71748,), (73578,), (75042,), (75295,), (77453,), (77482,), (77589,), (77912,), (82491,), (94857,), (95299,), (96661,), (97519,), (97960,), (99968,), (100428,), (102022,), (102521,), (104110,), (105046,), (105177,), (106206,), (106760,), (107148,), (107884,), (110086,), (110132,), (110136,), (111442,), (112250,), (124381,), (125304,), (126571,), (127453,), (127749,), (129062,), (129581,), (130722,), (130883,), (132867,), (133016,), (137418,), (137891,), (138103,), (143775,), (147362,), (151934,), (152586,), (154438,), (154571,), (156854,), (158598,), (161932,), (162795,), (164417,), (165147,), (166910,), (166965,), (168197,)]
 
 	path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits'
 	cat = pyfits.open(path, memmap=True)[1].data
 
 	z = []
+	l_pix = []
 
 	for ell in a:
 		#el = cat[ numpy.logical_and(  numpy.logical_and(cat['PLATE']==ell[1],cat['MJD']==ell[2]),cat['FIBERID']==ell[3]) ]
@@ -513,16 +522,17 @@ def plot_spectra_i_want():
 		test = el['NORM_FLUX'][cut]/(el['DELTA'][cut]*el['FLUX_DLA'][cut]+1.)
 
 		### Remove with DLA
-		#if (numpy.mean(el['FLUX_DLA'][cut])==1.):
+		#if (numpy.mean(el['FLUX_DLA'][cut])!=1.):
 		#	continue
 
 		if (test[ test<=0. ].size!=0):
 			continue
-		print el['PLATE'], el['MJD'], el['FIBERID']
-		print el['ALPHA_2'], el['BETA_2'], el['Z_VI'], test[0], test[-1], numpy.mean(el['NORM_FLUX'][cut]/numpy.power(el['NORM_FLUX_IVAR'][cut],-0.5))
+		#print el['PLATE'], el['MJD'], el['FIBERID']
+		print el['ALPHA_2'], el['BETA_2'] #, el['Z_VI'], test[0], test[-1], numpy.mean(el['NORM_FLUX'][cut]/numpy.power(el['NORM_FLUX_IVAR'][cut],-0.5))
 		#print test[0], test[-1]
-		print el['ALPHA_2'], el['BETA_2'], el['MEAN_FOREST_LAMBDA_RF']
+		#print el['ALPHA_2'], el['BETA_2'], el['MEAN_FOREST_LAMBDA_RF']
 		z += [el['Z_VI']]
+		l_pix += [el['LAMBDA_OBS'][cut]]
 
 		lambdaDD = el['LAMBDA_OBS'][cut]
 
@@ -538,7 +548,9 @@ def plot_spectra_i_want():
 		plt.plot(lambdaDD,template,label=r'$QSO \, continuum$',color='red')
 		plt.plot(lambdaDD,el['NORM_FLUX'][cut]/(el['DELTA'][cut]*el['FLUX_DLA'][cut]+1.),label=r'$QSO \, continuum$')
 
-		if (numpy.mean(el['FLUX_DLA'][cut])!=1.): plt.plot(lambdaDD,el['FLUX_DLA'][cut],label='DLA')
+		if (numpy.mean(el['FLUX_DLA'][cut])!=1.):
+			print 'DLA'
+			plt.plot(lambdaDD,el['FLUX_DLA'][cut],label='DLA')
 
 		myTools.deal_with_plot(False,False,False)
 		plt.xlabel(r'$\lambda_{R.F.} \, [\AA]$', fontsize=40)
@@ -546,6 +558,8 @@ def plot_spectra_i_want():
 		plt.show()
 
 	plt.hist(z)
+	plt.show()
+	plt.hist(numpy.array(l_pix))
 	plt.show()
 
 	return

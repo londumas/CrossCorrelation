@@ -25,7 +25,7 @@
 #define GETDELTA_H
 
 /// Constants
-const unsigned int nbPixelsTemplate__ = 645;  //2148  //645
+const unsigned int nbPixelsTemplate__ = 647;  //2148  //645
 const double lambdaRFMin__ = 1040.;
 const double lambdaRFMax__ = 1200.;
 const double lambdaRFLine__  = 1215.67;
@@ -33,7 +33,6 @@ const double lambdaRFNormaMin__ = 1275.;
 const double lambdaRFNormaMax__ = 1295.;
 const double lambdaObsMin__ = 3600.;
 const double lambdaObsMax__ = 7235.;
-const double c_speedOfLight__ = 2.998e5;
 
 
 const double minRedshift__ = 1.96;

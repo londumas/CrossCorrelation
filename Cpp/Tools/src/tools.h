@@ -27,6 +27,7 @@ class Tools
 
 		void get_Ra_Dec_DLA(void);
 		void look_DLA(void);
+		void get_delta_nicolas(void);
 		void get_Catalogue(void);
 		void get_flux_vs_lambdaObs(void);
 		void get_weigted_covar_matrix(void);

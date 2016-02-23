@@ -27,7 +27,7 @@
 #include "TGraph.h"
 
 // Numerical constants for faster calculation 
-const double cOver100_ = 1.*C_C/100.;
+const double cOver100_ = 1.*C_C_LIGHT/1000/100.;
 
 Cosmology::Cosmology(double h, double omegaM, double omegaB) {
 

@@ -20,6 +20,7 @@
 #include "tools.h"
 #include "../../../Root/Library/RootHistoFunctions.h"
 #include "../../../Cpp/Library/mathFunctions.h"
+#include "../../../Constants/constants.h"
 #include "../../../Constants/globalValues.h"
 #include "../../../chain_annalys_delta/Correlation/src/Cosmology.h"
 
@@ -43,7 +44,8 @@
 Tools::Tools(int argc, char** argv) {
 
 	//get_Ra_Dec_DLA();
-	look_DLA();
+	//look_DLA();
+	get_delta_nicolas();
 	//get_Catalogue();
 	//get_flux_vs_lambdaObs();
 	//get_weigted_covar_matrix();
@@ -350,6 +352,160 @@ double Tools::VoigtProfile(double nhi, double lamb, double z_abs) {
 	double prof=exp(-tau);
 
 	return prof;
+}
+void Tools::get_delta_nicolas(void) {
+
+	std::string pathToDataForest = "/home/gpfs/manip/mnt0607/bao/hdumasde/Data/LYA/DR12_Nicolas/deltas/plate-*";
+	std::string pathToSave       = "/home/gpfs/manip/mnt0607/bao/hdumasde/Data/LYA/DR12_Nicolas/delta.fits";
+
+	/// Fits file where to save
+	TString TSfitsnameSpec2 = pathToSave;
+	std::cout << "  " << TSfitsnameSpec2 << std::endl;
+	int sta2    = 0;
+	fitsfile* fitsptrSpec2;
+	fits_open_table(&fitsptrSpec2,TSfitsnameSpec2, READWRITE, &sta2);
+
+	/// index of forest
+	unsigned int forestIdx = 0;
+	/// Get the mean_flux_in_forest
+	double alpha = 1.;
+	double meanForestLRF = 1120.;
+
+	/// Get the list 
+	FILE *fp;
+	char path[PATH_MAX];
+	std::string command = "ls " + pathToDataForest;
+	std::vector< std::string > listFiles;
+	fp = popen(command.c_str(), "r");
+	while (fgets(path, PATH_MAX, fp) != NULL) listFiles.push_back(path);
+
+	/// Get nb of files
+	const unsigned int nbFiles = listFiles.size();
+
+	for (unsigned int fileIdx=0; fileIdx<nbFiles; fileIdx++) {
+
+		std::string path = listFiles[fileIdx];
+		path.erase(std::remove(path.begin(), path.end(), '\n'), path.end());
+		path.erase(std::remove(path.begin(), path.end(), ' '), path.end());
+
+		/// Get the file
+		std::cout << "  file = " << path << std::endl;
+		const TString TSfitsnameSpec = path;
+		int sta = 0;
+		fitsfile* fitsptrSpec;
+		fits_open_table(&fitsptrSpec,TSfitsnameSpec, READONLY, &sta);
+
+		/// Get the number of spectra
+		int tmp_nbSpectra = 0;
+		unsigned int nbSpectra = 0;
+		fits_get_num_hdus(fitsptrSpec, &tmp_nbSpectra, &sta);
+		nbSpectra = tmp_nbSpectra-1;
+		std::cout << "  nbSpectra = " << nbSpectra << std::endl;
+	
+		/// Set to the first HDU
+		fits_movabs_hdu(fitsptrSpec, 2,  NULL, &sta);
+		
+		/// Get the data
+		for (unsigned int f=0; f<nbSpectra; f++) {
+	
+			/// Move to next HDU
+			if (f!=0) fits_movrel_hdu(fitsptrSpec, 1,  NULL, &sta);
+	
+			/// Get the number of pixels in this HDU
+			long tmp_nbPixels = 0;
+			fits_get_num_rows(fitsptrSpec, &tmp_nbPixels, &sta);
+			const unsigned int tmp_nbPixels2 = tmp_nbPixels;
+			if (tmp_nbPixels2<C_MIN_NB_PIXEL) continue;
+
+			//PLATE   =                 4063
+			//MJD     =                55364
+			//FIBERID =                  360
+			//RA      =    4.343726224078581
+			//DEC     =   0.2856228179296067
+			//Z       =   2.4519999027252197
+			//## R_COMOV  LOGLAM  DELTA  WEIGHT  CONT  MSHA
+			/// Variable from old FITS
+			unsigned int plate;
+			unsigned int mjd;
+			unsigned int fiberid;
+			double ra;
+			double de;
+			double zz;
+			double LAMBDA_OBS[tmp_nbPixels2];
+			double DELTA[tmp_nbPixels2];
+			double DELTA_WEIGHT[tmp_nbPixels2];
+			double CONTINUUM[tmp_nbPixels2];
+			fits_read_key(fitsptrSpec,TINT,"PLATE",  &plate,NULL,&sta);
+			fits_read_key(fitsptrSpec,TINT,"MJD",    &mjd,NULL,&sta);
+			fits_read_key(fitsptrSpec,TINT,"FIBERID",&fiberid,NULL,&sta);
+			fits_read_key(fitsptrSpec,TDOUBLE,"RA",  &ra,NULL,&sta);
+			fits_read_key(fitsptrSpec,TDOUBLE,"DEC", &de,NULL,&sta);
+			fits_read_key(fitsptrSpec,TDOUBLE,"Z",   &zz,NULL,&sta);
+			fits_read_col(fitsptrSpec,TDOUBLE, 2,1,1,tmp_nbPixels2,NULL, &LAMBDA_OBS,NULL,&sta);
+			fits_read_col(fitsptrSpec,TDOUBLE, 3,1,1,tmp_nbPixels2,NULL, &DELTA,NULL,&sta);
+			fits_read_col(fitsptrSpec,TDOUBLE, 4,1,1,tmp_nbPixels2,NULL, &DELTA_WEIGHT,NULL,&sta);
+			fits_read_col(fitsptrSpec,TDOUBLE, 5,1,1,tmp_nbPixels2,NULL, &CONTINUUM,NULL,&sta);
+	
+			/// Variables for new FITS
+			double lambdaOBS[nbBinRFMax__ ];
+			double lambdaRF[nbBinRFMax__ ];
+			double norm_flux[nbBinRFMax__];
+			double norm_flux_ivar[nbBinRFMax__];
+			double delta[nbBinRFMax__];
+			double delta_ivar[nbBinRFMax__];
+			double delta_weight[nbBinRFMax__];
+			double continuum[nbBinRFMax__];
+			unsigned int nbPixel = 0;
+			const double oneOverOnePlusZ = 1./(1.+zz);
+
+			ra *= C_RADTODEG;
+			de *= C_RADTODEG;
+	
+			for (unsigned int p=0; p<tmp_nbPixels2; p++) {
+
+				LAMBDA_OBS[p] = pow(10.,LAMBDA_OBS[p]);
+				const double lambdaRFd = LAMBDA_OBS[p]*oneOverOnePlusZ;
+	
+				lambdaOBS[nbPixel]      = LAMBDA_OBS[p];
+				lambdaRF[nbPixel]       = lambdaRFd;
+				norm_flux[nbPixel]      = (DELTA[p]+1.)*CONTINUUM[p];
+				norm_flux_ivar[nbPixel] = 1.;
+				delta[nbPixel]          = DELTA[p];
+				delta_ivar[nbPixel]     = 1.;
+				delta_weight[nbPixel]   = DELTA_WEIGHT[p];
+				continuum[nbPixel]      = CONTINUUM[p];
+				nbPixel ++;
+			}
+
+			/// Save data in second file
+			fits_write_col(fitsptrSpec2,TINT,    1,forestIdx+1,1,1, &plate, &sta2);
+			fits_write_col(fitsptrSpec2,TINT,    2,forestIdx+1,1,1, &mjd, &sta2);
+			fits_write_col(fitsptrSpec2,TINT,    3,forestIdx+1,1,1, &fiberid, &sta2);
+			fits_write_col(fitsptrSpec2,TDOUBLE, 4,forestIdx+1,1,1, &ra, &sta2);
+			fits_write_col(fitsptrSpec2,TDOUBLE, 5,forestIdx+1,1,1, &de, &sta2);
+			fits_write_col(fitsptrSpec2,TDOUBLE, 6,forestIdx+1,1,1, &zz, &sta2);
+			fits_write_col(fitsptrSpec2,TINT,    7,forestIdx+1,1,1, &nbPixel, &sta2);
+			fits_write_col(fitsptrSpec2,TDOUBLE, 8,forestIdx+1,1,1, &meanForestLRF, &sta2);
+			fits_write_col(fitsptrSpec2,TDOUBLE, 11,forestIdx+1,1,1, &alpha, &sta2);
+			fits_write_col(fitsptrSpec2,TDOUBLE, 13,forestIdx+1,1,nbPixel, &lambdaOBS, &sta2);
+			fits_write_col(fitsptrSpec2,TDOUBLE, 14,forestIdx+1,1,nbPixel, &lambdaRF, &sta2);
+			fits_write_col(fitsptrSpec2,TDOUBLE, 15,forestIdx+1,1,nbPixel, &norm_flux,       &sta2);
+			fits_write_col(fitsptrSpec2,TDOUBLE, 16,forestIdx+1,1,nbPixel, &norm_flux_ivar,   &sta2);
+			fits_write_col(fitsptrSpec2,TDOUBLE, 18,forestIdx+1,1,nbPixel, &delta,       &sta2);
+			fits_write_col(fitsptrSpec2,TDOUBLE, 19,forestIdx+1,1,nbPixel, &delta_ivar,   &sta2);
+			fits_write_col(fitsptrSpec2,TDOUBLE, 20,forestIdx+1,1,nbPixel, &delta_weight,   &sta2);
+			fits_write_col(fitsptrSpec2,TDOUBLE, 21,forestIdx+1,1,nbPixel, &continuum,   &sta2);
+			forestIdx ++;
+
+		}
+
+		fits_close_file(fitsptrSpec,&sta);
+		std::cout << "  nb forest =  " << forestIdx << std::endl;
+	}
+
+	fits_close_file(fitsptrSpec2,&sta2);
+	std::cout << "  nb forest =  " << forestIdx << std::endl;
+
 }
 void Tools::get_Catalogue(void) {
 	/// Path to save

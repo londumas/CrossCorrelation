@@ -37,7 +37,7 @@
 #define C_RA_SEPERATION_NGC_SGC 5.
 
 //// Define the limit for which a FLUX_DLA is considered zero
-#define C_FLUX_DLA_IS_ZERO 1.e-100
+#define C_FLUX_DLA_IS_ZERO 0.000000000000001
 //// Define the max of DLA correction
 #define C_DLACORR  0.8
 //// Number of sub-samples the sky is split into:
@@ -84,13 +84,28 @@ const std::string absorberName__[29] = {
 #define C_ZEXTREMABINCONVERT0 0.
 #define C_ZEXTREMABINCONVERT1 12.
 
-#define C_H 0.71 // (100 km/s/Mpc)^-1
+#define C_H 0.70 // (100 km/s/Mpc)^-1
 #define C_OMEGAM 0.27
 #define C_OMEGAB 0.0463
 
 
 
 #endif
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -222,21 +237,6 @@ const double C_PARSETVALUE[6] = {6.84738e-02, -1.05170, 1.32220e+03, 9e-3, 2.621
 #define C_NBBINZ 12
 // const double C_BINSIZEZ = (C_ZEXTREMA1 - C_ZEXTREMA0)/C_NBBINZ;
 #define C_BINSIZEZ 2.08333333333333343e-01
-
-// Define the max of DLA correction
-#define C_DLACORR  0.8
-
-// Defines the number of bins for the interpolation dist=f(z)
-#define C_NBBINREDSH 12000
-// Defines the extrema for the interpolation dist=f(z)
-#define C_ZEXTREMABINCONVERT0 0.
-#define C_ZEXTREMABINCONVERT1 12.
-
-// Defines cosmo constant
-#define C_H 0.71 // (100 km/s/Mpc)^-1
-#define C_OMEGAM 0.27
-#define C_OMEGAB 0.0463
-#define C_C 299792.458 // km/s //3.0e05
 */
 
 

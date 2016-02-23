@@ -18,6 +18,9 @@
 //===================================================================================
 
 #include "GetDelta.h"
+#include "../../../Constants/constants.h"
+#include "../../../Constants/globalValues.h"
+
 
 #include C_MYROOTLIB
 #include C_MYCPPLIB
