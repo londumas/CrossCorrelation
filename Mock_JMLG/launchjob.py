@@ -28,13 +28,13 @@ import cosmolopy.distance as cosmology
 
 
 ### Constants
-sizeMax = 300000
-sizeMaxForest = 300000
+sizeMax = 250000
+sizeMaxForest = 10000 #250000
 nbQSO__ = 238929
 nbFor__ = 170000
 nbPixel = 647   ###2148
 ratioForestToQSO__    = 1.*nbFor__/nbQSO__;
-pathToFolder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_2016_02_22/' ##noMockExpander
+pathToFolder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_2016_02_23/' ##noMockExpander
 
 
 
@@ -84,9 +84,9 @@ def main():
 				subprocess.call('mkdir ' + path + 'Data', shell=True)
 				subprocess.call('mkdir ' + path + 'Run', shell=True)
 				subprocess.call('mkdir ' + path + 'Results', shell=True)
-				subprocess.call('mkdir ' + path + 'Results_NicolasDistortion', shell=True)
+				subprocess.call('mkdir ' + path + 'Results_nicolasEstimator', shell=True)
 				subprocess.call('mkdir ' + path + '/Results/BaoFit_q_f__LYA__QSO', shell=True)
-				subprocess.call('mkdir ' + path + '/Results_NicolasDistortion/BaoFit_q_f__LYA__QSO', shell=True)
+				subprocess.call('mkdir ' + path + '/Results_nicolasEstimator/BaoFit_q_f__LYA__QSO', shell=True)
 
 				if (i==0 and j==0):
 					tbhduQSO    = create_fits_qso(sizeMax)

@@ -368,7 +368,6 @@ void Tools::get_delta_nicolas(void) {
 	/// index of forest
 	unsigned int forestIdx = 0;
 	/// Get the mean_flux_in_forest
-	double alpha = 1.;
 	double meanForestLRF = 1120.;
 
 	/// Get the list 
@@ -431,6 +430,8 @@ void Tools::get_delta_nicolas(void) {
 			double ra;
 			double de;
 			double zz;
+			double alpha;
+			double beta;
 			double LAMBDA_OBS[tmp_nbPixels2];
 			double DELTA[tmp_nbPixels2];
 			double DELTA_WEIGHT[tmp_nbPixels2];
@@ -441,6 +442,8 @@ void Tools::get_delta_nicolas(void) {
 			fits_read_key(fitsptrSpec,TDOUBLE,"RA",  &ra,NULL,&sta);
 			fits_read_key(fitsptrSpec,TDOUBLE,"DEC", &de,NULL,&sta);
 			fits_read_key(fitsptrSpec,TDOUBLE,"Z",   &zz,NULL,&sta);
+			fits_read_key(fitsptrSpec,TDOUBLE,"P0", &alpha,NULL,&sta);
+			fits_read_key(fitsptrSpec,TDOUBLE,"P1", &beta,NULL,&sta);
 			fits_read_col(fitsptrSpec,TDOUBLE, 2,1,1,tmp_nbPixels2,NULL, &LAMBDA_OBS,NULL,&sta);
 			fits_read_col(fitsptrSpec,TDOUBLE, 3,1,1,tmp_nbPixels2,NULL, &DELTA,NULL,&sta);
 			fits_read_col(fitsptrSpec,TDOUBLE, 4,1,1,tmp_nbPixels2,NULL, &DELTA_WEIGHT,NULL,&sta);
@@ -487,6 +490,7 @@ void Tools::get_delta_nicolas(void) {
 			fits_write_col(fitsptrSpec2,TINT,    7,forestIdx+1,1,1, &nbPixel, &sta2);
 			fits_write_col(fitsptrSpec2,TDOUBLE, 8,forestIdx+1,1,1, &meanForestLRF, &sta2);
 			fits_write_col(fitsptrSpec2,TDOUBLE, 11,forestIdx+1,1,1, &alpha, &sta2);
+			fits_write_col(fitsptrSpec2,TDOUBLE, 12,forestIdx+1,1,1, &beta, &sta2);
 			fits_write_col(fitsptrSpec2,TDOUBLE, 13,forestIdx+1,1,nbPixel, &lambdaOBS, &sta2);
 			fits_write_col(fitsptrSpec2,TDOUBLE, 14,forestIdx+1,1,nbPixel, &lambdaRF, &sta2);
 			fits_write_col(fitsptrSpec2,TDOUBLE, 15,forestIdx+1,1,nbPixel, &norm_flux,       &sta2);

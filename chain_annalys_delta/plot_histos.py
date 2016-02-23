@@ -33,7 +33,7 @@ elif (forest__ == 'SIIV'):
 elif (forest__ == 'CIV'):
 	lambdaRFMin__      = 1410.
 	lambdaRFMax__      = 1530.
-	shift__            = 3547.5
+	shift__            = 3447.5
 elif (forest__ == 'MGII'):
 	lambdaRFMin__      = 1570.
 	lambdaRFMax__      = 2790.
@@ -44,7 +44,7 @@ elif (forest__ == 'MGII'):
 path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest__+'/FitsFile_DR12_Guy/DR12_primery/histos/' ##_method1
 #path = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_reObs/histos/"
 #path = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA//FitsFile_eBOSS_Guy/all_eBOSS_primery/histos/"
-rawPath = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_2016_02_22/'
+rawPath = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_2016_02_23/'
 
 
 
@@ -56,16 +56,16 @@ for i in range (0,chunckNb):
 			mockNumber = '_'+str(i)+'_'+str(j)
 
 		data = numpy.loadtxt('/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/histos/hDeltaVsLambdaObs_LYA.txt')
-                plt.errorbar(data[:,0]+shift__, data[:,1], label=r'$DR12$')
+                plt.errorbar(data[:,0]+3500.5, data[:,1], label=r'$DR12$')
 
-		data = numpy.loadtxt('/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_eBOSS_Guy/all_eBOSS_primery/histos/hDeltaVsLambdaObs_LYA.txt')
-                plt.errorbar(data[:,0]+shift__, data[:,1], label=r'$eBOSS$')
+		#data = numpy.loadtxt('/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_eBOSS_Guy/all_eBOSS_primery/histos/hDeltaVsLambdaObs_LYA.txt')
+               # plt.errorbar(data[:,0]+shift__, data[:,1], label=r'$eBOSS$')
 
 		#data = numpy.loadtxt(path+'hDeltaVsLambdaObs_LYA'+mockNumber+'.txt')
 		#plt.errorbar(data[:,0]+shift__, data[:,1], label=r'$MockJM-mockExpander$')
 
-		data = numpy.loadtxt('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/calibration_flux_using_CIV_forest.txt')
-		plt.errorbar(data[:,0]+3547.5, data[:,1], label=r'$CIV \, forest$')
+		data = numpy.loadtxt('/home/gpfs/manip/mnt/bao/hdumasde/Data/CIV/FitsFile_DR12_Guy/DR12_primery/histos/hDeltaVsLambdaObs_CIV.txt')
+		plt.errorbar(data[:,0]+3447.5, data[:,1], label=r'$CIV \, forest$')
 
 		#data = numpy.loadtxt(path+'hDeltaVsLambdaObs_CIV'+mockNumber+'.txt')
 		#plt.errorbar(data[:,0]+3547.5, data[:,1], label=r'$CIV \, forest$',color='green')
@@ -78,6 +78,8 @@ for i in range (0,chunckNb):
 
 		data = numpy.loadtxt('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/hDeltaVsLambdaObs_LYA_JMC.txt')
 		plt.errorbar(data[:,1][ data[:,2]!=0. ], data[:,2][ data[:,2]!=0. ], label=r'$Simulation \, input$', color='orange')
+		data = numpy.loadtxt('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_2016_02_22/Box_000/Simu_000/Run/hDeltaVsLambdaObs_LYA_0_0.txt')
+		plt.errorbar(data[:,0]+3500.5, data[:,1], label=r'$Simulation \, output$', color='black')
 		#data = numpy.loadtxt('/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_histos_test_PDFMocksJMC/hDeltaVsLambdaObs_LYA.txt')
 		#plt.errorbar(data[:,0]+shift__, data[:,1], label=r'$simulation2$')
 
@@ -210,7 +212,7 @@ for i in range (0,chunckNb):
 			path = rawPath + 'Box_00'+str(i)+'/Simu_00'+str(j)+'/Run/'
 			mockNumber = '_'+str(i)+'_'+str(j)
 		data = numpy.loadtxt(path+'hDeltaVsLambdaObs_'+forest__+mockNumber+'.txt')
-		plt.errorbar(data[:,0]+shift__, data[:,1], marker='o', label=r'$'+str(i)+' \, '+str(j)+'$')
+		plt.errorbar(data[:,0]+shift__, data[:,1], label=r'$'+str(i)+' \, '+str(j)+'$')
 
 		
 		yMin    = 0.

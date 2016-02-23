@@ -427,7 +427,7 @@ dic['min_visual_z'] = -0.002
 dic['max_visual_z'] = 0.002
 '''
 
-dic['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/DR12_Nicolas_nicolasEstimator/'
+dic['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
 a = CorrelationLambda(dic)
 a.plot_1d(True)
 a.plot_we(True)

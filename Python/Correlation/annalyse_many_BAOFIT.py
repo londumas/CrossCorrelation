@@ -134,8 +134,15 @@ class AnnalyseManyBAOFIT:
 		return
 	def print_results(self):
 
+		beta = []
+
 		for el in self._listFit:
-			el.print_results()
+			#el.print_results()
+			beta += [ el._param[ el._index_parameter['beta'],0] ]
+			print el._param[ el._index_parameter['beta'],0]
+		print
+		print numpy.mean(beta)
+
 
 		return
 	def plot_1d(self, x_power=0, other=[], title=True):

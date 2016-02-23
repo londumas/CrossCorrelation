@@ -118,7 +118,9 @@
 	- GetDelta.cpp:
 		* add pixels low and high for interpolation
 		* change value of lambda to lambda-<lambda> in fits
-
+# 2016 - 02 - 23 - (17h47)
+	- Correlation.cpp:
+		* add option to save some plots in a .root
 
 
 

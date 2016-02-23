@@ -207,11 +207,12 @@ class Correlation_1D:
 		return
 	def plot(self, with_lines=False, verbose=False, other=[]):
 
-		cut = 0
+		cut_l = 0 #7
+		cut_h = -1 #300
 
-		xxx = self._xi[cut:,0]
-		yyy = self._xi[cut:,1]
-		yer = self._xi[cut:,2]
+		xxx = self._xi[cut_l:cut_h,0]
+		yyy = self._xi[cut_l:cut_h,1]
+		yer = self._xi[cut_l:cut_h,2]
 		plt.errorbar(xxx, yyy, yerr=yer, marker='o', label=r'$'+self._name+'$', markersize=8,linewidth=2)
 
 		xMin = numpy.amin(xxx)
@@ -221,11 +222,11 @@ class Correlation_1D:
 
 		for el in other:
 			if (el._correlation == 'f_f2_lRF_devide'): 
-				TMP_xxx = 1./el._xi[cut:,0]
+				TMP_xxx = 1./el._xi[cut_l:cut_h,0]
 			else:
-				TMP_xxx = el._xi[cut:,0]
-			TMP_yyy = el._xi[cut:,1]
-			TMP_yer = el._xi[cut:,2]
+				TMP_xxx = el._xi[cut_l:cut_h,0]
+			TMP_yyy = el._xi[cut_l:cut_h,1]
+			TMP_yer = el._xi[cut_l:cut_h,2]
 			plt.errorbar(TMP_xxx, TMP_yyy, yerr=TMP_yer, marker='o', label=r'$'+el._name+'$', markersize=8,linewidth=2)
 
 			xMin = min(xMin, numpy.amin(TMP_xxx) )
@@ -250,6 +251,7 @@ class Correlation_1D:
 				for j in range(0,nbLines2):
 
 					#if ( self._lines1[i]!=1215.67 and self._lines2[j]!=1215.67 ): continue
+					#if ( self._lines1[i]==1238.821 or self._lines2[j]==1238.821 ): continue
 					#if ( self._name_line1[i][:4]!='SiII' and self._name_line2[j][:4]!='SiII' ): continue
 					#if ( self._name_line1[i]=='SiII(1304)' or self._name_line2[j]=='SiII(1304)' ): continue
 
@@ -309,12 +311,12 @@ dic_class = {
 
 ### Data
 dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
-dic_class['name'] = "Helion \, projected"
+dic_class['name'] = "Data"
 dic_class['correlation'] = "f_f_r"
 dic_class['f1'] = "LYA"
 corrD = Correlation_1D(dic_class)
-dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_2016_02_22/Box_000/Simu_000/Results/'
-dic_class['name'] = "Nicolas \, projected"
+dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_2016_02_23/Box_000/Simu_000/Results/'
+dic_class['name'] = "Simu"
 dic_class['correlation'] = "f_f_r"
 dic_class['f1'] = "LYA"
 corrDD = Correlation_1D(dic_class)

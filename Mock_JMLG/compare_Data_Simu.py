@@ -24,11 +24,11 @@ from const_delta import *
 
 pathQSO   = '/home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/QSO_ALL_TESTS.fits'
 pathData  = '/home/gpfs/manip/mnt0607/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits'
-pathSimu  = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_test_soved_shift_withMetals_withError_with_template/Box_000/Simu_000/Data/'
+pathSimu  = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_2016_02_23/Box_000/Simu_000/Data/'
 pathMocks = '/home/gpfs/manip/mnt0607/bao/hdumasde/MockV4/M3_0_0/000/mock.fits'
 
 path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/histos/'
-rawPathSimu = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_test_soved_shift_withMetals_withError_with_template/Box_000/Simu_000/Run/'
+rawPathSimu = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_2016_02_23/Box_000/Simu_000/Run/'
 
 
 def comparePlot():
@@ -187,10 +187,10 @@ def comparePlot():
 
 	### Template
 	data = numpy.loadtxt(path + 'template_LYA.txt')
-	template = interpolate.interp1d(data[:,0],data[:,1],bounds_error=False,fill_value=0)
+	#template = interpolate.interp1d(data[:,0],data[:,1],bounds_error=False,fill_value=0)
 	plt.errorbar(data[:,0], data[:,1], fmt='o', label=r'$Data$',color='blue') ##/template(1150.)
 	data = numpy.loadtxt(rawPathSimu + 'template_LYA_0_0.txt')
-	template = interpolate.interp1d(data[:,0],data[:,1],bounds_error=False,fill_value=0)
+	#template = interpolate.interp1d(data[:,0],data[:,1],bounds_error=False,fill_value=0)
 	plt.errorbar(data[:,0], data[:,1], fmt='o', label=r'$Simu$',color='red')
 	plt.xlabel(r'$\lambda_{R.F.} \, [\AA]$', fontsize=40)
 	plt.ylabel(r'$f(\lambda_{R.F.})$', fontsize=40) ##/f(1150.)

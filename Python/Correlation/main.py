@@ -49,16 +49,16 @@ def plotOne():
 		'nb_Sub_Sampling': 80,
 		'size_bin_calcul_s': 1.,
 		'size_bin_calcul_m': 0.02,
-		'correlation': 'f_f',
+		'correlation': 'q_f',
 		'path_to_txt_file_folder': 'NOTHING',
 		'f1': 'LYA',
 		'f2': 'a',
-		'q1': 'QSO',
+		'q1': 'ALL_OBJECTS',
 		'q2': 'a',
 		'name' : 'Data'
 	}
 	#dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1563/Box_000/Simu_000/Results_NicolasDistortion/'
-	dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/DR12_Nicolas/' ##_nicolasEstimator
+	dic_class['path_to_txt_file_folder'] = '//home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator/' ##_nicolasEstimator
 	#dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/TESTS/'
 	dic_class['name'] = 'Data'
 	corr = correlation_3D.Correlation3D(dic_class)
@@ -190,14 +190,14 @@ def plotBosseBOSS():
 		'name' : 'Data'
 	}
 	### Boss
-	dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
-	dic_class['name'] = 'data'
+	dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator/'
+	dic_class['name'] = 'before'
 	corr = correlation_3D.Correlation3D(dic_class)
 	#corr.set_error_on_covar_matrix('subsampling')
 	list_corr += [corr]
 	### Boss
-	dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt/bao/hdumasde/Mock_JMLG/v_2016_02_22/Box_000/Simu_000/Results/'
-	dic_class['name'] = 'simu'
+	dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_2016_02_22/Box_000/Simu_000/Results_NicolasDistortion/'
+	dic_class['name'] = 'now'
 	corr = correlation_3D.Correlation3D(dic_class)
 	#corr.set_error_on_covar_matrix('subsampling')
 	list_corr += [corr]
@@ -205,36 +205,6 @@ def plotBosseBOSS():
 	list_corr[0].plot_1d(0, list_corr[1:])
 	list_corr[0].plot_1d(1, list_corr[1:])
 	list_corr[0].plot_1d(2, list_corr[1:])
-
-	'''
-	list_corr[0].plot_we(0, list_corr[1:])
-	list_corr[0].plot_we(1, list_corr[1:])
-	list_corr[0].plot_we(2, list_corr[1:])
-	list_corr[0].plot_1d_with_residuals(0, list_corr[1:])
-	list_corr[0].plot_1d_with_residuals(1, list_corr[1:])
-	list_corr[0].plot_1d_with_residuals(2, list_corr[1:])
-	list_corr[0].plot_1d(0, list_corr[1:])
-	list_corr[0].plot_1d(1, list_corr[1:])
-	list_corr[0].plot_1d(2, list_corr[1:])
-	list_corr[0].plot_we(0, list_corr[1:])
-	list_corr[0].plot_we(1, list_corr[1:])
-	list_corr[0].plot_we(2, list_corr[1:])
-	list_corr[0].plot_2d(0)
-	list_corr[0].plot_2d(1)
-	list_corr[0].plot_2d(2)
-	'''
-	list_corr[0]._xi2D[:,:,1] = numpy.sqrt(2.)*(list_corr[1]._xi2D[:,:,1]-list_corr[0]._xi2D[:,:,1])/(numpy.sqrt( list_corr[1]._xi2D[:,:,2]*list_corr[1]._xi2D[:,:,2] + list_corr[0]._xi2D[:,:,2]*list_corr[0]._xi2D[:,:,2]))
-	#list_corr[0]._xi2D[:,:,1] = (list_corr[1]._xi2D[:,:,1]-list_corr[0]._xi2D[:,:,1])
-
-	plt.hist( list_corr[0]._xi2D[:,:,1].flatten(), bins=100 )
-	plt.show()
-
-	list_corr[0].plot_2d(0)
-	list_corr[0].plot_2d(1)
-	list_corr[0].plot_2d(2)
-	list_corr[0].plot_slice_2d(1)
-	list_corr[0].plot_slice_2d(2)
-	list_corr[0].plot_slice_2d(3)
 
 	return
 def look_result_data():
@@ -259,7 +229,7 @@ corr.send_BAOFIT('subsampling',correlation_matrix_path, False, False, 10000)
 '''
 
 ### BAOFIT + Data
-
+'''
 dic_class = correlation_3D.raw_dic_class
 dic_CAMB  = correlation_3D.raw_dic_CAMB
 index_parameter = annalyse_BAOFIT.raw_index_parameter
@@ -281,7 +251,7 @@ dic_class = {
 }
 dic_class['name'] = 'Data'
 #dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
-dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_test_soved_shift_withMetals_withError_with_template/Box_000/Simu_000/Results_NicolasDistortion/'
+dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Box_000/Simu_000/Results/'
 corr = annalyse_BAOFIT.AnnalyseBAOFIT(dic_class, index_parameter)
 corr.print_results()
 corr.plot_data_and_fit_1d(0)
@@ -298,7 +268,7 @@ corr.plot_residuals_2d(1)
 corr.plot_residuals_2d(2)
 corr.plot_histo_residuals()
 corr.plot_chi2_scan(100,100, [0.5,1.5,0.5,1.5], False, False)
-
+'''
 
 
 
@@ -320,7 +290,7 @@ corr.plot_chi2_scan(50,50)
 
 ### BAOFIT + Many simulations
 
-if (True):
+if (False):
 	index_parameter = annalyse_BAOFIT.raw_index_parameter
 	dic_class = {
 		'minXi': 0.,
@@ -348,10 +318,10 @@ dic_class = correlation_3D.raw_dic_class
 index_parameter = annalyse_BAOFIT.raw_index_parameter
 index_parameter['alpha_paral'] = 9
 index_parameter['alpha_perp']  = 10
-aMB = annalyse_many_BAOFIT.AnnalyseManyBAOFIT(dic_class, index_parameter, '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/', 1,1)
-#aMB.plot_histo_residuals()
-#aMB.save_list_realisation()
-#aMB.print_results()
+aMB = annalyse_many_BAOFIT.AnnalyseManyBAOFIT(dic_class, index_parameter, '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/', 10,10)
+aMB.plot_histo_residuals()
+aMB.save_list_realisation()
+aMB.print_results()
 aMB.set_mean_data()
 '''
 aMB.plot_1d(0)

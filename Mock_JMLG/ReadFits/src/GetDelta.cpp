@@ -83,15 +83,15 @@ GetDelta::GetDelta(int argc, char** argv) {
 	pathToDataQSO__ += "-";
 	pathToDataQSO__ += sim_idx;
 	pathToDataQSO__ += ".fits";
-	pathToDataQSO__ = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/spectra-expander2.fits";
+	pathToDataQSO__ = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/spectra-expander3.fits";
 	///
-	pathToDataForest__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_2016_02_22/Box_00";
+	pathToDataForest__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_2016_02_23/Box_00";
 	pathToDataForest__ += box_idx;
 	pathToDataForest__ += "/Simu_00";
 	pathToDataForest__ += sim_idx;
 	pathToDataForest__ += "/Raw/mocks-*";
 	///
-	pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_2016_02_22";
+	pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_2016_02_23";
 	if (noMockExpander__) pathToSave__ += "_noMockExpander";
 	pathToSave__ += "/Box_00";
 	pathToSave__ += box_idx;

@@ -30,6 +30,7 @@
 
 ///// ROOT
 #include "TH1D.h"
+#include "TFile.h"
 #include "fitsio.h"
 #include "TString.h"
 
@@ -93,16 +94,16 @@ const unsigned int nbBinlambdaObs__  = int(lambdaObsMax__-lambdaObsMin__);
 double distMinPixel__ = 0.;
 double distMinPixelDelta2__ = 0.;
 unsigned int idxCommand_[6] = {0};
-const std::string pathToMockJMC__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_2016_02_22/";
+const std::string pathToMockJMC__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_2016_02_23/";
 std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/";  //_nicolasEstimator   //_method1
 //std::string pathToSave__ = "";
 
 ///// Flags for Jean-Marc's simulations
 const bool mocks              = false;
-const bool mockJMC__          = false;
+const bool mockJMC__          = true;
 const bool mockBox__          = false;
 const bool mocksNoNoiseNoCont = false;
-const double randomPositionOfQSOInCellNotBeforeCorrelation__ = false;
+const double randomPositionOfQSOInCellNotBeforeCorrelation__ = true;
 //// Flags for covariance matrix estimation
 const bool shuffleQSO     = false;
 const bool shuffleForest  = false;
@@ -115,6 +116,8 @@ const bool doVetoLines__ = true;
 const bool nicolasEstimator__ = false;
 const bool doingCoAddSoRemoving__ = false;
 
+const bool saveInRootFile__ = false;
+const bool cutNotFittedSpectra__ = true;
 
 Correlation::Correlation(int argc, char **argv) {
 
@@ -190,7 +193,7 @@ Correlation::Correlation(int argc, char **argv) {
 		
 		pathQ1__ += "/Data/QSO_withRSD.fits";
 		
-		if (nicolasEstimator__) pathToSave__ += "/Results_NicolasDistortion/";
+		if (nicolasEstimator__) pathToSave__ += "/Results_nicolasEstimator/";
 		else pathToSave__ += "/Results/";
 		
 	}
@@ -5805,10 +5808,48 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 	long double meanDelta[3] = {0.};
 	long double meanDelta_Nicolas[7] = {0.};
 
-TH1D* h_delta = new TH1D("h_delta","",20000,-5000.,5000.);
-TH1D* h_meandelta = new TH1D("h_meandelta","",1000,-10.,10.);
-TH1D* h_fluxDLA = new TH1D("h_fluxDLA","",10000,-1.,2.);
-
+	
+	// TH1D
+	TH1D* h_delta;
+	TH1D* h_delta_projected;
+	TH1D* h_meandelta;
+	TH1D* h_fluxDLA;
+	// TProfile
+	TProfile* tp_flux_vs_lambdaRF;
+	TProfile* tp_flux_vs_lambdaOBS;
+	TProfile* tp_delta_vs_lambdaRF;
+	TProfile* tp_delta_vs_lambdaOBS;
+	TProfile* tp_delta_vs_z;
+	TProfile* tp_delta_vs_r;
+	TProfile* tp_delta_projected_vs_lambdaRF;
+	TProfile* tp_delta_projected_vs_lambdaOBS;
+	TProfile* tp_delta_projected_vs_z;
+	TProfile* tp_delta_projected_vs_r;
+	// TFile
+	TFile* storeFile;
+	if (saveInRootFile__) {
+		// TFile
+		// Setup the root file where to store the data
+		const TString tPathToSave = "../run/test.root";
+		storeFile = new TFile(tPathToSave,"RECREATE","delta");
+		storeFile->cd();
+		// TH1D
+		h_delta     = new TH1D("h_delta","",20000,-5000.,5000.);
+		h_delta_projected     = new TH1D("h_delta_projected","",20000,-5000.,5000.);
+		h_meandelta = new TH1D("h_meandelta","",1000,-10.,10.);
+		h_fluxDLA   = new TH1D("h_fluxDLA","",10000,-1.,2.);
+		// TProfile
+		tp_flux_vs_lambdaRF  = new TProfile("tp_flux_vs_lambdaRF","",(int)(20+lambdaRFMax__-lambdaRFMin__),lambdaRFMin__-10.,lambdaRFMax__+10.);
+		tp_flux_vs_lambdaOBS = new TProfile("tp_flux_vs_lambdaOBS","",(int)(20+lambdaObsMax__-lambdaObsMin__),lambdaObsMin__-10.,lambdaObsMax__+10.);
+		tp_delta_vs_lambdaRF  = new TProfile("tp_delta_vs_lambdaRF","",(int)(20+lambdaRFMax__-lambdaRFMin__),lambdaRFMin__-10.,lambdaRFMax__+10.);
+		tp_delta_vs_lambdaOBS = new TProfile("tp_delta_vs_lambdaOBS","",(int)(20+lambdaObsMax__-lambdaObsMin__),lambdaObsMin__-10.,lambdaObsMax__+10.);
+		tp_delta_vs_z = new TProfile("tp_delta_vs_z","",1000,1.7,6.7);
+		tp_delta_vs_r = new TProfile("tp_delta_vs_r","",1000,3000.,6000.);
+		tp_delta_projected_vs_lambdaRF  = new TProfile("tp_delta_projected_vs_lambdaRF","",(int)(20+lambdaRFMax__-lambdaRFMin__),lambdaRFMin__-10.,lambdaRFMax__+10.);
+		tp_delta_projected_vs_lambdaOBS = new TProfile("tp_delta_projected_vs_lambdaOBS","",(int)(20+lambdaObsMax__-lambdaObsMin__),lambdaObsMin__-10.,lambdaObsMax__+10.);
+		tp_delta_projected_vs_z = new TProfile("tp_delta_projected_vs_z","",1000,1.7,6.7);
+		tp_delta_projected_vs_r = new TProfile("tp_delta_projected_vs_r","",1000,3000.,6000.);
+	}
 
 	//// Load data
 	for (unsigned int i=0; i<nbForest_; i++) {
@@ -5846,7 +5887,7 @@ TH1D* h_fluxDLA = new TH1D("h_fluxDLA","",10000,-1.,2.);
 		fits_read_col(fitsptrSpec,TDOUBLE, 18,i+1,1,nbBinRFMax__,NULL, &DELTA,           NULL,&sta);
 		fits_read_col(fitsptrSpec,TDOUBLE, 20,i+1,1,nbBinRFMax__,NULL, &DELTA_WEIGHT,    NULL,&sta);
 
-		if (!mocksNoNoiseNoCont && ( (alpha2 == alphaStart__ && beta2 == betaStart__) || (fabs(alpha2)>=maxAlpha__-0.5) || (fabs(beta2)>=maxBeta__-0.05) ) ) {
+		if (cutNotFittedSpectra__ && !mocksNoNoiseNoCont && ( (alpha2 == alphaStart__ && beta2 == betaStart__) || (fabs(alpha2)>=maxAlpha__-0.5) || (fabs(beta2)>=maxBeta__-0.05) ) ) {
 			if (alpha2 == alphaStart__ && beta2 == betaStart__) nbCutted[0] ++;
 			else if (fabs(alpha2)>=maxAlpha__-0.5) nbCutted[1] ++;
 			else if (fabs(beta2)>=maxBeta__-0.05) nbCutted[2] ++;
@@ -5894,7 +5935,7 @@ TH1D* h_fluxDLA = new TH1D("h_fluxDLA","",10000,-1.,2.);
 
 				//// Get if the template is even one time negative
 				if ( alpha2+beta2*(LAMBDA_RF[j]-meanForestLambdaRF) <= 0.) templateHasNegative = true;
-h_fluxDLA->Fill(FLUX_DLA[j]);
+
 				//// Get Nb Pixel in forest
 				tmp_meanDelta[0] += DELTA_WEIGHT[j]*DELTA[j];
 				tmp_meanDelta[1] += DELTA_WEIGHT[j];
@@ -5912,11 +5953,17 @@ h_fluxDLA->Fill(FLUX_DLA[j]);
 					meanNeeded[3] += DELTA_WEIGHT[j]*LAMBDA_RF[j]*DELTA[j];
 					meanNeeded[4] += DELTA_WEIGHT[j];
 				}
+
+				if (saveInRootFile__) {
+					tp_flux_vs_lambdaRF->Fill(LAMBDA_RF[j],NORM_FLUX[j],DELTA_WEIGHT[j]);
+					tp_flux_vs_lambdaOBS->Fill(LAMBDA_OBS[j],NORM_FLUX[j],DELTA_WEIGHT[j]);
+					h_fluxDLA->Fill(FLUX_DLA[j]);
+				}
 			}
 		}
 
 		const unsigned int tmp_nb = v_tmp_r.size();
-		if (tmp_nb<C_MIN_NB_PIXEL || templateHasNegative ) {
+		if (cutNotFittedSpectra__ && (tmp_nb<C_MIN_NB_PIXEL || templateHasNegative) ) {
 			if (tmp_nb<C_MIN_NB_PIXEL) nbCutted[3] ++;
 			else if (templateHasNegative) nbCutted[4] ++;
 			continue;
@@ -5936,8 +5983,24 @@ h_fluxDLA->Fill(FLUX_DLA[j]);
 			const long double coef        = numerator/denominator;
 			for (unsigned int j=0; j<tmp_nb; j++) {
 
-				v_tmp_d[j] = v_tmp_d[j] - meanDelta - (v_tmp_lRF[j]-meanLambda)*coef;
-h_delta->Fill(v_tmp_d[j],v_tmp_w[j]);
+				if (saveInRootFile__) {
+					h_delta->Fill(v_tmp_d[j],v_tmp_w[j]);
+					tp_delta_vs_lambdaRF->Fill(v_tmp_lRF[j], v_tmp_d[j],v_tmp_w[j]);
+					tp_delta_vs_lambdaOBS->Fill(v_tmp_lObs[j], v_tmp_d[j],v_tmp_w[j]);
+					tp_delta_vs_z->Fill(v_tmp_z[j], v_tmp_d[j],v_tmp_w[j]);
+					tp_delta_vs_r->Fill(v_tmp_r[j], v_tmp_d[j],v_tmp_w[j]);
+				}
+
+				v_tmp_d[j] -= meanDelta + (v_tmp_lRF[j]-meanLambda)*coef;
+
+				if (saveInRootFile__) {
+					h_delta_projected->Fill(v_tmp_d[j],v_tmp_w[j]);
+					tp_delta_projected_vs_lambdaRF->Fill(v_tmp_lRF[j], v_tmp_d[j],v_tmp_w[j]);
+					tp_delta_projected_vs_lambdaOBS->Fill(v_tmp_lObs[j], v_tmp_d[j],v_tmp_w[j]);
+					tp_delta_projected_vs_z->Fill(v_tmp_z[j], v_tmp_d[j],v_tmp_w[j]);
+					tp_delta_projected_vs_r->Fill(v_tmp_r[j], v_tmp_d[j],v_tmp_w[j]);
+				}
+
 				//// Get Nb Pixel in forest
 				meanDelta_Nicolas[0] += v_tmp_w[j]*v_tmp_d[j];
 				meanDelta_Nicolas[1] += v_tmp_w[j]*meanDelta;
@@ -5948,9 +6011,7 @@ h_delta->Fill(v_tmp_d[j],v_tmp_w[j]);
 				meanDelta_Nicolas[6] ++;
 			}
 
-h_meandelta->Fill(meanDelta);
-if (fabs(meanDelta)>0.3) std::cout << i << ",";
-
+			if (saveInRootFile__) h_meandelta->Fill(meanDelta);
 		}
 
 		//// If not dealing with Jean-Marc's simulations
@@ -5999,9 +6060,29 @@ if (fabs(meanDelta)>0.3) std::cout << i << ",";
 
 	delete hConvertRedshDist;
 
-R_plot1D(h_meandelta);
-R_plot1D(h_fluxDLA);
-R_plot1D(h_delta);
+	if (saveInRootFile__) {
+		// TH1D
+		R_plot1D(h_meandelta,"<\\delta>");
+		R_plot1D(h_fluxDLA,"< f_{DLA} >");
+		R_plot1D(h_delta,"\\delta");
+		R_plot1D(h_delta_projected,"\\delta_{proj.}");
+		// TProfile
+		R_plot1D(tp_flux_vs_lambdaRF,"\\lambda_{R.F.}","flux");
+		R_plot1D(tp_flux_vs_lambdaOBS,"\\lambda_{Obs.}","flux");
+		R_plot1D(tp_delta_vs_lambdaRF,"\\lambda_{R.F.}","\\delta");
+		R_plot1D(tp_delta_vs_lambdaOBS,"\\lambda_{Obs.}","\\delta");
+		R_plot1D(tp_delta_vs_z,"z_{pixel}","\\delta");
+		R_plot1D(tp_delta_vs_r,"r_{pixel}","\\delta");
+		R_plot1D(tp_delta_projected_vs_lambdaRF,"\\lambda_{R.F.}","\\delta_{proj.}");
+		R_plot1D(tp_delta_projected_vs_lambdaOBS,"\\lambda_{Obs.}","\\delta_{proj.}");
+		R_plot1D(tp_delta_projected_vs_z,"z_{pixel}","\\delta_{proj.}");
+		R_plot1D(tp_delta_projected_vs_r,"r_{pixel}","\\delta_{proj.}");
+		// TFile
+		storeFile->Write();
+		storeFile->Close();
+		// TFile
+		delete storeFile;
+	}
 
 	return;
 }

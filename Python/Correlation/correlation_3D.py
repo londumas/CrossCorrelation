@@ -1008,7 +1008,7 @@ anisotropic = yes
 decoupled   = yes
 custom-grid = yes
 pixelize = yes
-dist-matrix = yes
+#dist-matrix = yes
 dist-matrix-order = """+str(self._nbBin2D)+"""
 
 # Parameter setup
@@ -1029,19 +1029,19 @@ model-config = fix[gamma-scale]=          """+param[13]+""";
 model-config = fix[pixel scale]=0.7;
 
 ## Metal correlations
-#metal-model-interpolate = true
-#metal-model-name = """+path_to_BAOFIT+"""
-#model-config = value[beta Si2a]=1.4;
-#model-config = value[bias Si2a]=-0.01;
-#model-config = fix[beta Si2b]=1.4;
-#model-config = fix[bias Si2b]=0;
-#model-config = value[beta Si2c]=1.4;
-#model-config = value[bias Si2c]=-0.01;
-#model-config = fix[beta Si3]=1.4;
-#model-config = fix[bias Si3]=0;
-#model-config = gaussprior[beta Si2a] @ (0,2.8);
+metal-model-interpolate = true
+metal-model-name = """+path_to_BAOFIT+"""
+model-config = value[beta Si2a]=1.4;
+model-config = value[bias Si2a]=-0.01;
+model-config = fix[beta Si2b]=1.4;
+model-config = fix[bias Si2b]=0;
+model-config = value[beta Si2c]=1.4;
+model-config = value[bias Si2c]=-0.01;
+model-config = fix[beta Si3]=1.4;
+model-config = fix[bias Si3]=0;
+model-config = gaussprior[beta Si2a] @ (0,2.8);
 #model-config = gaussprior[beta Si2b] @ (0,2.8);
-#model-config = gaussprior[beta Si2c] @ (0,2.8);
+model-config = gaussprior[beta Si2c] @ (0,2.8);
 #model-config = gaussprior[beta Si3] @ (0,2.8);
 
 
