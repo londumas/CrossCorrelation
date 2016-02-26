@@ -71,13 +71,13 @@ LYA_lines_names   = numpy.append( SIIV_lines_names, numpy.array(['LYA'   ,'SiIII
 LYA_lines         = numpy.append( SIIV_lines, numpy.array([      1215.67 ,1206.500, 1193.2897, 1190.4158]))
 lambda_RF_line_LYA = 1215.67
 ###
-LYB_lines_names   = numpy.append( LYA_lines_names, numpy.array(['LYB']))
-LYB_lines         = numpy.append( LYA_lines, numpy.array([1025.7223]))
-lambda_RF_line_LYB = 1025.7223
+LYB_lines_names   = numpy.append( LYA_lines_names, numpy.array(['LYB','LY3','LY4','LY5']))
+LYB_lines         = numpy.append( LYA_lines, numpy.array([1025.72, 972.537, 949.7431, 937.8035]))
+lambda_RF_line_LYB = 1025.72
 
 
 if (forest__ == 'LYB'):
-	lambdaRFLine__     = 1025.7223
+	lambdaRFLine__     = 1025.72
 	lambdaRFMin__      = 800.
 	lambdaRFMax__      = 1020.
 	lambdaRFNormaMin__ = 1050.

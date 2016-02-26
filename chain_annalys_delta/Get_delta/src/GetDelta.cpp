@@ -20,6 +20,7 @@
 #include "GetDelta.h"
 #include "../../../Root/Library/RootHistoFunctions.h"
 #include "../../../Cpp/Library/mathFunctions.h"
+#include "../../../Constants/constants.h"
 #include "../../../Constants/globalValues.h"
 
 #include <cmath>
@@ -43,7 +44,7 @@
 std::string pathToTxt__    = "";
 std::string pathToPDF__    = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/";
 const std::string pathToDLACat__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/DLA_all.fits";
-const std::string pathToMockJMC__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_2016_02_23/";
+const std::string pathToMockJMC__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_2016_02_25/";
 const unsigned int nbPixelTemplate__ = int(lambdaRFMax__-lambdaRFMin__)+6;
 const unsigned int nbBinlambdaObs__  = int(lambdaObsMax__-lambdaObsMin__);
 const double onePlusZ0__ = 1.+z0__;
@@ -74,7 +75,7 @@ std::string pathMoreForHist__ = "";
 //// Flags
 unsigned int stepDefinition = 1000;
 unsigned int stepAnnalyse   = 1000;
-const unsigned int methodIndex__ = 2;
+const unsigned int methodIndex__ = 1;
 const bool doVetoLines__          = true;
 const bool setDLA__               = false;
 const bool cutNotFittedSpectra__  = true;
@@ -238,19 +239,6 @@ void GetDelta::defineHistos() {
 		hTemplate__[i] = new TH1D(name,"",nbPixelTemplate__+20,lambdaRFMin__-3.-10,lambdaRFMax__+3.+10);
 	}
 	for (unsigned int i=0; i<nbLoop__+1; i++) {
-
-		// Mean transmission flux
-		TString name = "hDeltaVsLambdaObs_";
-		name += i;
-
-		hDeltaVsLambdaObs__[i] = new TH1D(name,"",nbBinlambdaObs__+200,lambdaObsMin__-100.,lambdaObsMax__+100.);
-		R_dealWithPlots_1D(hDeltaVsLambdaObs__[i], "#lambda_{Obs.} (A)", "Mean transmission flux", "Method2: mean transmission flux");
-		for (unsigned int j=0; j<nbBinlambdaObs__+200; j++) {
-			hDeltaVsLambdaObs__[i]->SetBinContent(j+1,1.);
-			hDeltaVsLambdaObs__[i]->SetBinError(j+1,0.);
-		}
-	}
-	for (unsigned int i=0; i<nbLoop__+1; i++) {
 		//// <delta+1> vs. lambda_RF
 		TString name = "hDeltaVsLambdaRF_";
 		name += i;
@@ -262,29 +250,18 @@ void GetDelta::defineHistos() {
 			hDeltaVsLambdaRF__[i]->SetBinError(j+1,0.);
 		}
 	}
+	for (unsigned int i=0; i<nbLoop__+1; i++) {
 
+		// Mean transmission flux
+		TString name = "hDeltaVsLambdaObs_";
+		name += i;
 
-	if ( ((mocksColab__ || !mockJMC__) && stepDefinition >= 1) || (mockJMC__ && stepDefinition >= 2)  ) {
-
-		//// Put the value of the init of mean transmision flux
-		std::string path = pathToTxt__;
-		path += "hDeltaVsLambdaObs_";
-		path += forest__;
-		path += pathMoreForHist__;
-		path += ".txt";
-		std::ifstream file(path.c_str());
-
-		unsigned int idx;
-		double val;
-		double err;
-		while (file) {
-			file>>idx>>val>>err;
-			if(file==0) break;
-
-			hDeltaVsLambdaObs__[nbLoop__]->SetBinContent(idx+1,val);
-			hDeltaVsLambdaObs__[nbLoop__]->SetBinError(idx+1,err);
+		hDeltaVsLambdaObs__[i] = new TH1D(name,"",nbBinlambdaObs__+200,lambdaObsMin__-100.,lambdaObsMax__+100.);
+		R_dealWithPlots_1D(hDeltaVsLambdaObs__[i], "#lambda_{Obs.} (A)", "Mean transmission flux", "Method2: mean transmission flux");
+		for (unsigned int j=0; j<nbBinlambdaObs__+200; j++) {
+			hDeltaVsLambdaObs__[i]->SetBinContent(j+1,1.);
+			hDeltaVsLambdaObs__[i]->SetBinError(j+1,0.);
 		}
-		file.close();
 	}
 	if ( ((mocksColab__ || !mockJMC__) && stepDefinition >= 1) || (mockJMC__ && stepDefinition >= 2)  ) {
 
@@ -308,7 +285,28 @@ void GetDelta::defineHistos() {
 		}
 		file.close();
 	}
+	if ( ((mocksColab__ || !mockJMC__) && stepDefinition >= 1) || (mockJMC__ && stepDefinition >= 2)  ) {
 
+		//// Put the value of the init of mean transmision flux
+		std::string path = pathToTxt__;
+		path += "hDeltaVsLambdaObs_";
+		path += forest__;
+		path += pathMoreForHist__;
+		path += ".txt";
+		std::ifstream file(path.c_str());
+
+		unsigned int idx;
+		double val;
+		double err;
+		while (file) {
+			file>>idx>>val>>err;
+			if(file==0) break;
+
+			hDeltaVsLambdaObs__[nbLoop__]->SetBinContent(idx+1,val);
+			hDeltaVsLambdaObs__[nbLoop__]->SetBinError(idx+1,err);
+		}
+		file.close();
+	}
 
 	// Flux PDF
 	//#define PATHTOCODE "/home/gpfs/manip/mnt0607/bao/hdumasde/CrossCorrelation_StartingAgainFrom1347/CrossCorrelation";
@@ -358,19 +356,17 @@ void GetDelta::getHisto(unsigned int loopIdx) {
 
 	//// Define the histos
 	
-	//// Template (m2)
-	double m2_template[nbPixelTemplate__][4];
-
-	//// Delta vs. lambda_RF
+	//// flux vs. lambda_RF
+	double fluxVSLambdaRF[nbPixelTemplate__][4];
+	//// delta vs. lambda_RF
 	double deltaVSLambdaRF[nbPixelTemplate__][4];
-
-	//// Delta vs. lambda_Obs
+	//// delta vs. lambda_Obs
 	double deltaVSLambdaObs[nbBinlambdaObs__][4];
 
 
 	for (unsigned int i=0; i<nbPixelTemplate__; i++) {
 		for (unsigned int j=0; j<4; j++) {
-			m2_template[i][j]     = 0.;
+			fluxVSLambdaRF[i][j]  = 0.;
 			deltaVSLambdaRF[i][j] = 0.;
 		}
 	}
@@ -440,10 +436,10 @@ void GetDelta::getHisto(unsigned int loopIdx) {
 		
 			//// Template (m2)
 			unsigned int idx = int( v_LAMBDA_RF__[f][p]-lambdaRFMin__+3.);
-			m2_template[idx][0] += wf;
-			m2_template[idx][1] += w;
-			m2_template[idx][2] += wf*flux;
-			m2_template[idx][3] ++;
+			fluxVSLambdaRF[idx][0] += wf;
+			fluxVSLambdaRF[idx][1] += w;
+			fluxVSLambdaRF[idx][2] += wf*flux;
+			fluxVSLambdaRF[idx][3] ++;
 
 			//// Delta vs. lambda_RF
 			deltaVSLambdaRF[idx][0] += wd;
@@ -503,14 +499,10 @@ void GetDelta::getHisto(unsigned int loopIdx) {
 
 
 	//// Save the histos
-
 	std::ofstream fFile;
 	std::ofstream fFile1;
 	std::ofstream fFile2;
 	std::string tmp_pathToSave;
-
-
-
 
 
 	//// Template (m2)
@@ -525,14 +517,14 @@ void GetDelta::getHisto(unsigned int loopIdx) {
 
 	//// Template (m2)
 	for (unsigned int i=0; i<nbPixelTemplate__; i++) {
-		if (m2_template[i][1]!=0.) {
+		if (fluxVSLambdaRF[i][1]!=0.) {
 			fFile << lambdaRFMin__-3.+0.5 + 1.*i;
-			fFile << " " << m2_template[i][0]/m2_template[i][1];
-			fFile << " " << m2_template[i][0];
-			fFile << " " << m2_template[i][1] << std::endl;
+			fFile << " " << fluxVSLambdaRF[i][0]/fluxVSLambdaRF[i][1];
+			fFile << " " << fluxVSLambdaRF[i][0];
+			fFile << " " << fluxVSLambdaRF[i][1] << std::endl;
 
-			const double mean = m2_template[i][0]/m2_template[i][1];
-			const double err  = sqrt( (m2_template[i][2]/m2_template[i][1]-mean*mean)/m2_template[i][3] );
+			const double mean = fluxVSLambdaRF[i][0]/fluxVSLambdaRF[i][1];
+			const double err  = sqrt( (fluxVSLambdaRF[i][2]/fluxVSLambdaRF[i][1]-mean*mean)/fluxVSLambdaRF[i][3] );
 			hTemplate__[loopIdx]->SetBinContent(i+1+10,mean);
 			hTemplate__[loopIdx]->SetBinError(i+1+10,err);
 		}
@@ -560,6 +552,7 @@ void GetDelta::getHisto(unsigned int loopIdx) {
 	if (loopIdx==0) loopIdxForHist1 = nbLoop__;
 
 	//// Delta vs. lambda_RF
+	double mean_hDeltaVsLambdaRF[2] = {0.};
 	for (unsigned int i=0; i<nbPixelTemplate__; i++) {
 		if (deltaVSLambdaRF[i][1]!=0.) {
 			fFile << lambdaRFMin__-3.+0.5 + 1.*i;
@@ -576,10 +569,20 @@ void GetDelta::getHisto(unsigned int loopIdx) {
 
 			hDeltaVsLambdaRF__[loopIdx]->SetBinContent(i+1,(mean+1.)*hDeltaVsLambdaRF__[loopIdxForHist1]->GetBinContent(i+1) );
 			hDeltaVsLambdaRF__[loopIdx]->SetBinError(i+1,err);
+
+			if (i>3 && i<nbPixelTemplate__-3) {
+				mean_hDeltaVsLambdaRF[0] += (mean+1.)*hDeltaVsLambdaRF__[loopIdxForHist1]->GetBinContent(i+1);
+				mean_hDeltaVsLambdaRF[1] ++;
+			}
 		}
 	}
 	fFile.close();
 
+	//// Normalizes hDeltaVsLambdaRF
+	mean_hDeltaVsLambdaRF[0] /= mean_hDeltaVsLambdaRF[1];
+	for (unsigned int i=0; i<nbPixelTemplate__; i++) {
+		hDeltaVsLambdaRF__[loopIdx]->SetBinContent(i+1, hDeltaVsLambdaRF__[loopIdx]->GetBinContent(i+1)/mean_hDeltaVsLambdaRF[0] );
+	}
 	
 	//// Save hDeltaVsLambdaRF
 	tmp_pathToSave  = pathToTxt__;
@@ -627,33 +630,11 @@ void GetDelta::getHisto(unsigned int loopIdx) {
 				mean = 0.;
 				err  = 0.001;
 			}
-			
 			hDeltaVsLambdaObs__[loopIdx]->SetBinContent(i+100+1,(mean+1.)*hDeltaVsLambdaObs__[loopIdxForHist]->GetBinContent(i+100+1) );
 			hDeltaVsLambdaObs__[loopIdx]->SetBinError(i+100+1,err);
 		}
 	}
 	fFile.close();
-
-/*
-	//// Fill empty pixels with the interpolation of a pol1 fit
-	// Fit function for the variance of delta
-	TF1* fit_flux = new TF1("fit_flux", "[0] + [1]*x",lambdaObsMin__,lambdaObsMax__);
-	fit_flux->SetParName(0, "a");
-	fit_flux->SetParameter(0, 1.);
-	fit_flux->SetParName(1, "b");
-	fit_flux->SetParameter(1, 1.);
-	hDeltaVsLambdaObs__[loopIdx]->Fit(fit_flux,"QR");
-
-	for (unsigned int i=0; i<nbBinlambdaObs__+200; i++) {
-		if (hDeltaVsLambdaObs__[loopIdx]->GetBinError(i+1)==0.) {
-			const double value = fit_flux->Eval( hDeltaVsLambdaObs__[loopIdx]->GetBinCenter(i+1) );
-			hDeltaVsLambdaObs__[loopIdx]->SetBinContent(i+1,value);
-			hDeltaVsLambdaObs__[loopIdx]->SetBinError(i+1,0.);
-		}
-	}
-*/
-
-
 
 	// Method2: Set "hMeanFlux"
 	double xxx1_value_m2 = 0.;
@@ -732,7 +713,6 @@ void GetDelta::getHisto(unsigned int loopIdx) {
 		hDeltaVsLambdaObs__[loopIdx]->SetBinContent(i+1, valueFirstNotEmptyPixels);
 	}
 
-
 	tmp_pathToSave  = pathToTxt__;
 	tmp_pathToSave += "hDeltaVsLambdaObs_";
 	tmp_pathToSave += forest__;
@@ -748,7 +728,6 @@ void GetDelta::getHisto(unsigned int loopIdx) {
 		fFile << " " << hDeltaVsLambdaObs__[loopIdx]->GetBinError(i+1) << std::endl;
 	}
 	fFile.close();
-
 
 	//// For the weight
 	tmp_pathToSave  = pathToTxt__;
@@ -825,9 +804,6 @@ void GetDelta::getHisto(unsigned int loopIdx) {
 		yyySig.push_back(tmp_paramFit[1]);
 		yyySigError.push_back(tmp_paramErrorFit[1]);
 
-		//R_plot1D(hVarDeltaVsError[z]);
-		//R_plot1D(hVarDeltaVsError[z]);
-
 	}
 	fFile1.close();
 	fFile2.close();
@@ -851,19 +827,6 @@ void GetDelta::getHisto(unsigned int loopIdx) {
 }
 void GetDelta::updateDeltaVector(unsigned int loopIdx) {
 
-	//// Template: Array with interpolated bins nbPixelTemplate__,lambdaRFMin__-3.,lambdaRFMax__+3.
-	//double templateInterpolated[nbBinInterpolTemplate__];
-	//const double binSizeTemplate = (6.+lambdaRFMax__-lambdaRFMin__)/nbBinInterpolTemplate__;
-	//for (unsigned int i=0; i<nbBinInterpolTemplate__; i++) {
-	//	templateInterpolated[i] = hTemplate__[loopIdx]->Interpolate( lambdaRFMin__-3. +i*binSizeTemplate );
-	//}
-	//// hDeltaVsLambdaObs: Array with interpolated bins
-	//double hDeltaVsLambdaObsInterpolated[nbBinInterpolhDeltaVsLambdaObs__];
-	//const double binSizeFObs = (lambdaObsMax__-lambdaObsMin__)/nbBinInterpolhDeltaVsLambdaObs__;
-	//for (unsigned int i=0; i<nbBinInterpolhDeltaVsLambdaObs__; i++) {
-	//	hDeltaVsLambdaObsInterpolated[i] = hDeltaVsLambdaObs__[loopIdx]->Interpolate( lambdaObsMin__ +i*binSizeFObs );
-	//}
-
 	const unsigned int nbForest = v_zz__.size();
 
 	if (loopIdx==0 && ( stepDefinition == 0  || (mockJMC__ && stepDefinition<2)) ) {
@@ -873,11 +836,11 @@ void GetDelta::updateDeltaVector(unsigned int loopIdx) {
 
 			for (unsigned int j=0; j<nb; j++) {
 
-				v_TEMPLATE__[i][j]          = hTemplate__[loopIdx]->Interpolate(v_LAMBDA_RF__[i][j]);
-				const long double tmp_template2 = (v_alpha2__[i] + v_beta2__[i]*(v_LAMBDA_RF__[i][j]-v_meanForestLambdaRF__[i]))*v_TEMPLATE__[i][j]*hDeltaVsLambdaObs__[loopIdx]->Interpolate(v_LAMBDA_OBS__[i][j])*v_FLUX_DLA__[i][j];
+
+				v_TEMPLATE__[i][j]     = hDeltaVsLambdaRF__[loopIdx]->Interpolate(v_LAMBDA_RF__[i][j]);
+				const long double tmp_template2 = (v_alpha2__[i] + v_beta2__[i]*(v_LAMBDA_RF__[i][j]-v_meanForestLambdaRF__[i]))*v_FLUX_DLA__[i][j]*v_TEMPLATE__[i][j]*hDeltaVsLambdaObs__[loopIdx]->Interpolate(v_LAMBDA_OBS__[i][j]);
 				v_DELTA__[i][j]             = v_NORM_FLUX__[i][j]/tmp_template2 -1.;
 				v_DELTA_IVAR__[i][j]        = v_NORM_FLUX_IVAR__[i][j]*tmp_template2*tmp_template2;
-
 				v_DELTA_WEIGHT__[i][j]  = std::max(0.,v_FACTORWEIGHT__[i][j]/(sigma2LSSStart+1./(etaStart*v_DELTA_IVAR__[i][j])));
 			}
 		}
@@ -889,8 +852,8 @@ void GetDelta::updateDeltaVector(unsigned int loopIdx) {
 
 			for (unsigned int j=0; j<nb; j++) {
 
-				v_TEMPLATE__[i][j]          = hTemplate__[loopIdx]->Interpolate(v_LAMBDA_RF__[i][j]);
-				const long double tmp_template2 = (v_alpha2__[i] + v_beta2__[i]*(v_LAMBDA_RF__[i][j]-v_meanForestLambdaRF__[i]))*v_TEMPLATE__[i][j]*hDeltaVsLambdaObs__[loopIdx]->Interpolate(v_LAMBDA_OBS__[i][j])*v_FLUX_DLA__[i][j];
+				v_TEMPLATE__[i][j]     = hDeltaVsLambdaRF__[loopIdx]->Interpolate(v_LAMBDA_RF__[i][j]);
+				const long double tmp_template2 = (v_alpha2__[i] + v_beta2__[i]*(v_LAMBDA_RF__[i][j]-v_meanForestLambdaRF__[i]))*v_FLUX_DLA__[i][j]*v_TEMPLATE__[i][j]*hDeltaVsLambdaObs__[loopIdx]->Interpolate(v_LAMBDA_OBS__[i][j]);
 				v_DELTA__[i][j]             = v_NORM_FLUX__[i][j]/tmp_template2 -1.;
 				v_DELTA_IVAR__[i][j]        = v_NORM_FLUX_IVAR__[i][j]*tmp_template2*tmp_template2;
 
@@ -1399,7 +1362,7 @@ void GetDelta::updateDLA(std::string fitsnameSpec, unsigned int start, unsigned 
 		}
 
 		//// Save
-		if (NbDLA!=0) fits_write_col(fitsptrSpec,TDOUBLE, 17,i+1,1,nbBinRFMax__, &FluxDLA, &sta);
+		fits_write_col(fitsptrSpec,TDOUBLE, 17,i+1,1,nbBinRFMax__, &FluxDLA, &sta);
 		nbDLAAllCat += NbDLA;
 	}
 
@@ -1471,10 +1434,11 @@ void GetDelta::updateDelta(std::string fitsnameSpec, unsigned int loopIdx, unsig
 				continue; 
 			}
 
-			tmp_template[j]         = hTemplate__[loopIdx]->Interpolate(LAMBDA_RF[j]);
-			const long double tmp_template2 = (alpha2+beta2*(LAMBDA_RF[j]-meanForestLambdaRF))*tmp_template[j]*hDeltaVsLambdaObs__[loopIdx]->Interpolate(LAMBDA_OBS[j])*FLUX_DLA[j];
-			delta[j]                = NORM_FLUX[j]/tmp_template2 -1.;
-			delta_ivar[j]           = NORM_FLUX_IVAR[j]*tmp_template2*tmp_template2;
+
+			tmp_template[j]           = hDeltaVsLambdaRF__[loopIdx]->Interpolate(LAMBDA_RF[j]);
+			long double tmp_template2 = (alpha2+beta2*(LAMBDA_RF[j]-meanForestLambdaRF))*tmp_template[j]*FLUX_DLA[j]*hDeltaVsLambdaObs__[loopIdx]->Interpolate(LAMBDA_OBS[j]);
+			delta[j]                  = NORM_FLUX[j]/tmp_template2 -1.;
+			delta_ivar[j]             = NORM_FLUX_IVAR[j]*tmp_template2*tmp_template2;
 
 			const double zi         = LAMBDA_OBS[j]/lambdaRFLine__-1.;
 			const double eta        = grEta__[loopIdx]->Eval(zi);
@@ -1844,9 +1808,9 @@ double GetDelta::VoigtProfile(double nhi, double lamb, double z_abs) {
 	const double NN = pow(10.,nhi);
 	const double larf = lamb/(1.+z_abs);
 
-	const double u = (c1000/b)*(lambdaRFLine__/larf-1.);
+	const double u = (c1000/b)*(C_C_LYA_LINE/larf-1.);
 
-	const double a = lambdaRFLine__*1.e-10*gamma/(4.*M_PI*b);
+	const double a = C_C_LYA_LINE*1.e-10*gamma/(4.*M_PI*b);
 	const double sig = sqrt(2.);
 	const double H = TMath::Voigt(u,sig,a*2.);  // in root factor 2....
 	b/=1000.;

@@ -12,12 +12,13 @@ import matplotlib.pyplot as plt
 from iminuit import Minuit
 import myTools
 from const_delta import *
+from scipy import interpolate
 
 chunckNb = 1
 simulNb  = 1
 mockNumber = ''
-isMock_ = True
-forest__ = 'LYA'
+isMock_ = False
+forest__ = 'LYB'
 if (forest__ == 'LYB'):
 	lambdaRFMin__      = 800.
 	lambdaRFMax__      = 1020.
@@ -29,7 +30,7 @@ elif (forest__ == 'LYA'):
 elif (forest__ == 'SIIV'):
 	lambdaRFMin__      = 1286.
 	lambdaRFMax__      = 1380.
-	shift__            = 3547.5
+	shift__            = 3447.5
 elif (forest__ == 'CIV'):
 	lambdaRFMin__      = 1410.
 	lambdaRFMax__      = 1530.
@@ -44,7 +45,7 @@ elif (forest__ == 'MGII'):
 path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest__+'/FitsFile_DR12_Guy/DR12_primery/histos/' ##_method1
 #path = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_reObs/histos/"
 #path = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA//FitsFile_eBOSS_Guy/all_eBOSS_primery/histos/"
-rawPath = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_2016_02_23/'
+rawPath = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_2016_02_25/'
 
 
 
@@ -66,6 +67,8 @@ for i in range (0,chunckNb):
 
 		data = numpy.loadtxt('/home/gpfs/manip/mnt/bao/hdumasde/Data/CIV/FitsFile_DR12_Guy/DR12_primery/histos/hDeltaVsLambdaObs_CIV.txt')
 		plt.errorbar(data[:,0]+3447.5, data[:,1], label=r'$CIV \, forest$')
+		data = numpy.loadtxt(path+'hDeltaVsLambdaObs_'+forest__+mockNumber+'.txt')
+		plt.errorbar(data[:,0]+shift__, data[:,1], label=r'$'+str(i)+' \, '+str(j)+'$')
 
 		#data = numpy.loadtxt(path+'hDeltaVsLambdaObs_CIV'+mockNumber+'.txt')
 		#plt.errorbar(data[:,0]+3547.5, data[:,1], label=r'$CIV \, forest$',color='green')
@@ -118,12 +121,19 @@ for i in range (0,chunckNb):
 			mockNumber = '_'+str(i)+'_'+str(j)
 		data = numpy.loadtxt(path + 'template_'+forest__+mockNumber+'.txt')
 
-		plt.errorbar(data[:,0], data[:,1], fmt='o') #, label=r'$'+str(i)+' \, '+str(j)+'$')
+		plt.errorbar(data[:,0], data[:,1], marker='o') #, label=r'$'+str(i)+' \, '+str(j)+'$')
 		plt.plot([lambdaRFMin__,lambdaRFMin__],[numpy.min(data[:,1]),numpy.max(data[:,1])],color='red', label=r'$forest \, definition$')
 		plt.plot([lambdaRFMax__,lambdaRFMax__],[numpy.min(data[:,1]),numpy.max(data[:,1])],color='red')
 		print path + 'template_'+forest__+mockNumber+'.txt'
 		print data[:,0].size
 		if (i==0 and j==0): saveYYY0 = data[:,1]
+
+		if (isMock_): 
+			path = rawPath + 'Box_00'+str(i)+'/Simu_00'+str(j)+'/Run/'
+			mockNumber = '_'+str(i)+'_'+str(j)
+		data = numpy.loadtxt(path+'hDeltaVsLambdaRF_'+forest__+mockNumber+'.txt')
+		plt.errorbar(lambdaRFMin__-2.5+data[:,0], data[:,1]*numpy.mean(saveYYY0), marker='o')
+
 #plt.title(r'$Template$', fontsize=40)
 plt.xlabel(r'$\lambda_{R.F.} \, [\AA]$', fontsize=40)
 plt.ylabel(r'$Normalized \, flux$', fontsize=40)
@@ -164,9 +174,12 @@ plt.ylabel(r'$< \delta >$', fontsize=40)
 myTools.deal_with_plot(False,False,False)
 plt.show()
 
-'''
+
 ### Delta+1 vs. lambda_RF
-data = numpy.loadtxt(path+'hDeltaVsLambdaRF_'+forest__+'.txt')
+if(isMock_): 
+	path = rawPath + 'Box_00'+str(i)+'/Simu_00'+str(j)+'/Run/'
+	mockNumber = '_'+str(i)+'_'+str(j)
+data = numpy.loadtxt(path+'hDeltaVsLambdaRF_'+forest__+mockNumber+'.txt')
 plt.errorbar(lambdaRFMin__-3.+data[:,0], data[:,1], fmt='o')
 plt.plot([lambdaRFMin__,lambdaRFMin__],[numpy.min(data[:,1]),numpy.max(data[:,1])],color='red')
 plt.plot([lambdaRFMax__,lambdaRFMax__],[numpy.min(data[:,1]),numpy.max(data[:,1])],color='red')
@@ -175,7 +188,7 @@ plt.xlabel(r'$\lambda_{R.F.} \, [\AA]$', fontsize=40)
 plt.ylabel(r'$< \delta+1 >$', fontsize=40)
 myTools.deal_with_plot(False,False,True)
 plt.show()
-'''
+
 
 ### Delta vs. lambda_Obs
 for i in range (0,chunckNb):
@@ -208,13 +221,22 @@ plt.show()
 ### Delta+1 vs. lambda_Obs
 for i in range (0,chunckNb):
 	for j in range(0,simulNb):
+
 		if(isMock_): 
 			path = rawPath + 'Box_00'+str(i)+'/Simu_00'+str(j)+'/Run/'
 			mockNumber = '_'+str(i)+'_'+str(j)
+
+		### Get the <delta>
+		#data   = numpy.loadtxt(path+'deltaVSLambdaObs_'+forest__+mockNumber+'.txt')
+		#interp = interpolate.interp1d(data[:,0],data[:,1],bounds_error=False,fill_value=0)
+		
+
 		data = numpy.loadtxt(path+'hDeltaVsLambdaObs_'+forest__+mockNumber+'.txt')
 		plt.errorbar(data[:,0]+shift__, data[:,1], label=r'$'+str(i)+' \, '+str(j)+'$')
+		#plt.errorbar(data[:,0]+shift__, data[:,1]*(1.+interp(data[:,0]+shift__)), label=r'$'+str(i)+' \, '+str(j)+'$')
+		#plt.errorbar(data[:,0]+shift__, interp(data[:,0]+shift__), label=r'$'+str(i)+' \, '+str(j)+'$')
 
-		
+		'''
 		yMin    = 0.
 		yMax    = 1.
 		for i in range(0,skyLinesNames__.size):
@@ -224,7 +246,7 @@ for i in range (0,chunckNb):
 			yLi = [yMin,yMax]
 			plt.plot(xLi,yLi,color='green')
 			plt.text(line, yMax, skyLinesNames__[i], rotation='vertical', fontsize=20)
-		
+		'''
 
 #plt.title(r'$hDeltaVsLambdaObs$', fontsize=40)
 plt.xlabel(r'$\lambda_{Obs.} \, [\AA]$', fontsize=40)

@@ -44,8 +44,8 @@
 Tools::Tools(int argc, char** argv) {
 
 	//get_Ra_Dec_DLA();
-	//look_DLA();
-	get_delta_nicolas();
+	look_DLA();
+	//get_delta_nicolas();
 	//get_Catalogue();
 	//get_flux_vs_lambdaObs();
 	//get_weigted_covar_matrix();
@@ -341,9 +341,9 @@ double Tools::VoigtProfile(double nhi, double lamb, double z_abs) {
 	const double NN = pow(10.,nhi);
 	const double larf = lamb/(1.+z_abs);
 
-	const double u = (c1000/b)*(lambdaRFLine__/larf-1.);
+	const double u = (c1000/b)*(C_C_LYA_LINE/larf-1.);
 
-	const double a = lambdaRFLine__*1.e-10*gamma/(4.*M_PI*b);
+	const double a = C_C_LYA_LINE*1.e-10*gamma/(4.*M_PI*b);
 	const double sig = sqrt(2.);
 	const double H = TMath::Voigt(u,sig,a*2.);  // in root factor 2....
 	b/=1000.;

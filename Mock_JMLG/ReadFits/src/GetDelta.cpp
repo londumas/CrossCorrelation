@@ -83,15 +83,15 @@ GetDelta::GetDelta(int argc, char** argv) {
 	pathToDataQSO__ += "-";
 	pathToDataQSO__ += sim_idx;
 	pathToDataQSO__ += ".fits";
-	pathToDataQSO__ = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/spectra-expander3.fits";
+	pathToDataQSO__ = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/spectra-expander4.fits";
 	///
-	pathToDataForest__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_2016_02_23/Box_00";
+	pathToDataForest__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_2016_02_25/Box_00";
 	pathToDataForest__ += box_idx;
 	pathToDataForest__ += "/Simu_00";
 	pathToDataForest__ += sim_idx;
 	pathToDataForest__ += "/Raw/mocks-*";
 	///
-	pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_2016_02_23";
+	pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_2016_02_25";
 	if (noMockExpander__) pathToSave__ += "_noMockExpander";
 	pathToSave__ += "/Box_00";
 	pathToSave__ += box_idx;
@@ -290,13 +290,14 @@ void GetDelta::GetData(void) {
 			if (nbPixel>nbPixelsTemplate__)  std::cout << "  GetDelta::GetData::  ERROR: nbPixel>nbPixelsTemplate__ " << nbPixel << " " << nbPixelsTemplate__ << std::endl;
 	
 			/// Normalisation zone
-			if ( normFactor[0]<= 0. || nbPixel<C_MIN_NB_PIXEL ||  meanForestLRF[1]<C_MIN_NB_PIXEL) {
+			if (meanForestLRF[1]<C_MIN_NB_PIXEL) {
 				//std::cout << Z << " " << NORM_FACTOR_nb << " " << NORM_FACTOR << " " << nbPixelTemplate << " " << NB_PIXEL << std::endl;
 				continue;
 			}
 	
 			/// Normalize the forest
-			const double norm = normFactor[0]/normFactor[1];
+			double norm = 1.;
+			if (normFactor[1]>0. && normFactor[0]>0.) norm = normFactor[0]/normFactor[1];
 	
 			/// Normalise the data
 			for (unsigned int i=0; i<nbPixel; i++) {

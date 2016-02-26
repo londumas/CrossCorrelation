@@ -77,7 +77,7 @@ def removeUselessLines():
 	return
 def haveAlookForest():	
 
-	cat = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_2016_02_23/Box_000/Simu_000/Data/delta.fits', memmap=True)[1].data[0:10000]
+	cat = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_2016_02_25/Box_000/Simu_000/Data/delta.fits', memmap=True)[1].data[0:10000]
 	cat2 = pyfits.open('/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits', memmap=True)[1].data[0:10000]
 
 	print cat.size

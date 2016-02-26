@@ -55,6 +55,13 @@
 //#define C_C 299792.458
 #define C_C_LIGHT 299792458
 
+//// Lines
+#define C_C_LYA_LINE 1215.67
+
+
+
+
+
 #endif
 
 

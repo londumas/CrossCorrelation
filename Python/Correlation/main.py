@@ -32,8 +32,8 @@ def plotOne():
 
 	dic_CAMB = {
 	'mulpol_index' : 0,
-	'start_fit'   : 40.,
-	'end_fit'     : 180.,
+	'start_fit'   : 20.,
+	'end_fit'     : 60.,
 	'b' : -1.,
 	'roof' : 0.,
 	'fix_roof_nul' : True,
@@ -53,13 +53,13 @@ def plotOne():
 		'path_to_txt_file_folder': 'NOTHING',
 		'f1': 'LYA',
 		'f2': 'a',
-		'q1': 'ALL_OBJECTS',
+		'q1': 'QSO_DR7_DR12_EBOSS',
 		'q2': 'a',
 		'name' : 'Data'
 	}
-	#dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1563/Box_000/Simu_000/Results_NicolasDistortion/'
-	dic_class['path_to_txt_file_folder'] = '//home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator/' ##_nicolasEstimator
-	#dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/TESTS/'
+	#dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_2016_02_25/Box_000/Simu_000/Results_nicolasEstimator/'
+	dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator/'
+	#dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/TESTS_method2_nicolasEstimator/'
 	dic_class['name'] = 'Data'
 	corr = correlation_3D.Correlation3D(dic_class)
 	#corr.write_metal_model()
@@ -95,12 +95,20 @@ def plotOne():
 	#corr.set_error_on_covar_matrix('subsampling')
 	#corr.fit_CAMB_2d('subsampling', correlation_matrix_path)
 
+	
 	dic_CAMB = corr.fit_CAMB(None,dic_CAMB,True)
 	corr.plot_CAMB(None,dic_CAMB,0,True)
 	corr.plot_CAMB(None,dic_CAMB,1,True)
 	corr.plot_CAMB(None,dic_CAMB,2,True)
-
 	
+	'''
+	corr.plot_slice_2d(0)
+	corr.plot_slice_2d(1)
+	corr.plot_slice_2d(2)
+	corr.plot_slice_2d(None,49)
+	corr.plot_slice_2d(None,50)
+	corr.plot_slice_2d(None,51)
+	'''
 	corr.plot_1d(0)
 	corr.plot_1d(1)
 	corr.plot_1d(2)
@@ -185,22 +193,23 @@ def plotBosseBOSS():
 		'path_to_txt_file_folder': 'NOTHING',
 		'f1': 'LYA',
 		'f2': 'LYA',
-		'q1': 'QSO',
+		'q1': 'QSO_DR7_DR12_EBOSS',
 		'q2': 'QSO',
 		'name' : 'Data'
 	}
 	### Boss
-	dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator/'
+	dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
 	dic_class['name'] = 'before'
 	corr = correlation_3D.Correlation3D(dic_class)
 	#corr.set_error_on_covar_matrix('subsampling')
 	list_corr += [corr]
 	### Boss
-	dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_2016_02_22/Box_000/Simu_000/Results_NicolasDistortion/'
+	dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator/'
 	dic_class['name'] = 'now'
 	corr = correlation_3D.Correlation3D(dic_class)
 	#corr.set_error_on_covar_matrix('subsampling')
 	list_corr += [corr]
+
 
 	list_corr[0].plot_1d(0, list_corr[1:])
 	list_corr[0].plot_1d(1, list_corr[1:])
@@ -213,8 +222,8 @@ def look_result_data():
 
 	return
 
-plotBosseBOSS()
-#plotOne()
+#plotBosseBOSS()
+plotOne()
 #plotMany()
 
 ### Send parameter scan
@@ -229,7 +238,7 @@ corr.send_BAOFIT('subsampling',correlation_matrix_path, False, False, 10000)
 '''
 
 ### BAOFIT + Data
-'''
+
 dic_class = correlation_3D.raw_dic_class
 dic_CAMB  = correlation_3D.raw_dic_CAMB
 index_parameter = annalyse_BAOFIT.raw_index_parameter
@@ -250,8 +259,8 @@ dic_class = {
 	'name' : 'Data'
 }
 dic_class['name'] = 'Data'
-#dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
-dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Box_000/Simu_000/Results/'
+dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/TESTS_nicolasEstimator/'
+#dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_2016_02_23/Box_000/Simu_000/Results/'
 corr = annalyse_BAOFIT.AnnalyseBAOFIT(dic_class, index_parameter)
 corr.print_results()
 corr.plot_data_and_fit_1d(0)
@@ -268,7 +277,7 @@ corr.plot_residuals_2d(1)
 corr.plot_residuals_2d(2)
 corr.plot_histo_residuals()
 corr.plot_chi2_scan(100,100, [0.5,1.5,0.5,1.5], False, False)
-'''
+
 
 
 
@@ -289,7 +298,7 @@ corr.plot_chi2_scan(50,50)
 '''
 
 ### BAOFIT + Many simulations
-
+'''
 if (False):
 	index_parameter = annalyse_BAOFIT.raw_index_parameter
 	dic_class = {
@@ -323,6 +332,7 @@ aMB.plot_histo_residuals()
 aMB.save_list_realisation()
 aMB.print_results()
 aMB.set_mean_data()
+'''
 '''
 aMB.plot_1d(0)
 aMB.plot_1d(1)

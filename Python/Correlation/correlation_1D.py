@@ -210,7 +210,10 @@ class Correlation_1D:
 		cut_l = 0 #7
 		cut_h = -1 #300
 
-		xxx = self._xi[cut_l:cut_h,0]
+		if (self._correlation == 'f_f2_lRF_devide'): 
+			xxx = 1./self._xi[cut_l:cut_h,0]
+		else:
+			xxx = self._xi[cut_l:cut_h,0]
 		yyy = self._xi[cut_l:cut_h,1]
 		yer = self._xi[cut_l:cut_h,2]
 		plt.errorbar(xxx, yyy, yerr=yer, marker='o', label=r'$'+self._name+'$', markersize=8,linewidth=2)
@@ -301,27 +304,28 @@ correlationType:
 dic_class = {
 	'correlation': 'f_f_lRF_devide',
 	'path_to_txt_file_folder': 'NONE',
-	'f1': 'LYA',
-	'f2': 'LYA',
+	'f1': 'SIIV',
+	'f2': 'CIV',
 	'nb_Sub_Sampling': 80,
 	'name' : 'NAME'
 }
 
 
+list_corr = []
 
 ### Data
 dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
 dic_class['name'] = "Data"
-dic_class['correlation'] = "f_f_r"
-dic_class['f1'] = "LYA"
-corrD = Correlation_1D(dic_class)
-dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_2016_02_23/Box_000/Simu_000/Results/'
-dic_class['name'] = "Simu"
-dic_class['correlation'] = "f_f_r"
-dic_class['f1'] = "LYA"
-corrDD = Correlation_1D(dic_class)
+dic_class['correlation'] = "f_f2_lRF_devide"
+corr = Correlation_1D(dic_class)
+list_corr += [corr]
+#
+dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator/'
+dic_class['correlation'] = "f_f2_lRF_devide"
+corr = Correlation_1D(dic_class)
+list_corr += [corr]
 
-corrD.plot(False,False,[corrDD])
+list_corr[0].plot(False,False,list_corr[1:])
 
 
 

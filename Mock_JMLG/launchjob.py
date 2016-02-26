@@ -29,12 +29,12 @@ import cosmolopy.distance as cosmology
 
 ### Constants
 sizeMax = 250000
-sizeMaxForest = 10000 #250000
+sizeMaxForest = 250000
 nbQSO__ = 238929
 nbFor__ = 170000
 nbPixel = 647   ###2148
 ratioForestToQSO__    = 1.*nbFor__/nbQSO__;
-pathToFolder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_2016_02_23/' ##noMockExpander
+pathToFolder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_2016_02_25/' ##noMockExpander
 
 
 
@@ -124,7 +124,7 @@ def main():
 			
 			
 				### Remove useless lines in Forest
-				cat = pyfits.open(path + 'Data/delta.fits', memmap=True)[1].data[:nbQSO]
+				cat = pyfits.open(path + 'Data/delta.fits', memmap=True)[1].data
 				print cat.size
 				'''
 				tmp_idx  = numpy.arange(cat.size)

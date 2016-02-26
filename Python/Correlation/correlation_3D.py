@@ -37,8 +37,8 @@ raw_dic_class = {
 }
 raw_dic_CAMB = {
 	'mulpol_index' : 0,
-	'start_fit'   : 20.,
-	'end_fit'     : 70.,
+	'start_fit'   : 40.,
+	'end_fit'     : 180.,
 	'b' : -1.,
 	'roof' : 0.,
 	'fix_roof_nul' : True,
@@ -1007,8 +1007,8 @@ cross-correlation = yes
 anisotropic = yes
 decoupled   = yes
 custom-grid = yes
-pixelize = yes
-#dist-matrix = yes
+pixelize    = yes
+dist-matrix = yes
 dist-matrix-order = """+str(self._nbBin2D)+"""
 
 # Parameter setup
@@ -1033,14 +1033,14 @@ metal-model-interpolate = true
 metal-model-name = """+path_to_BAOFIT+"""
 model-config = value[beta Si2a]=1.4;
 model-config = value[bias Si2a]=-0.01;
-model-config = fix[beta Si2b]=1.4;
-model-config = fix[bias Si2b]=0;
+model-config = value[beta Si2b]=1.4;
+model-config = value[bias Si2b]=-0.01;
 model-config = value[beta Si2c]=1.4;
 model-config = value[bias Si2c]=-0.01;
 model-config = fix[beta Si3]=1.4;
-model-config = fix[bias Si3]=0;
+model-config = fix[bias Si3]=-0.01;
 model-config = gaussprior[beta Si2a] @ (0,2.8);
-#model-config = gaussprior[beta Si2b] @ (0,2.8);
+model-config = gaussprior[beta Si2b] @ (0,2.8);
 model-config = gaussprior[beta Si2c] @ (0,2.8);
 #model-config = gaussprior[beta Si3] @ (0,2.8);
 
@@ -1054,7 +1054,8 @@ zref = 2.3
 
 ## Maximum allowed radial dilation (increases the range that model needs to cover)
 dilmin = 0.01
-dilmax = 2.5
+#dilmax = 2.5
+dilmax = 3.5
 
 ## Non-linear broadening with 1+f = (SigmaNL-par)/(SigmaNL-perp)
 
@@ -1111,7 +1112,7 @@ output-prefix = """ + path_to_BAOFIT + """.
 		"""
 
 		### Constants
-		param = numpy.asarray( [1.6,-0.351,0.9,0.,0.,3.25,0.962524,1.966,3.26,1.,1.,1.,1.,0.,0.,0.,0.,0.,0.] )
+		param = numpy.asarray( [1.2,-0.351,0.9,0.,0.,3.6,0.962524,1.966,3.26,1.,1.,1.,1.,0.,0.,0.,0.,0.,0.] )
 
 		path_to_BAOFIT = self._path_to_txt_file_folder + 'BaoFit_q_f__'+self._f1+'__'+self._q1 + '/'
 		subprocess.call('mkdir ' + path_to_BAOFIT, shell=True)
@@ -1468,8 +1469,8 @@ output-prefix = """ + path_to_BAOFIT + """.
 		if (dic is None):
 			dic = {
 				'mulpol_index' : 0,
-				'start_fit'   : 20.,
-				'end_fit'     : 70.,
+				'start_fit'   : 40.,
+				'end_fit'     : 180.,
 				'b' : -1.,
 				'roof' : 0.,
 				'fix_roof_nul' : True,
@@ -1499,7 +1500,7 @@ output-prefix = """ + path_to_BAOFIT + """.
 			matrix = numpy.loadtxt(path)
 			result_1D_camb[:,1] = numpy.dot(matrix,result_1D_camb[:,1])
 			### if get the biais manually
-			#result_1D_camb[:,1] *= yyy[4]/result_1D_camb[4,1]
+			#result_1D_camb[:,1] *= yyy[8]/result_1D_camb[4,1]
 			result_1D_camb[:,1] = dic['b']*result_1D_camb[:,1] + dic['roof']
 		else:
 			cut = (camb[:,0] <= numpy.amax(xxx)*1.1)

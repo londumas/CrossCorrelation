@@ -245,24 +245,25 @@ def meanDelta():
 		lambdaRFMax__      = 2790.
 
 	path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest+'/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits'
-	path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Data/LYA/DR12_Nicolas/delta.fits'
+	#path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Data/LYA/DR12_Nicolas/delta.fits'
 	#path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_reObs/DR12_reObs.fits'
 	#path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits'
 
 	#path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1563/Box_000/Simu_000/Data/delta.fits'
 
-	cat = pyfits.open(path, memmap=True)[1].data
+	cat = pyfits.open(path, memmap=True)[1].data[:10000]
 
-	#cat = cat[ numpy.logical_and( numpy.logical_and(  numpy.logical_and( cat['ALPHA_2']!=alphaStart__, cat['BETA_2']!=0.),  numpy.abs(cat['ALPHA_2'])<=99.5 ), numpy.abs(cat['BETA_2'])<=0.55 ) ]
+	cat = cat[ numpy.logical_and( numpy.logical_and(  numpy.logical_and( cat['ALPHA_2']!=alphaStart__, cat['BETA_2']!=0.),  numpy.abs(cat['ALPHA_2'])<=99.5 ), numpy.abs(cat['BETA_2'])<=0.55 ) ]
 	#cat = cat[ numpy.logical_or( numpy.logical_or(  numpy.logical_or( cat['ALPHA_2']==alphaStart__, cat['BETA_2']==0.),  numpy.abs(cat['ALPHA_2'])>=99.5 ), numpy.abs(cat['BETA_2'])>=0.55 ) ]
 	print cat.size
 	print cat[ (cat['BETA_1']==-600.) ].size
 
+	'''
 	plt.hist(cat['Z_VI'],bins=100)
 	plt.show()
 	plt.plot(cat['RA'],cat['DEC'],marker='o')
 	plt.show()
-
+	'''
 
 	print '  nb |alpha| > 39.5  = ', cat[ (cat['ALPHA_2']>39.5) ].size
 	print '  nb |beta|  > 0.25  = ', cat[ (cat['BETA_2']>0.25) ].size
@@ -270,21 +271,21 @@ def meanDelta():
 	cat['DELTA'][ (cat['NORM_FLUX_IVAR']<0.) ] = 0.
 	cat['DELTA'][ (cat['DELTA_IVAR']<0.) ] = 0.
 	cat['DELTA'][ (cat['DELTA_WEIGHT']<0.) ] = 0.
-	cat['DELTA'][ (cat['FLUX_DLA']<0.8) ] = 0.
+	#cat['DELTA'][ (cat['FLUX_DLA']<0.8) ] = 0.
 	cat['DELTA'][ (cat['LAMBDA_RF']<lambdaRFMin__) ] = 0.
 	cat['DELTA'][ (cat['LAMBDA_RF']>lambdaRFMax__) ] = 0.
 
 	cat['NORM_FLUX'][ (cat['NORM_FLUX_IVAR']<0.) ] = 0.
 	cat['NORM_FLUX'][ (cat['DELTA_IVAR']<0.) ] = 0.
 	cat['NORM_FLUX'][ (cat['DELTA_WEIGHT']<0.) ] = 0.
-	cat['NORM_FLUX'][ (cat['FLUX_DLA']<0.8) ] = 0.
+	#cat['NORM_FLUX'][ (cat['FLUX_DLA']<0.8) ] = 0.
 	cat['NORM_FLUX'][ (cat['LAMBDA_RF']<lambdaRFMin__) ] = 0.
 	cat['NORM_FLUX'][ (cat['LAMBDA_RF']>lambdaRFMax__) ] = 0.
 
 	cat['DELTA_WEIGHT'][ (cat['NORM_FLUX_IVAR']<0.) ] = 0.
 	cat['DELTA_WEIGHT'][ (cat['DELTA_IVAR']<0.) ] = 0.
 	cat['DELTA_WEIGHT'][ (cat['DELTA_WEIGHT']<0.) ] = 0.
-	cat['DELTA_WEIGHT'][ (cat['FLUX_DLA']<0.8) ] = 0.
+	#cat['DELTA_WEIGHT'][ (cat['FLUX_DLA']<0.8) ] = 0.
 	cat['DELTA_WEIGHT'][ (cat['LAMBDA_RF']<lambdaRFMin__) ] = 0.
 	cat['DELTA_WEIGHT'][ (cat['LAMBDA_RF']>lambdaRFMax__) ] = 0.
 
@@ -341,7 +342,7 @@ def meanDelta():
 	plt.ylabel(r'$\alpha$', fontsize=40)
 	myTools.deal_with_plot(False,False,True)
 	plt.show()
-	'''
+	
 	### < \delta >
 	plt.hist(meanDelta,bins=1000)
 	plt.xlabel(r'$< \delta >$', fontsize=40)
@@ -447,11 +448,11 @@ def meanDelta():
 	plt.ylabel(r'$p \, (\%)$', fontsize=40)
 	myTools.deal_with_plot(True,True,True)
 	plt.show()
+	'''
 	
-	
-	cat = cat[ meanSNR>10. ]
-	meanDelta = meanDelta[ meanSNR>10. ]
-	meanSNR = meanSNR[ meanSNR>10. ]
+	cat = cat[ meanSNR>20. ]
+	meanDelta = meanDelta[ meanSNR>20. ]
+	meanSNR = meanSNR[ meanSNR>20. ]
 	#cat = cat[ numpy.abs(meanDelta)>0.5 ]
 	#meanDelta = meanDelta[ numpy.abs(meanDelta)>0.5 ]
 	#meanSNR = meanSNR[ numpy.abs(meanDelta)>0.5 ]

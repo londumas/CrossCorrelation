@@ -662,6 +662,7 @@ def bias_evolution():
 	### Simu points
 	simu = numpy.zeros(shape=(4,100))
 	simu[0,:] = 2.40673056001
+	'''
 	param = numpy.load('/home/gpfs/manip/mnt0607/bao/hdumasde/Code/Python/Annalyse_BAOFIT/param.npy')
 	print param[:,0,0]
 	simu[2,:] = param[5,0,:]
@@ -669,16 +670,17 @@ def bias_evolution():
 	meanSimu = numpy.asarray([ numpy.average(simu[0,:]),  numpy.average(simu[2,:],weights=numpy.power(simu[3,:],-2.)),  numpy.power(numpy.sum(numpy.power(simu[3,:],-2.)),-0.5) ])
 	print numpy.average(simu[2,:],weights=numpy.power(simu[3,:],-2.))
 	print 3.246e+00
-
+	'''
 	### Croom et al. Law
 	def croom(x):
 		return 0.53 + 0.289*(1.+x)**2
 	xxx = numpy.arange(0.,10.,0.01)
 	yyy = numpy.apply_along_axis(croom, -1, xxx)
+	print '  Croom et al. interpolation : z=2.4 ', croom(2.4)
 
 	plt.plot(xxx,yyy, linestyle='dashed', label=r'$Croom \, et \, al.$')
 	plt.errorbar(simu[0,:],simu[2,:],yerr=simu[3,:],fmt='o',color='green',label=r'$Simu$')
-	plt.errorbar(meanSimu[0],meanSimu[1],yerr=meanSimu[2], fmt='o',color='blue',label=r'$<Simu>$')
+	#plt.errorbar(meanSimu[0],meanSimu[1],yerr=meanSimu[2], fmt='o',color='blue',label=r'$<Simu>$')
 	plt.errorbar(data[0],data[1],yerr=data[3],fmt='o',color='red', label=r'$Data$')
 	plt.errorbar(dataPierre[:,0],dataPierre[:,1],yerr=dataPierre[:,2],fmt='o',color='black',label=r'$data \, Pierre$')
 	myTools.deal_with_plot(False,False,True)

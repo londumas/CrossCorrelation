@@ -121,9 +121,17 @@
 # 2016 - 02 - 23 - (17h47)
 	- Correlation.cpp:
 		* add option to save some plots in a .root
-
-
-
+# 2016 - 02 - 26 - (17h21)
+	- Constants.h:
+		* add definition of the LYA line
+	- Correct value of the lambda_rf_line_LYA in "VoigtProfile" function in order to stay on LYA
+	- Mock_JMLG:
+		* correct small bug removing forests with no normalisation zone
+	- Correlation.cpp
+		* add not saving when no pairs in "xi_delta_QSO"
+	- GetDelta.cpp
+		* big changes! Now the template is like a "delta+1" convergence. Now delta is flat both
+			in lamnda_RF and lambda_obs 
 
 
 

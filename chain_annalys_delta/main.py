@@ -36,11 +36,13 @@ stepIdx = int(sys.argv[1])
 
 def main():
 
-	forest = 'LYA'
-	alphaStart__ = 1.3
+	forest = 'LYB'
 	reObs = False
 	eBOSS = False
-	method = '' #'_method1'
+	method = ''#'_method1'
+
+	if (forest=='LYA'): alphaStart__ = 1.3
+	elif (forest=='CIV' or forest=='SIIV' or forest=='LYB'): alphaStart__ = 1.
 
 	print
 	print "------ Start ------"
@@ -249,6 +251,8 @@ def main():
 
 		file_cat = pyfits.open(path,mode='update')
 		cat      = file_cat[1].data
+
+		
 		print
 		print
 		print '  nb spectra         : ', cat.size
@@ -261,13 +265,13 @@ def main():
 
 		cut2 = numpy.logical_and( numpy.abs(cat['ALPHA_2']-alpha)>0.0001, cut )
 		#cut2 = numpy.abs(cat['ALPHA_2']-alpha)>0.0001
-		print idx[cut2].size
-		print zip(idx[cut2])
+		#print idx[cut2].size
+		#print zip(idx[cut2])
 
 		cut2 = numpy.logical_and( numpy.abs(cat['BETA_2']-beta)>0.0001, cut )
 		cut2 = numpy.abs(cat['BETA_2']-beta)>0.0001
-		print idx[cut2].size
-		print zip(idx[cut2])
+		#print idx[cut2].size
+		#print zip(idx[cut2])
 
 		a = (cat['ALPHA_2']-alpha)[cut]
 		print numpy.mean(a), numpy.min(a), numpy.max(a)
@@ -279,15 +283,25 @@ def main():
 		plt.hist( (cat['BETA_2']-beta)[cut],bins=1000,label='beta', log=True)
 		plt.show()
 		
+
+		'''
+		plt.hist( cat['ALPHA_2'][:50000]-alpha,bins=1000,label='alpha', log=True)
+		plt.show()
+		plt.hist( cat['BETA_2'][:50000]-beta,bins=1000,label='beta', log=True)
+		plt.show()
+		'''
+
 		cat['ALPHA_2'] = alpha
 		cat['BETA_2']  = beta
 
+		
 		### Flag for spectra with alpha_error > alpha
 		cat['BETA_1'][ (alphaErr>=numpy.abs(saveAlpha)) ] = -600.
 		### Keep the chi^{2} if not reObs
 		if (not reObs):
 			cat['ALPHA_1'][ (nbPixel>0.) ]  = chi[ (nbPixel>0.) ]/nbPixel[ (nbPixel>0.) ]
 			cat['ALPHA_1'][ (nbPixel<=0.) ] = 0.
+		
 
 		file_cat.close()
 		

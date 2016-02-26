@@ -94,16 +94,16 @@ const unsigned int nbBinlambdaObs__  = int(lambdaObsMax__-lambdaObsMin__);
 double distMinPixel__ = 0.;
 double distMinPixelDelta2__ = 0.;
 unsigned int idxCommand_[6] = {0};
-const std::string pathToMockJMC__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_2016_02_23/";
-std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/";  //_nicolasEstimator   //_method1
+const std::string pathToMockJMC__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_2016_02_25/";
+std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/TESTS/";  //_nicolasEstimator   //_method1
 //std::string pathToSave__ = "";
 
 ///// Flags for Jean-Marc's simulations
 const bool mocks              = false;
-const bool mockJMC__          = true;
+const bool mockJMC__          = false;
 const bool mockBox__          = false;
 const bool mocksNoNoiseNoCont = false;
-const double randomPositionOfQSOInCellNotBeforeCorrelation__ = true;
+const double randomPositionOfQSOInCellNotBeforeCorrelation__ = false;
 //// Flags for covariance matrix estimation
 const bool shuffleQSO     = false;
 const bool shuffleForest  = false;
@@ -140,7 +140,7 @@ Correlation::Correlation(int argc, char **argv) {
 	
 
 	///// Set the number of forest to work on
-	nbForest_   = 0;
+	nbForest_   = 1000;
 	nbForest2__ = 0;
 	nbQ1__      = 0;
 	nbQ2__      = 0;
@@ -1884,7 +1884,24 @@ void Correlation::xi_delta_QSO(bool doBootstraps/*=False*/, unsigned int bootIdx
 		a_nbPairs[f] = nbPairs;
 	}
 
+	//// Look if there were some pairs
+	bool empty = true;
+	for (unsigned int i=0; i<nbBinX; i++) {
+		for (unsigned int j=0; j<nbBinY; j++) {
+			if (data2D[i][j][0]>0.) {
+				empty = false;
+				break;
+			}
+		}
+		if (!empty) break;
+	}
+	if (empty) {
+		std::cout << "  No pairs" << std::endl;
+		return;
+	}
+
 	std::cout << "\n  Saving\n" << std::endl;
+
 
 	//// Set the prefix of different forest and QSOs
 	std::string prefix1 = forest__;
