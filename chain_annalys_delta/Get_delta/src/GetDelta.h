@@ -25,7 +25,7 @@
 #define GETDELTA_H
 
 
-
+/*
 /// If LYB
 const std::string forest__  = "LYB";
 const double lambdaRFLine__  = 1025.72;
@@ -36,8 +36,8 @@ const double alphaStart__ = 1.;
 #define C_NBBINZ 12
 #define C_ZEXTREMA0 2.
 #define C_ZEXTREMA1 4.5
+*/
 
-/*
 /// If LYA
 const std::string forest__  = "LYA";
 const double lambdaRFLine__  = 1215.67;
@@ -48,7 +48,7 @@ const double alphaStart__ = 1.3;
 #define C_NBBINZ 12
 #define C_ZEXTREMA0 2.
 #define C_ZEXTREMA1 4.5
-*/
+
 /*
 /// If SIIV
 const std::string forest__  = "SIIV";
@@ -160,6 +160,7 @@ class GetDelta
 		void fitForests(unsigned int begin, unsigned int end);
 
 		void updateDelta(std::string fitsnameSpec, unsigned int loopIdx, unsigned int start, unsigned int end);
+		void setValuesAlphaBetaForest(std::string pathForest, std::string pathToTxt);
 		void putReobsTogether(std::string fitsnameSpec, unsigned int loopIdx);
 		void updateDLA(std::string fitsnameSpec, unsigned int start, unsigned int end);
 		void updateFlux(std::string fitsnameSpec, unsigned int start, unsigned int end);

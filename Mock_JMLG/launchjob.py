@@ -34,7 +34,7 @@ nbQSO__ = 238929
 nbFor__ = 170000
 nbPixel = 647   ###2148
 ratioForestToQSO__    = 1.*nbFor__/nbQSO__;
-pathToFolder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_2016_02_25/' ##noMockExpander
+pathToFolder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_second_generation/' ##noMockExpander
 
 
 
@@ -63,8 +63,10 @@ def main():
 	#####################
 	if (index_pass==0):
 		subprocess.call('mkdir ' +pathToFolder+'Results/', shell=True)
+		subprocess.call('mkdir ' +pathToFolder+'Results_nicolasEstimator/', shell=True)
+		subprocess.call('mkdir ' +pathToFolder+'Results_Raw/', shell=True)
 
-	for i in range(0,1):		
+	for i in range(0,0):
 
 		path = pathToFolder + 'Box_00' + str(i) + '/'
 
@@ -73,7 +75,9 @@ def main():
 		if (index_pass==0):
 			subprocess.call('mkdir ' +path, shell=True)
 
-		for j in range(0,1):
+		for j in range(0,0):
+
+			##if (i==0 and j==0): continue
 
 			print i, j
 			path = pathToFolder+ 'Box_00' + str(i) + '/Simu_00'+str(j) + '/'
@@ -84,34 +88,48 @@ def main():
 				subprocess.call('mkdir ' + path + 'Data', shell=True)
 				subprocess.call('mkdir ' + path + 'Run', shell=True)
 				subprocess.call('mkdir ' + path + 'Results', shell=True)
+				subprocess.call('mkdir ' + path + 'Results_Raw', shell=True)
 				subprocess.call('mkdir ' + path + 'Results_nicolasEstimator', shell=True)
 				subprocess.call('mkdir ' + path + '/Results/BaoFit_q_f__LYA__QSO', shell=True)
+				subprocess.call('mkdir ' + path + '/Results/BaoFit_q_f__LYA__QSO__withMetalsTemplates', shell=True)
 				subprocess.call('mkdir ' + path + '/Results_nicolasEstimator/BaoFit_q_f__LYA__QSO', shell=True)
+				subprocess.call('mkdir ' + path + '/Results_Raw/BaoFit_q_f__LYA__QSO', shell=True)
 
+			if (index_pass==1):
+
+				command = '/home/gpfs/manip/mnt0607/bao/hdumasde/Program/LyAMockExpander/Expand.sh -i /home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/v1573/fits/spectra-780'+str(i)+'-'+str(j)+'.fits -o ' +path+ 'Raw/ -columns loglam,flux,ivar,and_mask,mock_contpca,mock_F,mock_Fmet -JM -vac /home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/DR12Q_v2_10.fits -data /home/gpfs/manip/mnt0607/bao/Spectra/SpectraV5_8_guy/spectra -seed 0 -metals 2'
+				command = "clubatch \"echo ; hostname ; "+ command + "\""
+				print command
+                                subprocess.call(command, shell=True)
+				myTools.isReadyForNewJobs(20, 1000,'echo')
+                               	time.sleep(60)
+
+			if (index_pass==2):
 				if (i==0 and j==0):
 					tbhduQSO    = create_fits_qso(sizeMax)
 					tbhduQSO.writeto(path + 'Data/QSO_withRSD.fits', clobber=True)
-					tbhduForest = create_fits_forest(sizeMaxForest)
-					tbhduForest.writeto(path + 'Data/delta.fits', clobber=True)
+					#tbhduForest = create_fits_forest(sizeMaxForest)
+					#tbhduForest.writeto(path + 'Data/delta.fits', clobber=True)
 				else:
-					command = 'clubatch cp ' + pathToFolder + 'Box_000/Simu_000/Data/delta.fits ' + path + 'Data/delta.fits'
-					subprocess.call(command, shell=True)
-					command = 'clubatch cp ' + pathToFolder + 'Box_000/Simu_000/Data/QSO_withRSD.fits ' + path + 'Data/QSO_withRSD.fits'
-					subprocess.call(command, shell=True)
-					myTools.isReadyForNewJobs(10, 430,'cp')
-					time.sleep(20)
+					#command = 'clubatch cp ' + pathToFolder + 'Box_000/Simu_000/Data/delta.fits ' + path + 'Data/delta.fits'
+					#subprocess.call(command, shell=True)
+					#command = 'cp ' + pathToFolder + 'Box_000/Simu_000/Data/QSO_withRSD.fits ' + path + 'Data/QSO_withRSD.fits'
+					#subprocess.call(command, shell=True)
+					tbhduQSO    = create_fits_qso(sizeMax)
+                                        tbhduQSO.writeto(path + 'Data/QSO_withRSD.fits', clobber=True)
+					#myTools.isReadyForNewJobs(10, 430,'cp')
+					#time.sleep(20)
+			elif (index_pass==3):
 
-			elif (index_pass==1):
-
-				'''
-				command = "clubatch \"echo ; hostname ; /home/gpfs/manip/mnt0607/bao/hdumasde/Code/Mock_JMLG/ReadFits/bin/main.exe " + str(i) + ' ' + str(j) + "\""
+				command = "/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Mock_JMLG/ReadFits/bin/main.exe " + str(i) + ' ' + str(j)
+				command = "clubatch \"time ; hostname ; "+ command + "\""
 				print command
 				subprocess.call(command, shell=True)
-				myTools.isReadyForNewJobs(10, 430,'echo')
-				time.sleep(20)
-				'''
+				myTools.isReadyForNewJobs(20, 1000,'time')
+				time.sleep(60)
+				
 
-			elif (index_pass==2):
+			elif (index_pass==4):
 
 				print path + 'Data/QSO_withRSD.fits'
 				cat = pyfits.open(path + 'Data/QSO_withRSD.fits', memmap=True)[1].data
@@ -122,11 +140,10 @@ def main():
 				pyfits.writeto(path + 'Data/QSO_withRSD.fits', cat, clobber=True)
 				print nbQSO
 			
-			
+				
 				### Remove useless lines in Forest
 				cat = pyfits.open(path + 'Data/delta.fits', memmap=True)[1].data
 				print cat.size
-				'''
 				tmp_idx  = numpy.arange(cat.size)
 				tmp_bool = (cat['Z_VI'] != 0.)
 				tmp_idx = tmp_idx[ (tmp_bool) ]
@@ -138,12 +155,10 @@ def main():
 				print nbFor-int(nbQSO*ratioForestToQSO__)
 				rand = numpy.random.choice(nbFor, nbFor-int(nbQSO*ratioForestToQSO__), replace=False)
 				cat['Z_VI'][rand] = 0.
-
-				'''
 				cat = cat[ (cat['Z_VI'] != 0.) ]
 				print cat.size
 				pyfits.writeto(path + 'Data/delta.fits', cat, clobber=True)
-			
+				
 
 			'''
 			### Get the data to 'good' files
@@ -170,11 +185,11 @@ def sendCalculDelta():
 	tmp_command = "echo \" \n ------ Start ------ \n \" " 
 	subprocess.call(tmp_command, shell=True)
 
-	for i in range(0,1):
+	for i in range(0,5):
 
 		path = pathToFolder + 'Box_00' + str(i) + '/'
 
-		for j in range(0,1):
+		for j in range(0,10):
 
 			tmp_command = "echo " + str(i) + " " + str(j)
 			subprocess.call(tmp_command, shell=True)
@@ -185,23 +200,23 @@ def sendCalculDelta():
 			if (index_pass==0):
 				### Get the data to 'good' files
 				#####################
-				#command = "clubatch \"echo ; hostname ; /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/chain_annalys_delta/Get_delta/bin/main.exe " + str(i) + ' ' + str(j) + " 0 0 2 0\""
-				command = "time /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/chain_annalys_delta/Get_delta/bin/main.exe " + str(i) + ' ' + str(j) + " 0 0 2 0"
+				command = "/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/chain_annalys_delta/Get_delta/bin/main.exe " + str(i) + ' ' + str(j) + " 0 0 2 0"
+				command = "clubatch \"echo ; hostname ; "+command + "\""
 				print command
 				subprocess.call(command, shell=True)
-				myTools.isReadyForNewJobs(20, 430)
-				time.sleep(10)
+				myTools.isReadyForNewJobs(20, 1000,'echo')
+                                time.sleep(30)
 			
 
 			if (index_pass==1):
 				### Do the fits
-				nbSpectra = 250000
+				nbSpectra = 200000
 				step  = 2000
 				first = 0
 				last  = step
 				while (first <= nbSpectra):
 
-					tmp_command = "clubatch \"echo ; hostname ; /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/chain_annalys_delta/Get_delta/bin/main.exe " + str(i) + " " + str(j) + " " + str(first) + " " + str(last) +" 2 1 \""
+					tmp_command = "clubatch \"time ; hostname ; /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/chain_annalys_delta/Get_delta/bin/main.exe " + str(i) + " " + str(j) + " " + str(first) + " " + str(last) +" 2 1 \""
 					subprocess.call(tmp_command, shell=True)
 	
 					tmp_command = "echo " + tmp_command
@@ -212,154 +227,17 @@ def sendCalculDelta():
 					first = first + step
 					last  = last  + step
 
-					myTools.isReadyForNewJobs(200, 430)
-					time.sleep(0.1)
+					myTools.isReadyForNewJobs(100, 500,'time')
+					time.sleep(0.2)
 			
 
 			if (index_pass==2):
-				folder = path + '/Run/'
-				scheme = 'alphaAndBeta_LYA_'
-				lenScheme = len(scheme)
-			
-				tmp_command = "rm " + folder + scheme + 'all.txt'
-				subprocess.call(tmp_command, shell=True)
-			
-				### Get the list of files
-				all_t = os.listdir(folder)	
-				tmp_all_t = []
-				for el in all_t:
-					if (el[:lenScheme]==scheme):
-									tmp_all_t.append(el)
-				all_t = tmp_all_t
-			
-				### Sort the list of files
-				convert      = lambda text: int(text) if text.isdigit() else text
-				alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
-				all_t = sorted(all_t, key = alphanum_key)
-			
-				for el in all_t:
-					print el
-			
-				data  = numpy.loadtxt(folder+all_t[0])
-				idx   = data[:,0].astype(int)
-				alpha = data[:,1]
-				beta  = data[:,2]
-				chi   = data[:,3]
-				alphaErr = data[:,4]
-				betaErr  = data[:,5]
-				flag     = data[:,6].astype(int)
-				nbPixel  = data[:,7].astype(int)
-			
-				for el in all_t[1:]:
-					fo = open(folder+el, "r")
-					print folder+el
-					if os.fstat(fo.fileno()).st_size:
-						data   = numpy.loadtxt(folder+el)
-						if (data.size/4 != 1):
-							idx    = numpy.append( idx,   data[:,0].astype(int) )
-							alpha  = numpy.append( alpha, data[:,1]  )
-							beta   = numpy.append( beta,  data[:,2]  )
-							chi    = numpy.append( chi,   data[:,3]  )
-							alphaErr  = numpy.append( alphaErr, data[:,4]  )
-							betaErr   = numpy.append( betaErr,  data[:,5]  )
-							flag      = numpy.append( flag,   data[:,6].astype(int)  )
-							nbPixel   = numpy.append( nbPixel,   data[:,7].astype(int)  )
-						else:
-							idx    = numpy.append( idx,   data[0].astype(int) )
-							alpha  = numpy.append( alpha, data[1]  )
-							beta   = numpy.append( beta,  data[2]  )
-							chi    = numpy.append( chi,   data[3]  )
-							alphaErr  = numpy.append( alphaErr, data[4]  )
-							betaErr   = numpy.append( betaErr,  data[5]  )
-							flag      = numpy.append( flag,   data[6].astype(int)  )
-							nbPixel   = numpy.append( nbPixel,   data[7].astype(int)  )
-			
-				### change 'nan' values into negative ones for the errors
-				alphaErr[ numpy.isinf(alphaErr) ] = -1.
-				betaErr[ numpy.isinf(betaErr) ] = -1.
-				alphaErr[ numpy.isnan(alphaErr) ] = -1.
-				betaErr[ numpy.isnan(betaErr) ] = -1.
-			
-			
-				print
-				print
-				print '  nb spectra         : ', alpha.size
-				print '  alpha              : ', alpha
-				print '  beta               : ', beta
-				print
-				print
-				##
-				print '  nb pixel <=0              : ', chi[ (nbPixel<=0.) ].size
-				print '  idx nbPixel <=0           : ', idx[ (nbPixel<=0.) ]
-				print '  nbPixel of (nbPixel <=0)  : ', nbPixel[ (nbPixel<=0.) ]
-				print
-				##
-				print '  nb of flag!=0      : ', chi[ (flag!=0) ].size
-				print '  idx of flag!=0     : ', idx[ (flag!=0) ]
-				##
-				print '  nb of chi2=inf     : ', chi[ (numpy.isinf(chi)) ].size
-				print '  idx of chi2=inf    : ', idx[ (numpy.isinf(chi)) ]
-				##
-				print '  nb of chi2==0      : ', chi[ (chi==0.) ].size
-				print '  idx of chi2==0     : ', idx[ (chi==0.) ]
-				##
-				print '  nb of alpha==alphaStart__     : ', chi[ (alpha==alphaStart__) ].size
-				print '  idx of alpha==alphaStart__    : ', idx[ (alpha==alphaStart__) ]
-				##
-				print '  nb of beta==0      : ', chi[ (beta==0.) ].size
-				print '  idx of beta==0     : ', idx[ (beta==0.) ]
-				##
-				print '  nb of alphaErr<=0.      : ', chi[ (alphaErr<=0.) ].size
-				print '  idx of alphaErr<=0.     : ', idx[ (alphaErr<=0.) ]
-				##
-				print '  nb of betaErr<=0.      : ', chi[ (betaErr<=0.) ].size
-				print '  idx of betaErr<=0.     : ', idx[ (betaErr<=0.) ]
-				##
-				print '  nb of alphaErr>=alpha      : ', chi[ (alphaErr>=numpy.abs(alpha)) ].size
-				print '  idx of alphaErr>=alpha     : ', idx[ (alphaErr>=numpy.abs(alpha)) ]
-				##
-				print '  nb of betaErr>=beta      : ', chi[ (betaErr>=numpy.abs(beta)) ].size
-				print '  idx of betaErr>=beta     : ', idx[ (betaErr>=numpy.abs(beta)) ]
-			
-				saveAlpha = numpy.array(alpha)
-			
-				alpha[ (alpha==1.) ] = alphaStart__
-				beta[ (alpha==1.) ]  = 0.
-				alpha[ (nbPixel<=0.) ] = -600.
-				beta[ (nbPixel<=0.) ]  = -600.
-				alpha[ (flag!=0) ] = -300.
-				beta[ (flag!=0) ]  = -300.
-				alpha[ (alphaErr<=0.) ] = -400.
-				beta[ (alphaErr<=0.) ]  = -400.
-				alpha[ (betaErr<=0.) ] = -500.
-				beta[ (betaErr<=0.) ]  = -500.
-				alpha[ (numpy.isinf(chi)) ] = -100.
-				beta[ (numpy.isinf(chi)) ]  = -100.
-				alpha[ (numpy.isnan(chi)) ] = -100.
-				beta[ (numpy.isnan(chi)) ]  = -100.
-				alpha[ (chi==0.) ] = -200.
-				beta[ (chi==0.) ]  = -200.
-				
-				path     = path + 'Data/delta.fits'
-				file_cat = pyfits.open(path,mode='update')
-				cat      = file_cat[1].data
-				print
-				print
-				print path
-				print '  nb spectra         : ', cat.size
-				print '  alpha diff         : ', cat['ALPHA_2']-alpha
-				print '  beta diff          : ', cat['BETA_2']-beta
-				
-				cat['ALPHA_2'] = alpha
-				cat['BETA_2']  = beta
-			
-				### Flag for spectra with alpha_error > alpha
-				cat['BETA_1'][ (alphaErr>=numpy.abs(saveAlpha)) ] = -600.
-				### Keep the chi^{2} if not reObs
-				cat['ALPHA_1'][ (nbPixel>0.) ]  = chi[ (nbPixel>0.) ]/nbPixel[ (nbPixel>0.) ]
-				cat['ALPHA_1'][ (nbPixel<=0.) ] = 0.
-			
-				file_cat.close()
+				command = "/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/chain_annalys_delta/Get_delta/bin/main.exe " + str(i) + ' ' + str(j) + " 0 0 2 2"
+				command = "clubatch \"echo ; hostname ; "+command + "\""
+				print command
+				subprocess.call(command, shell=True)
+				myTools.isReadyForNewJobs(30, 1000,'echo')
+                                time.sleep(30)
 			
 
 			if (index_pass==3):

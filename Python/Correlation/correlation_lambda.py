@@ -404,8 +404,8 @@ dic = {
 	'size_bin_calcul_theta': 1.e-04,
 	'correlation': 'q_f',
 	'path_to_txt_file_folder': 'NOTHING',
-	'f1': 'CIV',
-	'f2': 'a',
+	'f1': 'SIIV',
+	'f2': 'CIV',
 	'q': 'QSO_DR7_DR12_EBOSS',
 	'name' : 'Data'
 }
@@ -419,15 +419,15 @@ dic['min_visual_z'] = -0.002
 dic['max_visual_z'] = 0.002
 '''
 ### For f_f2
-'''
+
 dic['min_l1_over_l2'] = 0.89
 dic['max_l1_over_l2'] = 1.11
 dic['correlation']    = 'f_f2'
 dic['min_visual_z'] = -0.002
 dic['max_visual_z'] = 0.002
-'''
 
-dic['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator/'
+
+dic['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
 a = CorrelationLambda(dic)
 a.plot_1d()
 a.plot_we()

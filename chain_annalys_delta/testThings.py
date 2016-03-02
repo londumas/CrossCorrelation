@@ -244,14 +244,14 @@ def meanDelta():
 		lambdaRFMin__      = 1570.
 		lambdaRFMax__      = 2790.
 
-	path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest+'/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits'
+	#path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest+'/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits'
 	#path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Data/LYA/DR12_Nicolas/delta.fits'
 	#path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_reObs/DR12_reObs.fits'
 	#path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits'
 
-	#path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1563/Box_000/Simu_000/Data/delta.fits'
+	path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_2016_02_25/Box_000/Simu_000/Data/delta.fits'
 
-	cat = pyfits.open(path, memmap=True)[1].data[:10000]
+	cat = pyfits.open(path, memmap=True)[1].data[:30000]
 
 	cat = cat[ numpy.logical_and( numpy.logical_and(  numpy.logical_and( cat['ALPHA_2']!=alphaStart__, cat['BETA_2']!=0.),  numpy.abs(cat['ALPHA_2'])<=99.5 ), numpy.abs(cat['BETA_2'])<=0.55 ) ]
 	#cat = cat[ numpy.logical_or( numpy.logical_or(  numpy.logical_or( cat['ALPHA_2']==alphaStart__, cat['BETA_2']==0.),  numpy.abs(cat['ALPHA_2'])>=99.5 ), numpy.abs(cat['BETA_2'])>=0.55 ) ]
@@ -326,7 +326,7 @@ def meanDelta():
 	#meanSNR = meanSNR[ meanDLA!=1. ]
 	#meanDelta = meanDelta[ meanDLA!=1. ]
 
-	'''
+	
 	### \alpha vs. <flux>
 	xxx = meanFlux
 	yyy = cat['ALPHA_2']
@@ -349,7 +349,7 @@ def meanDelta():
 	plt.ylabel(r'$\#$', fontsize=40)
 	myTools.deal_with_plot(False,False,True)
 	plt.show()
-	
+	'''
 	### \chi^{2}/NDF
 	plt.hist(cat['ALPHA_1'],bins=1000)
 	plt.xlabel(r'$\chi^{2}/N.D.F.$', fontsize=40)
@@ -450,9 +450,9 @@ def meanDelta():
 	plt.show()
 	'''
 	
-	cat = cat[ meanSNR>20. ]
-	meanDelta = meanDelta[ meanSNR>20. ]
-	meanSNR = meanSNR[ meanSNR>20. ]
+	cat = cat[ meanSNR>10. ]
+	meanDelta = meanDelta[ meanSNR>10. ]
+	meanSNR = meanSNR[ meanSNR>10. ]
 	#cat = cat[ numpy.abs(meanDelta)>0.5 ]
 	#meanDelta = meanDelta[ numpy.abs(meanDelta)>0.5 ]
 	#meanSNR = meanSNR[ numpy.abs(meanDelta)>0.5 ]

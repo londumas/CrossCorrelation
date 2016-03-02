@@ -42,9 +42,9 @@
 
 //// Constants
 std::string pathToTxt__    = "";
-std::string pathToPDF__    = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/";
+std::string pathToPDF__    = "/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Resources/PDF/";
 const std::string pathToDLACat__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/DLA_all.fits";
-const std::string pathToMockJMC__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_2016_02_25/";
+const std::string pathToMockJMC__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_second_generation/";
 const unsigned int nbPixelTemplate__ = int(lambdaRFMax__-lambdaRFMin__)+6;
 const unsigned int nbBinlambdaObs__  = int(lambdaObsMax__-lambdaObsMin__);
 const double onePlusZ0__ = 1.+z0__;
@@ -75,12 +75,12 @@ std::string pathMoreForHist__ = "";
 //// Flags
 unsigned int stepDefinition = 1000;
 unsigned int stepAnnalyse   = 1000;
-const unsigned int methodIndex__ = 1;
+const unsigned int methodIndex__ = 2;
 const bool doVetoLines__          = true;
 const bool setDLA__               = false;
 const bool cutNotFittedSpectra__  = true;
 const bool mocksColab__           = false;
-const bool mockJMC__              = false;
+const bool mockJMC__              = true;
 const bool putReobsTogether__     = false;
 double isReobsFlag__ = -100.;
 
@@ -205,6 +205,12 @@ GetDelta::GetDelta(int argc, char** argv) {
 		if (v_zz__.size()>=0) fitForests(start,end);
 	}
 
+	//// Set the values of alpha and beta
+	if (stepAnnalyse==2) {
+
+		setValuesAlphaBetaForest(pathForest__,pathToTxt__);
+
+	}
 
 	std::cout << "  Finished " << std::endl;
 
@@ -1516,6 +1522,81 @@ void GetDelta::updateDelta(std::string fitsnameSpec, unsigned int loopIdx, unsig
 
 
 	return;
+}
+void GetDelta::setValuesAlphaBetaForest(std::string pathForest, std::string pathToTxt) {
+
+	unsigned int nbLoad = 0;
+	double alpha_a[500000];
+	double beta_a[500000];
+
+
+	/// Get the list 
+	FILE *fp;
+	char path[PATH_MAX];
+	std::string command = "ls " + pathToTxt + "alphaAndBeta_LYA_*";
+	std::vector< std::string > listFiles;
+	fp = popen(command.c_str(), "r");
+	while (fgets(path, PATH_MAX, fp) != NULL) listFiles.push_back(path);
+
+	/// Get nb of files
+	const unsigned int nbFiles = listFiles.size();
+
+	for (unsigned int fileIdx=0; fileIdx<nbFiles; fileIdx++) {
+
+		std::string path = listFiles[fileIdx];
+		path.erase(std::remove(path.begin(), path.end(), '\n'), path.end());
+		path.erase(std::remove(path.begin(), path.end(), ' '), path.end());
+
+
+		//// Get the file
+		std::ifstream fileData(path.c_str());
+
+		while (fileData) {
+
+			unsigned int idx;
+			double alpha;
+			double beta;
+			double chi2;
+			double alphaErr;
+			double betaErr;
+			unsigned int flag;
+			unsigned int nbPixel;
+			fileData >> idx >> alpha >> beta >> chi2 >> alphaErr >> betaErr >> flag >> nbPixel;
+			if (fileData==0) break;
+
+			nbLoad ++;
+			alpha_a[idx] = alpha;
+			beta_a[idx]  = beta;
+		}
+		fileData.close();
+	}
+
+		
+	//// Variables for FITS
+	const TString TSfitsnameSpec = pathForest;
+	std::cout << "  " << pathForest << std::endl;
+	int sta = 0;
+	long nrows = 0;
+
+	fitsfile* fitsptrSpec;
+	fits_open_table(&fitsptrSpec,TSfitsnameSpec, READWRITE, &sta);
+	fits_get_num_rows(fitsptrSpec, &nrows, &sta);
+	
+	unsigned int nLines = nrows;
+	std::cout << "  number of loaded forest = " << nLines << " for read in TXT files " << nbLoad << std::endl;
+	if (nLines!=nbLoad) {
+		std::cout << "  Error :: nLines!=nbLoad " << nLines << " " << nbLoad << std::endl;
+		return;
+	}
+
+	for (unsigned int i=0; i<nLines; i++) {
+		double alpha = alpha_a[i];
+		double beta  = beta_a[i];
+		fits_write_col(fitsptrSpec,TDOUBLE, 11,i+1,1,1, &alpha, &sta);
+		fits_write_col(fitsptrSpec,TDOUBLE, 12,i+1,1,1, &beta,  &sta);
+	}
+	fits_close_file(fitsptrSpec,&sta);
+
 }
 void GetDelta::updateFlux(std::string fitsnameSpec, unsigned int start, unsigned int end) {
 

@@ -30,9 +30,15 @@ pathData  = '/home/gpfs/manip/mnt0607/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR
 pathMocks = '/home/gpfs/manip/mnt0607/bao/hdumasde/MockV4/M3_0_0/000/mock.fits'
 
 
-pathSimu    = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_2016_02_25/Box_000/Simu_000/Data/'
-rawPathSimu = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_2016_02_25/Box_000/Simu_000/Run/'
+pathSimu    = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_second_generation/Box_000/Simu_000/Data/'
+rawPathSimu = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_second_generation/'
+chunckNb = 4
+simulNb  = 10
+show_mean = False
 
+num_plots = 10
+colormap = plt.cm.gist_ncar
+plt.gca().set_color_cycle([colormap(i) for i in numpy.linspace(0, 0.9, num_plots)])
 
 def comparePlot():
 
@@ -192,64 +198,161 @@ def comparePlot():
 	
 	### Template
 	data = numpy.loadtxt(path + 'template_LYA.txt')
-	#template = interpolate.interp1d(data[:,0],data[:,1],bounds_error=False,fill_value=0)
-	plt.errorbar(data[:,0], data[:,1], marker='o', label=r'$Data$',color='blue', markersize=8,linewidth=2) ##/template(1150.)
-	data = numpy.loadtxt(rawPathSimu + 'template_LYA_0_0.txt')
-	#template = interpolate.interp1d(data[:,0],data[:,1],bounds_error=False,fill_value=0)
-	plt.errorbar(data[:,0], data[:,1], marker='o', label=r'$Simu$',color='red', markersize=8,linewidth=2)
+	plt.errorbar(data[:,0], data[:,1], marker='o', label=r'$Data$',color='blue', markersize=8,linewidth=2)
+	minA = numpy.min(data[:,1])
+	maxA = numpy.max(data[:,1])
+
+	meanData = []
+	saveData = 1.
+	for i in range (0,chunckNb):
+		for j in range(0,simulNb):
+			tmp_path = rawPathSimu + 'Box_00'+str(i)+'/Simu_00'+str(j)+'/Run/'
+			try:
+				data = numpy.loadtxt(tmp_path + 'template_LYA_'+str(i)+'_'+str(j)+'.txt')
+			except:
+				print i, j
+				continue
+			if (len(data)==0):
+				print i, j
+				continue
+			if (not show_mean): plt.errorbar(data[:,0], data[:,1], marker='o', markersize=8,linewidth=2) #, label=r'$Simu$',color='red')
+			if (i==0 and j==0):
+				meanData = data[:,1]
+				saveData = numpy.array(data[:,1])
+			else: meanData += data[:,1]
+	meanData /= chunckNb*simulNb
+	if (show_mean): plt.errorbar(data[:,0], meanData, marker='o', markersize=8,linewidth=2, label=r'$mean \, simu$',color='red')
+
 	plt.xlabel(r'$\lambda_{R.F.} \, [\AA]$', fontsize=40)
 	plt.ylabel(r'$f(\lambda_{R.F.})$', fontsize=40) ##/f(1150.)
 	myTools.deal_with_plot(False,False,True)
-	plt.plot([lambdaRFMin__,lambdaRFMin__],[numpy.min(data[:,1]),numpy.max(data[:,1])],color='green', markersize=8,linewidth=2)
-	plt.plot([lambdaRFMax__,lambdaRFMax__],[numpy.min(data[:,1]),numpy.max(data[:,1])],color='green', markersize=8,linewidth=2)
+	plt.plot([lambdaRFMin__,lambdaRFMin__],[min(numpy.min(data[:,1]),minA),max(numpy.max(data[:,1]),maxA)],color='green', markersize=8,linewidth=2)
+	plt.plot([lambdaRFMax__,lambdaRFMax__],[min(numpy.min(data[:,1]),minA),max(numpy.max(data[:,1]),maxA)],color='green', markersize=8,linewidth=2)
 	plt.show()
 	
 	
 	### delta vs. lambda_RF
 	data = numpy.loadtxt(path + 'deltaVSLambdaRF_LYA.txt')
 	plt.errorbar(data[:,0], data[:,1], marker='o', label=r'$Data$',color='blue', markersize=8,linewidth=2)
-	data = numpy.loadtxt(rawPathSimu + 'deltaVSLambdaRF_LYA_0_0.txt')
-	plt.errorbar(data[:,0], data[:,1], marker='o', label=r'$Simu$',color='red', markersize=8,linewidth=2)
+	minA = numpy.min(data[:,1])
+	maxA = numpy.max(data[:,1])
+
+	for i in range (0,chunckNb):
+		for j in range(0,simulNb):
+			tmp_path = rawPathSimu + 'Box_00'+str(i)+'/Simu_00'+str(j)+'/Run/'
+			try:
+				data = numpy.loadtxt(tmp_path + 'deltaVSLambdaRF_LYA_'+str(i)+'_'+str(j)+'.txt')
+			except:
+				print i, j
+				continue
+			if (len(data)==0):
+				print i, j
+				continue
+			if (not show_mean): plt.errorbar(data[:,0], data[:,1], marker='o', markersize=8,linewidth=2) #, label=r'$Simu$',color='red')
+			if (i==0 and j==0): meanData = data[:,1]
+			else: meanData += data[:,1]
+	meanData /= chunckNb*simulNb
+	if (show_mean): plt.errorbar(data[:,0], meanData, marker='o', markersize=8,linewidth=2, label=r'$mean \, simu$',color='red')
+
 	plt.xlabel(r'$\lambda_{R.F.} \, [\AA]$', fontsize=40)
 	plt.ylabel(r'$\delta$', fontsize=40)
 	myTools.deal_with_plot(False,False,True)
-	plt.plot([lambdaRFMin__,lambdaRFMin__],[numpy.min(data[:,1]),numpy.max(data[:,1])],color='green', markersize=8,linewidth=2)
-	plt.plot([lambdaRFMax__,lambdaRFMax__],[numpy.min(data[:,1]),numpy.max(data[:,1])],color='green', markersize=8,linewidth=2)
+	plt.plot([lambdaRFMin__,lambdaRFMin__],[min(numpy.min(data[:,1]),minA),max(numpy.max(data[:,1]),maxA)],color='green', markersize=8,linewidth=2)
+	plt.plot([lambdaRFMax__,lambdaRFMax__],[min(numpy.min(data[:,1]),minA),max(numpy.max(data[:,1]),maxA)],color='green', markersize=8,linewidth=2)
 	plt.show()
 
 	### delta+1 vs. lambda_RF
 	data = numpy.loadtxt(path + 'hDeltaVsLambdaRF_LYA.txt')
 	plt.errorbar(data[:,0]+1037.5, data[:,1], marker='o', label=r'$Data$',color='blue', markersize=8,linewidth=2)
-	data = numpy.loadtxt(rawPathSimu + 'hDeltaVsLambdaRF_LYA_0_0.txt')
-	plt.errorbar(data[:,0]+1037.5, data[:,1], marker='o', label=r'$Simu$',color='red', markersize=8,linewidth=2)
+	minA = numpy.min(data[:,1])
+	maxA = numpy.max(data[:,1])
+
+	meanData = []
+	saveData = 1.
+	for i in range (0,chunckNb):
+		for j in range(0,simulNb):
+			tmp_path = rawPathSimu + 'Box_00'+str(i)+'/Simu_00'+str(j)+'/Run/'
+			try:
+				data = numpy.loadtxt(tmp_path + 'hDeltaVsLambdaRF_LYA_'+str(i)+'_'+str(j)+'.txt')
+			except:
+				print i, j
+				continue
+			if (len(data)==0):
+				print i, j
+				continue
+			if (not show_mean): plt.errorbar(data[:,0]+1037.5, data[:,1], marker='o', markersize=8,linewidth=2) #, label=r'$Simu \, '+str(i)+' ' + str(j) + '$')
+			if (i==0 and j==0):
+				meanData = data[:,1]
+				saveData = numpy.array(data[:,1])
+			else: meanData += data[:,1]
+	meanData /= chunckNb*simulNb
+	if (show_mean): plt.errorbar(data[:,0]+1037.5, meanData, marker='o', markersize=8,linewidth=2, label=r'$mean \, simu$',color='red')
+
 	plt.xlabel(r'$\lambda_{R.F.} \, [\AA]$', fontsize=40)
 	plt.ylabel(r'$\delta+1$', fontsize=40)
 	myTools.deal_with_plot(False,False,True)
-	plt.plot([lambdaRFMin__,lambdaRFMin__],[numpy.min(data[:,1]),numpy.max(data[:,1])],color='green', markersize=8,linewidth=2)
-	plt.plot([lambdaRFMax__,lambdaRFMax__],[numpy.min(data[:,1]),numpy.max(data[:,1])],color='green', markersize=8,linewidth=2)
+	plt.plot([lambdaRFMin__,lambdaRFMin__],[min(numpy.min(data[:,1]),minA),max(numpy.max(data[:,1]),maxA)],color='green', markersize=8,linewidth=2)
+	plt.plot([lambdaRFMax__,lambdaRFMax__],[min(numpy.min(data[:,1]),minA),max(numpy.max(data[:,1]),maxA)],color='green', markersize=8,linewidth=2)
 	plt.show()
 	
 	
 	### delta+1 vs. lambda_Obs
 	data = numpy.loadtxt(path+'hDeltaVsLambdaObs_LYA.txt')
-	plt.errorbar(data[:,0]+3500.5, data[:,1], label=r'$Data$',color='blue', markersize=8,linewidth=2)
-	data = numpy.loadtxt(rawPathSimu+'hDeltaVsLambdaObs_LYA_0_0.txt')
-	plt.errorbar(data[:,0]+3500.5, data[:,1], label=r'$Simu$',color='red', markersize=8,linewidth=2)
+	plt.errorbar(data[100:-100,0]+3500.5, data[100:-100,1], label=r'$Data$',color='blue', markersize=8,linewidth=2)
+	minA = numpy.min(data[:,1])
+	maxA = numpy.max(data[:,1])
+
+	for i in range (0,chunckNb):
+		for j in range(0,simulNb):
+			tmp_path = rawPathSimu + 'Box_00'+str(i)+'/Simu_00'+str(j)+'/Run/'
+			try:
+				data = numpy.loadtxt(tmp_path + 'hDeltaVsLambdaObs_LYA_'+str(i)+'_'+str(j)+'.txt')
+			except:
+				print i, j
+				continue
+			if (len(data)==0):
+				print i, j
+				continue
+			if (not show_mean): plt.errorbar(data[:,0]+3500.5, data[:,1], markersize=8,linewidth=2) #, label=r'$Simu$',color='red')
+			if (i==0 and j==0): meanData = data[:,1]
+			else: meanData += data[:,1]
+	meanData /= chunckNb*simulNb
+	if (show_mean): plt.errorbar(data[100:2089,0]+3500.5, meanData[100:2089], markersize=8,linewidth=2, label=r'$mean \, simu$',color='red')
+
+	#plt.plot([lambdaObsMin__,lambdaObsMin__],[min(numpy.min(data[:,1]),minA),max(numpy.max(data[:,1]),maxA)],color='green', markersize=8,linewidth=2)
+	#plt.plot([7235.,7235.],[min(numpy.min(data[:,1]),minA),max(numpy.max(data[:,1]),maxA)],color='green', markersize=8,linewidth=2)
+
 	data = numpy.loadtxt('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/hDeltaVsLambdaObs_LYA_JMC.txt')
 	plt.errorbar(data[:,1][ data[:,2]!=0. ], data[:,2][ data[:,2]!=0. ], label=r'$Simu \, input$', color='orange',linewidth=2)
 	plt.xlabel(r'$\lambda_{Obs.} \, [\AA]$', fontsize=40)
 	plt.ylabel(r'$f(\lambda_{Obs.})$', fontsize=40)
-	plt.plot([lambdaObsMin__,lambdaObsMin__],[0.,1.],color='green', markersize=8,linewidth=2)
-	plt.plot([7235.,7235.],[0.,1.],color='green', markersize=8,linewidth=2)
 	myTools.deal_with_plot(False,False,True)
 	plt.show()
 	
 	
 	### delta vs. lambda_Obs
 	data = numpy.loadtxt(path + 'deltaVSLambdaObs_LYA.txt')
-	plt.errorbar(data[:-1,0], data[:-1,1], fmt='o', label=r'$Data$',color='blue', markersize=8,linewidth=2)
-	data = numpy.loadtxt(rawPathSimu + 'deltaVSLambdaObs_LYA_0_0.txt')
-	plt.errorbar(data[:-1,0], data[:-1,1], fmt='o', label=r'$Simu$',color='red', markersize=8,linewidth=2)
+	plt.errorbar(data[:,0], data[:,1], fmt='o', label=r'$Data$',color='blue', markersize=8,linewidth=2)
+	minA = numpy.min(data[:,1])
+	maxA = numpy.max(data[:,1])
+
+	for i in range (0,chunckNb):
+		for j in range(0,simulNb):
+			tmp_path = rawPathSimu + 'Box_00'+str(i)+'/Simu_00'+str(j)+'/Run/'
+			try:
+				data = numpy.loadtxt(tmp_path + 'deltaVSLambdaObs_LYA_'+str(i)+'_'+str(j)+'.txt')
+			except:
+				print i, j
+				continue
+			if (len(data)==0):
+				print i, j
+				continue
+			if (not show_mean): plt.errorbar(data[:,0], data[:,1], markersize=8,linewidth=2) #, label=r'$Simu$',color='red')
+			if (i==0 and j==0): meanData = data[:,1]
+			else: meanData += data[:,1]
+	meanData /= chunckNb*simulNb
+	if (show_mean): plt.errorbar(data[:,0], meanData, fmt='o', markersize=8,linewidth=2, label=r'$mean \, simu$',color='red')
+
 	plt.xlabel(r'$\lambda_{Obs.} \, [\AA]$', fontsize=40)
 	plt.ylabel(r'$\delta$', fontsize=40)
 	plt.plot([lambdaObsMin__,lambdaObsMin__],[numpy.min(data[:,1]),numpy.max(data[:,1])],color='green', markersize=8,linewidth=2)
@@ -261,8 +364,24 @@ def comparePlot():
 	### eta
 	data = numpy.loadtxt(path + 'eta_LYA.txt')
 	plt.errorbar(data[:,0], data[:,1], marker='o', label=r'$Data$',color='blue', markersize=8,linewidth=2)
-	data = numpy.loadtxt(rawPathSimu + 'eta_LYA_0_0.txt')
-	plt.errorbar(data[:,0], data[:,1], marker='o', label=r'$Simu$',color='red', markersize=8,linewidth=2)
+
+	for i in range (0,chunckNb):
+		for j in range(0,simulNb):
+			tmp_path = rawPathSimu + 'Box_00'+str(i)+'/Simu_00'+str(j)+'/Run/'
+			try:
+				data = numpy.loadtxt(tmp_path + 'eta_LYA_'+str(i)+'_'+str(j)+'.txt')
+			except:
+				print i, j
+				continue
+			if (len(data)==0):
+				print i, j
+				continue
+			if (not show_mean): plt.errorbar(data[:,0], data[:,1], marker='o', markersize=8,linewidth=2) #, label=r'$Simu$',color='red')
+			if (i==0 and j==0): meanData = data[:,1]
+			else: meanData += data[:,1]
+	meanData /= chunckNb*simulNb
+	if (show_mean): plt.errorbar(data[:,0], meanData, marker='o', markersize=8,linewidth=2, label=r'$mean \, simu$',color='red')
+
 	plt.xlabel(r'$z_{pixel}$', fontsize=40)
 	plt.ylabel(r'$\eta(z_{pixel})$', fontsize=40)
 	myTools.deal_with_plot(False,False,True)
@@ -272,8 +391,24 @@ def comparePlot():
 	### sigma
 	data = numpy.loadtxt(path + 'sigma2LSS_LYA.txt')
 	plt.errorbar(data[:,0], data[:,1], marker='o', label=r'$Data$',color='blue', markersize=8,linewidth=2)
-	data = numpy.loadtxt(rawPathSimu + 'sigma2LSS_LYA_0_0.txt')
-	plt.errorbar(data[:,0], data[:,1], marker='o', label=r'$Simu$',color='red', markersize=8,linewidth=2)
+
+	for i in range (0,chunckNb):
+		for j in range(0,simulNb):
+			tmp_path = rawPathSimu + 'Box_00'+str(i)+'/Simu_00'+str(j)+'/Run/'
+			try:
+				data = numpy.loadtxt(tmp_path + 'sigma2LSS_LYA_'+str(i)+'_'+str(j)+'.txt')
+			except:
+				print i, j
+				continue
+			if (len(data)==0):
+				print i, j
+				continue
+			if (not show_mean): plt.errorbar(data[:,0], data[:,1], marker='o', markersize=8,linewidth=2) #, label=r'$Simu$',color='red')
+			if (i==0 and j==0): meanData = data[:,1]
+			else: meanData += data[:,1]
+	meanData /= chunckNb*simulNb
+	if (show_mean): plt.errorbar(data[:,0], meanData, marker='o', markersize=8,linewidth=2, label=r'$mean \, simu$',color='red')
+
 	plt.xlabel(r'$z_{pixel}$', fontsize=40)
 	plt.ylabel(r'$\sigma_{L.S.S.}^{2}(z_{pixel})$', fontsize=40)
 	myTools.deal_with_plot(False,False,True)
@@ -445,10 +580,56 @@ def distribSoverN_delta():
 
 	return
 
+def compare_each_simu():
 
+	pathSimu    = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_second_generation/Box_000/Simu_000/Data/'
+	rawPathSimu = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_second_generation/'
+	chunckNb = 10
+	simulNb  = 10
+
+	## Distribution redshift QSO
+	nb_qso = numpy.zeros(chunckNb*simulNb)
+	for i in range(0,chunckNb):
+		for j in range(0,simulNb):
+			catSimu = pyfits.open(rawPathSimu+'Box_00'+str(i)+'/Simu_00'+str(j)+'/Data/QSO_withRSD.fits',memmap=True)[1].data
+			nb_qso[i*10+j] = catSimu.size
+	print 	numpy.mean(nb_qso)
+
+	###
+	plt.errorbar(numpy.arange(chunckNb*simulNb),nb_qso,fmt='o')
+	plt.plot(numpy.arange(chunckNb*simulNb), numpy.ones(chunckNb*simulNb)*numpy.mean(nb_qso),color='red',label='Mean')
+	plt.xlabel(r'$Mock \, index$', fontsize=40)
+	plt.ylabel(r'$\# \, nb \, QSO$', fontsize=40)
+	plt.xlim( [-1,chunckNb*simulNb] )
+	myTools.deal_with_plot(False,False,True)
+	plt.show()
+	###
+	plt.hist(nb_qso)
+	plt.xlabel(r'$nb \, QSO$', fontsize=40)
+	plt.ylabel(r'$\#$', fontsize=40)
+	myTools.deal_with_plot(False,False,True)
+	plt.show()
+
+
+
+
+	return
 
 
 comparePlot()
+#compare_each_simu()
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

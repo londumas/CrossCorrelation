@@ -13,45 +13,30 @@ import matplotlib.pyplot as plt
 import copy
 
 ### Perso lib
-import correlation_3D
+import correlation_3D_Q
 import myTools
 
-par_name = numpy.asarray(['\\beta','b.(1+\\beta)','gamma-bias','gamma-beta','\\Delta v','b_{2}','b_{2}.\\beta_{2}',
-	'1+f','SigmaNL-perp',
-	'BAO \, amplitude','\\alpha_{iso}','\\alpha_{\parallel}','\\alpha_{\perp}',
-	'gamma-scale','Rad \, strength','Rad \, anisotropy','Rad \, mean \, free \, path',
-	'Rad \, quasar \, lifetime','a0','a1','a2','a3','a4','a5','a6','a7','a7','a8','a9','a10','a11','a12','a13'])
+par_name = numpy.asarray(['\\beta','b.(1+\\beta)','gamma-bias','gamma-beta','SigmaNL-perp','1+f',
+	'BAO \, amplitude','\\alpha_{iso}','\\alpha_{\parallel}','\\alpha_{\perp}', 'gamma-scale'])
 raw_index_parameter = {
 	'beta'                        : 0,
 	'b.(1+beta)'                  : 1,
 	'gamma-bias'                  : 2,
 	'gamma-beta'                  : 3,
-	'Delta v'                     : 4,
-	'b_{2}'                       : 5,
-	'b_{2}.beta_{2}'              : 6,
-	'SigmaNL-perp'                : 7,
-	'1+f'                         : 8,
-	'BAO \, amplitude'            : 9,
-	'alpha_{iso}'                 : 10,
-	'alpha_paral'                 : 11, 
-	'alpha_perp'                  : 12,
-	'gamma-scale'                 : 13,
-	'pixel-scale'                 : 14,
-	'beta Si2a'                   : 15,
-	'bias Si2a'                   : 16,
-	'beta Si2b'                   : 17,
-	'bias Si2b'                   : 18,
-	'beta Si2c'                   : 19,
-	'bias Si2c'                   : 20,
-	'beta Si3'                    : 21,
-	'bias Si3'                    : 22
+	'SigmaNL-perp'                : 4,
+	'1+f'                         : 5,
+	'BAO \, amplitude'            : 6,
+	'alpha_{iso}'                 : 7,
+	'alpha_paral'                 : 8, 
+	'alpha_perp'                  : 9,
+	'gamma-scale'                 : 10,
 }
 
-class AnnalyseBAOFIT(correlation_3D.Correlation3D):
+class AnnalyseBAOFIT(correlation_3D_Q.Correlation3DQ):
 
-	def __init__(self, dic=None, index_parameter=None, path_to_BAOFIT=None):
+	def __init__(self, dic=None, index_parameter=None, path_to_BAOFIT=None, dic2=None):
 
-		correlation_3D.Correlation3D.__init__(self,dic)
+		correlation_3D_Q.Correlation3DQ.__init__(self,dic,dic2)
 
 		### index of parameters
 		if (index_parameter is None):
@@ -86,8 +71,8 @@ class AnnalyseBAOFIT(correlation_3D.Correlation3D):
 		### String names
 		residuals = 'residuals.dat'
 		param     = 'save.pars'
-		chi2      = 'fit.chisq'	
-		
+		chi2      = 'fit.chisq'
+
 		### Get data and fit
 		self._xi2D_fit = numpy.zeros(shape=(self._nbBinX2D,self._nbBinY2D,9))
 		data  = numpy.loadtxt(self._path_to_BAOFIT+residuals)
@@ -244,21 +229,17 @@ class AnnalyseBAOFIT(correlation_3D.Correlation3D):
 		### Get the fit parameters
 		tmp_beta               = self._param[ self._index_parameter['beta'],0]
 		tmp_beta_err           = self._param[ self._index_parameter['beta'],1]
-		tmp_delta_v            = self._param[ self._index_parameter['Delta v'],0]
-		tmp_delta_v_err        = self._param[ self._index_parameter['Delta v'],1]
-		tmp_bias2              = self._param[ self._index_parameter['b_{2}'],0]
-		tmp_bias2_err          = self._param[ self._index_parameter['b_{2}'],1]
-		tmp_beta2_bias2        = self._param[ self._index_parameter['b_{2}.beta_{2}'],0]
-		tmp_beta2_bias2_err    = self._param[ self._index_parameter['b_{2}.beta_{2}'],1]
+		tmp_bbeta              = self._param[ self._index_parameter['b.(1+beta)'],0]
+		tmp_bbeta_err          = self._param[ self._index_parameter['b.(1+beta)'],1]
 		tmp_alpha_parallel     = self._param[ self._index_parameter['alpha_paral'],0]
 		tmp_alpha_parallel_err = self._param[ self._index_parameter['alpha_paral'],1]
 		tmp_alpha_perp         = self._param[ self._index_parameter['alpha_perp'],0]
 		tmp_alpha_perp_err     = self._param[ self._index_parameter['alpha_perp'],1]
 
 		string =  """
-|| chi2 / dof              || beta                  || delta-v                 || bias2                 || beta2*bias2           ||  BAO alpha-parallel   ||  BAO alpha-perp       ||
-|| %1.3e / (%u - %u) || %1.3e ± %1.3e || %1.3e ±  %1.3e || %1.3e ± %1.3e || %1.3e ± %1.3e || %1.3e ± %1.3e || %1.3e ± %1.3e ||
-""" % (tmp_chi2,tmp_NBBin,tmp_NBParam,tmp_beta,tmp_beta_err,tmp_delta_v,tmp_delta_v_err,tmp_bias2,tmp_bias2_err,tmp_beta2_bias2,tmp_beta2_bias2_err,tmp_alpha_parallel,tmp_alpha_parallel_err,tmp_alpha_perp,tmp_alpha_perp_err)
+|| chi2 / dof              || beta                  || b.(1+beta)             ||  BAO alpha-parallel   ||  BAO alpha-perp       ||
+|| %1.3e / (%u - %u) || %1.3e ± %1.3e || %1.3e ± %1.3e || %1.3e ± %1.3e || %1.3e ± %1.3e ||
+""" % (tmp_chi2,tmp_NBBin,tmp_NBParam,tmp_beta,tmp_beta_err,tmp_bbeta,tmp_bbeta_err,tmp_alpha_parallel,tmp_alpha_parallel_err,tmp_alpha_perp,tmp_alpha_perp_err)
 		print string
 
 		return

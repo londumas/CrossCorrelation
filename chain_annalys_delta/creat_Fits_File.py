@@ -55,8 +55,8 @@ def make_all_Fits(iStart=0,iEnd=-1):
 	data, plate_list = numpy.load('/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/chain_annalys_delta/Run/list_'+forest__+'.npy') #Get_Catalogue()
 
 	### Get the flux vs. lambda_Obs
-	#removeSkyLines = scipy.loadtxt('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/calibration_flux_using_CIV_forest.txt')
-	#removeSkyLines = interpolate.interp1d(numpy.log10(3547.5+removeSkyLines[:,0]),removeSkyLines[:,1],bounds_error=False,fill_value=1)
+	#removeSkyLines = scipy.loadtxt('../Resources/Calibration/calibration_flux_using_CIV_forest.txt')
+	#removeSkyLines = interpolate.interp1d(numpy.log10(3447.5+removeSkyLines[:,0]),removeSkyLines[:,1],bounds_error=False,fill_value=1)
 
 	sizeMax = data[:,0].size
 

@@ -132,10 +132,12 @@
 	- GetDelta.cpp
 		* big changes! Now the template is like a "delta+1" convergence. Now delta is flat both
 			in lamnda_RF and lambda_obs 
-
-
-
-
+# 2016 - 03 - 02 - (10h51)
+	- many updates on files to annalyse the results
+	- annalyse_BAOFIT_Q.py:
+		* add file, in order to annalyse BAOFIT results for QSO-QSO correlations
+	- main_Q.py
+		* add file to send QSO-QSO correlations
 
 
 

@@ -329,6 +329,21 @@ def fit_BAO(dist,obs,cov,arg_fit):
 
 	from Pierre Laurent ( pierre.laurent@cea.fr )
 
+	arg_fit = {}
+        arg_fit['a'] = 125.08255109750635
+        arg_fit['b'] = -1.8611671002360046
+        arg_fit['c'] = 0.006109139533639488
+        arg_fit['A'] = 0.003731291955288748
+        arg_fit['sigma'] = 9.870124119190448
+        arg_fit['mean'] = 106.73882608124278
+        arg_fit['fix_A'] = False
+        arg_fit['fix_sigma'] = True
+        arg_fit['fix_mean'] = False
+        arg_fit['background'] = 'inv'
+        arg_fit['cov'] = 'full'
+        arg_fit['x_min'] = 60.
+        arg_fit['x_max'] = 160.
+
 	'''
 
 	cond_range = (dist > arg_fit['x_min']) & (dist < arg_fit['x_max'])

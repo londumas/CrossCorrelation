@@ -14,17 +14,21 @@ import copy
 ### Perso lib
 import myTools
 import correlation_3D
+import correlation_3D_Q
 import annalyse_BAOFIT
-
+import annalyse_BAOFIT_Q
 
 class AnnalyseManyBAOFIT:
 
-	def __init__(self, dic=None, index_parameter=None, path_to_simu='', nbBox=1, nbSimu=1):
+	def __init__(self, dic=None, index_parameter=None, dic_Q=None, dic_simu=None):
 
-		self._nbBox  = nbBox
-		self._nbSimu = nbSimu
-		self._nbtot  = self._nbBox*self._nbSimu
-		self._path_to_simu = path_to_simu
+		if (dic_simu==None):
+			dic_simu = correlation_3D.raw_dic_simu
+
+		self._nbBox        = dic_simu['nb_box']
+		self._nbSimu       = dic_simu['nb_simu']
+		self._nbtot        = self._nbBox*self._nbSimu
+		self._path_to_simu = dic_simu['path_to_simu']
 
 		if (dic is None):
 			dic = correlation_3D.raw_dic_class
@@ -36,7 +40,16 @@ class AnnalyseManyBAOFIT:
 				path = self._path_to_simu + 'Box_00'+str(i)+'/Simu_00'+str(j)+'/'
 				dic['path_to_txt_file_folder'] = path+'Results/'
 				dic['name'] = str(i)+'-'+str(j)
-				self._listFit += [annalyse_BAOFIT.AnnalyseBAOFIT(dic, index_parameter, path+'BaoFit_q_f_covFromFit/bao2D.')]
+
+				try:
+					if (dic['correlation']=='q_q'):
+						self._listFit += [annalyse_BAOFIT_Q.AnnalyseBAOFIT(dic, index_parameter, None,dic_Q)]
+					else:
+						#self._listFit += [annalyse_BAOFIT.AnnalyseBAOFIT(dic, index_parameter, path+'BaoFit_q_f_covFromFit/bao2D.')]
+						self._listFit += [annalyse_BAOFIT.AnnalyseBAOFIT(dic, index_parameter, path+'Results/BaoFit_q_f__LYA__QSO/bao2D.')]
+				except:
+					print '  EROOR: ', i, j
+		self._nbtot = len(self._listFit)
 
 		### Init parameters
 		self._nbBin1D  = self._listFit[0]._nbBin1D
@@ -55,8 +68,19 @@ class AnnalyseManyBAOFIT:
 		### Create a 'Correlation3D' object for mean_data
 		dic['path_to_txt_file_folder'] = self._path_to_simu + 'Box_000/Simu_000/Results/'
 		dic['name'] = '<simulation>'
-		self._mean_data = correlation_3D.Correlation3D(dic)
-		self._mean_data._xiMul = self._mean_data.get_multipol(self._mean_data._xiMu)
+		if (dic['correlation']=='q_q'):
+			self._mean_data = correlation_3D_Q.Correlation3DQ(dic,dic_Q)
+			self._mean_data._xiMul = self._mean_data.get_multipol(self._mean_data._xiMu)
+		else:
+			self._mean_data = correlation_3D.Correlation3D(dic)
+			self._mean_data._xiMul = self._mean_data.get_multipol(self._mean_data._xiMu)
+
+
+		### Get all the resulted parameters
+		nb_param = self._listFit[0]._param[:,0].size
+		self._param = numpy.zeros( shape=(self._nbtot,nb_param,2) )
+		for i in range(0,self._nbtot):
+			self._param[i,:,:] = self._listFit[i]._param[:,:]
 
 		return
 	def save_list_realisation(self):
@@ -67,7 +91,7 @@ class AnnalyseManyBAOFIT:
 		listWe       = numpy.zeros( shape=(self._nbBin1D,3,self._nbtot) )
 		listMultipol = numpy.zeros( shape=(self._nbBin1D,5,self._nbtot) )
 
-		pathToSave = self._path_to_simu + 'Results_16_01_28/'
+		pathToSave = self._path_to_simu + 'Results/'
 
 		for i in numpy.arange(self._nbtot):
 			print i
@@ -104,7 +128,7 @@ class AnnalyseManyBAOFIT:
 		return
 	def set_mean_data(self):
 
-		raw_path = self._path_to_simu + 'Results_16_01_28/'
+		raw_path = self._path_to_simu + 'Results/'
 		### we
 		path = raw_path + 'list_We.npy'
 		listWe = numpy.load(path)
@@ -132,19 +156,37 @@ class AnnalyseManyBAOFIT:
 			self._mean_data._xiMul[:,i,2] = numpy.sqrt( numpy.diag(numpy.cov( listMultipol[:,i,:] ))/nbTot)
 
 		return
-	def print_results(self):
+	def print_results(self,index):
 
-		beta = []
-
-		for el in self._listFit:
-			#el.print_results()
-			beta += [ el._param[ el._index_parameter['beta'],0] ]
-			print el._param[ el._index_parameter['beta'],0]
 		print
-		print numpy.mean(beta)
+		print '  --  ', self._listFit[0]._par_name[index], '  --  '
+		print '      mean = ', numpy.mean(self._param[:,index,0])
+		print '      std  = ', numpy.std(self._param[:,index,0])
+		print '      err  = ', numpy.std(self._param[:,index,0])/numpy.sqrt(self._nbtot)
+		print
+		values  = self._param[:,index,0]
+		weights = numpy.power(self._param[:,index,1],-2.)
+		average = numpy.average(values, weights=weights)
+		print '    w mean = ', average
+		print '    w std  = ', numpy.sqrt( numpy.average((values-average)**2, weights=weights))
+		print '    w err  = ', numpy.sqrt( numpy.average((values-average)**2, weights=weights)/self._nbtot)
+		print '  --  '
+		print
 
+		plt.hist(self._param[:,index,0],bins=10)
+		plt.xlabel(r'$'+self._listFit[0]._par_name[index]+'$')
+		plt.ylabel(r'$\#$')
+		myTools.deal_with_plot(False,False,False)
+		plt.show()
 
 		return
+	def get_best_fit(self):
+
+		bestFit = numpy.zeros( shape=(2,1) )
+		for el in self._listFit:
+			bestFit = numpy.append(bestFit,el.get_best_fit(),axis=1)
+
+		return bestFit
 	def plot_1d(self, x_power=0, other=[], title=True):
 		self._mean_data.plot_1d(x_power, other, title)
 		

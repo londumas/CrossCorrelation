@@ -19,14 +19,17 @@ def main():
 	### mock catalogue
 	for i in range(0,1):
 		### mock catalogue
-		for j in range(0,1):
+		for j in range(0,10):
 
 			### for region
-			for k in range(0,80):
+			#for k in range(0,1):
+
+			### for metals 
+			for k in [21,25,26,27]:
 				tmp_command = "echo \" \n ------ Start ------ \n \" " 
 				subprocess.call(tmp_command, shell=True)
 
-				tmp_command = "clubatch \"time ; hostname ; " + commandProd + ' 9 0 ' + str(k) + ' 0 ' + str(i) + " " + str(j) + "\""
+				tmp_command = "clubatch \"time ; hostname ; " + commandProd + ' 22 0 ' + str(k) + ' 0 ' + str(i) + " " + str(j) + "\""
 				subprocess.call(tmp_command, shell=True)
 
 				tmp_command = "echo " + tmp_command
@@ -34,17 +37,17 @@ def main():
 				tmp_command = "echo " + time.ctime()
 				subprocess.call(tmp_command, shell=True)
 
-				time.sleep(2)
-                	        myTools.isReadyForNewJobs(100, 430,'time')
-		time.sleep(120)
+				time.sleep(30)
+                	        myTools.isReadyForNewJobs(100, 1000,'time')
+		#time.sleep(120)
 	
 	'''
-	for i in range(0,10):
+	for i in range(0,1):
 		for j in range(0,10):
 			tmp_command = "echo \" \n ------ Start ------ \n \" " 
 			subprocess.call(tmp_command, shell=True)
 
-			tmp_command = "clubatch \"time ; hostname ; " + commandProd + " 10 0 0 0 " + str(i) + ' ' + str(j) + " \""
+			tmp_command = "clubatch \"time ; hostname ; " + commandProd + " 18 0 0 0 " + str(i) + ' ' + str(j) + " \""
 			subprocess.call(tmp_command, shell=True)
 	
 			tmp_command = "echo " + tmp_command
@@ -52,7 +55,7 @@ def main():
 			tmp_command = "echo " + time.ctime()
 			subprocess.call(tmp_command, shell=True)
 
-			time.sleep(5)
+			time.sleep(20)
 			myTools.isReadyForNewJobs(200, 430,'time')
 
 		time.sleep(120.)
@@ -76,12 +79,11 @@ def main():
 		myTools.isReadyForNewJobs(100, 430,'time')
 	'''
 	'''
-	for i in range(0,10):
+	for i in range(0,1):
 		for j in range(0,10):
 			### Get the data to 'good' files
 			#####################
-			#command = "clubatch \"time  ; hostname ; python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/Python/Correlation/xi_Q_Q.py a a a a " + str(i) + ' ' + str(j) + "\""
-			command = "clubatch \"time  ; hostname ; python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/Python/Correlation/xi_delta_QSO.py a a a a 0 " + str(i) + ' ' + str(j) + "\""
+			command = "clubatch \"time  ; hostname ; python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/correlation_3D.py " + str(i) + ' ' + str(j) + "\""
 			print command
 			subprocess.call(command, shell=True)
 			time.sleep(0.5)

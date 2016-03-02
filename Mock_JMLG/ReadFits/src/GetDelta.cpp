@@ -53,8 +53,7 @@ const unsigned int nbBinlambdaObs__  = int(lambdaObsMax__-lambdaObsMin__);
 const double lambdaRFTemplateMin__ = lambdaRFMin__-3.;
 const double lambdaRFTemplateMax__ = lambdaRFMax__+3.;
 long  Bit16 = 1;
-const double findPDF__ = false; 
-bool hasCont = true;
+const double findPDF__ = false;
 const bool doVetoLines__ = true;
 
 
@@ -78,20 +77,19 @@ GetDelta::GetDelta(int argc, char** argv) {
 
 
 	///
-	pathToDataQSO__ = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/v1563/fits/spectra-780";
+	pathToDataQSO__ = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/v1573/fits/spectra-780";
 	pathToDataQSO__ += box_idx;
 	pathToDataQSO__ += "-";
 	pathToDataQSO__ += sim_idx;
 	pathToDataQSO__ += ".fits";
-	pathToDataQSO__ = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/spectra-expander4.fits";
 	///
-	pathToDataForest__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_2016_02_25/Box_00";
+	pathToDataForest__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_second_generation/Box_00";
 	pathToDataForest__ += box_idx;
 	pathToDataForest__ += "/Simu_00";
 	pathToDataForest__ += sim_idx;
 	pathToDataForest__ += "/Raw/mocks-*";
 	///
-	pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_2016_02_25";
+	pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_second_generation";
 	if (noMockExpander__) pathToSave__ += "_noMockExpander";
 	pathToSave__ += "/Box_00";
 	pathToSave__ += box_idx;
@@ -106,7 +104,7 @@ GetDelta::GetDelta(int argc, char** argv) {
 	std::cout << "\n"   << std::endl;
 
 	/// QSO
-	GetQSO();
+//	GetQSO();
 
 	std::cout << "\n"   << std::endl;
 
@@ -114,7 +112,26 @@ GetDelta::GetDelta(int argc, char** argv) {
 	if (noMockExpander__) GetData_from_Jean_Marc_file();
 	else GetData();
 
-	if (findPDF__) saveHistos();
+	if (findPDF__) {
+		for (unsigned int i=0; i<10; i++) {
+			for (unsigned int j=0; j<10; j++) {
+				//TString a = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/v1547/fits/spectra-78";
+				TString a = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/v1573/fits/spectra-780";
+				a += i;
+				a += "-";
+				a += j;
+				a += ".fits";
+				pathToDataQSO__ = a;
+				//GetPDF(0);
+				GetPDF(2);
+			}
+		}
+		//pathToDataQSO__ = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/old/fev16/spectra-highz.fits";
+		//GetPDF(1);
+		//pathToDataQSO__ = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/v1573/fits/spectra-7800-0.fits";
+		//GetPDF(2);
+		saveHistos();
+	}
 	std::cout << "\n\n" << std::endl;
 
 }
@@ -188,7 +205,7 @@ void GetDelta::GetData(void) {
 			long tmp_nbPixels = 0;
 			fits_get_num_rows(fitsptrSpec, &tmp_nbPixels, &sta);
 			const unsigned int tmp_nbPixels2 = tmp_nbPixels;
-			if (!findPDF__ && tmp_nbPixels2<C_MIN_NB_PIXEL) continue;
+			if (tmp_nbPixels2<C_MIN_NB_PIXEL) continue;
 	
 			/// Variable from old FITS
 			unsigned int plate;
@@ -275,14 +292,6 @@ void GetDelta::GetData(void) {
 						meanForestLRF[1] ++;
 						meanFluxForest[0] += FLUX[p];
 						meanFluxForest[1] ++;
-						/*
-						/// Get the PDF
-						if (findPDF__) {
-							hFluxPDF__->Fill(FLUX[p],LAMBDA_OBS[p]/lambdaRFLine__-1.);
-							hRedshift__->Fill(LAMBDA_OBS[p]/lambdaRFLine__-1.);
-							hFlux__->Fill(FLUX[p]);
-							hFluxVsLambdaObs__->Fill(LAMBDA_OBS[p], FLUX[p]);
-						}*/
 					}
 				}
 			}
@@ -314,7 +323,7 @@ void GetDelta::GetData(void) {
 			/// Get the mean lambda_RF
 			meanForestLRF[0] /= meanForestLRF[1];
 			/// Get the mean_flux_in_forest
-			double alpha = C_CONVERT_FROM_FLUX_TO_ALPHA*meanFluxForest[0]/(meanFluxForest[1]*norm);
+			double alpha = CONVERT_FROM_FLUX_TO_ALPHA*meanFluxForest[0]/(meanFluxForest[1]*norm);
 		
 			/// Save data in second file
 			fits_write_col(fitsptrSpec2,TINT,    1,forestIdx+1,1,1, &plate, &sta2);
@@ -345,6 +354,89 @@ void GetDelta::GetData(void) {
 	std::cout << "  nb forest =  " << forestIdx << std::endl;
 
 }
+void GetDelta::GetPDF(unsigned int version) {
+
+	/// index of forest
+	unsigned int forestIdx = 0;
+
+	/// Get the file
+	std::cout << "  file = " << pathToDataQSO__ << std::endl;
+	const TString TSfitsnameSpec = pathToDataQSO__;
+	int sta = 0;
+	fitsfile* fitsptrSpec;
+	fits_open_table(&fitsptrSpec,TSfitsnameSpec, READONLY, &sta);
+
+	/// Get the number of spectra
+	int tmp_nbSpectra = 0;
+	unsigned int nbSpectra = 0;
+	if (isTest__) nbSpectra = 1000;
+	else {
+		fits_get_num_hdus(fitsptrSpec, &tmp_nbSpectra, &sta);
+		nbSpectra = tmp_nbSpectra-1;
+	}
+	std::cout << "  nbSpectra = " << nbSpectra << std::endl;
+	
+	/// Set to the first HDU
+	fits_movabs_hdu(fitsptrSpec, 2,  NULL, &sta);
+		
+	/// Get the data
+	for (unsigned int f=0; f<nbSpectra; f++) {
+	
+		/// Move to next HDU
+		if (f!=0) fits_movrel_hdu(fitsptrSpec, 1,  NULL, &sta);
+	
+		/// Get the number of pixels in this HDU
+		long tmp_nbPixels = 0;
+		fits_get_num_rows(fitsptrSpec, &tmp_nbPixels, &sta);
+		const unsigned int tmp_nbPixels2 = tmp_nbPixels;
+		if (!findPDF__ && tmp_nbPixels2<C_MIN_NB_PIXEL) continue;
+	
+		/// Variable from old FITS
+		float Z = 0.;
+		float LAMBDA_OBS[tmp_nbPixels2];
+		float FLUX[tmp_nbPixels2];
+		float CONT[tmp_nbPixels2];
+		fits_read_key(fitsptrSpec,TFLOAT,"ZQSO",&Z,NULL,&sta);
+		fits_read_col(fitsptrSpec,TFLOAT, 1,1,1,tmp_nbPixels2,NULL, &LAMBDA_OBS,NULL,&sta);
+		if (version==0 || version==1) {
+			fits_read_col(fitsptrSpec,TFLOAT, 5,1,1,tmp_nbPixels2,NULL, &FLUX,      NULL,&sta);
+			fits_read_col(fitsptrSpec,TFLOAT, 4,1,1,tmp_nbPixels2,NULL, &CONT,      NULL,&sta);
+		}
+		else {
+			fits_read_col(fitsptrSpec,TFLOAT, 2,1,1,tmp_nbPixels2,NULL, &FLUX,      NULL,&sta);
+		}
+
+		/// Variables for new FITS
+		const double oneOverOnePlusZ = 1./(1.+Z);
+
+		for (unsigned int p=0; p<tmp_nbPixels2; p++) {
+
+			/// bad pixels
+			if (LAMBDA_OBS[p]<=0.) continue;
+			//if (LAMBDA_OBS[p]<lambdaObsMin__ || LAMBDA_OBS[p]>=lambdaObsMax__) continue;
+
+			const double lambdaRFd = LAMBDA_OBS[p]*oneOverOnePlusZ;
+			if (lambdaRFd<lambdaRFMin__ || lambdaRFd>=lambdaRFMax__) continue;
+
+			
+			if (version==0) {
+				if (CONT[p]==0.) continue;
+				FLUX[p] /= CONT[p];
+			}
+
+			/// Get the PDF
+			hFluxPDF__->Fill(FLUX[p],LAMBDA_OBS[p]/lambdaRFLine__-1.);
+			hRedshift__->Fill(LAMBDA_OBS[p]/lambdaRFLine__-1.);
+			hFlux__->Fill(FLUX[p]);
+			hFluxVsLambdaObs__->Fill(LAMBDA_OBS[p], FLUX[p]);
+		}
+		forestIdx ++;
+	}
+
+	fits_close_file(fitsptrSpec,&sta);
+	std::cout << "  nb forest =  " << forestIdx << std::endl;
+}
+
 void GetDelta::GetData_from_Jean_Marc_file(void) {
 
 	/// Fits file where to save
@@ -576,7 +668,7 @@ void GetDelta::GetQSO(void) {
 
 void GetDelta::defineHistos() {
 
-	hFluxVsLambdaObs__ = new TProfile("hFluxVsLambdaObs__","",nbBinlambdaObs__,lambdaObsMin__,lambdaObsMax__);
+	hFluxVsLambdaObs__ = new TProfile("hFluxVsLambdaObs__","",nbBinlambdaObs__+200,lambdaObsMin__-100.,lambdaObsMax__+100.);
 	hFluxPDF__         = new TH2D("hFluxPDF__",            "",nbBinsFlux__,minFlux__,maxFlux__,nbBinsRedshift__,minRedshift__,maxRedshift__);
 	hRedshift__        = new TH1D("hRedshift__",           "",nbBinsRedshift__,minRedshift__,maxRedshift__);
 	hFlux__            = new TH1D("hFlux__",               "",nbBinsFlux__,minFlux__,maxFlux__);
@@ -598,13 +690,13 @@ void GetDelta::saveHistos() {
 		}
 	}
 	
-/*
+	/*
 	/// Plots histos
 	R_plot1D(hRedshift__,"z", "#");
 	R_plot1D(hFlux__,"flux", "#");
 	R_plot2D(hFluxPDF__,"flux noNosie noCont", "z","pdf");
 	R_plot1D(hFluxVsLambdaObs__,"lambda_{Obs.}", "flux");
-*/
+	*/
 
 	/// Save PDF
 	std::ofstream fFile;

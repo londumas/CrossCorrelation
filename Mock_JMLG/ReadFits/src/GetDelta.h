@@ -25,6 +25,7 @@
 #define GETDELTA_H
 
 /// Constants
+const double CONVERT_FROM_FLUX_TO_ALPHA = 1.2;
 const unsigned int nbPixelsTemplate__ = 647;  //2148  //645
 const double lambdaRFMin__ = 1040.;
 const double lambdaRFMax__ = 1200.;
@@ -86,6 +87,7 @@ class GetDelta
 		void defineHistos(void);
 		void saveHistos(void);
 		void GetData(void);
+		void GetPDF(unsigned int version);
 		void GetData_from_Jean_Marc_file(void);
 		void GetQSO(void);
 
