@@ -26,7 +26,7 @@
 
 /// Constants
 const double CONVERT_FROM_FLUX_TO_ALPHA = 1.2;
-const unsigned int nbPixelsTemplate__ = 647;  //2148  //645
+const unsigned int nbPixelsTemplate__ = 647;
 const double lambdaRFMin__ = 1040.;
 const double lambdaRFMax__ = 1200.;
 const double lambdaRFLine__  = 1215.67;
@@ -43,25 +43,6 @@ const double minFlux__ = 0.;
 const double maxFlux__ = 1.000001;
 const unsigned int nbBinsFlux__ = 100;
 
-
-/*
-///For Christophe
-h=0.71,
-Olambda=0.73  
-W0=-1
-Omatter=0.267804  
-Obaryon=0.0444356
-Orelat=7.9e-05
-Otot=0.997883  Ocurv=0.002117
-
-///For Jean-Marc
-h=0.71
-Omegam = 0.27
-OLambda=0.73
-Or neglected
-c_v = 2.998e08
-const double lambdaRFLine__     = 1216.24;
-*/
 
 class GetDelta
 {

@@ -299,12 +299,16 @@ class AnnalyseBAOFIT(correlation_3D.Correlation3D):
 		coef = numpy.power(xi1D_fit[:,0][cut],x_power)
 		plt.errorbar(xi1D_fit[:,0][cut], coef*xi1D_fit[:,1][cut], label=r'$Fit$', color='red',linewidth=2)
 
+		#plt.errorbar(xxx[cut], coef*(yyy[cut]-xi1D_fit[:,1][cut])/yer[cut], fmt='o', markersize=10,linewidth=2)
+
 		if (x_power==0):
 			plt.ylabel(r'$'+self._label+' (|s|)$', fontsize=40)
 		if (x_power==1):
 			plt.ylabel(r'$|s|.'+self._label+' (|s|) \, [h^{-1}.Mpc]$', fontsize=40)
 		if (x_power==2):
 			plt.ylabel(r'$|s|^{2}.'+self._label+' (|s|) \, [(h^{-1}.Mpc)^{2}]$', fontsize=40)
+
+		plt.ylabel(r'$Residuals (|s|)$', fontsize=40)
 		
 		plt.title(r'$'+self._title+'$', fontsize=40)
 		plt.xlabel(r'$|s| \, [h^{-1}.Mpc]$', fontsize=40)
@@ -364,7 +368,9 @@ class AnnalyseBAOFIT(correlation_3D.Correlation3D):
 			yerF = xi1D_fit[:,i,2][cut]
 			coefF = numpy.power(xxxF,x_power)
 			plt.errorbar(xxxF, coefF*yyyF, color='red',linewidth=2)
-		
+
+			#plt.errorbar(xxx[cut], coef[cut]*(yyy[cut]-yyyF)/yer[cut], fmt='o', markersize=10,linewidth=2, label=r'$'+label[i]+'$')
+
 			if (x_power==0):
 				plt.ylabel(r'$'+self._label+' (|s|)$', fontsize=40)
 				plt.legend(fontsize=40, numpoints=1,ncol=2, loc=4)
@@ -374,6 +380,8 @@ class AnnalyseBAOFIT(correlation_3D.Correlation3D):
 			if (x_power==2):
 				plt.ylabel(r'$|s|^{2}.'+self._label+' (|s|) \, [(h^{-1}.Mpc)^{2}]$', fontsize=40)
 				plt.legend(fontsize=40, numpoints=1,ncol=2, loc=2)
+
+		plt.ylabel(r'$Residuals (|s|)$', fontsize=40)
 		
 		plt.title(r'$'+self._title+'$', fontsize=40)
 		plt.xlabel(r'$|s| \, [h^{-1}.Mpc]$', fontsize=40)

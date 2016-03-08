@@ -46,7 +46,11 @@ class AnnalyseManyBAOFIT:
 						self._listFit += [annalyse_BAOFIT_Q.AnnalyseBAOFIT(dic, index_parameter, None,dic_Q)]
 					else:
 						#self._listFit += [annalyse_BAOFIT.AnnalyseBAOFIT(dic, index_parameter, path+'BaoFit_q_f_covFromFit/bao2D.')]
-						self._listFit += [annalyse_BAOFIT.AnnalyseBAOFIT(dic, index_parameter, path+'Results/BaoFit_q_f__LYA__QSO/bao2D.')]
+						if (dic_simu['with_metals_templates']):
+							strr = '__withMetalsTemplates'
+						else:
+							strr = ''
+						self._listFit += [annalyse_BAOFIT.AnnalyseBAOFIT(dic, index_parameter, path+'Results/BaoFit_q_f__LYA__QSO'+strr+'/bao2D.')]
 				except:
 					print '  EROOR: ', i, j
 		self._nbtot = len(self._listFit)

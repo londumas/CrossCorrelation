@@ -94,16 +94,20 @@ const unsigned int nbBinlambdaObs__  = int(lambdaObsMax__-lambdaObsMin__);
 double distMinPixel__ = 0.;
 double distMinPixelDelta2__ = 0.;
 unsigned int idxCommand_[6] = {0};
-const std::string pathToMockJMC__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_second_generation/";
+const std::string pathToMockJMC__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_test_new_file_composition/";
+std::string pathToRaw__ = "";
 std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/";  //_nicolasEstimator   //_method1
-//std::string pathToSave__ = "";
 
-///// Flags for Jean-Marc's simulations
+///// Type of data
 const bool mocks              = false;
-const bool mockJMC__          = true;
+const bool mockJMC__          = false;
 const bool mockBox__          = false;
+//// Attributes of data
+ // versin=0 for old version, version=1 for mockExpander, version=2 for files from Jean-Marc
+const unsigned int mock_version = 1000;
+const bool mocks_raw          = false;
 const bool mocksNoNoiseNoCont = false;
-const double randomPositionOfQSOInCellNotBeforeCorrelation__ = true;
+const double randomPositionOfQSOInCellNotBeforeCorrelation__ = false;
 //// Flags for covariance matrix estimation
 const bool shuffleQSO     = false;
 const bool shuffleForest  = false;
@@ -154,6 +158,7 @@ Correlation::Correlation(int argc, char **argv) {
 //		pathForest__   = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/FitsFile_DR12_reOBS_Guy/DR12_primery/DR12_primery_reOBS.fits";
 //		pathForest__   = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/FitsFile_DR12_reOBS_eBOSS_noCoADD_Guy/DR12_primery/DR12_primery_reOBS_eBOSS_noCoADD.fits";
 //pathForest__   = "/home/gpfs/manip/mnt0607/bao/hdumasde/Data/LYA/DR12_Nicolas/delta.fits";
+//pathForest__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/AllKindOfScipts/test.fits";
 	}
 	else if (mocks) {
 		pathForest__   = "/home/gpfs/manip/mnt0607/bao/hdumasde/MockV4/M3_0_";
@@ -185,17 +190,42 @@ Correlation::Correlation(int argc, char **argv) {
 		pathForest__ += argv[5];
 		pathForest__ += "/Simu_00";
 		pathForest__ += argv[6];
+		pathForest__ += "/";
 		pathQ1__      = pathForest__;
 		pathToSave__  = pathForest__;
+		pathToRaw__   = pathForest__;
 
-		if (!mocksNoNoiseNoCont) pathForest__ += "/Data/delta.fits";
-		else pathForest__ += "/Data/delta.fits";
+		if (!mocksNoNoiseNoCont) pathForest__ += "Data/delta.fits";
+		else pathForest__ += "Data/delta.fits";
 		
-		pathQ1__ += "/Data/QSO_withRSD.fits";
+		pathQ1__ += "Data/QSO_withRSD.fits";
 		
-		if (nicolasEstimator__) pathToSave__ += "/Results_nicolasEstimator/";
-		else pathToSave__ += "/Results/";
-		
+		pathToSave__ += "Results";
+		if (mocks_raw) {
+			if (mock_version==1) pathToSave__ += "_Raw/";
+			if (mock_version==2) pathToSave__ += "_PureRaw/";
+		}
+		else {
+			if (nicolasEstimator__) pathToSave__ += "_nicolasEstimator/";
+			else pathToSave__ += "/";
+		}
+
+		pathToRaw__ += "Raw/mocks-*";
+
+		if (mock_version==0) {
+			pathToRaw__ = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/v1547/fits/spectra-78";
+			pathToRaw__ += argv[5];
+			pathToRaw__ += "-";
+			pathToRaw__ += argv[6];
+			pathToRaw__ += ".fits";
+		}
+		else if (mock_version==2) {
+			pathToRaw__ = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/v1573/fits/spectra-780";
+			pathToRaw__ += argv[5];
+			pathToRaw__ += "-";
+			pathToRaw__ += argv[6];
+			pathToRaw__ += ".fits";
+		}
 	}
 
 	///// Command at the end
@@ -262,9 +292,10 @@ void Correlation::xi_1D_delta_delta(void) {
 	command += commandEnd__;
 	std::cout << command << "\n" << std::endl;
 
-	loadDataForest(pathForest__);
+	if (mocks_raw) loadDataForest_Raw();
+	else loadDataForest(pathForest__);
 
-	if (mocksNoNoiseNoCont) {
+	if (mocksNoNoiseNoCont || mocks_raw) {
 		removeFalseCorrelations();
 	}
 	v_ra__.clear();
@@ -383,10 +414,11 @@ void Correlation::xi_1DlRF_delta_delta(void) {
 	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_1DlRF_delta_delta.py";
 	command += commandEnd__;
 	std::cout << command << "\n" << std::endl;
-	loadDataForest(pathForest__);
 
+	if (mocks_raw) loadDataForest_Raw();
+	else loadDataForest(pathForest__);
 
-	if (mocksNoNoiseNoCont) {
+	if (mocksNoNoiseNoCont || mocks_raw) {
 		removeFalseCorrelations();
 	}
 	v_ra__.clear();
@@ -502,10 +534,11 @@ void Correlation::xi_1DlRFDevide_delta_delta(void) {
 	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_1DlRFDevide_delta_delta.py";
 	command += commandEnd__;
 	std::cout << command << "\n" << std::endl;
-	loadDataForest(pathForest__);
 
+	if (mocks_raw) loadDataForest_Raw();
+	else loadDataForest(pathForest__);
 
-	if (mocksNoNoiseNoCont) {
+	if (mocksNoNoiseNoCont || mocks_raw) {
 		removeFalseCorrelations();
 	}
 	v_ra__.clear();
@@ -1412,7 +1445,7 @@ void Correlation::xi_A_delta_delta2( unsigned int bootIdx/*=0*/ ) {
 	///// Mu
 	pathToSave = pathToSave__;
 	pathToSave += "xi_A_delta_delta2_Mu_";
-	pathToSave += prefix;
+	pathToSave += prefix1;
 	if (doBootstraps__ || shuffleForest || shuffleQSO || randomQSO) pathToSave += prefix;
 	pathToSave += ".txt";
 	std::cout << "\n  " << pathToSave << std::endl;
@@ -1456,7 +1489,7 @@ void Correlation::xi_A_delta_delta2( unsigned int bootIdx/*=0*/ ) {
 		LymanForest* lymanForestObject = new LymanForest(forests, C_NBSUBSAMPLES, C_RA_SEPERATION_NGC_SGC, mockJMC__);
 		pathToSave = pathToSave__;
 		pathToSave += "xi_A_delta_delta2_map_";
-		pathToSave += prefix;
+		pathToSave += prefix1;
 		lymanForestObject->SaveRegionMap(pathToSave);
 		delete lymanForestObject;
 	}
@@ -3858,8 +3891,9 @@ void Correlation::xi_A_delta_delta_MockJMc(void) {
 	command += commandEnd__;
 	std::cout << command << "\n" << std::endl;
 
-	loadDataForest(pathForest__);
-	if (mocksNoNoiseNoCont) {
+	if (mocks_raw) loadDataForest_Raw();
+	else loadDataForest(pathForest__);
+	if (mocksNoNoiseNoCont || mocks_raw) {
 		removeFalseCorrelations();
 	}
 	v_CosDe__.clear();
@@ -4091,8 +4125,9 @@ void Correlation::xi_delta_QSO_MockJMc(bool doBootstraps/*=False*/, unsigned int
 	//// QSO
 	loadDataQ1();
 	//// Forest
-	loadDataForest(pathForest__,doBootstraps,bootIdx);
-	if ( !nicolasEstimator__ && (doBootstraps || mocksNoNoiseNoCont) ) {
+	if (mocks_raw) loadDataForest_Raw(bootIdx);
+	else loadDataForest(pathForest__,doBootstraps,bootIdx);
+	if ( (!nicolasEstimator__ && doBootstraps) || mocksNoNoiseNoCont || mocks_raw ) {
 		removeFalseCorrelations();
 	}
 	v_CosDe__.clear();
@@ -4445,7 +4480,8 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix(void) {
 	loadDataQ1();
 	if (nbQ1__==0) return;
 	//// Forest
-	loadDataForest(pathForest__);
+	if (mocks_raw) loadDataForest_Raw();
+	else loadDataForest(pathForest__);
 
 	//// Empty useless vectors
 	v_CosDe__.clear();
@@ -4696,7 +4732,8 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix_1D(void) {
 	loadDataQ1();
 	if (nbQ1__==0) return;
 	//// Forest
-	loadDataForest(pathForest__);
+	if (mocks_raw) loadDataForest_Raw();
+	else loadDataForest(pathForest__);
 
 	//// Empty useless vectors
 	v_CosDe__.clear();
@@ -4941,7 +4978,8 @@ void Correlation::xi_delta_QSO_Metals_Models_MockJMc(double lambdaFrMetal, std::
 	//// QSO
 	loadDataQ1();
 	//// Forest
-	loadDataForest(pathForest__);
+	if (mocks_raw) loadDataForest_Raw();
+	else loadDataForest(pathForest__);
 
 	//// Create the conversion table from redshift to distance
 	Cosmology* cosmo = new Cosmology(C_H, C_OMEGAM, C_OMEGAB);
@@ -5874,46 +5912,41 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 		if (doBootstraps && regionMap[i]!=bootIdx) continue;
 
 		//// Variables for data in FITS
-		double ra = 0.;
-		double de = 0.;
-		double zz = 0.;
-		double alpha1, alpha2, beta2;
-		double meanForestLambdaRF = 0.;
-
-		double DELTA[nbBinRFMax__];
-		double DELTA_WEIGHT[nbBinRFMax__];
+		double ra, de, zz, alpha, beta, meanForestLambdaRF;
+		int bit;
 		double LAMBDA_OBS[nbBinRFMax__];
-		double LAMBDA_RF[nbBinRFMax__];
 		double NORM_FLUX[nbBinRFMax__];
 		double NORM_FLUX_IVAR[nbBinRFMax__];
 		double FLUX_DLA[nbBinRFMax__];
+		double DELTA[nbBinRFMax__];
+		double DELTA_WEIGHT[nbBinRFMax__];
 
 		fits_read_col(fitsptrSpec,TDOUBLE, 4,i+1,1,1,NULL,&ra,   NULL,&sta);
 		fits_read_col(fitsptrSpec,TDOUBLE, 5,i+1,1,1,NULL,&de,   NULL,&sta);
 		fits_read_col(fitsptrSpec,TDOUBLE, 6,i+1,1,1,NULL,&zz,   NULL,&sta);
+		fits_read_col(fitsptrSpec,TINT,    7,i+1,1,1,NULL,&bit,   NULL,&sta);
 		fits_read_col(fitsptrSpec,TDOUBLE, 8,i+1,1,1,NULL,&meanForestLambdaRF,   NULL,&sta);
-		fits_read_col(fitsptrSpec,TDOUBLE, 9,i+1,1,1,NULL,&alpha1,                NULL,&sta);
-		fits_read_col(fitsptrSpec,TDOUBLE, 11,i+1,1,1,NULL,&alpha2,               NULL,&sta);
-		fits_read_col(fitsptrSpec,TDOUBLE, 12,i+1,1,1,NULL,&beta2,                NULL,&sta);
+		fits_read_col(fitsptrSpec,TDOUBLE, 9,i+1,1,1,NULL, &alpha,               NULL,&sta);
+		fits_read_col(fitsptrSpec,TDOUBLE, 10,i+1,1,1,NULL,&beta,                NULL,&sta);
 
-		fits_read_col(fitsptrSpec,TDOUBLE, 13,i+1,1,nbBinRFMax__,NULL, &LAMBDA_OBS,      NULL,&sta);
-		fits_read_col(fitsptrSpec,TDOUBLE, 14,i+1,1,nbBinRFMax__,NULL, &LAMBDA_RF,       NULL,&sta);
-		fits_read_col(fitsptrSpec,TDOUBLE, 15,i+1,1,nbBinRFMax__,NULL, &NORM_FLUX,       NULL,&sta);
-		fits_read_col(fitsptrSpec,TDOUBLE, 16,i+1,1,nbBinRFMax__,NULL, &NORM_FLUX_IVAR,  NULL,&sta);
-		fits_read_col(fitsptrSpec,TDOUBLE, 17,i+1,1,nbBinRFMax__,NULL, &FLUX_DLA,        NULL,&sta);
-		fits_read_col(fitsptrSpec,TDOUBLE, 18,i+1,1,nbBinRFMax__,NULL, &DELTA,           NULL,&sta);
-		fits_read_col(fitsptrSpec,TDOUBLE, 20,i+1,1,nbBinRFMax__,NULL, &DELTA_WEIGHT,    NULL,&sta);
+		fits_read_col(fitsptrSpec,TDOUBLE, 11,i+1,1,nbBinRFMax__,NULL, &LAMBDA_OBS,      NULL,&sta);
+		fits_read_col(fitsptrSpec,TDOUBLE, 12,i+1,1,nbBinRFMax__,NULL, &NORM_FLUX,       NULL,&sta);
+		fits_read_col(fitsptrSpec,TDOUBLE, 13,i+1,1,nbBinRFMax__,NULL, &NORM_FLUX_IVAR,  NULL,&sta);
+		fits_read_col(fitsptrSpec,TDOUBLE, 14,i+1,1,nbBinRFMax__,NULL, &FLUX_DLA,        NULL,&sta);
+		fits_read_col(fitsptrSpec,TDOUBLE, 16,i+1,1,nbBinRFMax__,NULL, &DELTA,           NULL,&sta);
+		fits_read_col(fitsptrSpec,TDOUBLE, 17,i+1,1,nbBinRFMax__,NULL, &DELTA_WEIGHT,    NULL,&sta);
 
-		if (cutNotFittedSpectra__ && !mocksNoNoiseNoCont && ( (alpha2 == alphaStart__ && beta2 == betaStart__) || (fabs(alpha2)>=maxAlpha__-0.5) || (fabs(beta2)>=maxBeta__-0.05) ) ) {
-			if (alpha2 == alphaStart__ && beta2 == betaStart__) nbCutted[0] ++;
-			else if (fabs(alpha2)>=maxAlpha__-0.5) nbCutted[1] ++;
-			else if (fabs(beta2)>=maxBeta__-0.05) nbCutted[2] ++;
+		if (cutNotFittedSpectra__ && !mocksNoNoiseNoCont && ( (alpha == alphaStart__ && beta == betaStart__) || (fabs(alpha)>=maxAlpha__-0.5) || (fabs(beta)>=maxBeta__-0.05) ) ) {
+			if (alpha == alphaStart__ && beta == betaStart__) nbCutted[0] ++;
+			else if (fabs(alpha)>=maxAlpha__-0.5) nbCutted[1] ++;
+			else if (fabs(beta)>=maxBeta__-0.05) nbCutted[2] ++;
 			continue;
 		}
 
 		//// If a reobs
-		if (alpha1==isReobsFlag__) continue;
+		if (bit==isReobsFlag__) continue;
 
+		const double oneOverOnePlusZ = 1./(1.+zz);
 		bool templateHasNegative = false;
 		long double tmp_meanDelta[3] = {0.};
 		long double meanNeeded[5] = {0.};
@@ -5927,60 +5960,61 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 
 		for (unsigned int j=0; j<nbBinRFMax__; j++) {
 
-			if (DELTA_WEIGHT[j]>0. && NORM_FLUX_IVAR[j]>0. && FLUX_DLA[j]>=C_DLACORR && LAMBDA_OBS[j]>=lambdaObsMin__ && LAMBDA_OBS[j]<lambdaObsMax__ && LAMBDA_RF[j]>=lambdaRFMin__ && LAMBDA_RF[j]<lambdaRFMax__) {
+			if (DELTA_WEIGHT[j]<=0. || NORM_FLUX_IVAR[j]<=0. || FLUX_DLA[j]<C_DLACORR || LAMBDA_OBS[j]<lambdaObsMin__ || LAMBDA_OBS[j]>=lambdaObsMax__) continue;
 
-				//// Remove veto lines
-				bool isLine = false;
-				if (doVetoLines__) {
-					for (unsigned int k=0; k<nbVetoLines__; k++) {
-						 if (LAMBDA_OBS[j]>=vetoLine__[2*k] && LAMBDA_OBS[j]<vetoLine__[2*k+1]) {
-							isLine = true;
-							break;
-						}
+			const double lambdaRF = LAMBDA_OBS[j]*oneOverOnePlusZ;
+			if (lambdaRF<lambdaRFMin__ || lambdaRF>=lambdaRFMax__) continue;
+
+			//// Remove veto lines
+			bool isLine = false;
+			if (doVetoLines__) {
+				for (unsigned int k=0; k<nbVetoLines__; k++) {
+					 if (LAMBDA_OBS[j]>=vetoLine__[2*k] && LAMBDA_OBS[j]<vetoLine__[2*k+1]) {
+						isLine = true;
+						break;
 					}
 				}
-				if (isLine) continue;
+			}
+			if (isLine) continue;
 
-				const double zi = LAMBDA_OBS[j]/lambdaRFLine__ -1.;
+			const double zi = LAMBDA_OBS[j]/lambdaRFLine__ -1.;
 
-				v_tmp_r.push_back(hConvertRedshDist->Interpolate(zi));
-				v_tmp_d.push_back(DELTA[j]);
-				v_tmp_w.push_back(DELTA_WEIGHT[j]);
-				v_tmp_z.push_back(zi);
-				v_tmp_lRF.push_back(LAMBDA_RF[j]);
-				v_tmp_lObs.push_back(LAMBDA_OBS[j]);
+			v_tmp_r.push_back(hConvertRedshDist->Interpolate(zi));
+			v_tmp_d.push_back(DELTA[j]);
+			v_tmp_w.push_back(DELTA_WEIGHT[j]);
+			v_tmp_z.push_back(zi);
+			v_tmp_lRF.push_back(lambdaRF);
+			v_tmp_lObs.push_back(LAMBDA_OBS[j]);
 
-				//// Get if the template is even one time negative
-				if ( alpha2+beta2*(LAMBDA_RF[j]-meanForestLambdaRF) <= 0.) templateHasNegative = true;
+			//// Get if the template is even one time negative
+			if ( alpha+beta*(lambdaRF-meanForestLambdaRF) <= 0.) templateHasNegative = true;
 
-				//// Get Nb Pixel in forest
-				tmp_meanDelta[0] += DELTA_WEIGHT[j]*DELTA[j];
-				tmp_meanDelta[1] += DELTA_WEIGHT[j];
-				tmp_meanDelta[2] ++;
+			//// Get Nb Pixel in forest
+			tmp_meanDelta[0] += DELTA_WEIGHT[j]*DELTA[j];
+			tmp_meanDelta[1] += DELTA_WEIGHT[j];
+			tmp_meanDelta[2] ++;
 
-				//// SNR
-				//SNR[0] += NORM_FLUX[j]*sqrt(NORM_FLUX_IVAR[j]);
-				//SNR[1] ++;
+			//// SNR
+			//SNR[0] += NORM_FLUX[j]*sqrt(NORM_FLUX_IVAR[j]);
+			//SNR[1] ++;
 
-				//// For Nicolas's estimator
-				if (nicolasEstimator__) {
-					meanNeeded[0] += DELTA_WEIGHT[j]*DELTA[j];
-					meanNeeded[1] += DELTA_WEIGHT[j]*LAMBDA_RF[j];
-					meanNeeded[2] += DELTA_WEIGHT[j]*LAMBDA_RF[j]*LAMBDA_RF[j];
-					meanNeeded[3] += DELTA_WEIGHT[j]*LAMBDA_RF[j]*DELTA[j];
-					meanNeeded[4] += DELTA_WEIGHT[j];
-				}
-
-				if (saveInRootFile__) {
-					tp_flux_vs_lambdaRF->Fill(LAMBDA_RF[j],NORM_FLUX[j],DELTA_WEIGHT[j]);
-					tp_flux_vs_lambdaOBS->Fill(LAMBDA_OBS[j],NORM_FLUX[j],DELTA_WEIGHT[j]);
-					h_fluxDLA->Fill(FLUX_DLA[j]);
-				}
+			//// For Nicolas's estimator
+			if (nicolasEstimator__) {
+				meanNeeded[0] += DELTA_WEIGHT[j]*DELTA[j];
+				meanNeeded[1] += DELTA_WEIGHT[j]*lambdaRF;
+				meanNeeded[2] += DELTA_WEIGHT[j]*lambdaRF*lambdaRF;
+				meanNeeded[3] += DELTA_WEIGHT[j]*lambdaRF*DELTA[j];
+				meanNeeded[4] += DELTA_WEIGHT[j];
+			}
+			if (saveInRootFile__) {
+				tp_flux_vs_lambdaRF->Fill(lambdaRF,NORM_FLUX[j],DELTA_WEIGHT[j]);
+				tp_flux_vs_lambdaOBS->Fill(LAMBDA_OBS[j],NORM_FLUX[j],DELTA_WEIGHT[j]);
+				h_fluxDLA->Fill(FLUX_DLA[j]);
 			}
 		}
 
 		const unsigned int tmp_nb = v_tmp_r.size();
-		if (cutNotFittedSpectra__ && (tmp_nb<C_MIN_NB_PIXEL || templateHasNegative) ) {
+		if (!mocksNoNoiseNoCont && cutNotFittedSpectra__ && (tmp_nb<C_MIN_NB_PIXEL || templateHasNegative) ) {
 			if (tmp_nb<C_MIN_NB_PIXEL) nbCutted[3] ++;
 			else if (templateHasNegative) nbCutted[4] ++;
 			continue;
@@ -6141,14 +6175,10 @@ void Correlation::loadDataDelta2(int dataNeeded/*=100*/) {
 	for (unsigned int i=0; i<nbForest2__; i++) {
 
 		//// Variables for data in FITS
-		double ra = 0.;
-		double de = 0.;
-		double zz = 0.;
-		double alpha2, beta2;
-		double meanForestLambdaRF = 0.;
+		double ra, de, zz, alpha, beta, meanForestLambdaRF;
+		unsigned int bit;
 
 		double LAMBDA_OBS[nbBinRFMaxDelta2__];
-		double LAMBDA_RF[nbBinRFMaxDelta2__];
 		double NORM_FLUX[nbBinRFMaxDelta2__];
 		double NORM_FLUX_IVAR[nbBinRFMaxDelta2__];
 		double FLUX_DLA[nbBinRFMaxDelta2__];
@@ -6158,28 +6188,29 @@ void Correlation::loadDataDelta2(int dataNeeded/*=100*/) {
 		fits_read_col(fitsptrSpec,TDOUBLE, 4,i+1,1,1,NULL,&ra,   NULL,&sta);
 		fits_read_col(fitsptrSpec,TDOUBLE, 5,i+1,1,1,NULL,&de,   NULL,&sta);
 		fits_read_col(fitsptrSpec,TDOUBLE, 6,i+1,1,1,NULL,&zz,   NULL,&sta);
-		fits_read_col(fitsptrSpec,TDOUBLE, 8, i+1,1,1,NULL,&meanForestLambdaRF,   NULL,&sta);
-		fits_read_col(fitsptrSpec,TDOUBLE, 11,i+1,1,1,NULL,&alpha2,               NULL,&sta);
-		fits_read_col(fitsptrSpec,TDOUBLE, 12,i+1,1,1,NULL,&beta2,                NULL,&sta);
+		fits_read_col(fitsptrSpec,TINT,    7,i+1,1,1,NULL,&bit,   NULL,&sta);
+		fits_read_col(fitsptrSpec,TDOUBLE, 8,i+1,1,1,NULL,&meanForestLambdaRF,   NULL,&sta);
+		fits_read_col(fitsptrSpec,TDOUBLE, 9,i+1,1,1,NULL,&alpha,               NULL,&sta);
+		fits_read_col(fitsptrSpec,TDOUBLE, 10,i+1,1,1,NULL,&beta,                NULL,&sta);
 
-		fits_read_col(fitsptrSpec,TDOUBLE, 13,i+1,1,nbBinRFMaxDelta2__,NULL, &LAMBDA_OBS,      NULL,&sta);
-		fits_read_col(fitsptrSpec,TDOUBLE, 14,i+1,1,nbBinRFMaxDelta2__,NULL, &LAMBDA_RF,       NULL,&sta);
-		fits_read_col(fitsptrSpec,TDOUBLE, 15,i+1,1,nbBinRFMaxDelta2__,NULL, &NORM_FLUX,       NULL,&sta);
-		fits_read_col(fitsptrSpec,TDOUBLE, 16,i+1,1,nbBinRFMaxDelta2__,NULL, &NORM_FLUX_IVAR,  NULL,&sta);
-		fits_read_col(fitsptrSpec,TDOUBLE, 17,i+1,1,nbBinRFMaxDelta2__,NULL, &FLUX_DLA,        NULL,&sta);
-		fits_read_col(fitsptrSpec,TDOUBLE, 18,i+1,1,nbBinRFMaxDelta2__,NULL, &DELTA,           NULL,&sta);
-		fits_read_col(fitsptrSpec,TDOUBLE, 20,i+1,1,nbBinRFMaxDelta2__,NULL, &DELTA_WEIGHT,    NULL,&sta);
+		fits_read_col(fitsptrSpec,TDOUBLE, 11,i+1,1,nbBinRFMaxDelta2__,NULL, &LAMBDA_OBS,      NULL,&sta);
+		fits_read_col(fitsptrSpec,TDOUBLE, 12,i+1,1,nbBinRFMaxDelta2__,NULL, &NORM_FLUX,       NULL,&sta);
+		fits_read_col(fitsptrSpec,TDOUBLE, 13,i+1,1,nbBinRFMaxDelta2__,NULL, &NORM_FLUX_IVAR,  NULL,&sta);
+		fits_read_col(fitsptrSpec,TDOUBLE, 14,i+1,1,nbBinRFMaxDelta2__,NULL, &FLUX_DLA,        NULL,&sta);
+		fits_read_col(fitsptrSpec,TDOUBLE, 16,i+1,1,nbBinRFMaxDelta2__,NULL, &DELTA,           NULL,&sta);
+		fits_read_col(fitsptrSpec,TDOUBLE, 17,i+1,1,nbBinRFMaxDelta2__,NULL, &DELTA_WEIGHT,    NULL,&sta);
 
-		if (!mocksNoNoiseNoCont && ( (alpha2 == alphaStart__ && beta2 == betaStart__) || (fabs(alpha2)>=maxAlpha__-0.5) || (fabs(beta2)>=maxBeta__-0.05) ) ) {
-			if (alpha2 == alphaStart__ && beta2 == betaStart__) nbCutted[0] ++;
-			else if (fabs(alpha2)>=maxAlpha__-0.5) nbCutted[1] ++;
-			else if (fabs(beta2)>=maxBeta__-0.05) nbCutted[2] ++;
+		if (!mocksNoNoiseNoCont && ( (alpha == alphaStart__ && beta == betaStart__) || (fabs(alpha)>=maxAlpha__-0.5) || (fabs(beta)>=maxBeta__-0.05) ) ) {
+			if (alpha == alphaStart__ && beta == betaStart__) nbCutted[0] ++;
+			else if (fabs(alpha)>=maxAlpha__-0.5) nbCutted[1] ++;
+			else if (fabs(beta)>=maxBeta__-0.05) nbCutted[2] ++;
 			continue;
 		}
 
 		bool templateHasNegative = false;
 		long double meanNeeded[5] = {0.};
 		long double tmp_meanDelta[3] = {0.};
+		const double oneOverOnePlusZ = 1./(1.+zz);
 		std::vector< double > v_tmp_r;
 		std::vector< double > v_tmp_d;
 		std::vector< double > v_tmp_w;
@@ -6189,43 +6220,45 @@ void Correlation::loadDataDelta2(int dataNeeded/*=100*/) {
 
 		for (unsigned int j=0; j<nbBinRFMaxDelta2__; j++) {
 
-			if (DELTA_WEIGHT[j]>0. && NORM_FLUX_IVAR[j]>0. && FLUX_DLA[j]>=C_DLACORR && LAMBDA_OBS[j]>=lambdaObsMin__ && LAMBDA_OBS[j]<lambdaObsMax__ && LAMBDA_RF[j]>=lambdaRFMinDelta2__ && LAMBDA_RF[j]<lambdaRFMaxDelta2__) {
+			if (DELTA_WEIGHT[j]<=0. || NORM_FLUX_IVAR[j]<=0. || FLUX_DLA[j]<C_DLACORR || LAMBDA_OBS[j]<lambdaObsMin__ || LAMBDA_OBS[j]>=lambdaObsMax__) continue;
 
-				//// Remove veto lines
-				bool isLine = false;
-				if (doVetoLines__) {
-					for (unsigned int k=0; k<nbVetoLines__; k++) {
-						 if (LAMBDA_OBS[j]>=vetoLine__[2*k] && LAMBDA_OBS[j]<vetoLine__[2*k+1]) {
-							isLine = true;
-							break;
-						}
+			const double lambdaRF = LAMBDA_OBS[j]*oneOverOnePlusZ;
+			if (lambdaRF<lambdaRFMinDelta2__ || lambdaRF>=lambdaRFMaxDelta2__) continue;
+
+			//// Remove veto lines
+			bool isLine = false;
+			if (doVetoLines__) {
+				for (unsigned int k=0; k<nbVetoLines__; k++) {
+					 if (LAMBDA_OBS[j]>=vetoLine__[2*k] && LAMBDA_OBS[j]<vetoLine__[2*k+1]) {
+						isLine = true;
+						break;
 					}
 				}
-				if (isLine) continue;
+			}
+			if (isLine) continue;
 
-				//// Get if the template is even one time negative
-				if ( alpha2+beta2*(LAMBDA_RF[j]-meanForestLambdaRF) <= 0.) templateHasNegative = true;
+			//// Get if the template is even one time negative
+			if ( alpha+beta*(lambdaRF-meanForestLambdaRF) <= 0.) templateHasNegative = true;
 
-				const double zi = LAMBDA_OBS[j]/lambdaRFLineDelta2__ -1.;
-				v_tmp_r.push_back(hConvertRedshDist->Interpolate(zi));
-				v_tmp_d.push_back(DELTA[j]);
-				v_tmp_w.push_back(DELTA_WEIGHT[j]);
-				v_tmp_z.push_back(zi);
-				v_tmp_lRF.push_back(LAMBDA_RF[j]);
-				v_tmp_lObs.push_back(LAMBDA_OBS[j]);
+			const double zi = LAMBDA_OBS[j]/lambdaRFLineDelta2__ -1.;
+			v_tmp_r.push_back(hConvertRedshDist->Interpolate(zi));
+			v_tmp_d.push_back(DELTA[j]);
+			v_tmp_w.push_back(DELTA_WEIGHT[j]);
+			v_tmp_z.push_back(zi);
+			v_tmp_lRF.push_back(lambdaRF);
+			v_tmp_lObs.push_back(LAMBDA_OBS[j]);
 
-				tmp_meanDelta[0] += DELTA_WEIGHT[j]*DELTA[j];
-				tmp_meanDelta[1] += DELTA_WEIGHT[j];
-				tmp_meanDelta[2] ++;
+			tmp_meanDelta[0] += DELTA_WEIGHT[j]*DELTA[j];
+			tmp_meanDelta[1] += DELTA_WEIGHT[j];
+			tmp_meanDelta[2] ++;
 
-				//// For Nicolas's estimator
-				if (nicolasEstimator__) {
-					meanNeeded[0] += DELTA_WEIGHT[j]*DELTA[j];
-					meanNeeded[1] += DELTA_WEIGHT[j]*LAMBDA_RF[j];
-					meanNeeded[2] += DELTA_WEIGHT[j]*LAMBDA_RF[j]*LAMBDA_RF[j];
-					meanNeeded[3] += DELTA_WEIGHT[j]*LAMBDA_RF[j]*DELTA[j];
-					meanNeeded[4] += DELTA_WEIGHT[j];
-				}
+			//// For Nicolas's estimator
+			if (nicolasEstimator__) {
+				meanNeeded[0] += DELTA_WEIGHT[j]*DELTA[j];
+				meanNeeded[1] += DELTA_WEIGHT[j]*lambdaRF;
+				meanNeeded[2] += DELTA_WEIGHT[j]*lambdaRF*lambdaRF;
+				meanNeeded[3] += DELTA_WEIGHT[j]*lambdaRF*DELTA[j];
+				meanNeeded[4] += DELTA_WEIGHT[j];
 			}
 		}
 
@@ -6305,7 +6338,156 @@ void Correlation::loadDataDelta2(int dataNeeded/*=100*/) {
 
 	return;
 }
+void Correlation::loadDataForest_Raw(unsigned int bootIdx/*=0*/) {
 
+	//// Create the conversion table from redshift to distance
+	Cosmology* cosmo = new Cosmology(C_H, C_OMEGAM, C_OMEGAB);
+	TH1D* hConvertRedshDist = cosmo->createHistoConvertRedshDist(C_NBBINREDSH, C_ZEXTREMABINCONVERT0, C_ZEXTREMABINCONVERT1);
+	// Get the minimal distance of pixels
+	distMinPixel__ = cosmo->GetMinDistPixels(lambdaObsMin__, lambdaRFLine__);
+	delete cosmo;
+
+	/// index of forest
+	unsigned int forestIdx = 0;
+	unsigned int nbGoodForest = 0;
+	bool breakk = false;
+
+	/// Get the list 
+	FILE *fp;
+	char path[PATH_MAX];
+	std::string command = "ls " + pathToRaw__;
+	std::vector< std::string > listFiles;
+	fp = popen(command.c_str(), "r");
+	while (fgets(path, PATH_MAX, fp) != NULL) listFiles.push_back(path);
+
+	if (mock_version==0 || mock_version==2) {
+		listFiles.clear();
+		listFiles.push_back(pathToRaw__);
+	}
+
+	/// Get nb of files
+	const unsigned int nbFiles = listFiles.size();
+
+	for (unsigned int fileIdx=0; fileIdx<nbFiles; fileIdx++) {
+
+		if (breakk) break;
+
+		std::string path = listFiles[fileIdx];
+		path.erase(std::remove(path.begin(), path.end(), '\n'), path.end());
+		path.erase(std::remove(path.begin(), path.end(), ' '), path.end());
+
+		/// Get the file
+		std::cout << "  file = " << path << std::endl;
+		const TString TSfitsnameSpec = path;
+		int sta = 0;
+		fitsfile* fitsptrSpec;
+		fits_open_table(&fitsptrSpec,TSfitsnameSpec, READONLY, &sta);
+
+		/// Get the number of spectra
+		int tmp_nbSpectra = 0;
+		unsigned int nbSpectra = 0;
+		fits_get_num_hdus(fitsptrSpec, &tmp_nbSpectra, &sta);
+		nbSpectra = tmp_nbSpectra-1;
+		//std::cout << "  nbSpectra = " << nbSpectra << std::endl;
+	
+		/// Set to the first HDU
+		fits_movabs_hdu(fitsptrSpec, 2,  NULL, &sta);
+		
+		/// Get the data
+		for (unsigned int f=0; f<nbSpectra; f++) {
+
+			forestIdx ++;
+	
+			/// Move to next HDU
+			if (f!=0) fits_movrel_hdu(fitsptrSpec, 1,  NULL, &sta);
+	
+			/// Get the number of pixels in this HDU
+			long tmp_nbPixels = 0;
+			fits_get_num_rows(fitsptrSpec, &tmp_nbPixels, &sta);
+			const unsigned int tmp_nbPixels2 = tmp_nbPixels;
+			if (tmp_nbPixels2<C_MIN_NB_PIXEL) continue;
+
+			/// Variable from old FITS
+			float X = 0.;
+			float Y = 0.;
+			float Z = 0.;
+			float LAMBDA_OBS[tmp_nbPixels2];
+			float FLUX[tmp_nbPixels2];
+			float CONTINUUM[tmp_nbPixels2];
+			fits_read_key(fitsptrSpec,TFLOAT,"X",   &X,NULL,&sta);
+			fits_read_key(fitsptrSpec,TFLOAT,"Y",   &Y,NULL,&sta);
+			fits_read_key(fitsptrSpec,TFLOAT,"ZQSO",&Z,NULL,&sta);
+			fits_read_col(fitsptrSpec,TFLOAT, 1,1,1,tmp_nbPixels2,NULL, &LAMBDA_OBS,NULL,&sta);
+			if (mock_version==0) {
+				fits_read_col(fitsptrSpec,TFLOAT, 4,1,1,tmp_nbPixels2,NULL, &CONTINUUM,NULL,&sta);
+				fits_read_col(fitsptrSpec,TFLOAT, 5,1,1,tmp_nbPixels2,NULL, &FLUX,NULL,&sta);
+			}
+			else if (mock_version==1) fits_read_col(fitsptrSpec,TFLOAT, 6,1,1,tmp_nbPixels2,NULL, &FLUX,NULL,&sta);
+			else if (mock_version==2) fits_read_col(fitsptrSpec,TFLOAT, 2,1,1,tmp_nbPixels2,NULL, &FLUX,NULL,&sta);
+
+	
+			/// Variables for new FITS
+			const double oneOverOnePlusZ = 1./(1.+Z);
+			std::vector< double > v_tmp_r;
+			std::vector< double > v_tmp_d;
+			std::vector< double > v_tmp_w;
+			std::vector< double > v_tmp_z;
+			std::vector< double > v_tmp_lRF;
+			std::vector< double > v_tmp_lObs;
+	
+			for (unsigned int p=0; p<tmp_nbPixels2; p++) {
+
+				/// bad pixels
+				if (LAMBDA_OBS[p]<=0.) continue;
+
+				if (mock_version==1) LAMBDA_OBS[p] = pow(10.,LAMBDA_OBS[p]);
+				const double lambdaRFd = LAMBDA_OBS[p]*oneOverOnePlusZ;
+	
+				/// Pixel outside working region and remove pixels because of CCD and Sky lines 
+				if (lambdaRFd<lambdaRFMin__ || lambdaRFd>lambdaRFMax__ || LAMBDA_OBS[p]<lambdaObsMin__ || LAMBDA_OBS[p]>=lambdaObsMax__) continue;
+
+				if (mock_version==0) FLUX[p] /= CONTINUUM[p];
+
+				const double zi = LAMBDA_OBS[p]/lambdaRFLine__ -1.;
+				v_tmp_r.push_back(hConvertRedshDist->Interpolate(zi));
+				v_tmp_d.push_back(FLUX[p]);
+				v_tmp_w.push_back(1.);
+				v_tmp_z.push_back(zi);
+				v_tmp_lRF.push_back(lambdaRFd);
+				v_tmp_lObs.push_back(LAMBDA_OBS[p]);
+			}
+
+			if (v_tmp_r.size()<C_MIN_NB_PIXEL) continue;
+
+			nbGoodForest ++;
+			v_ra__.push_back(X);
+			v_de__.push_back(Y);
+			v_zz__.push_back(Z);
+			v_nbPixelDelta1__.push_back(v_tmp_r.size());
+			v_idx__.push_back(forestIdx-1);
+			v_r__.push_back(v_tmp_r);
+			v_d__.push_back(v_tmp_d);
+			v_w__.push_back(v_tmp_w);
+			v_z__.push_back(v_tmp_z);
+			v_lRF__.push_back(v_tmp_lRF);
+			v_lObs__.push_back(v_tmp_lObs);
+
+			std::vector< unsigned int > v_tmp_nb( v_tmp_r.size() ,0);
+			v_nb__.push_back(v_tmp_nb);
+
+			if (nbForest_!=0 && nbGoodForest==nbForest_) {
+				breakk = true;
+				fits_close_file(fitsptrSpec,&sta);
+				break;
+			}
+		}
+		fits_close_file(fitsptrSpec,&sta);
+	}
+
+	nbForest_ = v_ra__.size();
+	std::cout << "  number of forest        = " << forestIdx << std::endl;
+	std::cout << "  number of good forest   = " << nbForest_ << std::endl;
+}
 
 
 

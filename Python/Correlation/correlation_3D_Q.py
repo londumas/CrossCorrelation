@@ -377,9 +377,14 @@ class Correlation3DQ(correlation_3D.Correlation3D):
 		string_ini = """
 
 ## Linear theory P(k) templates with and w/o wiggles
-modelroot = """ + const.path_to_BAOFIT_model__ + """
-fiducial =  DR9LyaMocksLCDM
-nowiggles = DR9LyaMocksLCDMSB
+#modelroot = """ + const.path_to_BAOFIT_model__ + """
+#fiducial =  DR9LyaMocksLCDM
+#nowiggles = DR9LyaMocksLCDMSB
+modelroot = /home/gpfs/manip/mnt0607/bao/hdumasde/Tests/
+fiducial  =  helion
+nowiggles = helionNoWiggles
+omega-matter = 0.27
+hubble-constant = 0.7
 
 ## k-space fit
 kspace = true
@@ -400,8 +405,8 @@ model-config = fix[SigmaNL-perp]=         """+param[7] +""";
 model-config = fix[1+f]=                  """+param[8] +""";
 model-config = fix[BAO amplitude]=        """+param[9] +""";
 model-config = fix[BAO alpha-iso]=        """+param[10] +""";
-model-config = fix[BAO alpha-parallel]= """+param[11] +""";
-model-config = fix[BAO alpha-perp]=     """+param[12]+""";
+model-config = value[BAO alpha-parallel]= """+param[11] +""";
+model-config = value[BAO alpha-perp]=     """+param[12]+""";
 model-config = fix[gamma-scale]=          """+param[13]+""";
 
 ## 2D chisq scan in BAO parameters

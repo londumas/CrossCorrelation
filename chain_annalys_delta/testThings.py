@@ -249,9 +249,9 @@ def meanDelta():
 	#path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_reObs/DR12_reObs.fits'
 	#path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits'
 
-	path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_2016_02_25/Box_000/Simu_000/Data/delta.fits'
+	path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_second_generation/Box_000/Simu_000/Data/delta.fits'
 
-	cat = pyfits.open(path, memmap=True)[1].data[:30000]
+	cat = pyfits.open(path, memmap=True)[1].data[:1000]
 
 	cat = cat[ numpy.logical_and( numpy.logical_and(  numpy.logical_and( cat['ALPHA_2']!=alphaStart__, cat['BETA_2']!=0.),  numpy.abs(cat['ALPHA_2'])<=99.5 ), numpy.abs(cat['BETA_2'])<=0.55 ) ]
 	#cat = cat[ numpy.logical_or( numpy.logical_or(  numpy.logical_or( cat['ALPHA_2']==alphaStart__, cat['BETA_2']==0.),  numpy.abs(cat['ALPHA_2'])>=99.5 ), numpy.abs(cat['BETA_2'])>=0.55 ) ]

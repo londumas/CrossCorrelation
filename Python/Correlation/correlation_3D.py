@@ -52,7 +52,9 @@ raw_dic_simu = {
 	'path_to_simu' : 'NOTHING',
 	'nb_box' : 1,
 	'nb_simu' : 1,
-	'projected' : False
+	'projected' : False,
+	'with_metals_templates' : False,
+	'raw' : True
 }
 
 
@@ -114,8 +116,7 @@ class Correlation3D:
 		path1D = self._path_to_txt_file_folder + self._prefix + '_Mu_' + self._middlefix + '.txt'
 		path2D = self._path_to_txt_file_folder + self._prefix + '_2D_' + self._middlefix + '.txt'
 
-		print
-		if (verbose__): print '  path1D = ', path1D
+		if (verbose__): print '  path1D = ',path1D
 
 		### 1D
 		self._min1D   = float(dic['minXi'])
@@ -657,11 +658,12 @@ class Correlation3D:
 		return
 	def save_list_realisation_simulation(self, dic_class, dic_simu):
 
-		pathToSave = dic_simu['path_to_simu']
+		pathToSave = dic_simu['path_to_simu'] + 'Results'
 		if (dic_simu['projected']):
-			pathToSave += 'Results_nicolasEstimator/'
-		else:
-			pathToSave += 'Results/'
+			pathToSave += '_nicolasEstimator'
+		elif (dic_simu['raw']):
+			pathToSave += '_Raw'
+		pathToSave += '/'
 		pathToSave += self._prefix + '_' + self._middlefix + '_result_'
 
 		nb_realisation = dic_simu['nb_box']*dic_simu['nb_simu']
@@ -672,21 +674,38 @@ class Correlation3D:
 		list2D       = numpy.zeros( shape=(self._nbBin2D,nb_realisation) )
 		listMultipol = numpy.zeros( shape=(self._nbBin1D,5,nb_realisation) )
 
+		nb = 0
 		for i in range(0,dic_simu['nb_box']):
 			for j in range(0,dic_simu['nb_simu']):
 
-				raw = dic_simu['path_to_simu'] + 'Box_00' + str(i) + '/Simu_00' + str(j) +'/'
+				raw = dic_simu['path_to_simu'] + 'Box_00' + str(i) + '/Simu_00' + str(j) +'/Results'
 				if (dic_simu['projected']):
-					dic_class['path_to_txt_file_folder'] = raw+'Results_nicolasEstimator/'
-				else:
-					dic_class['path_to_txt_file_folder'] = raw+'Results/'
+					raw += '_nicolasEstimator'
+				elif (dic_simu['raw']):
+					raw += '_Raw'
+				raw += '/'
+				dic_class['path_to_txt_file_folder'] = raw
 
-				corr = Correlation3D(dic_class)
-				list1D[:,i*10+j]         = corr._xi1D[:,1]
-				list2D[:,i*10+j]         = corr._xi2D[:,:,1].flatten()
-				listMu[:,i*10+j]         = corr._xiMu[:,:,2].flatten()
-				listWe[:,:,i*10+j]       = corr._xiWe[:,:,1]
-				listMultipol[:,:,i*10+j] = corr.get_multipol(corr._xiMu)[:,:,1]
+				try:
+					corr = Correlation3D(dic_class)
+				except:
+					print i, j
+					continue
+
+				listMu[:,nb]         = corr._xiMu[:,:,2].flatten()
+				listWe[:,:,nb]       = corr._xiWe[:,:,1]
+				list1D[:,nb]         = corr._xi1D[:,1]
+				list2D[:,nb]         = corr._xi2D[:,:,1].flatten()
+				listMultipol[:,:,nb] = corr.get_multipol(corr._xiMu)[:,:,1]
+				nb += 1
+
+		listMu       = listMu[:,:nb]
+		listWe       = listWe[:,:,:nb]
+		list1D       = list1D[:,:nb]
+		list2D       = list2D[:,:nb]
+		listMultipol = listMultipol[:,:,:nb]
+
+		print listMu[0,:].size, nb
 
 		numpy.save(pathToSave+'list_Mu',listMu)
 		numpy.save(pathToSave+'list_We',listWe)
@@ -705,20 +724,20 @@ class Correlation3D:
 		return
 	def set_values_on_mean_simulation(self, dic_simu):
 
-		path_to_load = dic_simu['path_to_simu']
+		path_to_load = dic_simu['path_to_simu'] + 'Results'
 		if (dic_simu['projected']):
-			path_to_load += 'Results_nicolasEstimator/'
-		else:
-			path_to_load += 'Results/'
+			path_to_load += '_nicolasEstimator'
+		elif (dic_simu['raw']):
+			path_to_load += '_Raw'
+		path_to_load += '/'
 		if (self._prefix=='xi_QSO_QSO'):
 			path_to_load += self._prefix + '_result_'
 		else:
 			path_to_load += self._prefix + '_' + self._middlefix + '_result_'
 
-		nb_realisation = dic_simu['nb_box']*dic_simu['nb_simu']
-
 		### mu
 		listMu = numpy.load(path_to_load+'list_Mu.npy')
+		nb_realisation = listMu[0,:].size
 		self._xiMu[:,:,2] = myTools.convert1DTo2D( numpy.mean(listMu,axis=1) ,self._nbBin1D,self._nbBinM)
 		self._xiMu[:,:,3] = myTools.convert1DTo2D(numpy.sqrt( numpy.diag(numpy.cov(listMu))/nb_realisation ),self._nbBin1D,self._nbBinM)
 		### we
@@ -740,6 +759,8 @@ class Correlation3D:
 		for i in numpy.arange(5):
 			self._xiMul[:,i,1] = numpy.mean(listMultipol[:,i,:],axis=1)
 			self._xiMul[:,i,2] = numpy.sqrt( numpy.diag(numpy.cov( listMultipol[:,i,:] )/nb_realisation))
+
+		print '  nb_realisation = ', nb_realisation
 
 		return
 	def set_error_on_covar_matrix(self, realisation_type, dic_simu=None):
@@ -908,7 +929,7 @@ class Correlation3D:
 		yer = xi1D[:,2][cut]
 
 		### Get Camb
-		camb = CAMB.CAMB()
+		camb = CAMB.CAMB('CHRISTOPHE')
 		if (dic['mulpol_index']==0):
 			yyy_Camb = numpy.interp(xi1D[:,0],camb._xi0[:,0],camb._xi0[:,1])
 		elif (dic['mulpol_index']==2):
@@ -1084,6 +1105,9 @@ class Correlation3D:
 			path_to_BAOFIT = self._path_to_txt_file_folder + 'BaoFit_'+self._correlation+'__'+self._q1
 		elif (self._correlation=='q_f'):
 			path_to_BAOFIT = self._path_to_txt_file_folder + 'BaoFit_'+self._correlation+'__'+self._f1+'__'+self._q1
+		elif (self._correlation=='f_f'):
+			path_to_BAOFIT = self._path_to_txt_file_folder + 'BaoFit_'+self._correlation+'__'+self._f1
+
 		if (with_metals_templates):
 			path_to_BAOFIT += '__withMetalsTemplates'
 		path_to_BAOFIT += '/bao2D'
@@ -1115,9 +1139,15 @@ class Correlation3D:
 		string_ini = """
 
 ## Linear theory P(k) templates with and w/o wiggles
-modelroot = """ + const.path_to_BAOFIT_model__ + """
-fiducial =  DR9LyaMocksLCDM
-nowiggles = DR9LyaMocksLCDMSB
+#modelroot = """ + const.path_to_BAOFIT_model__ + """
+#fiducial =  DR9LyaMocksLCDM
+#nowiggles = DR9LyaMocksLCDMSB
+modelroot = /home/gpfs/manip/mnt0607/bao/hdumasde/Tests/
+fiducial  =  helion
+nowiggles = helionNoWiggles
+omega-matter = 0.27
+hubble-constant = 0.7
+
 
 ## k-space fit
 kspace = true
@@ -1238,6 +1268,9 @@ output-prefix = """ + path_to_BAOFIT + """.
 		elif (self._correlation=='q_f'):
 			param = numpy.asarray( [1.2,-0.351,0.9,0.,0.,3.6,0.962524,1.966,3.26,1.,1.,1.,1.,0.,0.,0.,0.,0.,0.] )
 			path_to_BAOFIT = self._path_to_txt_file_folder + 'BaoFit_'+self._correlation+'__'+self._f1+'__'+self._q1
+		elif (self._correlation=='f_f'):
+			param = numpy.asarray( [1.2,-0.351,-2.,0.,0.,3.6,0.962524,0.,1.966,1.,1.,1.,1.,0.,0.,0.,0.,0.,0.] )
+			path_to_BAOFIT = self._path_to_txt_file_folder + 'BaoFit_'+self._correlation+'__'+self._f1
 
 		if (with_metals_templates):
 			path_to_BAOFIT += '__withMetalsTemplates'
@@ -1266,6 +1299,12 @@ output-prefix = """ + path_to_BAOFIT + """.
 				path_to_cov = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_second_generation/Results/xi_QSO_QSO_result_cov_2D.npy'
 			elif (self._correlation=='q_f'):
 				path_to_cov = self._path_to_txt_file_folder + self._prefix + '_'+ self._middlefix + '_' + realisation_type + '_cov_2D.npy'
+				path_to_cov = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_second_generation/Results_Raw/xi_delta_QSO_LYA_QSO_result_cov_2D.npy'
+				#path_to_cov = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Results_Raw/xi_delta_QSO_LYA_QSO_result_cov_2D.npy'
+			elif (self._correlation=='f_f'):
+				path_to_cov = self._path_to_txt_file_folder + self._prefix + '_'+ self._middlefix + '_' + realisation_type + '_cov_2D.npy'
+				path_to_cov = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_second_generation/Results_Raw/xi_A_delta_delta_LYA_result_cov_2D.npy'
+
 			if (correlation_matrix_path is None): correlation_matrix_path = path_to_cov
 			print '  correlation matrix path = ', correlation_matrix_path
 
@@ -1274,8 +1313,9 @@ output-prefix = """ + path_to_BAOFIT + """.
 
 			print '  Saving .cov'
 			cov = myTools.getCovarianceMatrix(cor,numpy.diag(cov))
+			cov /= 88.
 			if (only_diagonal):
-				cov = numpy.diag( numpy.diag(cov) ) /100.
+				cov = numpy.diag( numpy.diag(cov) )
 
 			covarianceMatrix = numpy.zeros( shape=(self._nbBin2D*self._nbBin2D,3) )
 			indexMatrix1 = numpy.arange(self._nbBin2D*self._nbBin2D).reshape(self._nbBin2D,self._nbBin2D)/self._nbBin2D
@@ -1322,6 +1362,8 @@ output-prefix = """ + path_to_BAOFIT + """.
 		return
 	def plot_1d(self, x_power=0, other=[], title=True):
 
+		with_camb = False
+
 		xxx = self._xi1D[:,0]
 		yyy = self._xi1D[:,1]
 		yer = self._xi1D[:,2]
@@ -1334,7 +1376,7 @@ output-prefix = """ + path_to_BAOFIT + """.
 		yyy = yyy[ cut ]
 		yer = yer[ cut ]
 		coef = numpy.power(xxx,x_power)
-		plt.errorbar(xxx, coef*yyy, yerr=coef*yer, fmt='o', markersize=10,linewidth=2, label=r'$'+self._name+'$')
+		plt.errorbar(xxx, coef*yyy, yerr=coef*yer, marker='o', markersize=10,linewidth=2, label=r'$'+self._name+'$')
 
 		for el in other:
 			TMP_xxx = el._xi1D[:,0]
@@ -1348,7 +1390,13 @@ output-prefix = """ + path_to_BAOFIT + """.
 			TMP_yyy = TMP_yyy[ TMP_cut ]
 			TMP_yer = TMP_yer[ TMP_cut ]
 			TMP_coef = numpy.power(TMP_xxx,x_power)
-			plt.errorbar(TMP_xxx, TMP_coef*TMP_yyy, yerr=TMP_coef*TMP_yer, markersize=10,linewidth=2, fmt='o',label=r'$'+el._name+'$')
+			plt.errorbar(TMP_xxx, TMP_coef*TMP_yyy, yerr=TMP_coef*TMP_yer, markersize=10,linewidth=2, marker='o',label=r'$'+el._name+'$')
+
+		if (with_camb):
+			camb = CAMB.CAMB()
+			camb = camb._xi0
+			coef2 = numpy.power(camb[:,0],x_power)
+			plt.errorbar(camb[:,0],-0.6*coef2*camb[:,1],linewidth=2,label=r'$CAMB, \, b=-0.6$')
 
 		if (title): plt.title(r'$'+self._title+'$', fontsize=40)
 		if (x_power==0):
@@ -1623,7 +1671,7 @@ output-prefix = """ + path_to_BAOFIT + """.
 		yer = xi1D[:,2]
 	
 		### Get the smooth CAMB
-		camb = CAMB.CAMB()
+		camb = CAMB.CAMB('CHRISTOPHE')
 		if (dic['mulpol_index']==0): camb = camb._xi0
 		elif (dic['mulpol_index']==2): camb = camb._xi2
 

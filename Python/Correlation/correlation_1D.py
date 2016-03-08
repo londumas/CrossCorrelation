@@ -373,18 +373,22 @@ dic_simu = {
 list_corr = []
 
 ### Data
-dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator/'
+dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
+dic_class['name'] = "Data"
+dic_class['correlation'] = "f_f_lRF_devide"
+corr = Correlation_1D(dic_class)
+list_corr += [corr]
+### Data
+dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/TESTS/'
 dic_class['name'] = "Data"
 dic_class['correlation'] = "f_f_lRF_devide"
 corr = Correlation_1D(dic_class)
 list_corr += [corr]
 #
 dic_class['name'] = 'Mean \, simu'
-dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_second_generation/Box_000/Simu_000/Results_nicolasEstimator/'
+dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_test_new_file_composition/Box_000/Simu_000/Results/'
 dic_class['correlation'] = "f_f_lRF_devide"
 corr = Correlation_1D(dic_class)
-corr.save_list_realisation_simulation(dic_class,dic_simu)
-corr.set_values_on_mean_simulation(dic_simu)
 list_corr += [corr]
 
 list_corr[0].plot(False,False,list_corr[1:])

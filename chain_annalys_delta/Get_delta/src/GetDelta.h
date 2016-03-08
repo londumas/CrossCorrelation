@@ -130,8 +130,8 @@ class GetDelta
 
 		std::vector< double > v_zz__;
 		std::vector< double > v_meanForestLambdaRF__;
-		std::vector< double > v_alpha2__;
-		std::vector< double > v_beta2__;
+		std::vector< double > v_alpha__;
+		std::vector< double > v_beta__;
 		std::vector<unsigned int> v_nbPixel__;
 		std::vector<int> v_fromFitsIndexToVectorIndex__;
 
@@ -140,10 +140,10 @@ class GetDelta
 		std::vector< std::vector< double > > v_NORM_FLUX__;
 		std::vector< std::vector< double > > v_NORM_FLUX_IVAR__;
 		std::vector< std::vector< double > > v_FLUX_DLA__;
+		std::vector< std::vector< double > > v_TEMPLATE__;
 		std::vector< std::vector< double > > v_DELTA__;
 		std::vector< std::vector< double > > v_DELTA_IVAR__;
 		std::vector< std::vector< double > > v_DELTA_WEIGHT__;
-		std::vector< std::vector< double > > v_TEMPLATE__;
 		std::vector< std::vector< double > > v_ZZZ__;
 		std::vector< std::vector< double > > v_FACTORWEIGHT__;
 

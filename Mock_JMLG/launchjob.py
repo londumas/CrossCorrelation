@@ -34,7 +34,7 @@ nbQSO__ = 238929
 nbFor__ = 170000
 nbPixel = 647   ###2148
 ratioForestToQSO__    = 1.*nbFor__/nbQSO__;
-pathToFolder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_second_generation/' ##noMockExpander
+pathToFolder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_test_new_file_composition/' ##noMockExpander
 
 
 
@@ -66,7 +66,7 @@ def main():
 		subprocess.call('mkdir ' +pathToFolder+'Results_nicolasEstimator/', shell=True)
 		subprocess.call('mkdir ' +pathToFolder+'Results_Raw/', shell=True)
 
-	for i in range(0,0):
+	for i in range(0,1):
 
 		path = pathToFolder + 'Box_00' + str(i) + '/'
 
@@ -75,7 +75,7 @@ def main():
 		if (index_pass==0):
 			subprocess.call('mkdir ' +path, shell=True)
 
-		for j in range(0,0):
+		for j in range(0,1):
 
 			##if (i==0 and j==0): continue
 
@@ -89,6 +89,7 @@ def main():
 				subprocess.call('mkdir ' + path + 'Run', shell=True)
 				subprocess.call('mkdir ' + path + 'Results', shell=True)
 				subprocess.call('mkdir ' + path + 'Results_Raw', shell=True)
+				subprocess.call('mkdir ' + path + 'Results_PureRaw', shell=True)
 				subprocess.call('mkdir ' + path + 'Results_nicolasEstimator', shell=True)
 				subprocess.call('mkdir ' + path + '/Results/BaoFit_q_f__LYA__QSO', shell=True)
 				subprocess.call('mkdir ' + path + '/Results/BaoFit_q_f__LYA__QSO__withMetalsTemplates', shell=True)
@@ -108,8 +109,8 @@ def main():
 				if (i==0 and j==0):
 					tbhduQSO    = create_fits_qso(sizeMax)
 					tbhduQSO.writeto(path + 'Data/QSO_withRSD.fits', clobber=True)
-					#tbhduForest = create_fits_forest(sizeMaxForest)
-					#tbhduForest.writeto(path + 'Data/delta.fits', clobber=True)
+					tbhduForest = create_fits_forest(sizeMaxForest)
+					tbhduForest.writeto(path + 'Data/delta.fits', clobber=True)
 				else:
 					#command = 'clubatch cp ' + pathToFolder + 'Box_000/Simu_000/Data/delta.fits ' + path + 'Data/delta.fits'
 					#subprocess.call(command, shell=True)
@@ -143,9 +144,10 @@ def main():
 				
 				### Remove useless lines in Forest
 				cat = pyfits.open(path + 'Data/delta.fits', memmap=True)[1].data
+				'''
 				print cat.size
 				tmp_idx  = numpy.arange(cat.size)
-				tmp_bool = (cat['Z_VI'] != 0.)
+				tmp_bool = (cat['Z'] != 0.)
 				tmp_idx = tmp_idx[ (tmp_bool) ]
 				last = tmp_idx[-1]
 				print last
@@ -154,8 +156,9 @@ def main():
 				nbFor = cat.size
 				print nbFor-int(nbQSO*ratioForestToQSO__)
 				rand = numpy.random.choice(nbFor, nbFor-int(nbQSO*ratioForestToQSO__), replace=False)
-				cat['Z_VI'][rand] = 0.
-				cat = cat[ (cat['Z_VI'] != 0.) ]
+				cat['Z'][rand] = 0.
+				'''
+				cat = cat[ (cat['Z'] != 0.) ]
 				print cat.size
 				pyfits.writeto(path + 'Data/delta.fits', cat, clobber=True)
 				
@@ -185,11 +188,11 @@ def sendCalculDelta():
 	tmp_command = "echo \" \n ------ Start ------ \n \" " 
 	subprocess.call(tmp_command, shell=True)
 
-	for i in range(0,5):
+	for i in range(0,1):
 
 		path = pathToFolder + 'Box_00' + str(i) + '/'
 
-		for j in range(0,10):
+		for j in range(0,1):
 
 			tmp_command = "echo " + str(i) + " " + str(j)
 			subprocess.call(tmp_command, shell=True)
@@ -227,7 +230,7 @@ def sendCalculDelta():
 					first = first + step
 					last  = last  + step
 
-					myTools.isReadyForNewJobs(100, 500,'time')
+					myTools.isReadyForNewJobs(200, 1000,'time')
 					time.sleep(0.2)
 			
 
@@ -269,34 +272,29 @@ def create_fits_qso(sizeMax=0):
 def create_fits_forest(sizeMax=0):
 
 	### Create a list of forests
-	tmp_nbBinForest     = str(nbPixel)+'D'
 
-	plate                = pyfits.Column(name='PLATE',           format='J', array=numpy.zeros(sizeMax) )
-	mjd                  = pyfits.Column(name='MJD',             format='J', array=numpy.zeros(sizeMax) )
-	fiber                = pyfits.Column(name='FIBERID',         format='J', array=numpy.zeros(sizeMax) )
+	plate               = pyfits.Column(name='PLATE',                 format='J', array=numpy.zeros(sizeMax) )
+	mjd                 = pyfits.Column(name='MJD',                   format='J', array=numpy.zeros(sizeMax) )
+	fiber               = pyfits.Column(name='FIBERID',               format='J', array=numpy.zeros(sizeMax) )
 	
-	ra                   = pyfits.Column(name='RA',              format='D', array=numpy.zeros(sizeMax))
-	de                   = pyfits.Column(name='DEC',             format='D', array=numpy.zeros(sizeMax))
-	zz                   = pyfits.Column(name='Z_VI',            format='D', array=numpy.zeros(sizeMax))
-	nb                   = pyfits.Column(name='NB_PIXEL',        format='I', array=numpy.zeros(sizeMax))
-	meanLambdaRF         = pyfits.Column(name='MEAN_FOREST_LAMBDA_RF', format='D', array=numpy.zeros(sizeMax), unit='angstrom')
-	alpha1               = pyfits.Column(name='ALPHA_1',         format='D', array=numpy.ones(sizeMax) )
-	beta1                = pyfits.Column(name='BETA_1',          format='D', array=numpy.zeros(sizeMax) )
-	alpha2               = pyfits.Column(name='ALPHA_2',         format='D', array=alphaStart__*numpy.ones(sizeMax) )
-	beta2                = pyfits.Column(name='BETA_2',          format='D', array=numpy.zeros(sizeMax) )
+	ra                  = pyfits.Column(name='X',                     format='D', array=numpy.zeros(sizeMax), unit='Mpc/h')
+	de                  = pyfits.Column(name='Y',                     format='D', array=numpy.zeros(sizeMax), unit='Mpc/h')
+	zz                  = pyfits.Column(name='Z',                     format='D', array=numpy.zeros(sizeMax), unit='0 (redshift)')
+	boolA               = pyfits.Column(name='BIT',                   format='I', array=numpy.zeros(sizeMax))
+	meanLambdaRF        = pyfits.Column(name='MEAN_FOREST_LAMBDA_RF', format='D', array=numpy.zeros(sizeMax),             unit='angstrom')
+	alpha               = pyfits.Column(name='ALPHA',                 format='D', array=alphaStart__*numpy.ones(sizeMax), unit='0' )
+	beta                = pyfits.Column(name='BETA',                  format='D', array=numpy.zeros(sizeMax),             unit='1/angstrom' )
 
 	tmp_nbBinForest     = str(nbPixel)+'D'
 	lambdaForest        = pyfits.Column(name='LAMBDA_OBS',       format=tmp_nbBinForest, array=numpy.zeros((sizeMax,nbPixel)), unit='angstrom' )
-	lambdaRFForest      = pyfits.Column(name='LAMBDA_RF',        format=tmp_nbBinForest, array=numpy.zeros((sizeMax,nbPixel)),  unit='angstrom' )
-	normFluxForest      = pyfits.Column(name='NORM_FLUX',        format=tmp_nbBinForest, array=numpy.zeros((sizeMax,nbPixel)))
-	normFluxIvarForest  = pyfits.Column(name='NORM_FLUX_IVAR',   format=tmp_nbBinForest, array=numpy.zeros((sizeMax,nbPixel)))
-	fluxDLA             = pyfits.Column(name='FLUX_DLA',         format=tmp_nbBinForest, array=numpy.ones((sizeMax,nbPixel)))
-	deltaForest         = pyfits.Column(name='DELTA',            format=tmp_nbBinForest, array=numpy.zeros((sizeMax,nbPixel)))
-	deltaIvarForest     = pyfits.Column(name='DELTA_IVAR',       format=tmp_nbBinForest, array=numpy.zeros((sizeMax,nbPixel)))
-	deltaWeight         = pyfits.Column(name='DELTA_WEIGHT',     format=tmp_nbBinForest, array=numpy.ones((sizeMax,nbPixel)))
-	template            = pyfits.Column(name='TEMPLATE',         format=tmp_nbBinForest, array=numpy.ones((sizeMax,nbPixel)))	
+	normFluxForest      = pyfits.Column(name='NORM_FLUX',        format=tmp_nbBinForest, array=numpy.zeros((sizeMax,nbPixel)), unit='0')
+	normFluxIvarForest  = pyfits.Column(name='NORM_FLUX_IVAR',   format=tmp_nbBinForest, array=numpy.zeros((sizeMax,nbPixel)), unit='0')
+	fluxDLA             = pyfits.Column(name='FLUX_DLA',         format=tmp_nbBinForest, array=numpy.ones((sizeMax,nbPixel)),  unit='0')
+	template            = pyfits.Column(name='TEMPLATE',         format=tmp_nbBinForest, array=numpy.ones((sizeMax,nbPixel)),  unit='0')
+	deltaForest         = pyfits.Column(name='DELTA',            format=tmp_nbBinForest, array=numpy.zeros((sizeMax,nbPixel)), unit='0')
+	deltaWeight         = pyfits.Column(name='DELTA_WEIGHT',     format=tmp_nbBinForest, array=numpy.zeros((sizeMax,nbPixel)), unit='0')
 	
-	tbhduForest = pyfits.BinTableHDU.from_columns([plate, mjd, fiber, ra, de, zz, nb, meanLambdaRF, alpha1, beta1, alpha2, beta2, lambdaForest, lambdaRFForest, normFluxForest, normFluxIvarForest, fluxDLA, deltaForest, deltaIvarForest, deltaWeight, template])
+	tbhduForest = pyfits.BinTableHDU.from_columns([plate, mjd, fiber, ra, de, zz, boolA, meanLambdaRF, alpha, beta, lambdaForest, normFluxForest, normFluxIvarForest, fluxDLA, template, deltaForest, deltaWeight])
 
 	return tbhduForest
 

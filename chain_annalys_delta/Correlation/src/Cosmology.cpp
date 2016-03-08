@@ -58,26 +58,26 @@ TH1D* Cosmology::createHistoConvertRedshDist(unsigned int nbBinRedsh, double zEx
 		hConvertRedshDist__->SetBinContent(i+1,dt->Eval((i+.5)*ratio));
 	}
 	delete dt;
-	
+
 	return hConvertRedshDist__;
 }
 
-double Cosmology::dChidzfunct(double* zz, double *par) {
+double Cosmology::dChidzfunct(double* zz, double* par) {
 
 	const double z = zz[0];
 	return cOver100_/sqrt(pow((1.+z),3.)*omegaM__ + omegaL__);
 }
-double Cosmology::Dzfunct(double* zz, double *par) {
+double Cosmology::Dzfunct(double* zz, double* par) {
 
 	const double z = zz[0];
 	return cOver100_/sqrt(pow((1.+z),3.)*omegaM__ + omegaL__)*(1.+z)*(1.+z);
 }
-double Cosmology::DAfunct(double* zz, double *par) {
+double Cosmology::DAfunct(double* zz, double* par) {
 
 	const double z = zz[0];
 	return dChidz__->Integral(0.,z)/(1.+z);
 }
-double Cosmology::DTfunct(double* zz, double *par) {
+double Cosmology::DTfunct(double* zz, double* par) {
 
 	const double z = zz[0];
 	return dChidz__->Integral(0.,z);

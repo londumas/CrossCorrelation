@@ -138,6 +138,23 @@
 		* add file, in order to annalyse BAOFIT results for QSO-QSO correlations
 	- main_Q.py
 		* add file to send QSO-QSO correlations
+# 2016 - 03 - 04 - (10h28)
+	- change format of delta.fits files in order to weight less.
+# 2016 - 03 - 08 - (09h15)
+	- general:
+		* change the structure of the *.fits file to weigth less 
+	- Correlation.cpp
+		* correct saving Mu and map fore f_f2
+		* add options for raw_mocks
+
+
+
+
+
+
+
+
+
 
 
 

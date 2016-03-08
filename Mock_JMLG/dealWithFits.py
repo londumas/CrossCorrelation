@@ -24,69 +24,19 @@ name__ = 'delta.fits'
 nbPixel = 645
 sizeMax = 291271
 
-def createEmptyFitsFile():
 
-	tmp_nbBinForest     = str(nbPixel)+'D'
+def haveAlookForest():
 
-	plate                = pyfits.Column(name='PLATE',           format='J', array=numpy.zeros(sizeMax) )
-	mjd                  = pyfits.Column(name='MJD',             format='J', array=numpy.zeros(sizeMax) )
-	fiber                = pyfits.Column(name='FIBERID',         format='J', array=numpy.zeros(sizeMax) )
-	
-	ra                   = pyfits.Column(name='RA',              format='D', array=numpy.zeros(sizeMax))
-	de                   = pyfits.Column(name='DEC',             format='D', array=numpy.zeros(sizeMax))
-	zz                   = pyfits.Column(name='Z_VI',            format='D', array=numpy.zeros(sizeMax))
-	nb                   = pyfits.Column(name='NB_PIXEL',        format='I', array=numpy.zeros(sizeMax))
-	meanLambdaRF         = pyfits.Column(name='MEAN_FOREST_LAMBDA_RF', format='D', array=numpy.zeros(sizeMax), unit='angstrom')
-	alpha1               = pyfits.Column(name='ALPHA_1',         format='D', array=numpy.ones(sizeMax) )
-	beta1                = pyfits.Column(name='BETA_1',          format='D', array=numpy.zeros(sizeMax) )
-	alpha2               = pyfits.Column(name='ALPHA_2',         format='D', array=numpy.ones(sizeMax) )
-	beta2                = pyfits.Column(name='BETA_2',          format='D', array=numpy.zeros(sizeMax) )
-
-	tmp_nbBinForest     = str(nbPixel)+'D'
-	lambdaForest        = pyfits.Column(name='LAMBDA_OBS',       format=tmp_nbBinForest, array=numpy.zeros((sizeMax,nbPixel)), unit='angstrom' )
-	lambdaRFForest      = pyfits.Column(name='LAMBDA_RF',        format=tmp_nbBinForest, array=numpy.zeros((sizeMax,nbPixel)),  unit='angstrom' )
-	normFluxForest      = pyfits.Column(name='NORM_FLUX',        format=tmp_nbBinForest, array=numpy.zeros((sizeMax,nbPixel)))
-	normFluxIvarForest  = pyfits.Column(name='NORM_FLUX_IVAR',   format=tmp_nbBinForest, array=numpy.zeros((sizeMax,nbPixel)))
-	fluxDLA             = pyfits.Column(name='FLUX_DLA',         format=tmp_nbBinForest, array=numpy.ones((sizeMax,nbPixel)))
-	deltaForest         = pyfits.Column(name='DELTA',            format=tmp_nbBinForest, array=numpy.zeros((sizeMax,nbPixel)))
-	deltaIvarForest     = pyfits.Column(name='DELTA_IVAR',       format=tmp_nbBinForest, array=numpy.zeros((sizeMax,nbPixel)))
-	deltaWeight         = pyfits.Column(name='DELTA_WEIGHT',     format=tmp_nbBinForest, array=numpy.ones((sizeMax,nbPixel)))
-	template            = pyfits.Column(name='TEMPLATE',         format=tmp_nbBinForest, array=numpy.ones((sizeMax,nbPixel)))	
-	
-	tbhdu = pyfits.BinTableHDU.from_columns([plate, mjd, fiber, ra, de, zz, nb, meanLambdaRF, alpha1, beta1, alpha2, beta2, lambdaForest, lambdaRFForest, normFluxForest, normFluxIvarForest, fluxDLA, deltaForest, deltaIvarForest, deltaWeight, template])
-	cat_tbhdu = tbhdu.data
-
-	tbhdu = pyfits.BinTableHDU(data=cat_tbhdu)
-	tbhdu.update()
-	tbhdu.writeto(path__+name__, clobber=True)
-
-	return
-def removeUselessLines():
-	'''
-	'''
-
-	print path__+name__
-	file_cat = pyfits.open(path__+name__) #,mode='update')
-	cat = file_cat[1].data[:885]
-	print cat.size
-	cat = cat[ (cat['Z_VI'] != 0.) ]
-	print cat.size
-
-	#pyfits.writeto(path__+name__, cat, clobber=True)
-
-	return
-def haveAlookForest():	
-
-	cat = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_2016_02_25/Box_000/Simu_000/Data/delta.fits', memmap=True)[1].data[0:10000]
-	cat2 = pyfits.open('/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits', memmap=True)[1].data[0:10000]
+	cat = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_test_new_file_composition/Box_000/Simu_000/Data/delta.fits', memmap=True)[1].data[0:1000]
+	cat2 = pyfits.open('/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits', memmap=True)[1].data[0:1000]
 
 	print cat.size
-	cat = cat[ (cat['Z_VI'] != 0.) ]
+	cat = cat[ (cat['Z'] != 0.) ]
 	print cat.size
 
-	print numpy.amin(cat['RA']), numpy.amax(cat['RA'])
-	print numpy.amin(cat['DEC']), numpy.amax(cat['DEC'])
-	print numpy.amin(cat['Z_VI']), numpy.amax(cat['Z_VI'])
+	print numpy.amin(cat['X']), numpy.amax(cat['X'])
+	print numpy.amin(cat['Y']), numpy.amax(cat['Y'])
+	print numpy.amin(cat['Z']), numpy.amax(cat['Z'])
 
 	
 	from myTools import Get_TProfile
@@ -94,7 +44,7 @@ def haveAlookForest():
 	template  = cat["TEMPLATE"][ cat['NORM_FLUX_IVAR'] >0.]
 	ivar      = cat["NORM_FLUX_IVAR"][ cat['NORM_FLUX_IVAR'] >0.]
 	delta     = cat["DELTA"][ cat['NORM_FLUX_IVAR'] >0.]
-	lambdaRF  = cat["LAMBDA_RF"][ cat['NORM_FLUX_IVAR'] >0.]
+	lambdaRF  = numpy.dot(numpy.diag(1./(1.+cat['Z'])),cat['LAMBDA_OBS'])[ cat['NORM_FLUX_IVAR'] >0.]
 	lambdaObs = cat["LAMBDA_OBS"][ cat['NORM_FLUX_IVAR'] >0.]
 	weight    = numpy.ones(flux.size)
 	###
@@ -129,8 +79,8 @@ def haveAlookForest():
 	plt.show()
 
 	ar_cut          = (cat['NORM_FLUX_IVAR']>0.)
+	ar_lambdaRF     = numpy.dot(numpy.diag(1./(1.+cat['Z'])),cat['LAMBDA_OBS'])[ cat['NORM_FLUX_IVAR'] >0.]
 	ar_lambdaObs    = cat['LAMBDA_OBS'][ ar_cut ]
-	ar_lambdaRF     = cat['LAMBDA_RF'][ ar_cut ]
 	ar_flux         = cat['NORM_FLUX'][ ar_cut ]
 	ar_flux_ivar    = cat['NORM_FLUX_IVAR'][ ar_cut ]
 	ar_zi           = cat['LAMBDA_OBS'][ ar_cut ]/(lambdaRFLine__) -1.
@@ -141,18 +91,18 @@ def haveAlookForest():
 	
 	for i in range(0,cat.size):
 		el = cat[i]
-		if (el['LAMBDA_RF'][0]>1041.): continue
+		lamndaRF = el['LAMBDA_OBS']/(1.+el['Z'])
+		if (lamndaRF[0]>1041.): continue
 		cut = el['NORM_FLUX_IVAR']>0.
 		lambdaAAA = el['LAMBDA_OBS'][cut]
 
-		template = (el['ALPHA_2']+el['BETA_2']*(el['LAMBDA_RF'][cut]-el['MEAN_FOREST_LAMBDA_RF']))*el['TEMPLATE'][cut]
-		print el['ALPHA_2'], el['BETA_2'], el['MEAN_FOREST_LAMBDA_RF'], el['Z_VI']
+		template = (el['ALPHA']+el['BETA']*(lamndaRF[cut]-el['MEAN_FOREST_LAMBDA_RF']))*el['TEMPLATE'][cut]
+		print el['ALPHA'], el['BETA'], el['MEAN_FOREST_LAMBDA_RF'], el['Z']
 
 		plt.errorbar(lambdaAAA,el['NORM_FLUX'][cut],yerr=numpy.power(el['NORM_FLUX_IVAR'][cut],-0.5),label='$Data$')
 
 		plt.plot(lambdaAAA,numpy.power(el['NORM_FLUX_IVAR'][cut],-0.5),label='flux err')
 		plt.plot(lambdaAAA,el['DELTA'][cut],label='delta')
-		plt.plot(lambdaAAA,numpy.power(el['DELTA_IVAR'][cut],-0.5),label='delta err')
 		plt.plot(lambdaAAA,el['DELTA_WEIGHT'][cut],label='delta weight')		
 		plt.plot(lambdaAAA,template,label=r'$QSO \, template$',color='red')
 		
@@ -206,28 +156,10 @@ def haveAlookForest():
 	plt.show()
 	
 	return
-def saveCatalogueQSO():
-	'''
-		Save the list of quasar to a FITS file with one header but many lines
-	'''
-
-	### Constants defined by user
-	path = path__+name__
-
-	cat = pyfits.open(path, memmap=True)[1].data
-
-	col_xx              = pyfits.Column(name='X',  format='D', array=cat['X'], unit='Mpc/h')
-	col_yy              = pyfits.Column(name='Y',  format='D', array=cat['Y'], unit='Mpc/h')
-	col_zz              = pyfits.Column(name='Z',  format='D', array=cat['Z'], unit='0 (redshift)')
-	
-	tbhdu = pyfits.BinTableHDU.from_columns([col_xx, col_yy, col_zz])
-	tbhdu.writeto(path__+'QSO.fits', clobber=True)
-	
-	return
 def haveAlookQSO():	
 
 	#	cat = pyfits.open(path__+'QSO.fits', memmap=True)[1].data
-	cat   = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_2016_02_22/Box_000/Simu_000/Data/QSO_withRSD.fits', memmap=True)[1].data
+	cat   = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_test_new_file_composition/Box_000/Simu_000/Data/QSO_withRSD.fits', memmap=True)[1].data
 	#cat2  = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1536/Box_000/Simu_000/Data/QSO_noRSD.fits', memmap=True)[1].data
 
 	print cat.size
@@ -296,7 +228,7 @@ print cat.size
 #allNeededFileds()
 #saveCatalogueQSO()
 #saveCatalogueQSOFromAscii()
-#haveAlookQSO()
+haveAlookQSO()
 #removeUselessLines()
 haveAlookForest()
 

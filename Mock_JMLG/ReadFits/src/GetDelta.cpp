@@ -53,7 +53,7 @@ const unsigned int nbBinlambdaObs__  = int(lambdaObsMax__-lambdaObsMin__);
 const double lambdaRFTemplateMin__ = lambdaRFMin__-3.;
 const double lambdaRFTemplateMax__ = lambdaRFMax__+3.;
 long  Bit16 = 1;
-const double findPDF__ = false;
+const double findPDF__   = false;
 const bool doVetoLines__ = true;
 
 
@@ -89,7 +89,7 @@ GetDelta::GetDelta(int argc, char** argv) {
 	pathToDataForest__ += sim_idx;
 	pathToDataForest__ += "/Raw/mocks-*";
 	///
-	pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_second_generation";
+	pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_test_new_file_composition";
 	if (noMockExpander__) pathToSave__ += "_noMockExpander";
 	pathToSave__ += "/Box_00";
 	pathToSave__ += box_idx;
@@ -104,13 +104,13 @@ GetDelta::GetDelta(int argc, char** argv) {
 	std::cout << "\n"   << std::endl;
 
 	/// QSO
-//	GetQSO();
+	GetQSO();
 
 	std::cout << "\n"   << std::endl;
 
 	/// Delta
-	if (noMockExpander__) GetData_from_Jean_Marc_file();
-	else GetData();
+//	if (noMockExpander__) GetData_from_Jean_Marc_file();
+//	else GetData();
 
 	if (findPDF__) {
 		for (unsigned int i=0; i<10; i++) {
@@ -146,7 +146,6 @@ GetDelta::~GetDelta(void) {
 
 void GetDelta::GetData(void) {
 
-
 	/// Fits file where to save
 	TString TSfitsnameSpec2 = pathToSave__;
 	TSfitsnameSpec2 += "delta.fits";
@@ -157,6 +156,9 @@ void GetDelta::GetData(void) {
 
 	/// index of forest
 	unsigned int forestIdx = 0;
+	unsigned int nb_QSO_same_XY = 0;
+	float X_before = 0.;
+	float Y_before = 0.;
 
 	/// Get the list 
 	FILE *fp;
@@ -176,7 +178,6 @@ void GetDelta::GetData(void) {
 		path.erase(std::remove(path.begin(), path.end(), ' '), path.end());
 
 		/// Get the file
-		std::cout << "  file = " << path << std::endl;
 		const TString TSfitsnameSpec = path;
 		int sta = 0;
 		fitsfile* fitsptrSpec;
@@ -190,7 +191,6 @@ void GetDelta::GetData(void) {
 			fits_get_num_hdus(fitsptrSpec, &tmp_nbSpectra, &sta);
 			nbSpectra = tmp_nbSpectra-1;
 		}
-		std::cout << "  nbSpectra = " << nbSpectra << std::endl;
 	
 		/// Set to the first HDU
 		fits_movabs_hdu(fitsptrSpec, 2,  NULL, &sta);
@@ -205,14 +205,25 @@ void GetDelta::GetData(void) {
 			long tmp_nbPixels = 0;
 			fits_get_num_rows(fitsptrSpec, &tmp_nbPixels, &sta);
 			const unsigned int tmp_nbPixels2 = tmp_nbPixels;
-			if (tmp_nbPixels2<C_MIN_NB_PIXEL) continue;
 	
+			/// Variable from old FITS
+			float X = 0.;
+			float Y = 0.;
+			fits_read_key(fitsptrSpec,TFLOAT,"X",   &X,NULL,&sta);
+			fits_read_key(fitsptrSpec,TFLOAT,"Y",   &Y,NULL,&sta);
+
+			if (X==X_before && Y_before==Y) {
+				nb_QSO_same_XY ++;
+			}
+			X_before = X;
+			Y_before = Y;
+
+			if (tmp_nbPixels2<C_MIN_NB_PIXEL) continue;
+
 			/// Variable from old FITS
 			unsigned int plate;
 			unsigned int mjd;
 			unsigned int fiberid;
-			float X = 0.;
-			float Y = 0.;
 			float Z = 0.;
 			float LAMBDA_OBS[tmp_nbPixels2];
 			float FLUX[tmp_nbPixels2];
@@ -222,8 +233,6 @@ void GetDelta::GetData(void) {
 			fits_read_key(fitsptrSpec,TINT,"PLATE",  &plate,NULL,&sta);
 			fits_read_key(fitsptrSpec,TINT,"MJD",    &mjd,NULL,&sta);
 			fits_read_key(fitsptrSpec,TINT,"FIBERID",&fiberid,NULL,&sta);
-			fits_read_key(fitsptrSpec,TFLOAT,"X",   &X,NULL,&sta);
-			fits_read_key(fitsptrSpec,TFLOAT,"Y",   &Y,NULL,&sta);
 			fits_read_key(fitsptrSpec,TFLOAT,"ZQSO",&Z,NULL,&sta);
 			fits_read_col(fitsptrSpec,TFLOAT, 1,1,1,tmp_nbPixels2,NULL, &LAMBDA_OBS,NULL,&sta);
 			fits_read_col(fitsptrSpec,TFLOAT, 2,1,1,tmp_nbPixels2,NULL, &FLUX,      NULL,&sta);
@@ -236,13 +245,11 @@ void GetDelta::GetData(void) {
                         double YY = Y;
                         double ZZ = Z;
 			double lambdaOBS[nbPixelsTemplate__];
-			double lambdaRF[nbPixelsTemplate__];
 			double norm_flux[nbPixelsTemplate__];
 			double norm_flux_ivar[nbPixelsTemplate__];
-			double delta[nbPixelsTemplate__];
-			double delta_ivar[nbPixelsTemplate__];
-			double delta_weight[nbPixelsTemplate__];
 			double continuum[nbPixelsTemplate__];
+			double delta[nbPixelsTemplate__];
+			double delta_weight[nbPixelsTemplate__];
 			unsigned int nbPixel = 0;
 			double normFactor[2] = {0.};
 			double meanForestLRF[2] = {0.};
@@ -281,7 +288,6 @@ void GetDelta::GetData(void) {
 				else if (lambdaRFd>=lambdaRFTemplateMin__ && lambdaRFd<lambdaRFTemplateMax__) {
 	
 					lambdaOBS[nbPixel]      = LAMBDA_OBS[p];
-					lambdaRF[nbPixel]       = lambdaRFd;
 					norm_flux[nbPixel]      = FLUX[p];
 					norm_flux_ivar[nbPixel] = IVAR[p];
 					continuum[nbPixel]      = CONTINUUM[p];
@@ -295,14 +301,11 @@ void GetDelta::GetData(void) {
 					}
 				}
 			}
-	
+
 			if (nbPixel>nbPixelsTemplate__)  std::cout << "  GetDelta::GetData::  ERROR: nbPixel>nbPixelsTemplate__ " << nbPixel << " " << nbPixelsTemplate__ << std::endl;
 	
 			/// Normalisation zone
-			if (meanForestLRF[1]<C_MIN_NB_PIXEL) {
-				//std::cout << Z << " " << NORM_FACTOR_nb << " " << NORM_FACTOR << " " << nbPixelTemplate << " " << NB_PIXEL << std::endl;
-				continue;
-			}
+			if (meanForestLRF[1]<C_MIN_NB_PIXEL) continue;
 	
 			/// Normalize the forest
 			double norm = 1.;
@@ -311,15 +314,12 @@ void GetDelta::GetData(void) {
 			/// Normalise the data
 			for (unsigned int i=0; i<nbPixel; i++) {
 				delta[i]           = norm_flux[i]/continuum[i] -1.;
-				delta_ivar[i]      = norm_flux_ivar[i]*continuum[i]*continuum[i];
-				delta_weight[i]    = delta_ivar[i];
+				delta_weight[i]    = norm_flux_ivar[i]*continuum[i]*continuum[i];
 				norm_flux[i]      /= norm;
 				norm_flux_ivar[i] *= norm*norm;
 				continuum[i]      /= norm;
 			}
 
-			/// Number of pixels in forest
-			unsigned int nbPixelInForest = meanForestLRF[1];
 			/// Get the mean lambda_RF
 			meanForestLRF[0] /= meanForestLRF[1];
 			/// Get the mean_flux_in_forest
@@ -332,26 +332,23 @@ void GetDelta::GetData(void) {
 			fits_write_col(fitsptrSpec2,TDOUBLE, 4,forestIdx+1,1,1, &XX, &sta2);
 			fits_write_col(fitsptrSpec2,TDOUBLE, 5,forestIdx+1,1,1, &YY, &sta2);
 			fits_write_col(fitsptrSpec2,TDOUBLE, 6,forestIdx+1,1,1, &ZZ, &sta2);
-			fits_write_col(fitsptrSpec2,TINT,    7,forestIdx+1,1,1, &nbPixelInForest, &sta2);
 			fits_write_col(fitsptrSpec2,TDOUBLE, 8,forestIdx+1,1,1, &meanForestLRF[0], &sta2);
-			fits_write_col(fitsptrSpec2,TDOUBLE, 11,forestIdx+1,1,1, &alpha, &sta2);
-			fits_write_col(fitsptrSpec2,TDOUBLE, 13,forestIdx+1,1,nbPixel, &lambdaOBS, &sta2);
-			fits_write_col(fitsptrSpec2,TDOUBLE, 14,forestIdx+1,1,nbPixel, &lambdaRF, &sta2);
-			fits_write_col(fitsptrSpec2,TDOUBLE, 15,forestIdx+1,1,nbPixel, &norm_flux,       &sta2);
-			fits_write_col(fitsptrSpec2,TDOUBLE, 16,forestIdx+1,1,nbPixel, &norm_flux_ivar,   &sta2);
-			fits_write_col(fitsptrSpec2,TDOUBLE, 18,forestIdx+1,1,nbPixel, &delta,       &sta2);
-			fits_write_col(fitsptrSpec2,TDOUBLE, 19,forestIdx+1,1,nbPixel, &delta_ivar,   &sta2);
-			fits_write_col(fitsptrSpec2,TDOUBLE, 20,forestIdx+1,1,nbPixel, &delta_weight,   &sta2);
-			fits_write_col(fitsptrSpec2,TDOUBLE, 21,forestIdx+1,1,nbPixel, &continuum,   &sta2);
+			fits_write_col(fitsptrSpec2,TDOUBLE, 9,forestIdx+1,1,1, &alpha, &sta2);
+			fits_write_col(fitsptrSpec2,TDOUBLE, 11,forestIdx+1,1,nbPixel, &lambdaOBS, &sta2);
+			fits_write_col(fitsptrSpec2,TDOUBLE, 12,forestIdx+1,1,nbPixel, &norm_flux,       &sta2);
+			fits_write_col(fitsptrSpec2,TDOUBLE, 13,forestIdx+1,1,nbPixel, &norm_flux_ivar,   &sta2);
+			fits_write_col(fitsptrSpec2,TDOUBLE, 15,forestIdx+1,1,nbPixel, &continuum,   &sta2);
+			fits_write_col(fitsptrSpec2,TDOUBLE, 16,forestIdx+1,1,nbPixel, &delta,       &sta2);
+			fits_write_col(fitsptrSpec2,TDOUBLE, 17,forestIdx+1,1,nbPixel, &delta_weight,   &sta2);
+			
 			forestIdx ++;
 		}
 		fits_close_file(fitsptrSpec,&sta);
-		std::cout << "  nb forest =  " << forestIdx << std::endl;
 	}
 
-
 	fits_close_file(fitsptrSpec2,&sta2);
-	std::cout << "  nb forest =  " << forestIdx << std::endl;
+	std::cout << "  nb forest      = " << forestIdx      << std::endl;
+	std::cout << "  nb_QSO_same_XY = " << nb_QSO_same_XY << std::endl;
 
 }
 void GetDelta::GetPDF(unsigned int version) {
@@ -618,6 +615,9 @@ void GetDelta::GetQSO(void) {
 
 	/// Number of QSO
 	unsigned int nbQSOs = 0;
+	unsigned int nb_QSO_same_XY = 0;
+	float X_before = 0.;
+	float Y_before = 0.;
 
 	/// Set to the first HDU
 	fits_movabs_hdu(fitsptrSpec, 2,  NULL, &sta);
@@ -642,6 +642,12 @@ void GetDelta::GetQSO(void) {
                 double YY = Y;
                 double ZZ = Z;
 
+		if (X==X_before && Y_before==Y) {
+			nb_QSO_same_XY ++;
+		}
+		X_before = X;
+		Y_before = Y;
+
 		/// If with RSD
 		if (withRSD__) ZZ += V*oneOverc_speedOfLight*(1.+ZZ);
 
@@ -657,7 +663,8 @@ void GetDelta::GetQSO(void) {
 	fits_close_file(fitsptrSpec,&sta);
 	fits_close_file(fitsptrSpec2,&sta2);
 
-	std::cout << "  nbQSOs = "  << nbQSOs << std::endl;
+	std::cout << "  nbQSOs         = "  << nbQSOs << std::endl;
+	std::cout << "  nb_QSO_same_XY = "  << nb_QSO_same_XY << std::endl;
 }
 
 
@@ -745,12 +752,3 @@ void GetDelta::saveHistos() {
 */
 	
 }
-
-
-
-
-
-
-
-
-

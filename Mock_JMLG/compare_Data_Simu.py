@@ -32,9 +32,9 @@ pathMocks = '/home/gpfs/manip/mnt0607/bao/hdumasde/MockV4/M3_0_0/000/mock.fits'
 
 pathSimu    = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_second_generation/Box_000/Simu_000/Data/'
 rawPathSimu = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_second_generation/'
-chunckNb = 4
+chunckNb = 5
 simulNb  = 10
-show_mean = False
+show_mean = True
 
 num_plots = 10
 colormap = plt.cm.gist_ncar
@@ -59,8 +59,8 @@ def comparePlot():
 	
 	## Map simu
 	catSimu = pyfits.open(pathSimu+'QSO_withRSD.fits',memmap=True)[1].data
-	print int((numpy.amax(catSimu['X'])-numpy.amin(catSimu['X']))/(4.5*0.71)) + 1
-	print int((numpy.amax(catSimu['Y'])-numpy.amin(catSimu['Y']))/(4.5*0.71)) + 1
+	print int((numpy.amax(catSimu['X'])-numpy.amin(catSimu['X']))/(4.5*0.7)) + 1
+	print int((numpy.amax(catSimu['Y'])-numpy.amin(catSimu['Y']))/(4.5*0.7)) + 1
 	plt.plot(catSimu['X'],  catSimu['Y'], linestyle="", marker="o",label=r'$Simu \, QSO$')
 	catSimu = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Box_000/Simu_000/Data/delta.fits',memmap=True)[1].data
 	plt.plot(catSimu['RA'],  catSimu['DEC'], linestyle="", marker="o",label=r'$Simu \, Forest$')
@@ -322,7 +322,7 @@ def comparePlot():
 	#plt.plot([lambdaObsMin__,lambdaObsMin__],[min(numpy.min(data[:,1]),minA),max(numpy.max(data[:,1]),maxA)],color='green', markersize=8,linewidth=2)
 	#plt.plot([7235.,7235.],[min(numpy.min(data[:,1]),minA),max(numpy.max(data[:,1]),maxA)],color='green', markersize=8,linewidth=2)
 
-	data = numpy.loadtxt('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/hDeltaVsLambdaObs_LYA_JMC.txt')
+	data = numpy.loadtxt('../Resources/PDF/hDeltaVsLambdaObs_LYA_JMC.txt')
 	plt.errorbar(data[:,1][ data[:,2]!=0. ], data[:,2][ data[:,2]!=0. ], label=r'$Simu \, input$', color='orange',linewidth=2)
 	plt.xlabel(r'$\lambda_{Obs.} \, [\AA]$', fontsize=40)
 	plt.ylabel(r'$f(\lambda_{Obs.})$', fontsize=40)

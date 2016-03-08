@@ -221,7 +221,7 @@ redshiftWeightBinCenter__ = numpy.array([ redshiftWeightBinEdges__[i]+(redshiftW
 
 omegaM0__      = 0.27
 omegaLambda0__ = 0.73
-h__            = 0.71
+h__            = 0.7
 
 ########################################################################
 ### Targets

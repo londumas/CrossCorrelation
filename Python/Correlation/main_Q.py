@@ -63,6 +63,8 @@ dic_simu = {
 	'nb_box' : 10,
 	'nb_simu' : 10,
 	'projected' : False,
+	'with_metals_templates' : False,
+	'raw' : False
 }
 
 '''
@@ -94,7 +96,7 @@ dic_Q['path_to_cat']                 = raw+'Data/QSO_withRSD.fits'
 corr = correlation_3D_Q.Correlation3DQ(dic_class,dic_Q)
 #corr.save_list_realisation_simulation(dic_class, dic_Q, dic_simu)
 corr.set_values_on_mean_simulation(dic_simu)
-#corr.send_BAOFIT('',None,True,False, 0, False, True)
+corr.send_BAOFIT('',None,False,False, 0, False, True)
 
 
 
