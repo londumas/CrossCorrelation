@@ -429,14 +429,14 @@ def plot_all_cat():
 
 	dr12_z_h = myTools.GetHisto(dr12_z,numpy.arange(1.6,6.1,0.1))
 	dr12_z_h[:,1] /= plate_list_DR12.size*5.
-	print dr12_z_h
 	print numpy.sum( dr12_z_h[:,1] )
+	print '  area = ', plate_list_DR12.size*5.
 	plt.plot(dr12_z_h[:,0],dr12_z_h[:,1], label=r'$DR12$', drawstyle='steps')
 
 	eBOSS_z_h = myTools.GetHisto(eBOSS_z,numpy.arange(1.6,6.1,0.1))
 	eBOSS_z_h[:,1] /= plate_list_eBOSS.size*5.
-	print eBOSS_z_h
 	print numpy.sum( eBOSS_z_h[:,1] )
+	print '  area = ', plate_list_eBOSS.size*5.
 	plt.plot(eBOSS_z_h[:,0],eBOSS_z_h[:,1], label=r'$eBOSS$', drawstyle='steps',color='red')
 
 	plt.xlabel(r'$z_{QSO}$', fontsize=40)
@@ -631,12 +631,14 @@ def plot_all_cat_Forest():
 	dr12_z_h[:,1] /= plate_list_DR12.size*5.
 	print dr12_z_h
 	print numpy.sum( dr12_z_h[:,1] )
+	print '  area = ', plate_list_DR12.size*5.
 	plt.plot(dr12_z_h[:,0],dr12_z_h[:,1], label=r'$DR12$', drawstyle='steps')
 
 	eBOSS_z_h = myTools.GetHisto(eBOSS_z,numpy.arange(minRedshift__-0.1,6.1,0.1))
 	eBOSS_z_h[:,1] /= plate_list_eBOSS.size*5.
 	print eBOSS_z_h
 	print numpy.sum( eBOSS_z_h[:,1] )
+	print '  area = ', plate_list_eBOSS.size*5.
 	plt.plot(eBOSS_z_h[:,0],eBOSS_z_h[:,1], label=r'$eBOSS$', drawstyle='steps',color='red')
 
 	plt.xlabel(r'$z_{forest}$', fontsize=40)
@@ -686,7 +688,7 @@ def bias_evolution():
 	myTools.deal_with_plot(False,False,True)
 	plt.show()
 
-#plot_all_cat_Forest()
+plot_all_cat_Forest()
 #plot_all_cat()
 
 

@@ -404,7 +404,7 @@ dic = {
 	'size_bin_calcul_theta': 1.e-04,
 	'correlation': 'q_f',
 	'path_to_txt_file_folder': 'NOTHING',
-	'f1': 'CIV',
+	'f1': 'LYA',
 	'f2': 'a',
 	'q': 'QSO',
 	'name' : 'Data'
@@ -429,7 +429,7 @@ dic['max_visual_z'] = 0.002
 
 dic['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
 a = CorrelationLambda(dic)
-a.plot_1d()
+a.plot_1d(True)
 a.plot_we()
 a.plot_mu()
 

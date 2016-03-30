@@ -17,7 +17,7 @@ from scipy import interpolate
 chunckNb = 1
 simulNb  = 1
 mockNumber = ''
-isMock_ = True
+isMock_ = False
 forest__ = 'LYA'
 if (forest__ == 'LYB'):
 	lambdaRFMin__      = 800.
@@ -42,10 +42,10 @@ elif (forest__ == 'MGII'):
 ###
 #path = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/FitsFile_DR12_reOBS_eBOSS_Guy/DR12_primery/histos/"
 #path = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/FitsFile_DR12_reOBS_Guy/DR12_primery/histos/"
-path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest__+'/FitsFile_DR12_Guy/DR12_primery/histos/' ##_method1
+path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest__+'/FitsFile_DR12_Guy/DR12_primery/histos_method1/' ##_method1
 #path = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_reObs/histos/"
 #path = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA//FitsFile_eBOSS_Guy/all_eBOSS_primery/histos/"
-rawPath = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_test_new_file_composition/'
+#rawPath = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_test_new_file_composition/'
 
 
 
@@ -81,8 +81,8 @@ for i in range (0,chunckNb):
 
 		#data = numpy.loadtxt('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/hDeltaVsLambdaObs_LYA_JMC.txt')
 		#plt.errorbar(data[:,1][ data[:,2]!=0. ], data[:,2][ data[:,2]!=0. ], label=r'$Simulation \, input$', color='orange')
-		data = numpy.loadtxt('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_second_generation/Box_000/Simu_000/Run/hDeltaVsLambdaObs_LYA_0_0.txt')
-		plt.errorbar(data[:,0]+3500.5, data[:,1], label=r'$Simulation \, output$', color='black')
+		#data = numpy.loadtxt('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_second_generation/Box_000/Simu_000/Run/hDeltaVsLambdaObs_LYA_0_0.txt')
+		#plt.errorbar(data[:,0]+3500.5, data[:,1], label=r'$Simulation \, output$', color='black')
 		#data = numpy.loadtxt('/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_histos_test_PDFMocksJMC/hDeltaVsLambdaObs_LYA.txt')
 		#plt.errorbar(data[:,0]+shift__, data[:,1], label=r'$simulation2$')
 

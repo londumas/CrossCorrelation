@@ -27,7 +27,7 @@ cosmo = {'omega_M_0':omegaM0__, 'omega_lambda_0':omegaLambda0__, 'omega_k_0':0.,
 
 
 ### File Jean-Marc
-cat = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation/TESTS/spectra-780-0.fits')
+cat = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575/Box_000/Simu_000/Raw/mocks-0_1000.fits')
 print cat[0].header
 print cat[0].data
 print cat[1].header
@@ -38,7 +38,7 @@ nbPixel = []
 distPixel = []
 distPixel2 = []
 deltaDist = []
-for i in range(1,100): ##47
+for i in range(1,10): ##47
 	print i
 
 	try:

@@ -45,8 +45,8 @@ def main():
 	path     = '/home/gpfs/manip/mnt0607/bao/hdumasde/Data/CIV/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits'
 	cat = pyfits.open(path)[1].data[:10]
 	
-	print cat['ALPHA_2']
-	print cat['BETA_2']
+	print cat['ALPHA']
+	print cat['BETA']
 
 	data = numpy.loadtxt('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/alphaAndBeta_0_10.txt')
 	print data[:,1]
@@ -58,7 +58,7 @@ def main():
 		xxx = el['LAMBDA_RF'][ el['LAMBDA_RF']!=0 ]
 		plt.errorbar(xxx,el['NORM_FLUX'][ el['LAMBDA_RF']!=0 ],fmt='o')
 
-		yyy = (el['ALPHA_2'] + el['BETA_2']*(xxx-el['MEAN_FOREST_LAMBDA_RF']) )*el['TEMPLATE'][ el['LAMBDA_RF']!=0 ]
+		yyy = (el['ALPHA'] + el['BETA']*(xxx-el['MEAN_FOREST_LAMBDA_RF']) )*el['TEMPLATE'][ el['LAMBDA_RF']!=0 ]
 		plt.errorbar(xxx,yyy)
 
 		yyy = (data[i,1] + data[i,2]*(xxx-el['MEAN_FOREST_LAMBDA_RF']) )*el['TEMPLATE'][ el['LAMBDA_RF']!=0 ]
@@ -115,17 +115,17 @@ def lookNotFittedSpectra():
 	print '  cat = ', cat.size
 	sizeBefore = cat.size
 	idx = numpy.arange(cat.size)
-	cut = numpy.logical_or( numpy.logical_or(  numpy.logical_or( cat['ALPHA_2']==1., cat['BETA_2']==0.),  numpy.abs(cat['ALPHA_2'])>=39.5 ), numpy.abs(cat['BETA_2'])>=0.25 )
-	#cut = numpy.logical_and( numpy.logical_and(  numpy.logical_and( cat['ALPHA_2']!=1., cat['BETA_2']!=0.),  numpy.abs(cat['ALPHA_2'])<=39.5 ), numpy.abs(cat['BETA_2'])<=0.25 )
+	cut = numpy.logical_or( numpy.logical_or(  numpy.logical_or( cat['ALPHA']==1., cat['BETA']==0.),  numpy.abs(cat['ALPHA'])>=39.5 ), numpy.abs(cat['BETA'])>=0.25 )
+	#cut = numpy.logical_and( numpy.logical_and(  numpy.logical_and( cat['ALPHA']!=1., cat['BETA']!=0.),  numpy.abs(cat['ALPHA'])<=39.5 ), numpy.abs(cat['BETA'])<=0.25 )
 	cat = cat[cut]
 	idx = idx[cut]
-	#cut = numpy.abs(cat['ALPHA_2']) == cat['ALPHA_2'][-1]
+	#cut = numpy.abs(cat['ALPHA']) == cat['ALPHA'][-1]
 	#cat = cat[cut]
 	#idx = idx[cut]
 		
 	print '  cat = ', cat.size
 	print '  good = ', sizeBefore-cat.size
-	print numpy.asarray(zip(cat['ALPHA_2'],cat['BETA_2'],idx))
+	print numpy.asarray(zip(cat['ALPHA'],cat['BETA'],idx))
 
 	#weight = []
 	#meanFlux = []
@@ -134,7 +134,7 @@ def lookNotFittedSpectra():
 	for i in range(0,cat.size):
 		el = cat[i]
 		cut = numpy.logical_and( el['NORM_FLUX_IVAR']>0.,el['DELTA_IVAR']>0.)
-		print el['ALPHA_2'], el['BETA_2'], el['LAMBDA_RF'][cut].size, idx[i], el['Z_VI']
+		print el['ALPHA'], el['BETA'], el['LAMBDA_RF'][cut].size, idx[i], el['Z_VI']
 		#weight += [ numpy.mean(el['DELTA_WEIGHT'][cut]) ]
 		#meanFlux += [  numpy.mean(el['NORM_FLUX'][cut]) ]
 		#SN += [  numpy.mean(el['NORM_FLUX'][cut]/numpy.power(el['NORM_FLUX_IVAR'][cut],-0.5)) ]
@@ -151,21 +151,21 @@ def lookNotFittedSpectra():
 		#plt.plot(el['LAMBDA_RF'][cut],el['DELTA_WEIGHT'][cut],label='delta weight')
 		#plt.plot(el['LAMBDA_RF'][cut],el['FLUX_DLA'][cut],label='DLA')
 
-		template = (el['ALPHA_2']+el['BETA_2']*(el['LAMBDA_RF'][cut]-el['MEAN_FOREST_LAMBDA_RF']))*el['TEMPLATE'][cut]
+		template = (el['ALPHA']+el['BETA']*(el['LAMBDA_RF'][cut]-el['MEAN_FOREST_LAMBDA_RF']))*el['TEMPLATE'][cut]
 		plt.plot(el['LAMBDA_RF'][cut],template,label='template')
 		myTools.deal_with_plot(False,False,True)
 		plt.show()
 			
 
-	plt.errorbar(weight,cat['ALPHA_2'],fmt='o',label='weight')
-	plt.errorbar(meanFlux,cat['ALPHA_2'],fmt='o',label='meanFlux')
-	plt.errorbar(SN,cat['ALPHA_2'],fmt='o',label='SN')
+	plt.errorbar(weight,cat['ALPHA'],fmt='o',label='weight')
+	plt.errorbar(meanFlux,cat['ALPHA'],fmt='o',label='meanFlux')
+	plt.errorbar(SN,cat['ALPHA'],fmt='o',label='SN')
 	myTools.deal_with_plot(False,False,True)
 	plt.ylim([ -7.,7. ])
 	plt.show()
-	plt.errorbar(weight,cat['BETA_2'],fmt='o',label='weight')
-	plt.errorbar(meanFlux,cat['BETA_2'],fmt='o',label='meanFlux')
-	plt.errorbar(SN,cat['BETA_2'],fmt='o',label='SN')
+	plt.errorbar(weight,cat['BETA'],fmt='o',label='weight')
+	plt.errorbar(meanFlux,cat['BETA'],fmt='o',label='meanFlux')
+	plt.errorbar(SN,cat['BETA'],fmt='o',label='SN')
 	myTools.deal_with_plot(False,False,True)
 	plt.ylim([ -0.4,0.4 ])
 	plt.show()
@@ -178,8 +178,8 @@ def distribSomething():
 	path = ['/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits']
 	#path = ['/home/gpfs/manip/mnt0607/bao/hdumasde/Data/CIV/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits']
 	cat = pyfits.open(path[0])[1].data[:10000]
-	#cat2 = cat[ numpy.logical_or( numpy.logical_or(  numpy.logical_or( cat['ALPHA_2']==1., cat['BETA_2']==0.),  numpy.abs(cat['ALPHA_2'])>=39.5 ), numpy.abs(cat['BETA_2'])>=0.25 ) ]
-	#cat = cat[ numpy.logical_and( numpy.logical_and(  numpy.logical_and( cat['ALPHA_2']!=1., cat['BETA_2']!=0.),  numpy.abs(cat['ALPHA_2'])<=39.5 ), numpy.abs(cat['BETA_2'])<=0.25 ) ]
+	#cat2 = cat[ numpy.logical_or( numpy.logical_or(  numpy.logical_or( cat['ALPHA']==1., cat['BETA']==0.),  numpy.abs(cat['ALPHA'])>=39.5 ), numpy.abs(cat['BETA'])>=0.25 ) ]
+	#cat = cat[ numpy.logical_and( numpy.logical_and(  numpy.logical_and( cat['ALPHA']!=1., cat['BETA']!=0.),  numpy.abs(cat['ALPHA'])<=39.5 ), numpy.abs(cat['BETA'])<=0.25 ) ]
 	print cat.size
 	#print cat2.size
 
@@ -188,7 +188,7 @@ def distribSomething():
 	value = []
 	for el in cat:
 		cut = numpy.logical_and( el['NORM_FLUX_IVAR']>0.,el['DELTA_IVAR']>0.)
-		value += [ (el['ALPHA_2']+el['BETA_2']*(el['LAMBDA_RF'][cut]-el['MEAN_FOREST_LAMBDA_RF']))*el['TEMPLATE'][cut] ]
+		value += [ (el['ALPHA']+el['BETA']*(el['LAMBDA_RF'][cut]-el['MEAN_FOREST_LAMBDA_RF']))*el['TEMPLATE'][cut] ]
 	#value = numpy.asarray(value).flatten()
 	plt.hist(value,bins=100)
 	myTools.deal_with_plot(False,False,True)
@@ -196,16 +196,16 @@ def distribSomething():
 	'''
 
 	'''
-	value = cat['ALPHA_2']
+	value = cat['ALPHA']
 	plt.hist(value,bins=1000)
 	myTools.deal_with_plot(False,False,True)
 	plt.show()
-	value = cat['BETA_2']
+	value = cat['BETA']
 	plt.hist(value,bins=1000)
 	myTools.deal_with_plot(False,False,True)
 	plt.show()
 
-	cat = cat[ numpy.abs(cat['ALPHA_2'])>=3.5 ]
+	cat = cat[ numpy.abs(cat['ALPHA'])>=3.5 ]
 	print cat.size
 	for i in range(0,cat.size):
 		el = cat[i]
@@ -244,19 +244,21 @@ def meanDelta():
 		lambdaRFMin__      = 1570.
 		lambdaRFMax__      = 2790.
 
-	#path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest+'/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits'
+	path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest+'/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits'
 	#path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Data/LYA/DR12_Nicolas/delta.fits'
 	#path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_reObs/DR12_reObs.fits'
 	#path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits'
 
-	path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_second_generation/Box_000/Simu_000/Data/delta.fits'
+	#path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_second_generation/Box_000/Simu_000/Data/delta.fits'
 
-	cat = pyfits.open(path, memmap=True)[1].data[:1000]
+	cat = pyfits.open(path, memmap=True)[1].data
 
-	cat = cat[ numpy.logical_and( numpy.logical_and(  numpy.logical_and( cat['ALPHA_2']!=alphaStart__, cat['BETA_2']!=0.),  numpy.abs(cat['ALPHA_2'])<=99.5 ), numpy.abs(cat['BETA_2'])<=0.55 ) ]
-	#cat = cat[ numpy.logical_or( numpy.logical_or(  numpy.logical_or( cat['ALPHA_2']==alphaStart__, cat['BETA_2']==0.),  numpy.abs(cat['ALPHA_2'])>=99.5 ), numpy.abs(cat['BETA_2'])>=0.55 ) ]
+	cat = cat[ cat['MJD']==56334 ]
+
+	cat = cat[ numpy.logical_and( numpy.logical_and(  numpy.logical_and( cat['ALPHA']!=alphaStart__, cat['BETA']!=0.),  numpy.abs(cat['ALPHA'])<=99.5 ), numpy.abs(cat['BETA'])<=0.55 ) ]
+	#cat = cat[ numpy.logical_or( numpy.logical_or(  numpy.logical_or( cat['ALPHA']==alphaStart__, cat['BETA']==0.),  numpy.abs(cat['ALPHA'])>=99.5 ), numpy.abs(cat['BETA'])>=0.55 ) ]
 	print cat.size
-	print cat[ (cat['BETA_1']==-600.) ].size
+	print cat[ (cat['BIT']==-600.) ].size
 
 	'''
 	plt.hist(cat['Z_VI'],bins=100)
@@ -265,29 +267,26 @@ def meanDelta():
 	plt.show()
 	'''
 
-	print '  nb |alpha| > 39.5  = ', cat[ (cat['ALPHA_2']>39.5) ].size
-	print '  nb |beta|  > 0.25  = ', cat[ (cat['BETA_2']>0.25) ].size
+	print '  nb |alpha| > 39.5  = ', cat[ (cat['ALPHA']>39.5) ].size
+	print '  nb |beta|  > 0.25  = ', cat[ (cat['BETA']>0.25) ].size
 
 	cat['DELTA'][ (cat['NORM_FLUX_IVAR']<0.) ] = 0.
-	cat['DELTA'][ (cat['DELTA_IVAR']<0.) ] = 0.
 	cat['DELTA'][ (cat['DELTA_WEIGHT']<0.) ] = 0.
 	#cat['DELTA'][ (cat['FLUX_DLA']<0.8) ] = 0.
-	cat['DELTA'][ (cat['LAMBDA_RF']<lambdaRFMin__) ] = 0.
-	cat['DELTA'][ (cat['LAMBDA_RF']>lambdaRFMax__) ] = 0.
+	#cat['DELTA'][ (cat['LAMBDA_RF']<lambdaRFMin__) ] = 0.
+	#cat['DELTA'][ (cat['LAMBDA_RF']>lambdaRFMax__) ] = 0.
 
 	cat['NORM_FLUX'][ (cat['NORM_FLUX_IVAR']<0.) ] = 0.
-	cat['NORM_FLUX'][ (cat['DELTA_IVAR']<0.) ] = 0.
 	cat['NORM_FLUX'][ (cat['DELTA_WEIGHT']<0.) ] = 0.
 	#cat['NORM_FLUX'][ (cat['FLUX_DLA']<0.8) ] = 0.
-	cat['NORM_FLUX'][ (cat['LAMBDA_RF']<lambdaRFMin__) ] = 0.
-	cat['NORM_FLUX'][ (cat['LAMBDA_RF']>lambdaRFMax__) ] = 0.
+	#cat['NORM_FLUX'][ (cat['LAMBDA_RF']<lambdaRFMin__) ] = 0.
+	#cat['NORM_FLUX'][ (cat['LAMBDA_RF']>lambdaRFMax__) ] = 0.
 
 	cat['DELTA_WEIGHT'][ (cat['NORM_FLUX_IVAR']<0.) ] = 0.
-	cat['DELTA_WEIGHT'][ (cat['DELTA_IVAR']<0.) ] = 0.
 	cat['DELTA_WEIGHT'][ (cat['DELTA_WEIGHT']<0.) ] = 0.
 	#cat['DELTA_WEIGHT'][ (cat['FLUX_DLA']<0.8) ] = 0.
-	cat['DELTA_WEIGHT'][ (cat['LAMBDA_RF']<lambdaRFMin__) ] = 0.
-	cat['DELTA_WEIGHT'][ (cat['LAMBDA_RF']>lambdaRFMax__) ] = 0.
+	#cat['DELTA_WEIGHT'][ (cat['LAMBDA_RF']<lambdaRFMin__) ] = 0.
+	#cat['DELTA_WEIGHT'][ (cat['LAMBDA_RF']>lambdaRFMax__) ] = 0.
 
 	'''
 	for lines in skyLines__:
@@ -299,7 +298,8 @@ def meanDelta():
 
 
 	print cat.size
-	cut_noForestPixel = numpy.logical_and(cat['DELTA_WEIGHT']>0., numpy.logical_and( (cat['LAMBDA_RF']>=lambdaRFMin__) , (cat['LAMBDA_RF']<lambdaRFMax__) )).astype(int)
+	#cut_noForestPixel = numpy.logical_and(cat['DELTA_WEIGHT']>0., numpy.logical_and( (cat['LAMBDA_RF']>=lambdaRFMin__) , (cat['LAMBDA_RF']<lambdaRFMax__) )).astype(int)
+	cut_noForestPixel = (cat['DELTA_WEIGHT']>0.).astype(int)
 	len_forest = numpy.sum(cut_noForestPixel,axis=1)
 	cat = cat[ (len_forest>=nbBinRFMin__) ]
 	print cat.size
@@ -326,17 +326,17 @@ def meanDelta():
 	#meanSNR = meanSNR[ meanDLA!=1. ]
 	#meanDelta = meanDelta[ meanDLA!=1. ]
 
-	
+	'''
 	### \alpha vs. <flux>
 	xxx = meanFlux
-	yyy = cat['ALPHA_2']
+	yyy = cat['ALPHA']
 	def chi2(a0,a1,a2):
 		return numpy.sum(numpy.power( yyy-(a0*xxx) ,2.))
 	m = Minuit(chi2,a0=1.,error_a0=1., print_level=-1, errordef=0.01) 	
 	m.migrad()
 	a0 = m.values['a0']
-	print a0, numpy.mean(meanFlux), numpy.mean(cat['ALPHA_2'])
-	plt.errorbar(meanFlux, cat['ALPHA_2'],fmt='o')
+	print a0, numpy.mean(meanFlux), numpy.mean(cat['ALPHA'])
+	plt.errorbar(meanFlux, cat['ALPHA'],fmt='o')
 	plt.errorbar(meanFlux, a0*meanFlux,fmt='o')
 	plt.xlabel(r'$<flux>$', fontsize=40)
 	plt.ylabel(r'$\alpha$', fontsize=40)
@@ -349,7 +349,8 @@ def meanDelta():
 	plt.ylabel(r'$\#$', fontsize=40)
 	myTools.deal_with_plot(False,False,True)
 	plt.show()
-	'''
+	
+	
 	### \chi^{2}/NDF
 	plt.hist(cat['ALPHA_1'],bins=1000)
 	plt.xlabel(r'$\chi^{2}/N.D.F.$', fontsize=40)
@@ -357,10 +358,11 @@ def meanDelta():
 	myTools.deal_with_plot(False,False,True)
 	plt.show()
 	
+	
 	### <SNR> vs. <delta>
 	plt.errorbar(numpy.abs(meanDelta[meanDLA==1.]),meanSNR[meanDLA==1.],fmt='o',label='noDLA')
 	plt.errorbar(numpy.abs(meanDelta[meanDLA!=1.]),meanSNR[meanDLA!=1.],fmt='o',color='red',label='withDLA')
-	plt.errorbar(numpy.abs(meanDelta[ (cat['BETA_1']==-600) ]),meanSNR[ (cat['BETA_1']==-600) ],fmt='o',color='green')
+	plt.errorbar(numpy.abs(meanDelta[ (cat['BIT']==-600) ]),meanSNR[ (cat['BIT']==-600) ],fmt='o',color='green')
 	plt.xlabel(r'$|<\delta>|$', fontsize=40)
 	plt.ylabel(r'$<SNR>$', fontsize=40)
 	myTools.deal_with_plot(False,False,True)
@@ -368,11 +370,12 @@ def meanDelta():
 	### <SNR> vs. |<delta>|
 	plt.errorbar(numpy.abs(meanDelta[meanDLA==1.]),meanSNR[meanDLA==1.],fmt='o')
 	plt.errorbar(numpy.abs(meanDelta[meanDLA!=1.]),meanSNR[meanDLA!=1.],fmt='o',color='red')
-	plt.errorbar(numpy.abs(meanDelta[ (cat['BETA_1']==-600) ]),meanSNR[ (cat['BETA_1']==-600) ],fmt='o',color='green')
+	plt.errorbar(numpy.abs(meanDelta[ (cat['BIT']==-600) ]),meanSNR[ (cat['BIT']==-600) ],fmt='o',color='green')
 	plt.xlabel(r'$|<\delta>|$', fontsize=40)
 	plt.ylabel(r'$<SNR>$', fontsize=40)
 	myTools.deal_with_plot(True,True,True)
 	plt.show()
+	
 	
 	### |<delta>| vs. chi^2/NDF
 	plt.errorbar(cat['ALPHA_1'],numpy.abs(meanDelta),fmt='o')
@@ -399,37 +402,37 @@ def meanDelta():
 	myTools.deal_with_plot(False,False,True)
 	plt.show()
 	### alpha vs. |<delta>|
-	plt.errorbar(numpy.abs(meanDelta),cat['ALPHA_2'],fmt='o')
+	plt.errorbar(numpy.abs(meanDelta),cat['ALPHA'],fmt='o')
 	plt.xlabel(r'$|< \delta >|$', fontsize=40)
-	plt.ylabel(r'$cat[ALPHA_2]$', fontsize=40)
+	plt.ylabel(r'$cat[ALPHA]$', fontsize=40)
 	myTools.deal_with_plot(False,False,True)
 	plt.show()
 	### beta vs. |<delta>|
-	plt.errorbar(numpy.abs(meanDelta),cat['BETA_2'],fmt='o')
+	plt.errorbar(numpy.abs(meanDelta),cat['BETA'],fmt='o')
 	plt.xlabel(r'$|< \delta >|$', fontsize=40)
-	plt.ylabel(r'$cat[BETA_2]$', fontsize=40)
+	plt.ylabel(r'$cat[BETA]$', fontsize=40)
 	myTools.deal_with_plot(False,False,True)
 	plt.show()
 	### alpha vs. <SNR>
-	plt.errorbar(meanSNR,cat['ALPHA_2'],fmt='o')
+	plt.errorbar(meanSNR,cat['ALPHA'],fmt='o')
 	plt.xlabel(r'$<SNR>$', fontsize=40)
 	plt.ylabel(r'$alpha$', fontsize=40)
 	myTools.deal_with_plot(False,False,True)
 	plt.show()
 	### beta vs. <SNR>
-	plt.errorbar(meanSNR,cat['BETA_2'],fmt='o')
+	plt.errorbar(meanSNR,cat['BETA'],fmt='o')
 	plt.xlabel(r'$<SNR>$', fontsize=40)
 	plt.ylabel(r'$beta$', fontsize=40)
 	myTools.deal_with_plot(False,False,True)
 	plt.show()
 	### alpha vs. Z
-	plt.errorbar(cat['Z_VI'],cat['ALPHA_2'],fmt='o')
+	plt.errorbar(cat['Z_VI'],cat['ALPHA'],fmt='o')
 	plt.xlabel(r'$Z$', fontsize=40)
 	plt.ylabel(r'$alpha$', fontsize=40)
 	myTools.deal_with_plot(False,False,True)
 	plt.show()
 	### beta vs. Z
-	plt.errorbar(cat['Z_VI'],cat['BETA_2'],fmt='o')
+	plt.errorbar(cat['Z_VI'],cat['BETA'],fmt='o')
 	plt.xlabel(r'$Z$', fontsize=40)
 	plt.ylabel(r'$beta$', fontsize=40)
 	myTools.deal_with_plot(False,False,True)
@@ -450,9 +453,9 @@ def meanDelta():
 	plt.show()
 	'''
 	
-	cat = cat[ meanSNR>10. ]
-	meanDelta = meanDelta[ meanSNR>10. ]
-	meanSNR = meanSNR[ meanSNR>10. ]
+	cat = cat[ meanSNR>30. ]
+	meanDelta = meanDelta[ meanSNR>30. ]
+	meanSNR = meanSNR[ meanSNR>30. ]
 	#cat = cat[ numpy.abs(meanDelta)>0.5 ]
 	#meanDelta = meanDelta[ numpy.abs(meanDelta)>0.5 ]
 	#meanSNR = meanSNR[ numpy.abs(meanDelta)>0.5 ]
@@ -464,34 +467,39 @@ def meanDelta():
 	for i in range(0,cat.size):
 		el = cat[i]
 		cut = el['DELTA_WEIGHT']>0.
-		template = (el['ALPHA_2']+el['BETA_2']*(el['LAMBDA_RF'][cut]-el['MEAN_FOREST_LAMBDA_RF']))*el['TEMPLATE'][cut]
+		lamRF = el['LAMBDA_OBS']/(1.+el['Z'])
+		cut = numpy.logical_and( numpy.logical_and( el['DELTA_WEIGHT']>0., lamRF>=1040. ), lamRF<=1200.)
+		template = (el['ALPHA']+el['BETA']*(lamRF[cut]-el['MEAN_FOREST_LAMBDA_RF']))*el['TEMPLATE'][cut]
 
 		if (template[ template<=0. ].size!=0):
 			#print template[ template<=0. ]
 			continue
-		if (template[ numpy.logical_and( el['LAMBDA_RF'][cut]>=lambdaRFMin__,el['LAMBDA_RF'][cut]<lambdaRFMax__) ].size<50):
+		if (template[ numpy.logical_and( lamRF[cut]>=lambdaRFMin__,lamRF[cut]<lambdaRFMax__) ].size<50):
 			continue
 			
-		print meanSNR[i],meanDelta[i], el['Z_VI'], el['PLATE'], el['MJD'], el['FIBERID'], el['ALPHA_2'], el['BETA_2'], el['BETA_1']
+		print meanSNR[i],meanDelta[i], el['Z'], el['PLATE'], el['MJD'], el['FIBERID'], el['ALPHA'], el['BETA'], el['BIT']
 
 
 		#myTools.plotOnSpectra_plate(el['PLATE'], el['MJD'], el['FIBERID'])
-		#myTools.plotOnSpectra_spec(el['PLATE'], el['MJD'], el['FIBERID'],el['Z_VI'])
+		myTools.plotOnSpectra_spec(el['PLATE'], el['MJD'], el['FIBERID'],el['Z'], [lamRF[cut],template*el['FLUX_DLA'][cut]])
 
-		plt.errorbar(el['LAMBDA_RF'][cut],el['NORM_FLUX'][cut],yerr=numpy.power(el['NORM_FLUX_IVAR'][cut],-0.5),label='$Data$')
-		#plt.plot(el['LAMBDA_RF'][cut],numpy.power(el['NORM_FLUX_IVAR'][cut],-0.5),label='flux err')
-		#plt.plot(el['LAMBDA_RF'][cut],el['DELTA'][cut],label='delta')
-		#plt.plot(el['LAMBDA_RF'][cut],numpy.power(el['DELTA_IVAR'][cut],-0.5),label='delta err')
-		#plt.plot(el['LAMBDA_RF'][cut],el['DELTA_WEIGHT'][cut],label='delta weight')
-		plt.plot(el['LAMBDA_RF'][cut],template*el['FLUX_DLA'][cut],label='DLA')
+		plt.errorbar(lamRF[cut],el['NORM_FLUX'][cut],yerr=numpy.power(el['NORM_FLUX_IVAR'][cut],-0.5),label=r'$Data$', markersize=8,linewidth=2)
+		#plt.plot(lamRF[cut],numpy.power(el['NORM_FLUX_IVAR'][cut],-0.5),label='flux err')
+		#plt.plot(lamRF[cut],el['DELTA'][cut],label='delta')
+		#plt.plot(lamRF[cut],numpy.power(el['DELTA_IVAR'][cut],-0.5),label='delta err')
+		#plt.plot(lamRF[cut],el['DELTA_WEIGHT'][cut],label='delta weight')
+		#plt.plot(lamRF[cut],template*el['FLUX_DLA'][cut],label='DLA')
 		
 		
-		plt.plot(el['LAMBDA_RF'][cut],template,label=r'$QSO \, continuum$',color='red')
-		#plt.plot(el['LAMBDA_RF'][cut],el['NORM_FLUX'][cut]/(el['DELTA'][cut]+1.),label=r'$QSO \, continuum$',color='red')
+		plt.plot(lamRF[cut],template*el['FLUX_DLA'][cut],label=r'$Quasar \, continuum$',color='red', markersize=8,linewidth=4)
+		#plt.plot(lamRF[cut],el['NORM_FLUX'][cut]/(el['DELTA'][cut]+1.),label=r'$QSO \, continuum$',color='red')
 
-		myTools.deal_with_plot(False,False,False)
+		myTools.deal_with_plot(False,False,True)
 		plt.xlabel(r'$\lambda_{R.F.} \, [\AA]$', fontsize=40)
-		plt.ylabel(r'$Normalized \, flux$', fontsize=40)
+		plt.ylabel(r'$\phi(\lambda_{R.F.})$', fontsize=40)
+		plt.legend(fontsize=40, numpoints=1,ncol=1)
+		plt.xlim( [lambdaRFMin__,lambdaRFMax__] )
+		plt.ylim( [numpy.min(el['NORM_FLUX'][cut])*1.01,numpy.max(template*el['FLUX_DLA'][cut])*1.1] )
 		plt.show()
 
 	return
@@ -518,7 +526,7 @@ def plot_spectra_i_want():
 		cut = numpy.logical_and( (el['DELTA_WEIGHT']>0.), el['FLUX_DLA']>0.8 )
 		for lines in skyLines__:
                                 cut[ numpy.logical_and( el["LAMBDA_OBS"]>lines[0] , el["LAMBDA_OBS"]<lines[1] ) ] = False 
-		template = (el['ALPHA_2']+el['BETA_2']*(el['LAMBDA_RF'][cut]-el['MEAN_FOREST_LAMBDA_RF']))*el['TEMPLATE'][cut]
+		template = (el['ALPHA']+el['BETA']*(el['LAMBDA_RF'][cut]-el['MEAN_FOREST_LAMBDA_RF']))*el['TEMPLATE'][cut]
 
 		test = el['NORM_FLUX'][cut]/(el['DELTA'][cut]*el['FLUX_DLA'][cut]+1.)
 
@@ -529,9 +537,9 @@ def plot_spectra_i_want():
 		if (test[ test<=0. ].size!=0):
 			continue
 		#print el['PLATE'], el['MJD'], el['FIBERID']
-		print el['ALPHA_2'], el['BETA_2'] #, el['Z_VI'], test[0], test[-1], numpy.mean(el['NORM_FLUX'][cut]/numpy.power(el['NORM_FLUX_IVAR'][cut],-0.5))
+		print el['ALPHA'], el['BETA'] #, el['Z_VI'], test[0], test[-1], numpy.mean(el['NORM_FLUX'][cut]/numpy.power(el['NORM_FLUX_IVAR'][cut],-0.5))
 		#print test[0], test[-1]
-		#print el['ALPHA_2'], el['BETA_2'], el['MEAN_FOREST_LAMBDA_RF']
+		#print el['ALPHA'], el['BETA'], el['MEAN_FOREST_LAMBDA_RF']
 		z += [el['Z_VI']]
 		l_pix += [el['LAMBDA_OBS'][cut]]
 
@@ -606,7 +614,7 @@ def lookTemplate():
 	'''
 	'''
 
-	#path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/MGII/FitsFile_DR12_Guy/DR12_Guy_210000_211186.fits'	
+	#path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/MGII/FitsFile_DR12_Guy/DR12_Guy1000011186.fits'	
 	path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/CIV/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits'
 	cat = pyfits.open(path)[1].data
 
@@ -660,12 +668,12 @@ def correlation_norma_integral():
 	path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/CIV/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits'
 	cat = pyfits.open(path)[1].data
 
-	print '  < alpha > = ', numpy.mean(cat['ALPHA_2'])
-	print '  < beta  > = ', numpy.mean(cat['BETA_2'])
+	print '  < alpha > = ', numpy.mean(cat['ALPHA'])
+	print '  < beta  > = ', numpy.mean(cat['BETA'])
 
-	plt.hist(cat['ALPHA_2'],bins=500)
+	plt.hist(cat['ALPHA'],bins=500)
 	plt.show()
-	plt.hist(cat['BETA_2'],bins=500)
+	plt.hist(cat['BETA'],bins=500)
 	plt.show()
 	'''
 	cat['FLUX_IVAR'][ (cat['LAMBDA_RF']<lambdaRFMin__) ] = 0.

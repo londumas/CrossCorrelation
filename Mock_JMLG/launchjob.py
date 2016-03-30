@@ -29,12 +29,12 @@ import cosmolopy.distance as cosmology
 
 ### Constants
 sizeMax = 250000
-sizeMaxForest = 250000
-nbQSO__ = 238929
-nbFor__ = 170000
-nbPixel = 647   ###2148
+sizeMaxForest = 200000
+nbQSO__ = 232399
+nbFor__ = 166968
+nbPixel = 647
 ratioForestToQSO__    = 1.*nbFor__/nbQSO__;
-pathToFolder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_test_new_file_composition/' ##noMockExpander
+pathToFolder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575/'
 
 
 
@@ -65,8 +65,12 @@ def main():
 		subprocess.call('mkdir ' +pathToFolder+'Results/', shell=True)
 		subprocess.call('mkdir ' +pathToFolder+'Results_nicolasEstimator/', shell=True)
 		subprocess.call('mkdir ' +pathToFolder+'Results_Raw/', shell=True)
+		subprocess.call('mkdir ' +pathToFolder+'Results_PureRaw/', shell=True)
 
-	for i in range(0,1):
+	for i in range(0,10):
+	#for el in [ (8,6), (8,9), (9,5), (9,6), (9,7), (9,8) ]:
+		#i = el[0]
+		#j = el[1]
 
 		path = pathToFolder + 'Box_00' + str(i) + '/'
 
@@ -75,9 +79,9 @@ def main():
 		if (index_pass==0):
 			subprocess.call('mkdir ' +path, shell=True)
 
-		for j in range(0,1):
-
-			##if (i==0 and j==0): continue
+		for j in range(0,10):
+		#if (True):
+			#if (i==0 and j==0): continue
 
 			print i, j
 			path = pathToFolder+ 'Box_00' + str(i) + '/Simu_00'+str(j) + '/'
@@ -91,14 +95,21 @@ def main():
 				subprocess.call('mkdir ' + path + 'Results_Raw', shell=True)
 				subprocess.call('mkdir ' + path + 'Results_PureRaw', shell=True)
 				subprocess.call('mkdir ' + path + 'Results_nicolasEstimator', shell=True)
+				subprocess.call('mkdir ' + path + 'Results_noRSD', shell=True)
+				subprocess.call('mkdir ' + path + 'Results_noRSD_PureRaw', shell=True)
 				subprocess.call('mkdir ' + path + '/Results/BaoFit_q_f__LYA__QSO', shell=True)
 				subprocess.call('mkdir ' + path + '/Results/BaoFit_q_f__LYA__QSO__withMetalsTemplates', shell=True)
 				subprocess.call('mkdir ' + path + '/Results_nicolasEstimator/BaoFit_q_f__LYA__QSO', shell=True)
 				subprocess.call('mkdir ' + path + '/Results_Raw/BaoFit_q_f__LYA__QSO', shell=True)
-
+				subprocess.call('mkdir ' + path + '/Results_noRSD/BaoFit_q_f__LYA__QSO', shell=True)
+				subprocess.call('mkdir ' + path + '/Results_noRSD_PureRaw/BaoFit_q_f__LYA__QSO', shell=True)
 			if (index_pass==1):
 
-				command = '/home/gpfs/manip/mnt0607/bao/hdumasde/Program/LyAMockExpander/Expand.sh -i /home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/v1573/fits/spectra-780'+str(i)+'-'+str(j)+'.fits -o ' +path+ 'Raw/ -columns loglam,flux,ivar,and_mask,mock_contpca,mock_F,mock_Fmet -JM -vac /home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/DR12Q_v2_10.fits -data /home/gpfs/manip/mnt0607/bao/Spectra/SpectraV5_8_guy/spectra -seed 0 -metals 2'
+				'''
+				/home/gpfs/manip/mnt0607/bao/hdumasde/Program/LyAMockExpander/Expand.sh -i /home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/v1575/fits/spectra-7850-0.fits -o /home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575/Box_000/Simu_000/Raw/ -columns loglam,flux,ivar,and_mask,mock_contpca,mock_F,mock_Fmet -JM -vac /home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/DR12Q_v2_10.fits -data /home/gpfs/manip/mnt0607/bao/Spectra/SpectraV5_8_guy/spectra -seed 0 -metals 2
+				'''
+
+				command = '/home/gpfs/manip/mnt0607/bao/hdumasde/Program/LyAMockExpander/Expand.sh -i /home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/v1575/fits/spectra-785'+str(i)+'-'+str(j)+'.fits -o ' +path+ 'Raw/ -columns loglam,flux,ivar,and_mask,mock_contpca,mock_F,mock_Fmet -JM -vac /home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/DR12Q_v2_10.fits -data /home/gpfs/manip/mnt0607/bao/Spectra/SpectraV5_8_guy/spectra -seed 0 -metals 2'
 				command = "clubatch \"echo ; hostname ; "+ command + "\""
 				print command
                                 subprocess.call(command, shell=True)
@@ -107,61 +118,67 @@ def main():
 
 			if (index_pass==2):
 				if (i==0 and j==0):
+					#tbhduQSO    = create_fits_qso(sizeMax)
+					#tbhduQSO.writeto(path + 'Data/QSO_withRSD.fits', clobber=True)
 					tbhduQSO    = create_fits_qso(sizeMax)
-					tbhduQSO.writeto(path + 'Data/QSO_withRSD.fits', clobber=True)
-					tbhduForest = create_fits_forest(sizeMaxForest)
-					tbhduForest.writeto(path + 'Data/delta.fits', clobber=True)
+                                        tbhduQSO.writeto(path + 'Data/QSO_noRSD.fits', clobber=True)
+					#tbhduForest = create_fits_forest(sizeMaxForest)
+					#tbhduForest.writeto(path + 'Data/delta.fits', clobber=True)
 				else:
 					#command = 'clubatch cp ' + pathToFolder + 'Box_000/Simu_000/Data/delta.fits ' + path + 'Data/delta.fits'
 					#subprocess.call(command, shell=True)
 					#command = 'cp ' + pathToFolder + 'Box_000/Simu_000/Data/QSO_withRSD.fits ' + path + 'Data/QSO_withRSD.fits'
 					#subprocess.call(command, shell=True)
+					#tbhduQSO    = create_fits_qso(sizeMax)
+                                        #tbhduQSO.writeto(path + 'Data/QSO_withRSD.fits', clobber=True)
+					#tbhduForest = create_fits_forest(sizeMaxForest)
 					tbhduQSO    = create_fits_qso(sizeMax)
-                                        tbhduQSO.writeto(path + 'Data/QSO_withRSD.fits', clobber=True)
+                                        tbhduQSO.writeto(path + 'Data/QSO_noRSD.fits', clobber=True)
+					#tbhduForest.writeto(path + 'Data/delta.fits', clobber=True)
 					#myTools.isReadyForNewJobs(10, 430,'cp')
-					#time.sleep(20)
+					#time.sleep(30)
 			elif (index_pass==3):
 
 				command = "/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Mock_JMLG/ReadFits/bin/main.exe " + str(i) + ' ' + str(j)
 				command = "clubatch \"time ; hostname ; "+ command + "\""
 				print command
 				subprocess.call(command, shell=True)
-				myTools.isReadyForNewJobs(20, 1000,'time')
-				time.sleep(60)
+				myTools.isReadyForNewJobs(10, 1000,'time')
+				time.sleep(30)
 				
 
 			elif (index_pass==4):
 
 				print path + 'Data/QSO_withRSD.fits'
-				cat = pyfits.open(path + 'Data/QSO_withRSD.fits', memmap=True)[1].data
-				print cat.size
-				cat = cat[ (cat['Z'] != 0.) ]
-				print cat.size
-				nbQSO = cat.size
-				pyfits.writeto(path + 'Data/QSO_withRSD.fits', cat, clobber=True)
-				print nbQSO
-			
+				cat = pyfits.open(path + 'Data/QSO_noRSD.fits', memmap=True)[1].data
 				
+				print '  nb of QSOs before = ', cat.size
+				cat = cat[ (cat['Z'] != 0.) ]
+				print '  nb of QSOs after  = ', cat.size
+				nbQSO = cat.size
+
+				pyfits.writeto(path + 'Data/QSO_noRSD.fits', cat, clobber=True)
+			
+				'''
 				### Remove useless lines in Forest
 				cat = pyfits.open(path + 'Data/delta.fits', memmap=True)[1].data
-				'''
-				print cat.size
-				tmp_idx  = numpy.arange(cat.size)
-				tmp_bool = (cat['Z'] != 0.)
-				tmp_idx = tmp_idx[ (tmp_bool) ]
-				last = tmp_idx[-1]
-				print last
-				cat = cat[:last+1]
-				print cat.size
-				nbFor = cat.size
-				print nbFor-int(nbQSO*ratioForestToQSO__)
-				rand = numpy.random.choice(nbFor, nbFor-int(nbQSO*ratioForestToQSO__), replace=False)
-				cat['Z'][rand] = 0.
-				'''
+
+				print '  nb of QSOs before = ', cat.size
 				cat = cat[ (cat['Z'] != 0.) ]
-				print cat.size
-				pyfits.writeto(path + 'Data/delta.fits', cat, clobber=True)
+				print '  nb of QSOs after  = ', cat.size
+				nbFor = cat.size
+
+				if ( nbFor>nbFor__ ):
+					print nbFor-int(nbQSO*ratioForestToQSO__)
+					rand = numpy.random.choice(nbFor, nbFor-int(nbQSO*ratioForestToQSO__), replace=False)
+					cat['Z'][rand] = 0.
 				
+				print '  nb of QSOs before = ', cat.size
+				cat = cat[ (cat['Z'] != 0.) ]
+				print '  nb of QSOs after  = ', cat.size
+
+				pyfits.writeto(path + 'Data/delta.fits', cat, clobber=True)
+				'''
 
 			'''
 			### Get the data to 'good' files
@@ -188,12 +205,17 @@ def sendCalculDelta():
 	tmp_command = "echo \" \n ------ Start ------ \n \" " 
 	subprocess.call(tmp_command, shell=True)
 
-	for i in range(0,1):
+
+	for el in [ (8,6), (8,9), (9,5), (9,6), (9,7), (9,8) ]:
+		i = el[0]
+		j = el[1]
+
+	#for i in range(8,10):
 
 		path = pathToFolder + 'Box_00' + str(i) + '/'
 
-		for j in range(0,1):
-
+		#for j in range(0,10):
+		if (True):
 			tmp_command = "echo " + str(i) + " " + str(j)
 			subprocess.call(tmp_command, shell=True)
 
@@ -204,10 +226,10 @@ def sendCalculDelta():
 				### Get the data to 'good' files
 				#####################
 				command = "/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/chain_annalys_delta/Get_delta/bin/main.exe " + str(i) + ' ' + str(j) + " 0 0 2 0"
-				command = "clubatch \"echo ; hostname ; "+command + "\""
+				command = "clubatch \"time ; hostname ; "+command + "\""
 				print command
 				subprocess.call(command, shell=True)
-				myTools.isReadyForNewJobs(20, 1000,'echo')
+				myTools.isReadyForNewJobs(10, 1000,'time')
                                 time.sleep(30)
 			
 
@@ -230,30 +252,37 @@ def sendCalculDelta():
 					first = first + step
 					last  = last  + step
 
-					myTools.isReadyForNewJobs(200, 1000,'time')
+					myTools.isReadyForNewJobs(100, 1000,'time')
 					time.sleep(0.2)
 			
 
 			if (index_pass==2):
 				command = "/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/chain_annalys_delta/Get_delta/bin/main.exe " + str(i) + ' ' + str(j) + " 0 0 2 2"
+				command = "clubatch \"time ; hostname ; "+command + "\""
+				print command
+				subprocess.call(command, shell=True)
+				myTools.isReadyForNewJobs(20, 1000,'time')
+                                time.sleep(30)
+
+			if (index_pass==3):
+				command = "/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/chain_annalys_delta/Correlation/bin/main.exe 2 0 0 0 " + str(i) + ' ' + str(j)
 				command = "clubatch \"echo ; hostname ; "+command + "\""
 				print command
 				subprocess.call(command, shell=True)
 				myTools.isReadyForNewJobs(30, 1000,'echo')
                                 time.sleep(30)
-			
 
-			if (index_pass==3):
+			if (index_pass==4):
 				### Get the data to 'good' files
 				#####################
 				command = "clubatch \"time  ; hostname ; python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/Python/Correlation/xi_delta_QSO.py a a a a 0 " + str(i) + ' ' + str(j) + "\""
 				print command
 				time.sleep(1.)
 				subprocess.call(command, shell=True)
-			if (index_pass==4):
+			if (index_pass==5):
 				### Get the data to 'good' files
 				#####################
-				command = "clubatch \"time  ; hostname ; python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/Python/Correlation/xi_Q_Q.py a a a a " + str(i) + ' ' + str(j) + "\""
+				command = "clubatch \"time  ; hostname ; python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/main_Q.py " + str(i) + ' ' + str(j) + "\""
 				print command
 				subprocess.call(command, shell=True)
 

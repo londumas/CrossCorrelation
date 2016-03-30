@@ -46,6 +46,23 @@ raw_index_parameter = {
 	'beta Si3'                    : 21,
 	'bias Si3'                    : 22
 }
+par_name_f = numpy.asarray(['\\beta','b.(1+\\beta)','gamma-bias','gamma-beta','SigmaNL-perp','1+f',
+	'BAO \, amplitude','\\alpha_{iso}','\\alpha_{\parallel}','\\alpha_{\perp}', 'gamma-scale',
+	'pixel-scale'])
+raw_index_parameter_f = {
+	'beta'                        : 0,
+	'b.(1+beta)'                  : 1,
+	'gamma-bias'                  : 2,
+	'gamma-beta'                  : 3,
+	'SigmaNL-perp'                : 4,
+	'1+f'                         : 5,
+	'BAO \, amplitude'            : 6,
+	'alpha_{iso}'                 : 7,
+	'alpha_paral'                 : 8, 
+	'alpha_perp'                  : 9,
+	'gamma-scale'                 : 10,
+	'pixel-scale'                 : 11
+}
 
 class AnnalyseBAOFIT(correlation_3D.Correlation3D):
 
@@ -55,7 +72,10 @@ class AnnalyseBAOFIT(correlation_3D.Correlation3D):
 
 		### index of parameters
 		if (index_parameter is None):
-			self._index_parameter = copy.deepcopy(raw_index_parameter)
+			if (self._correlation=='q_f'):
+				self._index_parameter = copy.deepcopy(raw_index_parameter)
+			elif (self._correlation=='f_f'):
+				self._index_parameter = copy.deepcopy(raw_index_parameter_f)
 		else:
 			self._index_parameter = copy.deepcopy(index_parameter)
 
@@ -68,7 +88,10 @@ class AnnalyseBAOFIT(correlation_3D.Correlation3D):
 			self._path_to_BAOFIT = path_to_BAOFIT
 
 		### Set attributes set after
-		self._par_name       = copy.deepcopy(par_name)
+		if (self._correlation=='q_f'):
+			self._par_name       = copy.deepcopy(par_name)
+		elif (self._correlation=='f_f'):
+			self._par_name       = copy.deepcopy(par_name_f)
 		self._xi2D_fit       = None
 		self._nbParam        = None
 		self._param          = None
@@ -138,6 +161,9 @@ class AnnalyseBAOFIT(correlation_3D.Correlation3D):
 		subprocess.call('rm '+self._path_to_BAOFIT+'tmp_scan.txt', shell=True)
 		
 		### Scan
+		bestFit = numpy.zeros( shape=(2,1) )
+		bestFit[0,0] = data[0,i_alpha_perp]
+		bestFit[1,0] = data[0,i_alpha_paral]
 		chi2_bestFit = data[0][-1]
 		chi2 = data[1:,-1]
 		
@@ -154,7 +180,7 @@ class AnnalyseBAOFIT(correlation_3D.Correlation3D):
 
 		self._chi2_scan_edge = [numpy.amin(data[1:,i_alpha_perp]), numpy.amax(data[1:,i_alpha_perp]), numpy.amin(data[1:,i_alpha_paral]), numpy.amax(data[1:,i_alpha_paral])]
 
-		return
+		return bestFit
 	def read_toyMC(self):
 
 		### Constants
@@ -381,7 +407,7 @@ class AnnalyseBAOFIT(correlation_3D.Correlation3D):
 				plt.ylabel(r'$|s|^{2}.'+self._label+' (|s|) \, [(h^{-1}.Mpc)^{2}]$', fontsize=40)
 				plt.legend(fontsize=40, numpoints=1,ncol=2, loc=2)
 
-		plt.ylabel(r'$Residuals (|s|)$', fontsize=40)
+		#plt.ylabel(r'$Residuals (|s|)$', fontsize=40)
 		
 		plt.title(r'$'+self._title+'$', fontsize=40)
 		plt.xlabel(r'$|s| \, [h^{-1}.Mpc]$', fontsize=40)
@@ -441,7 +467,8 @@ class AnnalyseBAOFIT(correlation_3D.Correlation3D):
 		plt.grid(True)
 		cbar.formatter.set_powerlimits((0, 0))
 		cbar.update_ticks()
-	
+		myTools.deal_with_plot(False,False,False)
+
 		plt.show()
 		
 		return
@@ -452,6 +479,51 @@ class AnnalyseBAOFIT(correlation_3D.Correlation3D):
 		xi2D[:,:,1] = self._xi2D_fit[:,:,6]
 		xi2D[:,:,2] = self._xi2D_fit[:,:,8]
 		self.plot_given_2d(x_power, xi2D, self._label+'_{fit}')
+
+		return
+	def plot_slice_fit_2d(self,sliceX=None,sliceY=None):
+
+		if (sliceX is not None):
+			mean = numpy.mean(self._xi2D_grid[sliceX,:,0])
+			xxx = self._xi2D_grid[sliceX,:,1]
+			yyy = self._xi2D[sliceX,:,1]
+			yer = self._xi2D[sliceX,:,2]
+			xxx2 = self._xi2D_grid[sliceX,:,1]
+			yyy2 = self._xi2D_fit[sliceX,:,6]
+			yer2 = self._xi2D_fit[sliceX,:,8]
+		elif (sliceY is not None):
+			mean = numpy.mean(self._xi2D_grid[:,sliceY,1])
+			xxx = self._xi2D_grid[:,sliceY,0]
+			yyy = self._xi2D[:,sliceY,1]
+                        yer = self._xi2D[:,sliceY,2]
+			xxx2 = self._xi2D_grid[:,sliceY,0]
+			yyy2 = self._xi2D_fit[:,sliceY,6]
+			yer2 = self._xi2D_fit[:,sliceY,8]
+		else:
+			return
+
+		cut = (yer>0.)
+		xxx = xxx[cut]
+		yyy = yyy[cut]
+		yer = yer[cut]
+		if (xxx.size==0): return
+		plt.errorbar(xxx, yyy, yerr=yer, fmt='o', markersize=10,linewidth=2)
+		
+		cut = (yer2>0.)
+		xxx2 = xxx2[cut]
+		yyy2 = yyy2[cut]
+		yer2 = yer2[cut]
+		if (xxx2.size!=0): plt.errorbar(xxx2, yyy2, linewidth=2,color='red')
+		
+		if (sliceX is not None):
+			plt.xlabel(r'$s_{\parallel} \, [h^{-1} Mpc]$', fontsize=40)
+			plt.title(r'$<s_{\perp}> = %.2f \, Mpc.h^{-1}$' % mean)
+		else:
+			plt.xlabel(r'$s_{\perp} \, [h^{-1} Mpc]$', fontsize=40)
+			plt.title(r'$<s_{\parallel}> = %.2f \, Mpc.h^{-1}$' % mean)
+		plt.ylabel(r'$'+self._label+'(\, \overrightarrow{s} \,)$',fontsize=40)	
+                myTools.deal_with_plot(False,False,False)
+                plt.show()
 
 		return
 	def plot_residuals_2d(self,x_power=0):
@@ -481,10 +553,7 @@ class AnnalyseBAOFIT(correlation_3D.Correlation3D):
 	def plot_chi2_scan(self, sizeX=100, sizeY=100, edge=None, toyMC=False, bootstrap=False, simulation=None):
 		
 		### Read chi2 scan
-		self.read_chi2_scan(sizeX, sizeY)
-
-		### Best Fit
-		bestFit = self.get_best_fit()
+		bestFit = self.read_chi2_scan(sizeX, sizeY)
 
 		if (edge is not None):
 			self._chi2_scan_edge = edge

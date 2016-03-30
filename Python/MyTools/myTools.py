@@ -41,12 +41,15 @@ def Rebin(a, shape, weight=None):
 		weight = weight.reshape(tuple(sh))
 		weight = numpy.where(weight==0,1e-37,weight)
 		return numpy.where(numpy.average(weight,axis=tuple(numpy.arange(1,len(sh),2)))==0,0,(numpy.average(a,axis=tuple(numpy.arange(1,len(sh),2)),weights=weight)))
-def GetHisto(data,nbBin):
+def GetHisto(data,nbBin,weights=None):
 	''' 
 		Get an histo 
 	'''
 
-	hist, axisX = numpy.histogram(data,bins=nbBin)
+	if (weights is None):
+		hist, axisX = numpy.histogram(data,bins=nbBin)
+	else:
+		hist, axisX = numpy.histogram(data,bins=nbBin, weights=weights)
 	xxx = numpy.array([ axisX[i]+(axisX[i+1]-axisX[i])/2. for i in range(0,axisX.size-1) ])
 
 	return numpy.asarray(zip(xxx,hist))
@@ -127,6 +130,7 @@ def deal_with_plot(logx=False, logy=False, legend=False):
 
 	ax = plt.gca()
 	[i.set_linewidth(3) for i in ax.spines.itervalues()]
+	plt.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.12)
 
 	if (legend):
 		plt.legend(fontsize=40, numpoints=1,ncol=2)
@@ -201,6 +205,38 @@ def plot2D(data, edge=None, xTitle=None,yTitle=None,zTitle=None,title=None):
 
 	deal_with_plot()
 	cbar.update_ticks()
+	plt.show()
+	
+	return
+def plot_2d_correlation(xi2D, x_power=0):
+
+
+	origin='upper'
+	extent=[0.,200.,200., -200.]
+
+	xxx = numpy.transpose(xi2D[:,:,0])
+	yyy = numpy.transpose(xi2D[:,:,1])
+	yer = numpy.transpose(xi2D[:,:,2])
+
+	cut = (yer==0)
+	if (xxx[cut].size==xxx.size):
+		return
+	yyy[ cut ] = float('nan')
+	coef = numpy.power(xxx,x_power)
+
+	fig = plt.figure()
+	ax = fig.add_subplot(111)
+
+	plt.imshow(coef*yyy, origin=origin,extent=extent, interpolation='None')
+	cbar = plt.colorbar()
+
+	plt.xlabel(r'$s_{\perp} \, [h^{-1} Mpc]$', fontsize=40)
+	plt.ylabel(r'$s_{\parallel} \, [h^{-1} Mpc]$', fontsize=40)
+	plt.grid(True)
+	cbar.formatter.set_powerlimits((0, 0))
+	cbar.update_ticks()
+	deal_with_plot(False,False,False)
+
 	plt.show()
 	
 	return
@@ -627,11 +663,19 @@ def plotOnSpectra_plate(plate,mjd,fiber):
 		
 
 	return
-def plotOnSpectra_spec(plate,mjd,fiber,z=0.):
+def plotOnSpectra_spec(plate,mjd,fiber,z=0.,template=None):
 	'''
 		Plot a spectra when given in a sp_spec formate
 
 	'''
+
+	from const_delta import *
+	import scipy
+	lambdaObsMin__ = 3555.
+	lambdaObsMax__ = 10290.
+	log10lambdaObsMin__ = numpy.log10(lambdaObsMin__)
+	log10lambdaObsMax__ = numpy.log10(lambdaObsMax__)
+
 	
 	### Constants
 	pathToSpec = '/home/gpfs/manip/mnt0607/bao/Spectra/SpectraV5_8_guy/spectra/'
@@ -649,22 +693,67 @@ def plotOnSpectra_spec(plate,mjd,fiber,z=0.):
 	cat = pyfits.open(pathToSpec + str(plate) + "/spec-" + str(plate) + "-" + str(mjd) + "-" + str(fiber).zfill(4) + ".fits", memmap=True)[1].data
 
 	### Get dispertion \Delta \log(\lambda)
-	difLOGLOBS = numpy.array( [ cat['LOGLAM'][i+1]-cat['LOGLAM'][i] for i in numpy.arange(cat['LOGLAM'].size-1) if ( cat['LOGLAM'][i]!=0. and cat['LOGLAM'][i+1]!=0.) ] )
-	print difLOGLOBS
+	#difLOGLOBS = numpy.array( [ cat['LOGLAM'][i+1]-cat['LOGLAM'][i] for i in numpy.arange(cat['LOGLAM'].size-1) if ( cat['LOGLAM'][i]!=0. and cat['LOGLAM'][i+1]!=0.) ] )
+	#print difLOGLOBS
+	#plt.hist(difLOGLOBS)
+	#plt.show()
 
-	plt.hist(difLOGLOBS)
-	plt.show()
+	cat = cat[ (numpy.logical_and( (cat["LOGLAM"]>=log10lambdaObsMin__) , (cat["LOGLAM"]<log10lambdaObsMax__) )) ]
+	#cat = cat[ cat["LOGLAM"]>=log10lambdaObsMin__ ]
+	for lines in skyLines__:
+		cat = cat[ (numpy.logical_or( (cat["LOGLAM"]<=lines[0]) , (cat["LOGLAM"]>=lines[1]) )) ]
+		cat = cat[ numpy.logical_and( numpy.logical_and( (cat["IVAR"]>0.), (cat["AND_MASK"]<bit16__)), (numpy.isfinite(cat["FLUX"])) ) ]
+	removeSkyLines = scipy.loadtxt('/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Resources/Calibration/calibration_flux_using_CIV_forest.txt')
+	#removeSkyLines = scipy.interpolate.interp1d(numpy.log10(3447.5+removeSkyLines[:,0]),removeSkyLines[:,1],bounds_error=False,fill_value=1)
 
-	cat['LOGLAM'] = numpy.power(10.,cat['LOGLAM'])/(1.+z)
+	#plt.plot(3447.5+removeSkyLines[:,0], removeSkyLines[:,1],color='red')
+	#deal_with_plot(False,False,False)
+	#plt.show()
+	removeSkyLines = scipy.interpolate.interp1d(numpy.log10(3447.5+removeSkyLines[:,0]),removeSkyLines[:,1],bounds_error=False,fill_value=1)
 
-	print cat['LOGLAM'][ numpy.logical_and( (cat['LOGLAM']>=const_delta.lambdaRFTemplateMin__) , (cat['LOGLAM']<const_delta.lambdaRFTemplateMax__) ) ].size
+	coef = removeSkyLines(cat["LOGLAM"])
+	cat['FLUX'] /= coef
+
+
+	tmp_logZ = numpy.log10(1.+z)
+	normFactor = numpy.mean( cat["FLUX"][ numpy.logical_and( (cat["LOGLAM"]>log10lambdaRFNormaMin__+tmp_logZ), (cat["LOGLAM"]<log10lambdaRFNormaMax__+tmp_logZ) ) ] )
+	cat['FLUX'] /= normFactor
+
+	cat['LOGLAM'] = numpy.power(10.,cat['LOGLAM'])#/(1.+z)
+	
+
+	#print cat['LOGLAM'][ numpy.logical_and( (cat['LOGLAM']>=const_delta.lambdaRFTemplateMin__) , (cat['LOGLAM']<const_delta.lambdaRFTemplateMax__) ) ].size
 
 	### Plot
-	plt.plot( cat['LOGLAM'], cat['IVAR'],label='ivar', color='red')
-	plt.plot( cat['LOGLAM'], cat['FLUX'],label='flux',color='blue' )
-	plt.xlabel(r'$\lambda_{R.F.} \, [\AA]$', fontsize=40)
-	plt.ylabel(r'$flux$', fontsize=40)
+	#plt.plot( cat['LOGLAM'], cat['IVAR'],label='ivar', color='red')
+	plt.plot( cat['LOGLAM'], cat['FLUX'],label=r'$Data$',color='blue', markersize=8,linewidth=2)
+	#if (template is not None): plt.plot( template[0]*(1.+z),template[1],label=r'$Quasar \, continuum$',color='red', markersize=8,linewidth=4)
+
+	
+	line = 1215.67*(1.+z)
+	yLi = [numpy.min(cat['FLUX'])*1.1,2.*numpy.max(cat['FLUX'])]
+	line = 1909*(1.+z)
+	plt.plot([line,line],yLi,color='yellow',markersize=8,linewidth=4,label=r'$C-III$')
+	line = 1548.2049*(1.+z)
+	plt.plot([line,line],yLi,color='orange',markersize=8,linewidth=4,label=r'$C-IV$')
+	line = 1393.76018*(1.+z)
+        plt.plot([line,line],yLi,color='violet',markersize=8,linewidth=4,label=r'$Si-IV$')
+	line = 1215.67*(1.+z)
+	plt.plot([line,line],yLi,color='green',markersize=8,linewidth=4,label=r'$Lyman-\alpha$')
+	line = 1025.72*(1.+z)
+        plt.plot([line,line],yLi,color='pink',markersize=8,linewidth=4,label=r'$Lyman-\beta$')
+	
+
+	#plt.text(line, numpy.max(cat['FLUX'])*1.1, r'$Lyman-\alpha$', rotation='vertical', fontsize=30)
+
+	if (template is not None): plt.plot( template[0]*(1.+z),template[1],label=r'$Quasar \, continuum$',color='red', markersize=8,linewidth=4)
+	plt.plot([1040.*(1.+z),1200.*(1.+z)],[0.,0.],color='red',markersize=8,linewidth=5,label=r'$Lyman-\alpha forest$')
+
+	plt.xlabel(r'$\lambda_{Obs.} \, [\AA]$', fontsize=40)
+	plt.ylabel(r'$\phi(\lambda_{Obs.})$', fontsize=40)
 	deal_with_plot(False,False,True)
+	plt.ylim([ numpy.min(cat['FLUX'])*1.01,numpy.max(cat['FLUX'])*1.15  ])
+	plt.legend(fontsize=40, numpoints=1,ncol=1)
 	plt.show()
 		
 
@@ -677,17 +766,25 @@ def plot_chi2_scan(data, edge=None, contour=False, bestFit=None, xTitle='-',yTit
 	ax = fig.add_subplot(111)
 
 	deal_with_plot(False,False,False)
-	ax.set_xticks([ 0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5 ])
-	ax.set_yticks([ 0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5 ])
+	plt.ticklabel_format(axis='x',useOffset=False)
+	plt.ticklabel_format(axis='y',useOffset=False)
+	plt.ticklabel_format(axis='z',useOffset=False)
+	#ax.set_xticks([ 0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5 ])
+	#ax.set_yticks([ 0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5 ])
+	ax.set_xticks([ 0.98,0.99,1.0,1.01,1.02 ])
+	ax.set_yticks([ 0.98,0.99,1.0,1.01,1.02 ])
+	#ax.set_xticks([ 0.998,0.999,1.00,1.001,1.002 ])
+	#ax.set_yticks([ 0.998,0.999,1.00,1.001,1.002 ])
 	
-	plt.imshow(data, origin='lower',extent=edge, interpolation='None') ##, interpolation='None'
+	plt.imshow(data, origin='lower',extent=edge)#, interpolation='None')
 	cbar = plt.colorbar()
 	plt.xlabel(r'$'+xTitle+'$', fontsize=40)
 	plt.ylabel(r'$'+yTitle+'$', fontsize=40)
 	cbar.set_label(r'$'+zTitle+'$',size=40)
 
 	### Limit for color
-	plt.clim(0.,63.69)
+	#plt.clim(0.,63.69)
+	#plt.clim(0.,6.18)
 	
 	plt.grid(True)
 	#cbar.formatter.set_powerlimits((0, 0))
@@ -712,8 +809,8 @@ def plot_chi2_scan(data, edge=None, contour=False, bestFit=None, xTitle='-',yTit
 	plt.xlim(edge[:2])
 	plt.ylim(edge[2:])
 
-	plt.xlim([0.7,1.4])
-	plt.ylim([0.7,1.4])
+	#plt.xlim([0.7,1.4])
+	#plt.ylim([0.7,1.4])
 
 	plt.show()
 	

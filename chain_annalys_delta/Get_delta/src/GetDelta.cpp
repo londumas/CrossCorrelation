@@ -44,7 +44,7 @@
 std::string pathToTxt__    = "";
 std::string pathToPDF__    = "/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Resources/PDF/";
 const std::string pathToDLACat__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/DLA_all.fits";
-const std::string pathToMockJMC__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_test_new_file_composition/";
+const std::string pathToMockJMC__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575/";
 const unsigned int nbPixelTemplate__ = int(lambdaRFMax__-lambdaRFMin__)+6;
 const unsigned int nbBinlambdaObs__  = int(lambdaObsMax__-lambdaObsMin__);
 const double onePlusZ0__ = 1.+z0__;
@@ -80,7 +80,7 @@ const bool doVetoLines__          = true;
 const bool setDLA__               = false;
 const bool cutNotFittedSpectra__  = true;
 const bool mocksColab__           = false;
-const bool mockJMC__              = true;
+const bool mockJMC__              = false;
 const bool putReobsTogether__     = false;
 double isReobsFlag__ = -100.;
 
@@ -119,11 +119,11 @@ GetDelta::GetDelta(int argc, char** argv) {
 		pathForest__   = "/home/gpfs/manip/mnt/bao/hdumasde/Data/";
 		pathForest__  += forest__;
 		pathToTxt__    = pathForest__;
-		pathForest__  += "/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits";  //_method1
+		pathForest__  += "/FitsFile_DR12_Guy/DR12_primery/DR12_primery_method1.fits";  //_method1
 //		pathForest__  += "/FitsFile_DR12_Guy/DR12_reObs/DR12_reObs.fits";
 //		pathForest__  += "/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits";
 
-		pathToTxt__   += "/FitsFile_DR12_Guy/DR12_primery/histos/";  //_method1
+		pathToTxt__   += "/FitsFile_DR12_Guy/DR12_primery/histos_method1/";  //_method1
 //		pathToTxt__   += "/FitsFile_DR12_Guy/DR12_reObs/histos/";
 //		pathToTxt__   += "/FitsFile_eBOSS_Guy/all_eBOSS_primery/histos/";
 
@@ -908,6 +908,8 @@ void GetDelta::fitForests(unsigned int begin, unsigned int end) {
 
 	for (unsigned int f=0; f<nbForest; f++) {
 
+		if (v_meanForestLambdaRF__[f]==0) std::cout << f << std::endl;
+
 		//  start minimization
 		int iflag = 0;
 		double arglist[10] = {0.};
@@ -1579,13 +1581,24 @@ void GetDelta::setValuesAlphaBetaForest(std::string pathForest, std::string path
 		return;
 	}
 
+	unsigned int nbCutted[3] = {0};
+
 	for (unsigned int i=0; i<nLines; i++) {
 		double alpha = alpha_a[i];
 		double beta  = beta_a[i];
+
+		if ( (alpha == alphaStart__ && beta == betaStart__) || (fabs(alpha)>=maxAlpha__-0.5) || (fabs(beta)>=maxBeta__-0.05) ) {
+                        if (alpha == alphaStart__ && beta == betaStart__) nbCutted[0] ++;
+                        else if (fabs(alpha)>=maxAlpha__-0.5) nbCutted[1] ++;
+                        else if (fabs(beta)>=maxBeta__-0.05) nbCutted[2] ++;
+                }
+
 		fits_write_col(fitsptrSpec,TDOUBLE, 9,i+1,1,1, &alpha, &sta);
 		fits_write_col(fitsptrSpec,TDOUBLE, 10,i+1,1,1, &beta,  &sta);
 	}
 	fits_close_file(fitsptrSpec,&sta);
+
+	for (unsigned int i=0; i<3; i++) std::cout << "  lost n°" << i << " = " << nbCutted[i] << std::endl;
 
 }
 /*

@@ -60,8 +60,7 @@ const bool doVetoLines__ = true;
 GetDelta::GetDelta(int argc, char** argv) {
 
 	isTest__  = false;
-	withRSD__ = true;
-	noMockExpander__ = false;
+	withRSD__ = false;
 
 	std::cout << std::scientific;
 	std::cout.precision(std::numeric_limits<double>::digits10);
@@ -77,21 +76,19 @@ GetDelta::GetDelta(int argc, char** argv) {
 
 
 	///
-	pathToDataQSO__ = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/v1573/fits/spectra-780";
+	pathToDataQSO__ = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/v1575/fits/spectra-785";
 	pathToDataQSO__ += box_idx;
 	pathToDataQSO__ += "-";
 	pathToDataQSO__ += sim_idx;
 	pathToDataQSO__ += ".fits";
 	///
-	pathToDataForest__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_second_generation/Box_00";
+	pathToDataForest__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575/Box_00";
 	pathToDataForest__ += box_idx;
 	pathToDataForest__ += "/Simu_00";
 	pathToDataForest__ += sim_idx;
 	pathToDataForest__ += "/Raw/mocks-*";
 	///
-	pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_test_new_file_composition";
-	if (noMockExpander__) pathToSave__ += "_noMockExpander";
-	pathToSave__ += "/Box_00";
+	pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575/Box_00";
 	pathToSave__ += box_idx;
 	pathToSave__ += "/Simu_00";
 	pathToSave__ += sim_idx;
@@ -109,8 +106,7 @@ GetDelta::GetDelta(int argc, char** argv) {
 	std::cout << "\n"   << std::endl;
 
 	/// Delta
-//	if (noMockExpander__) GetData_from_Jean_Marc_file();
-//	else GetData();
+//	GetData();
 
 	if (findPDF__) {
 		for (unsigned int i=0; i<10; i++) {
@@ -152,7 +148,7 @@ void GetDelta::GetData(void) {
 	std::cout << "  " << TSfitsnameSpec2 << std::endl;
 	int sta2    = 0;
 	fitsfile* fitsptrSpec2;
-	fits_open_table(&fitsptrSpec2,TSfitsnameSpec2, READWRITE, &sta2);
+	fits_open_table(&fitsptrSpec2,TSfitsnameSpec2, READWRITE, &sta2); //READWRITE
 
 	/// index of forest
 	unsigned int forestIdx = 0;
@@ -176,6 +172,7 @@ void GetDelta::GetData(void) {
 		std::string path = listFiles[fileIdx];
 		path.erase(std::remove(path.begin(), path.end(), '\n'), path.end());
 		path.erase(std::remove(path.begin(), path.end(), ' '), path.end());
+		std::cout << path << std::endl;
 
 		/// Get the file
 		const TString TSfitsnameSpec = path;
@@ -257,9 +254,8 @@ void GetDelta::GetData(void) {
 			const double oneOverOnePlusZ = 1./(1.+Z);
 	
 			for (unsigned int p=0; p<tmp_nbPixels2; p++) {
-
 				/// bad pixels
-				if (LAMBDA_OBS[p]<=0. || IVAR[p]<=0. || AND_MASK[p]>=Bit16 ) continue;
+				if (LAMBDA_OBS[p]<=0. || IVAR[p]<=0. || AND_MASK[p]>=Bit16 || std::isnan(IVAR[p]) ) continue;
 	
 				LAMBDA_OBS[p] = pow(10.,LAMBDA_OBS[p]);
 				const double lambdaRFd = LAMBDA_OBS[p]*oneOverOnePlusZ;
@@ -318,13 +314,14 @@ void GetDelta::GetData(void) {
 				norm_flux[i]      /= norm;
 				norm_flux_ivar[i] *= norm*norm;
 				continuum[i]      /= norm;
+if ( std::isnan(norm_flux[i]) ) std::cout << normFactor[0] << " " << normFactor[1] << " " << nbPixel << " " << meanFluxForest[0] << std::endl;
 			}
 
 			/// Get the mean lambda_RF
 			meanForestLRF[0] /= meanForestLRF[1];
 			/// Get the mean_flux_in_forest
 			double alpha = CONVERT_FROM_FLUX_TO_ALPHA*meanFluxForest[0]/(meanFluxForest[1]*norm);
-		
+
 			/// Save data in second file
 			fits_write_col(fitsptrSpec2,TINT,    1,forestIdx+1,1,1, &plate, &sta2);
 			fits_write_col(fitsptrSpec2,TINT,    2,forestIdx+1,1,1, &mjd, &sta2);
@@ -340,10 +337,11 @@ void GetDelta::GetData(void) {
 			fits_write_col(fitsptrSpec2,TDOUBLE, 15,forestIdx+1,1,nbPixel, &continuum,   &sta2);
 			fits_write_col(fitsptrSpec2,TDOUBLE, 16,forestIdx+1,1,nbPixel, &delta,       &sta2);
 			fits_write_col(fitsptrSpec2,TDOUBLE, 17,forestIdx+1,1,nbPixel, &delta_weight,   &sta2);
-			
+
 			forestIdx ++;
 		}
 		fits_close_file(fitsptrSpec,&sta);
+		std::cout << "  nb forest      = " << forestIdx      << std::endl;
 	}
 
 	fits_close_file(fitsptrSpec2,&sta2);
@@ -618,6 +616,8 @@ void GetDelta::GetQSO(void) {
 	unsigned int nb_QSO_same_XY = 0;
 	float X_before = 0.;
 	float Y_before = 0.;
+	/// mean of velocity
+	double velocity_mean[3] = {0.};
 
 	/// Set to the first HDU
 	fits_movabs_hdu(fitsptrSpec, 2,  NULL, &sta);
@@ -648,6 +648,11 @@ void GetDelta::GetQSO(void) {
 		X_before = X;
 		Y_before = Y;
 
+		/// Get mean velocity
+		velocity_mean[0] += V*oneOverc_speedOfLight;
+		velocity_mean[1] += V*oneOverc_speedOfLight*(1.+ZZ);
+		velocity_mean[2] ++;
+
 		/// If with RSD
 		if (withRSD__) ZZ += V*oneOverc_speedOfLight*(1.+ZZ);
 
@@ -665,6 +670,9 @@ void GetDelta::GetQSO(void) {
 
 	std::cout << "  nbQSOs         = "  << nbQSOs << std::endl;
 	std::cout << "  nb_QSO_same_XY = "  << nb_QSO_same_XY << std::endl;
+
+	std::cout << "  < v/c >        = "  << velocity_mean[0] / velocity_mean[2] << std::endl;
+	std::cout << "  < delta z >    = "  << velocity_mean[1] / velocity_mean[2] << std::endl;
 }
 
 

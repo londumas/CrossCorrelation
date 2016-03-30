@@ -117,8 +117,8 @@ const double sigma2LSSStart  = 0.1;
 const double minAlpha__   = -100.;
 const double maxAlpha__   = 100.;
 const double betaStart__ = 0.;
-const double minBeta__  = -0.6;
-const double maxBeta__  =  0.6;
+const double minBeta__  = -1000.;
+const double maxBeta__  =  1000.;
 
 /// Max values of DLA
 const unsigned int NbDLA0__ = 15;

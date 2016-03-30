@@ -141,59 +141,6 @@ class Correlation3DQ(correlation_3D.Correlation3D):
 		xi2D[:,:,2][cut] = numpy.sqrt(xi2D[:,:,1][cut])
 	
 		return xiMu, xiWe, xi1D, xi2D
-	def read_grid(self):
-
-		path = self._path_to_txt_file_folder+'xi_QSO_QSO_2D_QSO_DD.txt'
-		data = numpy.loadtxt(path)
-		int_binSize = int(self._binSize)
-	
-		tmp_save2  = numpy.zeros( shape=(self._nbBinX2D,self._nbBinY2D) )
-		tmp_save3  = numpy.zeros( shape=(self._nbBinX2D,self._nbBinY2D) )
-		tmp_save4  = numpy.zeros( shape=(self._nbBinX2D,self._nbBinY2D) )
-		tmp_save5  = numpy.zeros( shape=(self._nbBinX2D,self._nbBinY2D) )
-		meanRperp  = numpy.zeros( shape=(self._nbBinX2D,2))
-		meanRparal = numpy.zeros( shape=(self._nbBinY2D,2))
-	
-		for i in range(0,data[:,0].size):
-			iX = i/self._nbBinY2D_calcul
-			iY = i%self._nbBinY2D_calcul
-	
-			idX = iX/int_binSize
-			idY = iY/int_binSize
-	
-			tmp_save2[idX][idY] += data[i,1]
-			tmp_save3[idX][idY] += data[i,2]
-			tmp_save4[idX][idY] += data[i,3]
-			tmp_save5[idX][idY] += data[i,0]
-
-			meanRperp[idX][0]  += data[i,1]
-			meanRperp[idX][1]  += data[i,0]
-			meanRparal[idY][0] += data[i,2]
-			meanRparal[idY][1] += data[i,0]
-		
-		### Get the grid
-		cut = (tmp_save5!=0.)
-		rPerp  = numpy.zeros( shape=(self._nbBinX2D,self._nbBinY2D) )
-		rParal = numpy.zeros( shape=(self._nbBinX2D,self._nbBinY2D) )
-		z      = numpy.zeros( shape=(self._nbBinX2D,self._nbBinY2D) )
-		rPerp[cut]  = tmp_save2[cut]/tmp_save5[cut]
-		rParal[cut] = tmp_save3[cut]/tmp_save5[cut]
-		z[cut]      = tmp_save4[cut]/tmp_save5[cut]
-
-		grid = numpy.zeros( shape=(self._nbBin2D,4) )
-		indexMatrix = numpy.arange(self._nbBin2D)
-		grid[:,0] = (indexMatrix%self._nbBinY2D)*self._nbBinX2D + indexMatrix/self._nbBinY2D
-		grid[:,1] = rParal.flatten()
-		grid[:,2] = rPerp.flatten()
-		grid[:,3] = z.flatten()
-		
-		### Get the s_perp bin center
-		meanRperp[:,0]  /= meanRperp[:,1]
-			
-		### Get the s_paral bin center
-		meanRparal[:,0] /= meanRparal[:,1]
-
-		return grid, meanRperp[:,0], meanRparal[:,0]
 	def get_correlations_QSO(self):
 
 		### Which estimator
@@ -301,7 +248,7 @@ class Correlation3DQ(correlation_3D.Correlation3D):
 		return xiMu, xiWe, xi1D, xi2D
 	def save_list_realisation_simulation(self, dic_class, dic_Q, dic_simu):
 
-		dic_Q['load_from_txt'] = False
+		#dic_Q['load_from_txt'] = False
 		nb_realisation = dic_simu['nb_box']*dic_simu['nb_simu']
 		pathToSave = dic_simu['path_to_simu'] + 'Results/' + self._prefix + '_result_'
 
@@ -310,7 +257,9 @@ class Correlation3DQ(correlation_3D.Correlation3D):
 		list1D       = numpy.zeros( shape=(self._nbBin1D,nb_realisation) )
 		list2D       = numpy.zeros( shape=(self._nbBin2D,nb_realisation) )
 		listMultipol = numpy.zeros( shape=(self._nbBin1D,5,nb_realisation) )
+		listGrid     = numpy.zeros( shape=(self._nbBin2D,3,nb_realisation) )
 
+		nb = 0
 		for i in range(0,dic_simu['nb_box']):
 			for j in range(0,dic_simu['nb_simu']):
 
@@ -319,17 +268,33 @@ class Correlation3DQ(correlation_3D.Correlation3D):
 				dic_Q['path_to_cat']                 = raw+'Data/QSO_withRSD.fits'
 
 				corr = Correlation3DQ(dic_class,dic_Q)
-				list1D[:,i*10+j]         = corr._xi1D[:,1]
-				list2D[:,i*10+j]         = corr._xi2D[:,:,1].flatten()
-				listMu[:,i*10+j]         = corr._xiMu[:,:,2].flatten()
-				listWe[:,:,i*10+j]       = corr._xiWe[:,:,1]
-				listMultipol[:,:,i*10+j] = corr.get_multipol(corr._xiMu)[:,:,1]
+				list1D[:,nb]         = corr._xi1D[:,1]
+				list2D[:,nb]         = corr._xi2D[:,:,1].flatten()
+				listMu[:,nb]         = corr._xiMu[:,:,2].flatten()
+				listWe[:,:,nb]       = corr._xiWe[:,:,1]
+				listMultipol[:,:,nb] = corr.get_multipol(corr._xiMu)[:,:,1]
+
+				listGrid[:,0,nb] = corr._xi2D_grid[:,:,0].flatten()
+				listGrid[:,1,nb] = corr._xi2D_grid[:,:,1].flatten()
+				listGrid[:,2,nb] = corr._xi2D_grid[:,:,2].flatten()
+
+				nb += 1
+
+		listMu       = listMu[:,:nb]
+		listWe       = listWe[:,:,:nb]
+		list1D       = list1D[:,:nb]
+		list2D       = list2D[:,:nb]
+		listMultipol = listMultipol[:,:,:nb]
+		listGrid     = listGrid[:,:,:nb]
+
+		print listMu[0,:].size, nb
 
 		numpy.save(pathToSave+'list_Mu',listMu)
 		numpy.save(pathToSave+'list_We',listWe)
 		numpy.save(pathToSave+'list_1D',list1D)
 		numpy.save(pathToSave+'list_2D',list2D)
 		numpy.save(pathToSave+'list_Multipol',listMultipol)
+		numpy.save(pathToSave+'list_Grid',listGrid)
 
 		covMu = numpy.cov(listMu)
 		cov1D = numpy.cov(list1D)
@@ -350,41 +315,23 @@ class Correlation3DQ(correlation_3D.Correlation3D):
 		elif (self._correlation=='q_f'):
 			path_to_BAOFIT = self._path_to_txt_file_folder + 'BaoFit_'+self._correlation+'__'+self._f1+'__'+self._q1 + '/bao2D'
 
-		grid, meanRperp, meanRparal = self.read_grid()
-
-		### Saving .grid
-		numpy.savetxt(path_to_BAOFIT+'.grid',zip(grid[:,0],grid[:,1],grid[:,2],grid[:,3]),fmt='%u %1.20e %1.20e %1.20e')
-		del grid
-
-		### Get the s_perp bin center
-		meanRperp = (precision*meanRperp).astype(int)/precision
-		stringRperp = ''
-		for el in meanRperp[:-1]:
-			stringRperp += str(el) + ','
-		stringRperp += str( meanRperp[-1] )
-
-		### Get the s_paral bin center
-		meanRparal = (precision*meanRparal).astype(int)/precision
-		stringRparal = ''
-		for el in meanRparal[:-1]:
-			stringRparal += str(el) + ','
-		stringRparal += str( meanRparal[-1])
-
-		### Get the redshift center
-		meanZ = (precision*self._meanZ).astype(int)/precision
-		stringRedshift = str(meanZ)
-
 		string_ini = """
 
 ## Linear theory P(k) templates with and w/o wiggles
-#modelroot = """ + const.path_to_BAOFIT_model__ + """
+modelroot = """ + const.path_to_BAOFIT_model__ + """
+
+### For data
 #fiducial =  DR9LyaMocksLCDM
 #nowiggles = DR9LyaMocksLCDMSB
-modelroot = /home/gpfs/manip/mnt0607/bao/hdumasde/Tests/
-fiducial  =  helion
-nowiggles = helionNoWiggles
-omega-matter = 0.27
+
+### For Mocks
+fiducial =  DR9LyaMocks
+nowiggles = DR9LyaMocksSB
+
+omega-matter    = 0.27
 hubble-constant = 0.7
+sigma8          = 0.794961
+zref            = 2.25
 
 ## k-space fit
 kspace = true
@@ -394,11 +341,12 @@ ell-max = 4
 anisotropic = yes
 decoupled   = yes
 custom-grid = yes
+combined-bias = true
 
 # Parameter setup
 
 model-config = value[beta]=               """+param[0] +""";
-model-config = value[(1+beta)*bias]=      """+param[1] +""";
+model-config = fix[(1+beta)*bias]=        0.;
 model-config = fix[gamma-bias]=           """+param[2] +""";
 model-config = fix[gamma-beta]=           """+param[3] +""";
 model-config = fix[SigmaNL-perp]=         """+param[7] +""";
@@ -408,37 +356,38 @@ model-config = fix[BAO alpha-iso]=        """+param[10] +""";
 model-config = value[BAO alpha-parallel]= """+param[11] +""";
 model-config = value[BAO alpha-perp]=     """+param[12]+""";
 model-config = fix[gamma-scale]=          """+param[13]+""";
+model-config = fix[beta*bias]=            """+param[1] +""";
+
+# Broadband distortion model
+#dist-add = rP,rT=0:2,-3:1
+#dist-add = -2:0,0:4:2,0
+#dist-add = 0:0,0:0:0,0
 
 ## 2D chisq scan in BAO parameters
-model-config = binning[BAO alpha-parallel] ={0.7:1.4}*50
-model-config = binning[BAO alpha-perp]     ={0.7:1.4}*50	
-
-## Reference redshift
-zref = 2.3
+model-config = binning[BAO alpha-parallel] ={0.98:1.02}*50
+model-config = binning[BAO alpha-perp]     ={0.98:1.02}*50	
 
 ## Maximum allowed radial dilation (increases the range that model needs to cover)
 dilmin = 0.5
-dilmax = 1.5
+dilmax = 2.5
 
 # boxprior keeps result positive (since model only depends on squared value)
 #model-config = boxprior[SigmaNL-perp] @ (0,6);
 # un-comment next line to broaden all scales (default is peak only)
 #nl-broadband = true
 
-# Broadband distortion model
-dist-add = rP,rT=0:2,-3:1
+
 
 ### Data Options #############################################
 
 ## Data to analyze
-data = """+path_to_BAOFIT+"""
-dist-matrix-name = """+path_to_BAOFIT+"""
+data             = """+path_to_BAOFIT+"""
 
 ## Data format
 data-format = comoving-cartesian
-axis1-bins = {""" + stringRparal   + """}
-axis2-bins = {""" + stringRperp    + """}
-axis3-bins = {""" + stringRedshift + """}
+axis1-bins = ["""+ str(self._minY2D) + ':' + str(self._maxY2D) + """]*"""+ str(self._nbBinY2D) +"""
+axis2-bins = ["""+ str(self._minX2D) + ':' + str(self._maxX2D) + """]*"""+ str(self._nbBinX2D) +"""
+axis3-bins = {"""+ str(self._meanZ) +"""}
 
 ### Analysis Options #########################################
 
@@ -447,10 +396,11 @@ rmin = 40
 rmax = 180
 
 # Generate a second set of outputs with the additive distortion turned off
-alt-config = fix[dist*]=0
+#alt-config = fix[dist*]=0
 
 # Do not dump multipoles (since the distortion model multipole integrals are singular)
-ndump = 0
+zdump = """+ str(self._meanZ) +"""
+ndump = 1000
 
 # Prefix to use for all analysis output files
 output-prefix = """ + path_to_BAOFIT + """.

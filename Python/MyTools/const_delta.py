@@ -7,7 +7,8 @@ import numpy
 import cosmolopy.distance as cosmology
 
 #forest__ = 'LYB'
-forest__ = 'LYA'
+forest__ = 'LYB_LYA'
+#forest__ = 'LYA'
 #forest__ = 'SIIV'
 #forest__ = 'CIV'
 #forest__ = 'MGII'
@@ -45,7 +46,8 @@ skyLines__ = [ (3615,3619),(3932,3937),(3966,3972),(4042,4050),
 	(5885,5902),(6235,6241),(6256,6263),(6296,6311),
 	(6320,6334),(6362,6369),(6498,6502),(6554,6557),
 	(6825,6840),(6862,6870),(6922,6928),(6948,6954),
-	(6977,6982) ]
+	(6977,6982),(9336,9344),(9369,9383),(9435,9449),
+	(9460,9465),(9695,9705) ]
 skyLinesNames__ = numpy.array(['?','Ca absorbtion','Ca absorbtion','Hg line','Hg line','Hg line','0I line Kirkby','?','?','?','?','O lines Kirkby','?','?','?','? Kirkby','?','?','?','?' ])
 skyLines__ = numpy.log10(skyLines__)
 
@@ -83,9 +85,19 @@ if (forest__ == 'LYB'):
 	lambdaRFNormaMin__ = 1050.
 	lambdaRFNormaMax__ = 1060.
 	nbBinRFMax__       = 1085
-	correlationLines     = LYA_lines
-	correlationLinesName = LYA_lines_names
+	correlationLines     = LYB_lines
+	correlationLinesName = LYB_lines_names
 	alphaStart__         = 1.
+if (forest__ == 'LYB_LYA'):
+        lambdaRFLine__     = 1215.67
+        lambdaRFMin__      = 800.
+        lambdaRFMax__      = 1200.
+        lambdaRFNormaMin__ = 1275.
+        lambdaRFNormaMax__ = 1295.
+        nbBinRFMax__       = 1085
+        correlationLines     = LYB_lines
+        correlationLinesName = LYB_lines_names
+        alphaStart__         = 1.
 elif (forest__ == 'LYA'):
 	lambdaRFLine__     = 1215.67
 	lambdaRFMin__      = 1040.
@@ -333,7 +345,7 @@ def find_dist_correlation_lines(meanZ,l1,l2):
 	'''
 	'''
 
-	verbose = False
+	verbose = True
 	
 	### Cosmology
 	cosmo = {'omega_M_0':omegaM0__, 'omega_lambda_0':omegaLambda0__, 'omega_k_0':0., 'h':h__}
@@ -354,9 +366,6 @@ def find_dist_correlation_lines(meanZ,l1,l2):
 	if (verbose): print '  d2 = ',d2 
 
 	return d1-d2
-
-
-
 
 
 

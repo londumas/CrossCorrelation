@@ -94,6 +94,7 @@ class AnnalyseBAOFIT(correlation_3D_Q.Correlation3DQ):
 		### Get the parameters of the fit
 		data = numpy.loadtxt(self._path_to_BAOFIT+chi2)
 		self._chi2 = data
+		print self._chi2
 	
 		return
 	def read_chi2_scan(self, sizeX=100, sizeY=100):
@@ -123,6 +124,9 @@ class AnnalyseBAOFIT(correlation_3D_Q.Correlation3DQ):
 		subprocess.call('rm '+self._path_to_BAOFIT+'tmp_scan.txt', shell=True)
 		
 		### Scan
+		bestFit = numpy.zeros( shape=(2,1) )
+		bestFit[0,0] = data[0,i_alpha_perp]
+		bestFit[1,0] = data[0,i_alpha_paral]
 		chi2_bestFit = data[0][-1]
 		chi2 = data[1:,-1]
 		
@@ -139,7 +143,7 @@ class AnnalyseBAOFIT(correlation_3D_Q.Correlation3DQ):
 
 		self._chi2_scan_edge = [numpy.amin(data[1:,i_alpha_perp]), numpy.amax(data[1:,i_alpha_perp]), numpy.amin(data[1:,i_alpha_paral]), numpy.amax(data[1:,i_alpha_paral])]
 
-		return
+		return bestFit
 	def read_toyMC(self):
 
 		### Constants
@@ -454,10 +458,7 @@ class AnnalyseBAOFIT(correlation_3D_Q.Correlation3DQ):
 	def plot_chi2_scan(self, sizeX=100, sizeY=100, edge=None, toyMC=False, bootstrap=False, simulation=None):
 		
 		### Read chi2 scan
-		self.read_chi2_scan(sizeX, sizeY)
-
-		### Best Fit
-		bestFit = self.get_best_fit()
+		bestFit = self.read_chi2_scan(sizeX, sizeY)
 
 		if (edge is not None):
 			self._chi2_scan_edge = edge

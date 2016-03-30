@@ -147,6 +147,28 @@
 		* correct saving Mu and map fore f_f2
 		* add options for raw_mocks
 
+# 2016 - 03 - 30 - (10h15)
+	- general:
+		* no commit for a long time, no big changes.
+	- Mock_JMLG/ReadFits/src/GetDelta.cpp:
+		* remove "isnan" 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

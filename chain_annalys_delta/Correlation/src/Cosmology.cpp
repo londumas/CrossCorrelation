@@ -118,7 +118,8 @@ void Cosmology::FindMinMaxRedsift(double maxDist, double lambdaObsMin, double la
 	array[0] = std::floor( 10.*gFromDistanceToRedshfit->Eval(d_QSO_min))/10.;
 	array[1] = std::ceil( 10.*gFromDistanceToRedshfit->Eval(d_QSO_max))/10.;
 
-	std::cout << "  min_z_qso = " << array[0] << "  , max_z_qso = " << array[1] << std::endl;
+	std::cout << "  min_z_qso = " << array[0] << " " << gFromDistanceToRedshfit->Eval(d_QSO_min) << std::endl;
+	std::cout << "  max_z_qso = " << array[1] << " " << gFromDistanceToRedshfit->Eval(d_QSO_max) << std::endl;
 
 	return;
 }

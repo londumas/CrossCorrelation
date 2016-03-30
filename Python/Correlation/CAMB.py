@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 from iminuit import Minuit
 import scipy
 from scipy import interpolate
+import cosmolopy.perturbation as cp
 
 
 ### Perso lib
@@ -27,27 +28,46 @@ class CAMB:
 			self._xi0 = numpy.loadtxt( const.path_to_BAOFIT_model__ + 'DR9LyaMocksLCDM.0.dat')
 			self._xi2 = numpy.loadtxt( const.path_to_BAOFIT_model__ + 'DR9LyaMocksLCDM.2.dat')
 			self._xi4 = numpy.loadtxt( const.path_to_BAOFIT_model__ + 'DR9LyaMocksLCDM.4.dat')
+		if (source=='CAMB_Mocks'):
+			self._xi0 = numpy.loadtxt( const.path_to_BAOFIT_model__ + 'DR9LyaMocks.0.dat')
+			self._xi2 = numpy.loadtxt( const.path_to_BAOFIT_model__ + 'DR9LyaMocks.2.dat')
+			self._xi4 = numpy.loadtxt( const.path_to_BAOFIT_model__ + 'DR9LyaMocks.4.dat')
+		if (source=='CAMB_Mocks_me'):
+			self._xi0 = numpy.loadtxt( const.path_to_BAOFIT_model__ + 'DR9LyaMocks.0.dat')
+			self._xi2 = numpy.loadtxt( const.path_to_BAOFIT_model__ + 'DR9LyaMocks.2.dat')
+			self._xi4 = numpy.loadtxt( const.path_to_BAOFIT_model__ + 'DR9LyaMocks.4.dat')
+
+			h = 0.70
+			omega_m_0 = 0.27
+			f = cp.fgrowth(2.25,omega_m_0)
+
+			data = numpy.loadtxt('/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Mock_JMLG/Produce_CAMB/DR9LyaMocks_matterpower.dat')
+			data_me = numpy.zeros( shape=(data[:,1].size+1,2) )
+			data_me[1:,0] = data[:,0]
+			data_me[1:,1] = data[:,1]*f*f
+
+			r2,cric2 = self.xi_from_pk(data_me[:,0],data_me[:,1])
+			self._xi0 = numpy.zeros( shape=(r2.size-1,2) )
+			self._xi0[:,0] = r2[1:]
+			self._xi0[:,1] = cric2[1:]
 		elif (source=='CHRISTOPHE'):
-			#data = numpy.loadtxt('/home/gpfs/manip/mnt0607/bao/cmv/Helion/cmvtstpk_Helion.data')
-			#dataCMV = numpy.zeros( shape=(data[:,1].size+1,2) )
-			#dataCMV[1:,0] = data[:,1]
-			#dataCMV[1:,1] = data[:,4]
-			#r2,cric2 = self.xi_from_pk(dataCMV[:,0],dataCMV[:,1])
-			#r2 *= 0.7
 
-			data = numpy.loadtxt('/home/gpfs/manip/mnt0607/bao/hdumasde/Tests/helion_matterpower.dat')
-			dataCMV = numpy.zeros( shape=(data[:,1].size+1,2) )
-			dataCMV[1:,0] = data[:,0]
-			dataCMV[1:,1] = data[:,1]
+			self._xi0 = numpy.loadtxt( const.path_to_BAOFIT_model__ + 'DR9LyaMocks.0.dat')
+			self._xi2 = numpy.loadtxt( const.path_to_BAOFIT_model__ + 'DR9LyaMocks.2.dat')
+			self._xi4 = numpy.loadtxt( const.path_to_BAOFIT_model__ + 'DR9LyaMocks.4.dat')
 
-			r2,cric2 = self.xi_from_pk(dataCMV[:,0],dataCMV[:,1])
-			self._xi0 = numpy.zeros( shape=(r2.size,2) )
-			self._xi0[:,0] = r2
-			self._xi0[:,1] = cric2
+			camb = numpy.loadtxt('/home/gpfs/manip/mnt0607/bao/cmv/Helion/ginit3d_67_0p0_7859_ntpk.txt')
 
-			self._xi2 = numpy.zeros( shape=(r2.size,2) )
-			self._xi4 = numpy.zeros( shape=(r2.size,2) )
-			#self.get_xi2()
+			h = 0.70
+			omega_m_0 = 0.27
+			f = cp.fgrowth(2.25,omega_m_0)
+
+			k  = numpy.append( [0.], camb[:,0]/h)
+			pk = numpy.append( [0.], camb[:,3]*numpy.power(h,3.)*f*f)
+			r,cric = self.xi_from_pk(k,pk)
+			self._xi0 = numpy.zeros( shape=(r.size-1,2) )
+			self._xi0[:,0] = r[1:]
+			self._xi0[:,1] = cric[1:]
 
 		return
 	def xi_from_pk(self,k,pk):

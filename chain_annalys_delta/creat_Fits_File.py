@@ -55,8 +55,8 @@ def make_all_Fits(iStart=0,iEnd=-1):
 	data, plate_list = numpy.load('/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/chain_annalys_delta/Run/list_'+forest__+'.npy') #Get_Catalogue()
 
 	### Get the flux vs. lambda_Obs
-	#removeSkyLines = scipy.loadtxt('../Resources/Calibration/calibration_flux_using_CIV_forest.txt')
-	#removeSkyLines = interpolate.interp1d(numpy.log10(3447.5+removeSkyLines[:,0]),removeSkyLines[:,1],bounds_error=False,fill_value=1)
+	removeSkyLines = scipy.loadtxt('../Resources/Calibration/calibration_flux_using_CIV_forest.txt')
+	removeSkyLines = interpolate.interp1d(numpy.log10(3447.5+removeSkyLines[:,0]),removeSkyLines[:,1],bounds_error=False,fill_value=1)
 
 	sizeMax = data[:,0].size
 
@@ -150,18 +150,18 @@ def make_all_Fits(iStart=0,iEnd=-1):
 			cat = cat[ numpy.logical_and( numpy.logical_and( (cat["IVAR"]>0.), (cat["AND_MASK"]<bit16__)), (numpy.isfinite(cat["FLUX"])) ) ]
 
 			### Get the devident coef to correct for sky residuals
-			#coef = removeSkyLines(cat["LOGLAM"])
+			coef = removeSkyLines(cat["LOGLAM"])
 
-			'''
+			
 			plt.errorbar(cat["LOGLAM"],cat['FLUX'])
 			plt.errorbar(cat["LOGLAM"],cat['FLUX']/coef)
 			plt.errorbar(cat["LOGLAM"],coef)
 			myTools.deal_with_plot(False,False,False)
 			plt.show()
-			'''
+			
 
-			#cat['FLUX'] /= coef
-			#cat['IVAR'] *= coef*coef
+			cat['FLUX'] /= coef
+			cat['IVAR'] *= coef*coef
 			
 			### Get the normalisation factor
 			try:
@@ -720,5 +720,5 @@ if (len(sys.argv)>=5):
 #cat = Get_Catalogue()
 #numpy.save('list_'+forest__,cat)
 
-#make_all_Fits(iStart,iEnd)
-Merge_Files()
+make_all_Fits(iStart,iEnd)
+#Merge_Files()

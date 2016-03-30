@@ -21,83 +21,145 @@ from const_delta import *
 
 
 
+path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Program/LyAMockExpander/usefulFiles/PCA/pca_suzuki.fits'
+cat1 = pyfits.open(path, memmap=True)[1].data
 
+
+lambdaRF = cat1['LAMBDA'][0]
+flux     = cat1['FLUX'][0]
+normFactor = numpy.mean( flux[ numpy.logical_and( (lambdaRF>1275.), (lambdaRF<1295.) ) ] )
+flux /= normFactor
+
+
+
+'''
 ### File Jean-Marc
-path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation_test_soved_shift/Box_000/Simu_000/Data/mocks-0_1000.fits'
+path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575/Box_000/Simu_000/Raw/mocks-0_1000.fits'
 key = ['loglam','flux','mock_F','mock_contpca','ivar','model','mock_miscalib','and_mask','mock_ivar']
 
 cat = pyfits.open(path, memmap=True)
 
-print cat[0].header
-print cat[0].data
+
 print cat[1].header
-print cat[1].data
 
+lam  = numpy.array([])
+lamO = numpy.array([])
+fl   = numpy.array([])
+pca  = numpy.array([])
 
-nb = []
-zA = []
-difLOGLOBS = []
-difLOBS = []
-difLRF = []
-
-for i in numpy.arange(1,100):
+isNotFinished = True
+i = 1
+while isNotFinished:
 
 	try:
 		z  = cat[i].header['ZQSO']
 		el = cat[i].data
 	except Exception,error:
+		isNotFinished = False
 		continue
 
 	el = el[ (el['LOGLAM']>0.) ]
-	#el = el[ (el['IVAR']>0.) ]
+	el = el[ (el['IVAR']>0.) ]
+	if (el.size == 0):
+		i += 1
+		print i, ' none ' 
+		continue
+
+	### Normalize
+	tmp_logZ = numpy.log10(1.+z)
+	if (el["FLUX"][ numpy.logical_and( (el["LOGLAM"]>log10lambdaRFNormaMin__+tmp_logZ), (el["LOGLAM"]<log10lambdaRFNormaMax__+tmp_logZ) ) ].size<=0.):
+		i += 1
+		print i, ' none ' 
+		continue
+
+	normFactor = numpy.mean( el["FLUX"][ numpy.logical_and( (el["LOGLAM"]>log10lambdaRFNormaMin__+tmp_logZ), (el["LOGLAM"]<log10lambdaRFNormaMax__+tmp_logZ) ) ] )
+	if (normFactor<=0.):
+		i += 1
+		print i, ' none ' 
+		continue
+
+	el['FLUX'] /= normFactor
+
 	el['LOGLAM'] = numpy.power(10., el['LOGLAM'] )
 	el['LOGLAM'] /= (1.+z)
+	#plt.plot(el['LOGLAM'],el['flux'], marker='o')
+	#plt.plot(el['LOGLAM'],el['mock_contpca']/normFactor, color='cyan',label='one spectrum')
+	print i, z
 
-	'''
-	difLOGLOBS += [ el['loglam'][i+1]-el['loglam'][i] for i in numpy.arange(el['loglam'].size-1) if el['loglam'][i]!=0. ]
-	el['loglam'][ (el['loglam']!=0.) ] = numpy.power(10., el['loglam'][ (el['loglam']!=0.) ] )
-	difLOBS    += [ el['loglam'][i+1]-el['loglam'][i] for i in numpy.arange(el['loglam'].size-1) if el['loglam'][i]!=0. ]
-	el['loglam'][ (el['loglam']!=0.) ] /= 1.+z
-	difLRF     += [ el['loglam'][i+1]-el['loglam'][i] for i in numpy.arange(el['loglam'].size-1) if el['loglam'][i]!=0. ]
-	'''
+	#isNotFinished = False
+	i += 1
 
-	plt.plot(el['LOGLAM'],el['flux'], marker='o')
-	#plt.plot(el['LOGLAM'],el['ivar'], marker='o')
-	#plt.plot(el['LOGLAM'],el['mock_contpca'])
+	el = el[ el['LOGLAM']*(1.+z)>3600. ]
+	el = el[ numpy.logical_and( el['LOGLAM']>1040.,el['LOGLAM']<1200. ) ]
+	if (el["FLUX"].size<=0.):
+		i += 1
+		print i, ' none ' 
+		continue
+
+	lam  = numpy.append( el['LOGLAM'] ,lam )
+	lamO = numpy.append( el['LOGLAM']*(1.+z) ,lamO )
+	fl   = numpy.append( el['flux'] ,fl )
+	pca  = numpy.append( el['mock_contpca']/normFactor ,pca )
+
+	#if (i>100): isNotFinished = False
 
 
-	'''
-	nb += [ el['loglam'][ numpy.logical_and( (el['loglam']>=lambdaRFTemplateMin__) , (el['loglam']<lambdaRFTemplateMax__) ) ].size ]
-	zA += [z]
-	'''
+wei = numpy.ones(lam.size)
 
-myTools.deal_with_plot(False,False,False)
+
+plt.plot(lambdaRF, flux, label='PCA input')
+#data = numpy.loadtxt('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575/Box_000/Simu_000/Run/hDeltaVsLambdaRF_LYA_0_0.txt')
+#plt.errorbar(data[:,0]+1037.5, data[:,1], markersize=8,linewidth=2, label='template')
+#data = numpy.loadtxt('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575/Box_000/Simu_000/Run/template_LYA_0_0.txt')
+#plt.errorbar(data[:,0], data[:,1], markersize=8,linewidth=2, label='mean flux')
+
+xxx, yyy, eyyy, nyyy = Get_TProfile(lam,pca, 160,wei)	
+plt.errorbar(xxx, yyy, label='mean PCA')
+xxx, yyy, eyyy, nyyy = Get_TProfile(lam,fl, 160,wei)
+plt.errorbar(xxx, yyy, label='v1575')
+'''
+
+
+
+cat = pyfits.open('/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits', memmap=True)[1].data[0:10000]
+flux      = cat["NORM_FLUX"][ cat['NORM_FLUX_IVAR'] >0.]/alphaStart__
+lambdaObs = cat["LAMBDA_OBS"][ cat['NORM_FLUX_IVAR'] >0.]
+lambdaRF  = numpy.dot(numpy.diag(1./(1.+cat['Z'])),cat['LAMBDA_OBS'])[ cat['NORM_FLUX_IVAR'] >0.]
+weight    = numpy.ones(flux.size)
+xxx, yyy, eyyy, nyyy = Get_TProfile(lambdaRF,flux, 160,weight)	
+plt.errorbar(xxx, yyy, label='data')
+
+cat2       = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Box_000/Simu_000/Data/delta.fits', memmap=True)[1].data[0:10000]
+flux2      = cat2["NORM_FLUX"][ cat2['NORM_FLUX_IVAR'] >0.]/alphaStart__
+lambdaObs2 = cat2["LAMBDA_OBS"][ cat2['NORM_FLUX_IVAR'] >0.]
+lambdaRF2  = numpy.dot(numpy.diag(1./(1.+cat2['Z_VI'])),cat2['LAMBDA_OBS'])[ cat2['NORM_FLUX_IVAR'] >0.]
+weight2    = numpy.ones(flux2.size)
+xxx, yyy, eyyy, nyyy = Get_TProfile(lambdaRF2,flux2, 160,weight2)	
+plt.errorbar(xxx, yyy, label='v1547')
+
+
+cat3       = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575/Box_000/Simu_000/Data/delta.fits', memmap=True)[1].data[0:10000]
+flux3      = cat3["NORM_FLUX"][ cat3['NORM_FLUX_IVAR'] >0.]/alphaStart__
+lambdaObs3 = cat3["LAMBDA_OBS"][ cat3['NORM_FLUX_IVAR'] >0.]
+lambdaRF3  = numpy.dot(numpy.diag(1./(1.+cat3['Z'])),cat3['LAMBDA_OBS'])[ cat3['NORM_FLUX_IVAR'] >0.]
+weight3    = numpy.ones(flux3.size)
+xxx, yyy, eyyy, nyyy = Get_TProfile(lambdaRF3,flux3, 160,weight3)	
+plt.errorbar(xxx, yyy, label='v1575')
+
+myTools.deal_with_plot(False,False,True)
 plt.show()
 
-nb = numpy.array(nb)
-difLOGLOBS = numpy.array(difLOGLOBS)
-difLOBS    = numpy.array(difLOBS)
-difLRF     = numpy.array(difLRF)
-print numpy.amax(nb)
 
-myTools.deal_with_plot(False,False,False)
+
+xxx, yyy, eyyy, nyyy = Get_TProfile(lambdaObs,flux, 600,weight)	
+plt.errorbar(xxx, yyy, label='data')
+xxx, yyy, eyyy, nyyy = Get_TProfile(lambdaObs2,flux2, 600,weight2)	
+plt.errorbar(xxx, yyy, label='v1547')
+xxx, yyy, eyyy, nyyy = Get_TProfile(lambdaObs3,flux3, 600,weight3)	
+plt.errorbar(xxx, yyy, label='v1575')
+
+myTools.deal_with_plot(False,False,True)
 plt.show()
-
-print difLOGLOBS
-plt.hist(difLOGLOBS, bins=100)
-plt.show()
-plt.hist(difLOBS, bins=100)
-plt.show()
-plt.hist(difLRF, bins=100)
-plt.show()
-
-plt.hist(zA, bins=100)
-plt.show()
-
-
-
-
-
 
 
 

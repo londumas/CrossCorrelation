@@ -17,7 +17,7 @@ def main():
 	### For mocks
 	
 	### mock catalogue
-	for i in range(0,1):
+	for i in range(0,10):
 		### mock catalogue
 		for j in range(0,10):
 
@@ -29,7 +29,7 @@ def main():
 				tmp_command = "echo \" \n ------ Start ------ \n \" " 
 				subprocess.call(tmp_command, shell=True)
 
-				tmp_command = "clubatch \"time ; hostname ; " + commandProd + ' 19 0 ' + str(k) + ' 0 ' + str(i) + " " + str(j) + "\""
+				tmp_command = "clubatch \"time ; hostname ; " + commandProd + ' 18 0 ' + str(k) + ' 0 ' + str(i) + " " + str(j) + "\""
 				subprocess.call(tmp_command, shell=True)
 
 				tmp_command = "echo " + tmp_command
@@ -37,8 +37,8 @@ def main():
 				tmp_command = "echo " + time.ctime()
 				subprocess.call(tmp_command, shell=True)
 
-				time.sleep(60)
-                	        myTools.isReadyForNewJobs(150, 1000,'time')
+				time.sleep(120)
+                	        myTools.isReadyForNewJobs(50, 1000,'time')
 		#time.sleep(120)
 	
 	'''

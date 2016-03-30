@@ -20,6 +20,106 @@ import const_delta
 import CAMB
 
 
+###
+#const_delta.SIIV_lines_names  = numpy.array(['SiII(1304)','SiII(1260)'])
+#const_delta.SIIV_lines        = numpy.array([1304.3702,1260.4221])
+#const_delta.LYA_lines_names   = numpy.array(['SiII(1304)','SiII(1260)','LYA'   ,'SiIII(1207)',  'SiII(1193)',  'SiII(1190)'])
+#const_delta.LYA_lines         = numpy.array([1304.3702,1260.4221,1215.67 ,1206.500, 1193.2897, 1190.4158])
+
+lines = numpy.zeros( shape=(20,3) )
+### CIV
+###
+lines[0,0] = 2.e-4
+lines[0,1] = 2.e-4
+lines[0,2] = 1.00522796662
+###
+lines[1,0] = 1.e-4
+lines[1,1] = 2.e-4
+lines[1,2] = 1.01290299551
+###
+lines[2,0] = 4.e-4
+lines[2,1] = 6.e-4
+lines[2,2] = 1.01408123516
+###
+lines[3,0] = 3.5e-4
+lines[3,1] = 6.e-4
+lines[3,2] = 1.01576692208
+###
+lines[4,0] = 1.e-4
+lines[4,1] = 2.e-4
+lines[4,2] = 1.01763047219
+###
+lines[5,0] = 1.e-4
+lines[5,1] = 2.e-4
+lines[5,2] = 1.02024384563
+###
+lines[6,0] = 1.e-4
+lines[6,1] = 6.e-4
+lines[6,2] = 1.03718948377
+###
+lines[7,0] = 2.7e-4
+lines[7,1] = 6.e-4
+lines[7,2] = 1.03891358308
+###
+lines[8,0] = 2.e-4
+lines[8,1] = 5.e-4
+lines[8,2] = 1.05354276955
+'''
+### LYA
+#
+lines[0,0] = 2.5e-3
+lines[0,1] = 8.5e-4
+lines[0,2] = 1.00760049731
+#
+lines[1,0] = 2.e-4
+lines[1,1] = 5.e-4
+lines[1,2] = 1.01107048858
+#
+lines[2,0] = 2.e-4
+lines[2,1] = 5.e-4
+lines[2,2] = 1.01351141341
+#
+lines[3,0] = 9.e-4
+lines[3,1] = 9.e-4
+lines[3,2] = 1.01875512711
+#
+lines[4,0] = 7.e-4
+lines[4,1] = 9.e-4
+lines[4,2] = 1.02121460417
+#
+lines[5,0] = 3.e-4
+lines[5,1] = 5.e-4
+lines[5,2] = 1.03486776374
+#
+lines[6,0] = 8.e-4
+lines[6,1] = 8.e-4
+lines[6,2] = 1.03681270411
+#
+lines[7,0] = 8.e-4
+lines[7,1] = 4.5e-4
+lines[7,2] = 1.04469299627
+#
+lines[8,0] = 4.e-4
+lines[8,1] = 4.5e-4
+lines[8,2] = 1.05625825816
+#
+lines[9,0] = 8.e-4
+lines[9,1] = 4.5e-4
+lines[9,2] = 1.05880827523
+#
+lines[10,0] = 4.e-4
+lines[10,1] = 4.5e-4
+lines[10,2] = 1.03312096797
+#
+lines[11,0] = 4.e-4
+lines[11,1] = 7.e-4
+lines[11,2] = 1.05076622472
+'''
+
+
+
+
+
 raw_dic_simu = {
 	'path_to_simu' : 'NOTHING',
 	'nb_box' : 1,
@@ -260,8 +360,10 @@ class Correlation_1D:
 		return
 	def plot(self, with_lines=False, verbose=False, other=[]):
 
-		cut_l = 0 #7
-		cut_h = -1 #300
+		cut_l = 0
+		cut_h = -1
+
+		print self._xi[0,1]
 
 		if (self._correlation == 'f_f2_lRF_devide'): 
 			xxx = 1./self._xi[cut_l:cut_h,0]
@@ -269,7 +371,39 @@ class Correlation_1D:
 			xxx = self._xi[cut_l:cut_h,0]
 		yyy = self._xi[cut_l:cut_h,1]
 		yer = self._xi[cut_l:cut_h,2]
+
+
+		'''
+		xmean = numpy.mean(xxx)
+		def chi2_polynome(a0,a1,a2,a3,a4,a5,a6,a7):
+			mod = a0 + a1*(xxx-xmean) + a2*numpy.power(xxx-xmean,2.) + a3*numpy.power(xxx-xmean,3.) + a4*numpy.power(xxx-xmean,4.) +a5/xxx + a6/(xxx*xxx) + a7/(xxx*xxx*xxx)
+			for i in range(0,20):
+				if (lines[i,0]==0): continue
+				mod += lines[i,0]*numpy.exp( -numpy.power(xxx-lines[i,2],2.)/(2.*lines[i,1]*lines[i,1]) )  
+			return numpy.sum(numpy.power( (yyy-mod)/yer ,2.))
+		m = Minuit(chi2_polynome,a0=1.,error_a0=0.1,a1=1.,error_a1=0.1,a2=1.,error_a2=0.1,a3=1.,error_a3=0.1,a4=1.,error_a4=0.1,a5=0.,error_a5=0.1,a6=0.,error_a6=0.1,a7=0.,error_a7=0.1,print_level=-1, errordef=0.1) 	
+		m.migrad()
+
+		a0 = m.values['a0']
+		a1 = m.values['a1']
+		a2 = m.values['a2']
+		a3 = m.values['a3']
+		a4 = m.values['a4']
+		a5 = m.values['a5']
+		a6 = m.values['a6']
+		a7 = m.values['a7']
+		print a0,a1,a2,a3,a4,a5,a6
+		tmp_xxx = numpy.arange(numpy.min(xxx),numpy.max(xxx),0.000001)
+		mod = a0 + a1*(tmp_xxx-xmean) + a2*numpy.power(tmp_xxx-xmean,2.) + a3*numpy.power(tmp_xxx-xmean,3.) + a4*numpy.power(tmp_xxx-xmean,4.) +a5/tmp_xxx + a6/(tmp_xxx*tmp_xxx) + a7/(tmp_xxx*tmp_xxx*tmp_xxx)
+		mod2 = 0.
+		for i in range(0,20):
+			if (lines[i,0]==0): continue
+			mod2 += lines[i,0]*numpy.exp( -numpy.power(tmp_xxx-lines[i,2],2.)/(2.*lines[i,1]*lines[i,1]) )
+		mod += mod2
+		'''
+
 		plt.errorbar(xxx, yyy, yerr=yer, marker='o', label=r'$'+self._name+'$', markersize=8,linewidth=2)
+		#plt.errorbar(tmp_xxx, mod, linewidth=2)
 
 		xMin = numpy.amin(xxx)
 		xMax = numpy.amax(xxx)
@@ -277,13 +411,47 @@ class Correlation_1D:
 		yMax = numpy.amax(yyy)
 
 		for el in other:
+
+			print el._xi[0,1]
+
 			if (el._correlation == 'f_f2_lRF_devide'): 
 				TMP_xxx = 1./el._xi[cut_l:cut_h,0]
 			else:
 				TMP_xxx = el._xi[cut_l:cut_h,0]
 			TMP_yyy = el._xi[cut_l:cut_h,1]
 			TMP_yer = el._xi[cut_l:cut_h,2]
+
+			'''
+			xmean = numpy.mean(TMP_xxx)
+			def chi2_polynome(a0,a1,a2,a3,a4,a5,a6,a7):
+				mod = a0 + a1*(TMP_xxx-xmean) + a2*numpy.power(TMP_xxx-xmean,2.) + a3*numpy.power(TMP_xxx-xmean,3.) + a4*numpy.power(TMP_xxx-xmean,4.) +a5/TMP_xxx + a6/(TMP_xxx*TMP_xxx) + a7/(TMP_xxx*TMP_xxx*TMP_xxx)
+				for i in range(0,20):
+					if (lines[i,0]==0): continue
+					mod += lines[i,0]*numpy.exp( -numpy.power(TMP_xxx-lines[i,2],2.)/(2.*lines[i,1]*lines[i,1]) )  
+				return numpy.sum(numpy.power( (TMP_yyy-mod)/TMP_yer ,2.))
+			m = Minuit(chi2_polynome,a0=1.,error_a0=0.1,a1=1.,error_a1=0.1,a2=1.,error_a2=0.1,a3=1.,error_a3=0.1,a4=1.,error_a4=0.1,a5=0.,error_a5=0.1,a6=0.,error_a6=0.1,a7=0.,error_a7=0.1,print_level=-1, errordef=0.1) 	
+			m.migrad()
+
+			a0 = m.values['a0']
+			a1 = m.values['a1']
+			a2 = m.values['a2']
+			a3 = m.values['a3']
+			a4 = m.values['a4']
+			a5 = m.values['a5']
+			a6 = m.values['a6']
+			a7 = m.values['a7']
+			print a0,a1,a2,a3,a4,a5,a6
+			tmp_xxx = numpy.arange(numpy.min(TMP_xxx),numpy.max(TMP_xxx),0.000001)
+			mod = a0 + a1*(tmp_xxx-xmean) + a2*numpy.power(tmp_xxx-xmean,2.) + a3*numpy.power(tmp_xxx-xmean,3.) + a4*numpy.power(tmp_xxx-xmean,4.) +a5/tmp_xxx + a6/(tmp_xxx*tmp_xxx) + a7/(tmp_xxx*tmp_xxx*tmp_xxx)
+			mod2 = 0.
+			for i in range(0,20):
+				if (lines[i,0]==0): continue
+				mod2 += lines[i,0]*numpy.exp( -numpy.power(tmp_xxx-lines[i,2],2.)/(2.*lines[i,1]*lines[i,1]) )
+			mod += mod2
+			'''
+
 			plt.errorbar(TMP_xxx, TMP_yyy, yerr=TMP_yer, marker='o', label=r'$'+el._name+'$', markersize=8,linewidth=2,color='red')
+			#plt.errorbar(tmp_xxx, mod, linewidth=2)
 
 			xMin = min(xMin, numpy.amin(TMP_xxx) )
 			xMax = max(xMax, numpy.amax(TMP_xxx) )
@@ -306,7 +474,10 @@ class Correlation_1D:
 
 				for j in range(0,nbLines2):
 
-					#if ( self._lines1[i]!=1215.67 and self._lines2[j]!=1215.67 ): continue
+					if ( self._lines1[i]!=1215.67 and self._lines2[j]!=1215.67 ): continue
+					#if ( self._name_line1[i]=='NV(1239)' or self._name_line2[j]=='NV(1239)'): continue
+					#if ( self._name_line1[i]=='NV(1243)' or self._name_line2[j]=='NV(1243)'): continue
+					#if ( self._name_line1[i]=='OI(1302)' or self._name_line2[j]=='OI(1302)'): continue
 					#if ( self._lines1[i]==1238.821 or self._lines2[j]==1238.821 ): continue
 					#if ( self._name_line1[i][:4]!='SiII' and self._name_line2[j][:4]!='SiII' ): continue
 					#if ( self._name_line1[i]=='SiII(1304)' or self._name_line2[j]=='SiII(1304)' ): continue
@@ -363,10 +534,10 @@ dic_class = {
 	'name' : 'NAME'
 }
 dic_simu = {
-	'path_to_simu' : '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_second_generation/',
-	'nb_box' : 1,
+	'path_to_simu' : '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575/',
+	'nb_box' : 3,
 	'nb_simu' : 10,
-	'projected' : True
+	'projected' : False
 }
 
 
@@ -378,22 +549,19 @@ dic_class['name'] = "Data"
 dic_class['correlation'] = "f_f_lRF_devide"
 corr = Correlation_1D(dic_class)
 list_corr += [corr]
-### Data
-dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/TESTS/'
-dic_class['name'] = "Data"
-dic_class['correlation'] = "f_f_lRF_devide"
-corr = Correlation_1D(dic_class)
-list_corr += [corr]
 #
-dic_class['name'] = 'Mean \, simu'
-dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_test_new_file_composition/Box_000/Simu_000/Results/'
+dic_class['f1'] = 'LYA'
+dic_class['name'] = 'Simulation'
+dic_class['f1'] = "LYA"
+dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575/Box_000/Simu_000/Results/'
 dic_class['correlation'] = "f_f_lRF_devide"
 corr = Correlation_1D(dic_class)
+corr.save_list_realisation_simulation(dic_class, dic_simu)
+corr.set_values_on_mean_simulation(dic_simu)
 list_corr += [corr]
 
-list_corr[0].plot(False,False,list_corr[1:])
-
-
+#list_corr[0].plot(True,True)
+list_corr[0].plot(True,False,list_corr[1:])
 
 
 

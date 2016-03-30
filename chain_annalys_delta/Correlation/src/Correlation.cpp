@@ -94,20 +94,20 @@ const unsigned int nbBinlambdaObs__  = int(lambdaObsMax__-lambdaObsMin__);
 double distMinPixel__ = 0.;
 double distMinPixelDelta2__ = 0.;
 unsigned int idxCommand_[6] = {0};
-const std::string pathToMockJMC__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_test_new_file_composition/";
+const std::string pathToMockJMC__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575/";
 std::string pathToRaw__ = "";
-std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/";  //_nicolasEstimator   //_method1
+std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_up_to_1000/";  //_nicolasEstimator   //_method1
 
 ///// Type of data
 const bool mocks              = false;
-const bool mockJMC__          = false;
+const bool mockJMC__          = true;
 const bool mockBox__          = false;
 //// Attributes of data
  // versin=0 for old version, version=1 for mockExpander, version=2 for files from Jean-Marc
-const unsigned int mock_version = 1000;
-const bool mocks_raw          = false;
+const unsigned int mock_version = 2;
+const bool mocks_raw          = true;
 const bool mocksNoNoiseNoCont = false;
-const double randomPositionOfQSOInCellNotBeforeCorrelation__ = false;
+const double randomPositionOfQSOInCellNotBeforeCorrelation__ = true;
 //// Flags for covariance matrix estimation
 const bool shuffleQSO     = false;
 const bool shuffleForest  = false;
@@ -116,7 +116,7 @@ const bool randomForest   = false;
 const bool doBootstraps__ = false;
 
 
-const bool doVetoLines__ = true;
+const bool doVetoLines__ = false;
 const bool nicolasEstimator__ = false;
 const bool doingCoAddSoRemoving__ = false;
 
@@ -199,8 +199,10 @@ Correlation::Correlation(int argc, char **argv) {
 		else pathForest__ += "Data/delta.fits";
 		
 		pathQ1__ += "Data/QSO_withRSD.fits";
+		//pathQ1__ += "Data/QSO_noRSD.fits";
 		
 		pathToSave__ += "Results";
+		//pathToSave__ += "Results_noRSD";
 		if (mocks_raw) {
 			if (mock_version==1) pathToSave__ += "_Raw/";
 			if (mock_version==2) pathToSave__ += "_PureRaw/";
@@ -220,7 +222,7 @@ Correlation::Correlation(int argc, char **argv) {
 			pathToRaw__ += ".fits";
 		}
 		else if (mock_version==2) {
-			pathToRaw__ = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/v1573/fits/spectra-780";
+			pathToRaw__ = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/v1575/fits/spectra-785";
 			pathToRaw__ += argv[5];
 			pathToRaw__ += "-";
 			pathToRaw__ += argv[6];
@@ -6367,6 +6369,7 @@ void Correlation::loadDataForest_Raw(unsigned int bootIdx/*=0*/) {
 
 	/// Get nb of files
 	const unsigned int nbFiles = listFiles.size();
+	long double meanDelta[3] = {0.};
 
 	for (unsigned int fileIdx=0; fileIdx<nbFiles; fileIdx++) {
 
@@ -6437,6 +6440,9 @@ void Correlation::loadDataForest_Raw(unsigned int bootIdx/*=0*/) {
 	
 			for (unsigned int p=0; p<tmp_nbPixels2; p++) {
 
+				/// Remove 2/3 of pixels because too heavy
+				if (p%3!=0) continue;
+
 				/// bad pixels
 				if (LAMBDA_OBS[p]<=0.) continue;
 
@@ -6447,6 +6453,10 @@ void Correlation::loadDataForest_Raw(unsigned int bootIdx/*=0*/) {
 				if (lambdaRFd<lambdaRFMin__ || lambdaRFd>lambdaRFMax__ || LAMBDA_OBS[p]<lambdaObsMin__ || LAMBDA_OBS[p]>=lambdaObsMax__) continue;
 
 				if (mock_version==0) FLUX[p] /= CONTINUUM[p];
+
+				meanDelta[0] += FLUX[p];
+				meanDelta[1] ++;
+				meanDelta[2] ++;
 
 				const double zi = LAMBDA_OBS[p]/lambdaRFLine__ -1.;
 				v_tmp_r.push_back(hConvertRedshDist->Interpolate(zi));
@@ -6484,9 +6494,13 @@ void Correlation::loadDataForest_Raw(unsigned int bootIdx/*=0*/) {
 		fits_close_file(fitsptrSpec,&sta);
 	}
 
-	nbForest_ = v_ra__.size();
-	std::cout << "  number of forest        = " << forestIdx << std::endl;
-	std::cout << "  number of good forest   = " << nbForest_ << std::endl;
+        nbForest_ = v_ra__.size();
+        std::cout << "  number of forest        = " << forestIdx << std::endl;
+        std::cout << "  number of good forest   = " << nbForest_ << std::endl;
+
+	std::cout << "  < delta >       = " << meanDelta[0]/meanDelta[1] << std::endl;
+	std::cout << "  sum(w_i)        = " << meanDelta[1]              << std::endl;
+	std::cout << "  nb pixel        = " << (long long unsigned int)meanDelta[2]              << std::endl;
 }
 
 
