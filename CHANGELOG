@@ -153,8 +153,11 @@
 	- Mock_JMLG/ReadFits/src/GetDelta.cpp:
 		* remove "isnan" 
 
-
-
+# 2016 - 03 - 31 - (10h16)
+	- chain_annalys_delta/Correlation/src/Correlation.cpp:
+		* add the metal calculation for LYA and correct the linear templates of CAMB
+	- Python/Correlation/CAMB.py:
+		* add calculation of monopole, quadupole, hexadecapole.
 
 
 

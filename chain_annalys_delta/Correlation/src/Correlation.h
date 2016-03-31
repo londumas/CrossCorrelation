@@ -104,6 +104,7 @@ class Correlation
 		//
 		void xi_A_delta_delta(void);
 		void xi_A_delta_delta_lambda(void);
+		void xi_A_delta_delta_Metals_Models(double lambdaRFMetal1, std::string lambdaRFMetalName1,double lambdaRFMetal2, std::string lambdaRFMetalName2);
 		void xi_A_delta_delta2( unsigned int bootIdx=0 );
 		void xi_A_delta_delta2_lambda(void);
 		//
@@ -119,6 +120,7 @@ class Correlation
 		void xi_Q1_Q2(void);
 		//
 		void xi_A_delta_delta_MockJMc(void);
+		void xi_A_delta_delta_Metals_Models_MockJMc(double lambdaRFMetal1, std::string lambdaRFMetalName1,double lambdaRFMetal2, std::string lambdaRFMetalName2);
 		void xi_delta_QSO_MockJMc( bool doBootstraps=false, unsigned int bootIdx=0);
 		void xi_delta_QSO_MockJMc_distortionMatrix( void );
 		void xi_delta_QSO_MockJMc_distortionMatrix_1D( void );

@@ -17,19 +17,19 @@ def main():
 	### For mocks
 	
 	### mock catalogue
-	for i in range(0,10):
+	for i in range(0,1):
 		### mock catalogue
-		for j in range(0,10):
+		for j in range(0,1):
 
 			### for region
-			for k in range(0,1):
+			#for k in range(0,1):
 
 			### for metals 
-			#for k in [21,25,26,27]:
+			for k in [21,24,25,26,27]:
 				tmp_command = "echo \" \n ------ Start ------ \n \" " 
 				subprocess.call(tmp_command, shell=True)
 
-				tmp_command = "clubatch \"time ; hostname ; " + commandProd + ' 18 0 ' + str(k) + ' 0 ' + str(i) + " " + str(j) + "\""
+				tmp_command = "clubatch \"time ; hostname ; " + commandProd + ' 24 0 ' + str(k) + ' 0 ' + str(i) + " " + str(j) + "\""
 				subprocess.call(tmp_command, shell=True)
 
 				tmp_command = "echo " + tmp_command
@@ -41,13 +41,14 @@ def main():
                 	        myTools.isReadyForNewJobs(50, 1000,'time')
 		#time.sleep(120)
 	
+	
 	'''
-	for i in range(0,1):
-		for j in range(0,10):
+	for i in range(0,29):
+		for j in range(0,29):
 			tmp_command = "echo \" \n ------ Start ------ \n \" " 
 			subprocess.call(tmp_command, shell=True)
 
-			tmp_command = "clubatch \"time ; hostname ; " + commandProd + " 18 0 0 0 " + str(i) + ' ' + str(j) + " \""
+			tmp_command = "clubatch \"time ; hostname ; " + commandProd + " 20 " + str(i) + ' ' + str(j) + " 0 0 0 \""
 			subprocess.call(tmp_command, shell=True)
 	
 			tmp_command = "echo " + tmp_command
@@ -55,10 +56,8 @@ def main():
 			tmp_command = "echo " + time.ctime()
 			subprocess.call(tmp_command, shell=True)
 
-			time.sleep(20)
+			time.sleep(1)
 			myTools.isReadyForNewJobs(200, 430,'time')
-
-		time.sleep(120.)
 	'''
 	
 	'''

@@ -212,7 +212,7 @@ def plot_2d_correlation(xi2D, x_power=0):
 
 
 	origin='upper'
-	extent=[0.,200.,200., -200.]
+	#extent=[0.,200.,200., -200.]
 
 	xxx = numpy.transpose(xi2D[:,:,0])
 	yyy = numpy.transpose(xi2D[:,:,1])
@@ -227,7 +227,7 @@ def plot_2d_correlation(xi2D, x_power=0):
 	fig = plt.figure()
 	ax = fig.add_subplot(111)
 
-	plt.imshow(coef*yyy, origin=origin,extent=extent, interpolation='None')
+	plt.imshow(coef*yyy, origin=origin, interpolation='None') #,extent=extent)
 	cbar = plt.colorbar()
 
 	plt.xlabel(r'$s_{\perp} \, [h^{-1} Mpc]$', fontsize=40)

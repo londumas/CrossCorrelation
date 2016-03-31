@@ -21,6 +21,8 @@ import const
 import myTools
 
 class CAMB:
+
+	##http://arxiv.org/pdf/1301.3456v1.pdf
 	
 	def __init__(self,source='CAMB'):
 
@@ -33,43 +35,66 @@ class CAMB:
 			self._xi2 = numpy.loadtxt( const.path_to_BAOFIT_model__ + 'DR9LyaMocks.2.dat')
 			self._xi4 = numpy.loadtxt( const.path_to_BAOFIT_model__ + 'DR9LyaMocks.4.dat')
 		if (source=='CAMB_Mocks_me'):
-			self._xi0 = numpy.loadtxt( const.path_to_BAOFIT_model__ + 'DR9LyaMocks.0.dat')
-			self._xi2 = numpy.loadtxt( const.path_to_BAOFIT_model__ + 'DR9LyaMocks.2.dat')
-			self._xi4 = numpy.loadtxt( const.path_to_BAOFIT_model__ + 'DR9LyaMocks.4.dat')
+			
+			path_to_pk = '/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Mock_JMLG/Produce_CAMB/DR9LyaMocks_matterpower.dat'
+			self._xi0,self._xi2,self._xi4 = self.get_xi_0_2_4_from_pk(path_to_pk,[0,1],True)
 
-			h = 0.70
-			omega_m_0 = 0.27
-			f = cp.fgrowth(2.25,omega_m_0)
-
-			data = numpy.loadtxt('/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Mock_JMLG/Produce_CAMB/DR9LyaMocks_matterpower.dat')
-			data_me = numpy.zeros( shape=(data[:,1].size+1,2) )
-			data_me[1:,0] = data[:,0]
-			data_me[1:,1] = data[:,1]*f*f
-
-			r2,cric2 = self.xi_from_pk(data_me[:,0],data_me[:,1])
-			self._xi0 = numpy.zeros( shape=(r2.size-1,2) )
-			self._xi0[:,0] = r2[1:]
-			self._xi0[:,1] = cric2[1:]
 		elif (source=='CHRISTOPHE'):
 
-			self._xi0 = numpy.loadtxt( const.path_to_BAOFIT_model__ + 'DR9LyaMocks.0.dat')
-			self._xi2 = numpy.loadtxt( const.path_to_BAOFIT_model__ + 'DR9LyaMocks.2.dat')
-			self._xi4 = numpy.loadtxt( const.path_to_BAOFIT_model__ + 'DR9LyaMocks.4.dat')
-
-			camb = numpy.loadtxt('/home/gpfs/manip/mnt0607/bao/cmv/Helion/ginit3d_67_0p0_7859_ntpk.txt')
-
-			h = 0.70
-			omega_m_0 = 0.27
-			f = cp.fgrowth(2.25,omega_m_0)
-
-			k  = numpy.append( [0.], camb[:,0]/h)
-			pk = numpy.append( [0.], camb[:,3]*numpy.power(h,3.)*f*f)
-			r,cric = self.xi_from_pk(k,pk)
-			self._xi0 = numpy.zeros( shape=(r.size-1,2) )
-			self._xi0[:,0] = r[1:]
-			self._xi0[:,1] = cric[1:]
+			path_to_pk = '/home/gpfs/manip/mnt0607/bao/cmv/Helion/ginit3d_67_0p0_7859_ntpk.txt'
+			self._xi0,self._xi2,self._xi4 = self.get_xi_0_2_4_from_pk(path_to_pk,[0,3],False)
 
 		return
+	def get_xi_0_2_4_from_pk(self,path_to_pk,index=[0,1],comoving=True):
+
+		h         = 0.70
+		omega_m_0 = 0.27
+		f         = cp.fgrowth(2.25,omega_m_0)
+
+		data = numpy.loadtxt(path_to_pk)
+		data_me = numpy.zeros( shape=(data[:,1].size+1,2) )
+
+		if (comoving) :
+			data_me[1:,0] = data[:,index[0]]
+			data_me[1:,1] = data[:,index[1]]*f*f
+		else:
+			data_me[1:,0] = data[:,index[0]]/h
+			data_me[1:,1] = data[:,index[1]]*numpy.power(h,3.)*f*f
+
+		r2,cric2 = self.xi_from_pk(data_me[:,0],data_me[:,1])
+		index_of_bin_greeter_than_half_max = numpy.arange(r2.size)[ r2>numpy.max(r2)/2. ][0]
+		size = r2[1:index_of_bin_greeter_than_half_max].size
+		print '  index of bin greeter than half max  =  ', index_of_bin_greeter_than_half_max
+		print '  size = ', size
+		xi0 = numpy.zeros( shape=(size,2) )
+		xi0[:,0] = r2[1:index_of_bin_greeter_than_half_max]
+		xi0[:,1] = cric2[1:index_of_bin_greeter_than_half_max]
+
+		print '  starting integration with r = ', xi0[0,0]
+		step = xi0[1,0]-xi0[0,0]
+		print '  step = ', step
+		diff = 3.*numpy.power(xi0[:,0],-3.)*numpy.cumsum( numpy.power(xi0[:,0],2.)*xi0[:,1])*step
+		xi2 = numpy.zeros( shape=(size,2) )
+		xi2[:,0] = xi0[:,0]
+		xi2[:,1] = xi0[:,1]-diff
+
+		#plt.plot(xi2[:,0], -xi2[:,1] )
+		#plt.plot(xi2[:,0], -numpy.power(xi0[0,0]/xi2[:,0],3.)*(xi2[:,1]-xi0[:,1]) )
+		#plt.show()
+		#xi2[:,1] += numpy.power(xi2[0,0]/xi2[:,0],3.)*(xi2[:,1]-xi0[:,1])
+
+		step = xi0[1,0]-xi0[0,0]
+		diff = 5.*numpy.power(xi0[:,0],-5.)*numpy.cumsum( numpy.power(xi0[:,0],4.)*(xi0[:,1]+xi2[:,1]) )*step
+		xi4 = numpy.zeros( shape=(size,2) )
+		xi4[:,0] = xi0[:,0]
+		xi4[:,1] = xi0[:,1] - diff
+
+		#plt.plot(xi4[:,0], abs( xi4[:,1] ) )
+		#plt.plot(xi4[:,0], abs( numpy.power(xi0[0,0]/xi4[:,0],5.)*(xi4[:,1]-xi0[:,1]) ) )
+		#plt.show()
+		#xi4[:,1] += numpy.power(xi4[0,0]/xi4[:,0],5.)*(xi4[:,1]-xi0[:,1])
+
+		return xi0, xi2, xi4
 	def xi_from_pk(self,k,pk):
 		#------------------------------------------------------------
 		#	from P(k) to xi(r) for uneven spaced k points
@@ -85,8 +110,7 @@ class CAMB:
 		pkIn[0]=0.
 		r=2.*numpy.pi/kmax*numpy.arange(nk)
 		pkk=kIn*pkIn
-		cric=-numpy.imag(numpy.fft.fft(pkk)/nk)/r/2./numpy.pi**2*kmax
-		cric[0]=0
+		cric = numpy.append([0.], -numpy.imag(numpy.fft.fft(pkk)/nk)[1:]/r[1:]/2./numpy.pi**2*kmax )
 
 		return r,cric
 	'''
@@ -148,8 +172,8 @@ class CAMB:
 		if (x_power==2):
 			plt.ylabel(r'$|s|^{2}.\xi (|s|) \, [(h^{-1}.Mpc)^{2}]$', fontsize=40)
 		plt.xlabel(r'$|s| \, [h^{-1}.Mpc]$', fontsize=40)
-		plt.xlim([ numpy.amin(xxx)-10., numpy.amax(xxx)+10. ])
-		myTools.deal_with_plot(False,False,True)
+		plt.xlim([ numpy.amin(xxx)-10., numpy.amax(self._xi0[:,0])+10. ])
+		myTools.deal_with_plot(False,False,False)
 		plt.show()
 
 		return
@@ -201,15 +225,42 @@ class CAMB:
 		return
 
 '''
-camb = CAMB()
-
-camb.test_cosmolopy()
-
+camb = CAMB('CAMB_Mocks_me')
 camb.plot_1d(0)
 camb.plot_1d(1)
 camb.plot_1d(2)
-camb.save_in_one_file('/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Resources/CAMB/CAMB_2_25/camb.txt')
 '''
+
+'''
+camb = [ CAMB('CAMB_Mocks_me') ]
+
+for x_power in [0,1,2]:
+	for el in camb:
+		
+		xxx = el._xi0[:,0]
+		yyy = el._xi0[:,1]
+		coef = numpy.power(xxx,x_power)
+		plt.errorbar(xxx,coef*yyy,fmt='o')
+
+		
+		xxx = el._xi2[:,0]
+		yyy = el._xi2[:,1]
+		coef = numpy.power(xxx,x_power)
+		plt.errorbar(xxx,coef*yyy,fmt='o')
+
+		xxx = el._xi4[:,0]
+		yyy = el._xi4[:,1]
+		coef = numpy.power(xxx,x_power)
+		plt.errorbar(xxx,coef*yyy,fmt='o')
+		
+
+	plt.xlim([ numpy.amin(xxx)-10., 200.+10. ])
+	myTools.deal_with_plot(False,False,False)
+	plt.show()
+'''
+
+#camb[0].save_in_one_file('/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Resources/CAMB/CAMB_2_25/camb.txt')
+
 
 
 

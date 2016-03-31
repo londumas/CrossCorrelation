@@ -18,7 +18,7 @@ import sys
 import myTools
 import const_delta
 import const
-import CAMB
+
 
 raw_dic_class = {
 	'minXi': 0.,
@@ -503,13 +503,13 @@ class Correlation3D:
 
 			#plt.plot(xi1D[:,0,0][cut], -xi1D[:,1,0][cut])
 			#plt.grid()
-			#plt.show()			
+			#plt.show()
 		
 		if (selection==0 or selection==2):
 			### 2D
 			data = numpy.loadtxt(path2D)
 			save0 = data[:,0]
-	
+
 			tmp_save0  = numpy.zeros( shape=(self._nbBinX2D,self._nbBinY2D,3) )
 			tmp_save1  = numpy.zeros( shape=(self._nbBinX2D,self._nbBinY2D,3) )
 			tmp_save2  = numpy.zeros( shape=(self._nbBinX2D,self._nbBinY2D) )
@@ -537,7 +537,7 @@ class Correlation3D:
 				xi2D[:,:,0,i][cut] = numpy.sqrt( (tmp_save2[cut]/tmp_save5[cut])**2. + (tmp_save3[cut]/tmp_save5[cut])**2. )
 				xi2D[:,:,1,i][cut] = tmp_save0[:,:,i][cut] / tmp_save5[cut]
 				xi2D[:,:,2,i][cut] = numpy.abs(xi2D[:,:,1,i][cut])/numpy.sqrt(tmp_save6[cut])
-		
+
 		return xiMu, xiWe, xi1D, xi2D
 	def empty_data(self):
 
@@ -881,7 +881,7 @@ class Correlation3D:
 		yer = xi1D[:,2][cut]
 
 		### Get Camb
-		camb = CAMB.CAMB('CHRISTOPHE')
+		camb = dic['CAMB']
 		if (dic['mulpol_index']==0):
 			yyy_Camb = numpy.interp(xi1D[:,0],camb._xi0[:,0],camb._xi0[:,1])
 		elif (dic['mulpol_index']==2):
@@ -1002,41 +1002,56 @@ class Correlation3D:
 		myTools.plot2D(model*xxx*xxx)
 
 		return
-	def write_metal_model(self, with_metals_templates=False, plot=False):
+	def write_metal_model(self, with_metals_templates=False):
 
-		path_to_BAOFIT = self._path_to_txt_file_folder + 'BaoFit_q_f__'+self._f1+'__'+self._q1
+		if (self._correlation=='q_f'):
+			path_to_BAOFIT = self._path_to_txt_file_folder + 'BaoFit_'+self._correlation+'__'+self._f1+'__'+self._q1
+			name_metal_1 = ['']
+			name_metal_2 = ['SiII(1260)','SiIII(1207)','SiII(1193)','SiII(1190)']
+			name_metal_to_save_1 = ['QSO_']
+			name_metal_to_save_2 = ['Si2c','Si3','Si2b','Si2a']
+		elif (self._correlation=='f_f'):
+			path_to_BAOFIT = self._path_to_txt_file_folder + 'BaoFit_'+self._correlation+'__'+self._f1
+			name_metal_1 = ['LYA_','SiII(1260)_','SiIII(1207)_','SiII(1193)_','SiII(1190)_']
+			name_metal_2 = ['SiII(1260)','SiIII(1207)','SiII(1193)','SiII(1190)']
+			name_metal_to_save_1 = ['Lya_','Si2c_','Si3_','Si2b_','Si2a_']
+			name_metal_to_save_2 = ['Si2c','Si3','Si2b','Si2a']
+
 		if (with_metals_templates):
 			path_to_BAOFIT += '__withMetalsTemplates'
-		path_to_BAOFIT += '/bao2D_QSO_'
-
+		path_to_BAOFIT += '/bao2D_'
 		suffix = ['.0.dat','.2.dat','.4.dat']
-		name   = ['SiII(1260)','SiIII(1207)','SiII(1193)','SiII(1190)']
-		name_to_save = ['Si2c','Si3','Si2b','Si2a']
 
-		for j in numpy.arange(len(name)):
-			xiMu, xiWe, xi1D, xi2D = self.read_metal_model(name[j])
 
-			if (plot): myTools.plot_2d_correlation(xi2D[:,:,:,0],0)
 
-			for i in range(0,3):
-				correlation = numpy.zeros( shape=(self._nbBin2D,4) )
-        	        	indexMatrix = numpy.arange(self._nbBin2D)
-        	        	correlation[:,0] = (indexMatrix%self._nbBinY2D)*self._nbBinX2D + indexMatrix/self._nbBinY2D
-        	        	correlation[:,1] = xi2D[:,:,1,i].flatten()
-        	        	cutCorrelation = (correlation[:,1]!=0.)
-				if (correlation[:,0][cutCorrelation].size==0): continue
 
-				### Get the array and sort it
-				correlation2 = numpy.zeros( shape=(self._nbBin2D,4) )
-				for k in numpy.arange(self._nbBin2D):
-					idx = correlation[k,0].astype(int)
-					correlation2[idx,0] = idx
-					correlation2[idx,1] = correlation[k,1]
-					correlation2[idx,2] = self._minX2D+0.5*self._binSize + (idx%self._nbBinX2D)*self._binSize
-					correlation2[idx,3] = self._minY2D+0.5*self._binSize + (idx/self._nbBinX2D)*self._binSize
+		for i in numpy.arange(len(name_metal_1)):
 
-				print path_to_BAOFIT + name_to_save[j] + suffix[i]
-				numpy.savetxt( path_to_BAOFIT + name_to_save[j] + suffix[i],zip(correlation2[:,2],correlation2[:,3],correlation2[:,1]),fmt='%u %u %1.20e')
+			for j in numpy.arange(len(name_metal_2)):
+				xiMu, xiWe, xi1D, xi2D = self.read_metal_model( name_metal_1[i]+name_metal_2[j] )
+
+				myTools.plot_2d_correlation(xi2D[:,:,:,0],0)
+
+				for k in range(0,3):
+
+					correlation = numpy.zeros( shape=(self._nbBin2D,4) )
+					indexMatrix = numpy.arange(self._nbBin2D)
+					correlation[:,0] = (indexMatrix%self._nbBinY2D)*self._nbBinX2D + indexMatrix/self._nbBinY2D
+					correlation[:,1] = xi2D[:,:,1,k].flatten()
+					cutCorrelation = (correlation[:,1]!=0.)
+					if (correlation[:,0][cutCorrelation].size==0): continue
+
+					### Get the array and sort it
+					correlation2 = numpy.zeros( shape=(self._nbBin2D,4) )
+					for l in numpy.arange(self._nbBin2D):
+						idx = correlation[l,0].astype(int)
+						correlation2[idx,0] = idx
+						correlation2[idx,1] = correlation[l,1]
+						correlation2[idx,2] = self._minX2D+0.5*self._binSize + (idx%self._nbBinX2D)*self._binSize
+						correlation2[idx,3] = self._minY2D+0.5*self._binSize + (idx/self._nbBinX2D)*self._binSize
+
+					print path_to_BAOFIT + name_metal_to_save_1[i]+name_metal_to_save_2[j] + suffix[k]
+					numpy.savetxt( path_to_BAOFIT + name_metal_to_save_1[i]+name_metal_to_save_2[j] + suffix[k],zip(correlation2[:,2],correlation2[:,3],correlation2[:,1]),fmt='%u %u %1.20e')
 
 		return
 	def write_BAOFIT_ini_and_grid(self, param, dist_matrix=False, with_metals_templates=False):
@@ -1148,7 +1163,7 @@ model-config = binning[BAO alpha-perp]     ={0.98:1.02}*50
 ## Maximum allowed radial dilation (increases the range that model needs to cover)
 dilmin = 0.01
 #dilmax = 2.5
-dilmax = 3.5
+dilmax = 5.5
 
 ## Non-linear broadening with 1+f = (SigmaNL-par)/(SigmaNL-perp)
 
@@ -1212,7 +1227,7 @@ output-prefix = """ + path_to_BAOFIT + """.
 			param = numpy.asarray( [1.2,-0.351,0.9,0.,0.,3.6,0.962524,1.966,3.26,1.,1.,1.,1.,0.,0.,0.,0.,0.,0.] )
 			path_to_BAOFIT = self._path_to_txt_file_folder + 'BaoFit_'+self._correlation+'__'+self._f1+'__'+self._q1
 		elif (self._correlation=='f_f'):
-			param = numpy.asarray( [1.4,-0.351,3.8,0.,0.,3.6,0.962524,1.966,3.26,1.,1.,1.,1.,0.,0.,0.,0.,0.,0.] )
+			param = numpy.asarray( [1.2,-0.351,3.8,0.,0.,3.6,0.962524,1.966,3.26,1.,1.,1.,1.,0.,0.,0.,0.,0.,0.] )
 			path_to_BAOFIT = self._path_to_txt_file_folder + 'BaoFit_'+self._correlation+'__'+self._f1
 
 		if (with_metals_templates):
@@ -1362,7 +1377,7 @@ output-prefix = """ + path_to_BAOFIT + """.
 			TMP_yyy = TMP_yyy[ TMP_cut ]
 			TMP_yer = TMP_yer[ TMP_cut ]
 			TMP_coef = numpy.power(TMP_xxx,x_power)
-			plt.errorbar(TMP_xxx, TMP_coef*TMP_yyy, yerr=TMP_coef*TMP_yer, markersize=10,linewidth=2, marker='o',label=r'$'+el._name+'$',color='red')
+			plt.errorbar(TMP_xxx, TMP_coef*TMP_yyy, yerr=TMP_coef*TMP_yer, markersize=10,linewidth=2, marker='o',label=r'$'+el._name+'$')
 
 		if (with_camb):
 			camb = CAMB.CAMB()
@@ -1662,7 +1677,7 @@ output-prefix = """ + path_to_BAOFIT + """.
 		yer = xi1D[:,2]
 	
 		### Get the smooth CAMB
-		camb = CAMB.CAMB('CHRISTOPHE')
+		camb = dic['CAMB']
 		if (dic['mulpol_index']==0): camb = camb._xi0
 		elif (dic['mulpol_index']==2): camb = camb._xi2
 
