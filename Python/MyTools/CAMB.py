@@ -52,16 +52,25 @@ class CAMB:
 		f         = cp.fgrowth(2.25,omega_m_0)
 
 		data = numpy.loadtxt(path_to_pk)
-		data_me = numpy.zeros( shape=(data[:,1].size+1,2) )
+		k  = numpy.zeros( data[:,1].size+1 )
+		pk = numpy.zeros( data[:,1].size+1 )
 
 		if (comoving) :
-			data_me[1:,0] = data[:,index[0]]
-			data_me[1:,1] = data[:,index[1]]*f*f
+			k = data[:,index[0]]
+			pk = data[:,index[1]]*f*f
 		else:
-			data_me[1:,0] = data[:,index[0]]/h
-			data_me[1:,1] = data[:,index[1]]*numpy.power(h,3.)*f*f
+			k = data[:,index[0]]/h
+			pk = data[:,index[1]]*numpy.power(h,3.)*f*f
 
-		r2,cric2 = self.xi_from_pk(data_me[:,0],data_me[:,1])
+		#if (index[1]==3):
+		if (False):
+			k_high = numpy.pi/(4.5*h)
+			print '  cut in high k = ', k_high
+			cut = k<k_high
+			k  = k[cut]
+			pk = pk[cut]
+
+		r2,cric2 = self.xi_from_pk(k,pk)
 		index_of_bin_greeter_than_half_max = numpy.arange(r2.size)[ r2>numpy.max(r2)/2. ][0]
 		size = r2[1:index_of_bin_greeter_than_half_max].size
 		print '  index of bin greeter than half max  =  ', index_of_bin_greeter_than_half_max
@@ -233,6 +242,7 @@ camb.plot_1d(2)
 
 '''
 camb = [ CAMB('CAMB_Mocks_me') ]
+camb += [ CAMB('CHRISTOPHE') ]
 
 for x_power in [0,1,2]:
 	for el in camb:
@@ -258,7 +268,6 @@ for x_power in [0,1,2]:
 	myTools.deal_with_plot(False,False,False)
 	plt.show()
 '''
-
 #camb[0].save_in_one_file('/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Resources/CAMB/CAMB_2_25/camb.txt')
 
 

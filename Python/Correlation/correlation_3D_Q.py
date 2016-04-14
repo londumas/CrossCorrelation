@@ -88,20 +88,21 @@ class Correlation3DQ(correlation_3D.Correlation3D):
 			### for 1D
 			xi1D[idX,0] += data[i,1]
 			xi1D[idX,1] += data[i,0]
-	
+
 		### Mu
-		cut = (xiMu[:,:,1]>0.)
+		cut = (xiMu[:,:,2]!=0.)
 		xiMu[:,:,0][cut] /= xiMu[:,:,2][cut]
 		xiMu[:,:,1][cut] /= xiMu[:,:,2][cut]
 		xiMu[:,:,2][cut] /= coef
 		xiMu[:,:,3][cut]  = numpy.sqrt(xiMu[:,:,2][cut])
+
 		### we
-		cut = (xiWe[:,:,1]>0.)
+		cut = (xiWe[:,:,1]!=0.)
 		xiWe[:,:,0][cut] /= xiWe[:,:,1][cut]
 		xiWe[:,:,1][cut] /= coef
 		xiWe[:,:,2][cut]  = numpy.sqrt(xiWe[:,:,1][cut])
 		### 1D
-		cut = (xi1D[:,1]>0.)
+		cut = (xi1D[:,1]!=0.)
 		xi1D[:,0][cut] /= xi1D[:,1][cut]
 		xi1D[:,1][cut] /= coef
 		xi1D[:,2][cut]  = numpy.sqrt(xi1D[:,1][cut])
@@ -250,7 +251,7 @@ class Correlation3DQ(correlation_3D.Correlation3D):
 
 		#dic_Q['load_from_txt'] = False
 		nb_realisation = dic_simu['nb_box']*dic_simu['nb_simu']
-		pathToSave = dic_simu['path_to_simu'] + 'Results/' + self._prefix + '_result_'
+		pathToSave = dic_simu['path_to_simu'] + 'Results'+dic_simu['prefix']+'/' + self._prefix + '_result_'
 
 		listMu       = numpy.zeros( shape=(self._nbBin1D*self._nbBinM,nb_realisation) )
 		listWe       = numpy.zeros( shape=(self._nbBin1D,3,nb_realisation) )
@@ -263,9 +264,11 @@ class Correlation3DQ(correlation_3D.Correlation3D):
 		for i in range(0,dic_simu['nb_box']):
 			for j in range(0,dic_simu['nb_simu']):
 
+				print i, j
+
 				raw = dic_simu['path_to_simu'] + 'Box_00' + str(i) + '/Simu_00' + str(j) +'/'
-				dic_class['path_to_txt_file_folder'] = raw+'Results/'
-				dic_Q['path_to_cat']                 = raw+'Data/QSO_withRSD.fits'
+				dic_class['path_to_txt_file_folder'] = raw+'Results'+dic_simu['prefix']+'/'
+				dic_Q['path_to_cat']                 = raw+'Data/'+dic_Q['sufix']+'.fits'
 
 				corr = Correlation3DQ(dic_class,dic_Q)
 				list1D[:,nb]         = corr._xi1D[:,1]
@@ -341,7 +344,8 @@ ell-max = 4
 anisotropic = yes
 decoupled   = yes
 custom-grid = yes
-combined-bias = true
+combined-bias = yes
+pixelize    = yes
 
 # Parameter setup
 
@@ -357,19 +361,19 @@ model-config = value[BAO alpha-parallel]= """+param[11] +""";
 model-config = value[BAO alpha-perp]=     """+param[12]+""";
 model-config = fix[gamma-scale]=          """+param[13]+""";
 model-config = fix[beta*bias]=            """+param[1] +""";
+model-config = fix[pixel scale]=3.15;
 
 # Broadband distortion model
 #dist-add = rP,rT=0:2,-3:1
 #dist-add = -2:0,0:4:2,0
-#dist-add = 0:0,0:0:0,0
 
 ## 2D chisq scan in BAO parameters
 model-config = binning[BAO alpha-parallel] ={0.98:1.02}*50
 model-config = binning[BAO alpha-perp]     ={0.98:1.02}*50	
 
 ## Maximum allowed radial dilation (increases the range that model needs to cover)
-dilmin = 0.5
-dilmax = 2.5
+dilmin = 0.2
+dilmax = 10.
 
 # boxprior keeps result positive (since model only depends on squared value)
 #model-config = boxprior[SigmaNL-perp] @ (0,6);

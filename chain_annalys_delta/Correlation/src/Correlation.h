@@ -44,13 +44,17 @@ class Correlation
 		std::vector<double> v_zz__;
 		std::vector<unsigned int> v_nbPixelDelta1__;
 		std::vector<unsigned int> v_idx__;
+		std::vector< unsigned int > v_region_Map__;
 		std::vector< std::vector< double > > v_r__;
 		std::vector< std::vector< double > > v_d__;
 		std::vector< std::vector< double > > v_w__;
 		std::vector< std::vector< double > > v_z__;
 		std::vector< std::vector< double > > v_lRF__;
 		std::vector< std::vector< double > > v_lObs__;
+		std::vector< std::vector< double > > v_residual_delta_vs_lRF__;
+		std::vector< std::vector< double > > v_residual_delta_vs_lObs__;
 		std::vector< std::vector< unsigned int > > v_nb__;
+
 		/// Data forest 2
 		unsigned int nbForest2__;
 		std::vector<double> v_raDelta2__;
@@ -65,12 +69,14 @@ class Correlation
 		std::vector< std::vector< double > > v_zDelta2__;
 		std::vector< std::vector< double > > v_lRFDelta2__;
 		std::vector< std::vector< double > > v_lObsDelta2__;
+		std::vector< std::vector< double > > v_residual2_delta_vs_lRF__;
+		std::vector< std::vector< double > > v_residual2_delta_vs_lObs__;	
 		/// Data QSO
 		unsigned int nbQ1__;
 		std::vector<double> v_raQ1__;
 		std::vector<double> v_deQ1__;
 		std::vector<double> v_zzQ1__;
-		std::vector<double> v_rQ1__;
+		std::vector<double> v_rrQ1__;
 		std::vector<double> v_CosDeQ1__;
 		std::vector<double> v_SinDeQ1__;
 		/// Data Q2
@@ -78,14 +84,14 @@ class Correlation
 		std::vector<double> v_raQ2__;
 		std::vector<double> v_deQ2__;
 		std::vector<double> v_zzQ2__;
-		std::vector<double> v_rQ2__;
+		std::vector<double> v_rrQ2__;
 		std::vector<double> v_CosDeQ2__;
 		std::vector<double> v_SinDeQ2__;
 
 		/// Instance
 		void loadDataQ1(void);
 		void loadDataQ2(void);
-		void loadDataForest(std::string,bool doBootstraps=false, unsigned int bootIdx=0);
+		void loadDataForest(std::string, unsigned int bootIdx=0);
 		void loadDataDelta2(int dataNeeded=100);
 		void loadDataForest_Raw(unsigned int bootIdx=0);
 
@@ -102,32 +108,34 @@ class Correlation
 		void xi_1D_delta_delta2(void);
 		void xi_1DlRFDevide_delta_delta2(void);
 		//
-		void xi_A_delta_delta(void);
+		void xi_A_delta_delta(unsigned int bootIdx=0);
 		void xi_A_delta_delta_lambda(void);
 		void xi_A_delta_delta_Metals_Models(double lambdaRFMetal1, std::string lambdaRFMetalName1,double lambdaRFMetal2, std::string lambdaRFMetalName2);
 		void xi_A_delta_delta2( unsigned int bootIdx=0 );
 		void xi_A_delta_delta2_lambda(void);
 		//
-		void xi_delta_QSO(         bool doBootstraps=false, unsigned int bootIdx=0);
-		void xi_delta_QSO_theta(   bool doBootstraps=false, unsigned int bootIdx=0);
-		void xi_delta_QSO_lambda(   bool doBootstraps=false, unsigned int bootIdx=0);
+		void xi_delta_QSO(unsigned int bootIdx=0);
+		void xi_delta_QSO_theta(unsigned int bootIdx=0);
+		void xi_delta_QSO_lambda(unsigned int bootIdx=0);
 		void xi_delta_QSO_distortionMatrix(void);
 		void xi_delta_QSO_distortionMatrix_1D(void);
 		void xi_delta_QSO_Metals_Models(double lambdaFrMetal, std::string lambdaFrMetalName);
 		void xi_delta_QSO_Wick(unsigned int diagramIdx);
 		//
-		void xi_QSO_QSO(bool doBootstraps=false, unsigned int bootIdx=0);
+		void xi_QSO_QSO(unsigned int bootIdx=0);
 		void xi_Q1_Q2(void);
 		//
-		void xi_A_delta_delta_MockJMc(void);
+		void xi_A_delta_delta_MockJMc(unsigned int bootIdx=0);
 		void xi_A_delta_delta_Metals_Models_MockJMc(double lambdaRFMetal1, std::string lambdaRFMetalName1,double lambdaRFMetal2, std::string lambdaRFMetalName2);
-		void xi_delta_QSO_MockJMc( bool doBootstraps=false, unsigned int bootIdx=0);
+		void xi_delta_QSO_MockJMc(unsigned int bootIdx=0);
 		void xi_delta_QSO_MockJMc_distortionMatrix( void );
 		void xi_delta_QSO_MockJMc_distortionMatrix_1D( void );
 		void xi_delta_QSO_Metals_Models_MockJMc(double lambdaFrMetal, std::string lambdaFrMetalName);
-		void xi_QSO_QSO_MockJMc(bool doBootstraps=false, unsigned int bootIdx=0);
+		void xi_QSO_QSO_MockJMc(unsigned int bootIdx=0);
 };
 
+const double z0__        = 2.25;
+const double gama__      = 3.8;
 const double lambdaObsMin__   = 3600.; //
 const double lambdaObsMax__   = 7235.; //10326.;  //7235.; //
 const double betaStart__ = 0.;

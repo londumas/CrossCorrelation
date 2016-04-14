@@ -44,7 +44,7 @@
 std::string pathToTxt__    = "";
 std::string pathToPDF__    = "/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Resources/PDF/";
 const std::string pathToDLACat__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/DLA_all.fits";
-const std::string pathToMockJMC__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575/";
+const std::string pathToMockJMC__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1588/";
 const unsigned int nbPixelTemplate__ = int(lambdaRFMax__-lambdaRFMin__)+6;
 const unsigned int nbBinlambdaObs__  = int(lambdaObsMax__-lambdaObsMin__);
 const double onePlusZ0__ = 1.+z0__;
@@ -80,7 +80,7 @@ const bool doVetoLines__          = true;
 const bool setDLA__               = false;
 const bool cutNotFittedSpectra__  = true;
 const bool mocksColab__           = false;
-const bool mockJMC__              = false;
+const bool mockJMC__              = true;
 const bool putReobsTogether__     = false;
 double isReobsFlag__ = -100.;
 
@@ -202,6 +202,7 @@ GetDelta::GetDelta(int argc, char** argv) {
 		std::cout << "  " << start << " " << end << std::endl;
 		
 		loadDataForest(pathForest__,start,end);
+		if (end==0) end = v_alpha__.size();
 		if (v_zz__.size()>=0) fitForests(start,end);
 	}
 
@@ -317,7 +318,7 @@ void GetDelta::defineHistos() {
 	// Flux PDF
 	//#define PATHTOCODE "/home/gpfs/manip/mnt0607/bao/hdumasde/CrossCorrelation_StartingAgainFrom1347/CrossCorrelation";
 	//std::string pathToPDF = "/home/gpfs/manip/mnt0607/bao/hdumasde/CrossCorrelation_StartingAgainFrom1347/CrossCorrelation/RootFile/FluxPDF.txt";
-//	hFluxPDF__ = new TH2D("hFluxPDF__","",100,0.0,1.0,50,1.96,3.5);
+	//hFluxPDF__ = new TH2D("hFluxPDF__","",100,0.0,1.0,50,1.96,3.5);
 
 	hFluxPDF__ = new TH2D("hFluxPDF__","",nbBinsFlux__,minFlux__,maxFlux__,nbBinsRedshift__,minRedshift__,maxRedshift__);
 	hFluxPDF__->SetXTitle("flux");
@@ -585,10 +586,9 @@ void GetDelta::getHisto(unsigned int loopIdx) {
 	fFile.close();
 
 	//// Normalizes hDeltaVsLambdaRF
-	const double coef_mormalization_template = mean_hDeltaVsLambdaRF[0]/mean_hDeltaVsLambdaRF[1];
-	//const double coef_mormalization_template = hDeltaVsLambdaRF__[loopIdx]->GetBinContent(int(nbPixelTemplate__/2.)+1);
+	const double coef_mormalization_template = hTemplate__[loopIdx]->GetBinContent(int( (nbPixelTemplate__+20)/2.)+1)/hDeltaVsLambdaRF__[loopIdx]->GetBinContent(int(nbPixelTemplate__/2.)+1);
 	for (unsigned int i=0; i<nbPixelTemplate__; i++) {
-		hDeltaVsLambdaRF__[loopIdx]->SetBinContent(i+1, hDeltaVsLambdaRF__[loopIdx]->GetBinContent(i+1)/coef_mormalization_template );
+		hDeltaVsLambdaRF__[loopIdx]->SetBinContent(i+1, hDeltaVsLambdaRF__[loopIdx]->GetBinContent(i+1)*coef_mormalization_template );
 	}
 	
 	//// Save hDeltaVsLambdaRF
@@ -1908,6 +1908,7 @@ double GetDelta::VoigtProfile(double nhi, double lamb, double z_abs) {
 
 	return prof;
 }
+
 
 
 

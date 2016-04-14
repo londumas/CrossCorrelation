@@ -108,7 +108,7 @@ class LymanForest
 		//		- unsigned int* array: array of size min the number
 		//		of forest in the all survey, with the index of the 
 		//		region correcponding to each forest
-		void GetRegionArray(unsigned int* array);
+		void GetRegionArray(std::vector <unsigned int >& array);
 		
 		// Save into an Ascii file the list of forest with its
 		//	corresponding region, file structure is:

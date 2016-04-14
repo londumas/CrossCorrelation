@@ -119,7 +119,9 @@ def deal_with_plot(logx=False, logy=False, legend=False):
 	#plt.ticklabel_format(style='sci', axis='z', scilimits=(0,0))
 	plt.rc('font', **{'size':'40'})
 	plt.tick_params(axis='both', which='major', labelsize=40)
-	
+	plt.gca().get_xaxis().get_major_formatter().set_useOffset(False)
+	plt.gca().get_yaxis().get_major_formatter().set_useOffset(False)
+
 	if (logx):
 		plt.xscale('log')
 	if (logy):

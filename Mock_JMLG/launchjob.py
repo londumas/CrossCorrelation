@@ -29,12 +29,12 @@ import cosmolopy.distance as cosmology
 
 ### Constants
 sizeMax = 250000
-sizeMaxForest = 200000
+sizeMaxForest = 20000 #200000
 nbQSO__ = 232399
 nbFor__ = 166968
 nbPixel = 647
 ratioForestToQSO__    = 1.*nbFor__/nbQSO__;
-pathToFolder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575/'
+pathToFolder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1588/'
 
 
 
@@ -64,13 +64,10 @@ def main():
 	if (index_pass==0):
 		subprocess.call('mkdir ' +pathToFolder+'Results/', shell=True)
 		subprocess.call('mkdir ' +pathToFolder+'Results_nicolasEstimator/', shell=True)
-		subprocess.call('mkdir ' +pathToFolder+'Results_Raw/', shell=True)
 		subprocess.call('mkdir ' +pathToFolder+'Results_PureRaw/', shell=True)
+		subprocess.call('mkdir ' +pathToFolder+'Results_Raw/', shell=True)
 
-	for i in range(0,10):
-	#for el in [ (8,6), (8,9), (9,5), (9,6), (9,7), (9,8) ]:
-		#i = el[0]
-		#j = el[1]
+	for i in range(0,1):
 
 		path = pathToFolder + 'Box_00' + str(i) + '/'
 
@@ -79,9 +76,7 @@ def main():
 		if (index_pass==0):
 			subprocess.call('mkdir ' +path, shell=True)
 
-		for j in range(0,10):
-		#if (True):
-			#if (i==0 and j==0): continue
+		for j in range(0,1):
 
 			print i, j
 			path = pathToFolder+ 'Box_00' + str(i) + '/Simu_00'+str(j) + '/'
@@ -92,17 +87,10 @@ def main():
 				subprocess.call('mkdir ' + path + 'Data', shell=True)
 				subprocess.call('mkdir ' + path + 'Run', shell=True)
 				subprocess.call('mkdir ' + path + 'Results', shell=True)
-				subprocess.call('mkdir ' + path + 'Results_Raw', shell=True)
-				subprocess.call('mkdir ' + path + 'Results_PureRaw', shell=True)
 				subprocess.call('mkdir ' + path + 'Results_nicolasEstimator', shell=True)
-				subprocess.call('mkdir ' + path + 'Results_noRSD', shell=True)
-				subprocess.call('mkdir ' + path + 'Results_noRSD_PureRaw', shell=True)
-				subprocess.call('mkdir ' + path + '/Results/BaoFit_q_f__LYA__QSO', shell=True)
-				subprocess.call('mkdir ' + path + '/Results/BaoFit_q_f__LYA__QSO__withMetalsTemplates', shell=True)
-				subprocess.call('mkdir ' + path + '/Results_nicolasEstimator/BaoFit_q_f__LYA__QSO', shell=True)
-				subprocess.call('mkdir ' + path + '/Results_Raw/BaoFit_q_f__LYA__QSO', shell=True)
-				subprocess.call('mkdir ' + path + '/Results_noRSD/BaoFit_q_f__LYA__QSO', shell=True)
-				subprocess.call('mkdir ' + path + '/Results_noRSD_PureRaw/BaoFit_q_f__LYA__QSO', shell=True)
+				subprocess.call('mkdir ' + path + 'Results_PureRaw', shell=True)
+				subprocess.call('mkdir ' + path + 'Results_Raw', shell=True)
+
 			if (index_pass==1):
 
 				'''
@@ -120,11 +108,12 @@ def main():
 				if (i==0 and j==0):
 					#tbhduQSO    = create_fits_qso(sizeMax)
 					#tbhduQSO.writeto(path + 'Data/QSO_withRSD.fits', clobber=True)
-					tbhduQSO    = create_fits_qso(sizeMax)
-                                        tbhduQSO.writeto(path + 'Data/QSO_noRSD.fits', clobber=True)
-					#tbhduForest = create_fits_forest(sizeMaxForest)
-					#tbhduForest.writeto(path + 'Data/delta.fits', clobber=True)
+					#tbhduQSO    = create_fits_qso(sizeMax)
+                                        #tbhduQSO.writeto(path + 'Data/QSO_noRSD.fits', clobber=True)
+					tbhduForest = create_fits_forest(sizeMaxForest)
+					tbhduForest.writeto(path + 'Data/delta.fits', clobber=True)
 				else:
+					print "helloe"
 					#command = 'clubatch cp ' + pathToFolder + 'Box_000/Simu_000/Data/delta.fits ' + path + 'Data/delta.fits'
 					#subprocess.call(command, shell=True)
 					#command = 'cp ' + pathToFolder + 'Box_000/Simu_000/Data/QSO_withRSD.fits ' + path + 'Data/QSO_withRSD.fits'
@@ -132,8 +121,8 @@ def main():
 					#tbhduQSO    = create_fits_qso(sizeMax)
                                         #tbhduQSO.writeto(path + 'Data/QSO_withRSD.fits', clobber=True)
 					#tbhduForest = create_fits_forest(sizeMaxForest)
-					tbhduQSO    = create_fits_qso(sizeMax)
-                                        tbhduQSO.writeto(path + 'Data/QSO_noRSD.fits', clobber=True)
+					#tbhduQSO    = create_fits_qso(sizeMax)
+                                        #tbhduQSO.writeto(path + 'Data/QSO_noRSD.fits', clobber=True)
 					#tbhduForest.writeto(path + 'Data/delta.fits', clobber=True)
 					#myTools.isReadyForNewJobs(10, 430,'cp')
 					#time.sleep(30)
@@ -150,16 +139,16 @@ def main():
 			elif (index_pass==4):
 
 				print path + 'Data/QSO_withRSD.fits'
-				cat = pyfits.open(path + 'Data/QSO_noRSD.fits', memmap=True)[1].data
+				cat = pyfits.open(path + 'Data/QSO_withRSD.fits', memmap=True)[1].data
 				
 				print '  nb of QSOs before = ', cat.size
 				cat = cat[ (cat['Z'] != 0.) ]
 				print '  nb of QSOs after  = ', cat.size
 				nbQSO = cat.size
 
-				pyfits.writeto(path + 'Data/QSO_noRSD.fits', cat, clobber=True)
+				pyfits.writeto(path + 'Data/QSO_withRSD.fits', cat, clobber=True)
 			
-				'''
+				
 				### Remove useless lines in Forest
 				cat = pyfits.open(path + 'Data/delta.fits', memmap=True)[1].data
 
@@ -167,18 +156,18 @@ def main():
 				cat = cat[ (cat['Z'] != 0.) ]
 				print '  nb of QSOs after  = ', cat.size
 				nbFor = cat.size
-
+				'''
 				if ( nbFor>nbFor__ ):
 					print nbFor-int(nbQSO*ratioForestToQSO__)
 					rand = numpy.random.choice(nbFor, nbFor-int(nbQSO*ratioForestToQSO__), replace=False)
 					cat['Z'][rand] = 0.
-				
+				'''
 				print '  nb of QSOs before = ', cat.size
 				cat = cat[ (cat['Z'] != 0.) ]
 				print '  nb of QSOs after  = ', cat.size
-
+				
 				pyfits.writeto(path + 'Data/delta.fits', cat, clobber=True)
-				'''
+				
 
 			'''
 			### Get the data to 'good' files
@@ -206,16 +195,12 @@ def sendCalculDelta():
 	subprocess.call(tmp_command, shell=True)
 
 
-	for el in [ (8,6), (8,9), (9,5), (9,6), (9,7), (9,8) ]:
-		i = el[0]
-		j = el[1]
-
-	#for i in range(8,10):
+	for i in range(0,1):
 
 		path = pathToFolder + 'Box_00' + str(i) + '/'
 
-		#for j in range(0,10):
-		if (True):
+		for j in range(0,1):
+		
 			tmp_command = "echo " + str(i) + " " + str(j)
 			subprocess.call(tmp_command, shell=True)
 

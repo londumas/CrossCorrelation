@@ -17,7 +17,7 @@ from scipy import interpolate
 chunckNb = 1
 simulNb  = 1
 mockNumber = ''
-isMock_ = False
+isMock_ = True
 forest__ = 'LYA'
 if (forest__ == 'LYB'):
 	lambdaRFMin__      = 800.
@@ -42,11 +42,10 @@ elif (forest__ == 'MGII'):
 ###
 #path = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/FitsFile_DR12_reOBS_eBOSS_Guy/DR12_primery/histos/"
 #path = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/FitsFile_DR12_reOBS_Guy/DR12_primery/histos/"
-path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest__+'/FitsFile_DR12_Guy/DR12_primery/histos_method1/' ##_method1
+#path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest__+'/FitsFile_DR12_Guy/DR12_primery/histos_method1/' ##_method1
 #path = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_reObs/histos/"
 #path = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA//FitsFile_eBOSS_Guy/all_eBOSS_primery/histos/"
-#rawPath = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_test_new_file_composition/'
-
+rawPath = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1588/'
 
 
 ### Delta+1 vs. lambda_Obs
@@ -56,19 +55,20 @@ for i in range (0,chunckNb):
 			path = rawPath + 'Box_00'+str(i)+'/Simu_00'+str(j)+'/Run/'
 			mockNumber = '_'+str(i)+'_'+str(j)
 
-		data = numpy.loadtxt('/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/histos/hDeltaVsLambdaObs_LYA.txt')
-                plt.errorbar(data[:,0]+3500.5, data[:,1], label=r'$DR12$')
+		#data = numpy.loadtxt('/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/histos/hDeltaVsLambdaObs_LYA.txt')
+                #plt.errorbar(data[:,0]+3500.5, data[:,1], label=r'$DR12$')
 
 		#data = numpy.loadtxt('/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_eBOSS_Guy/all_eBOSS_primery/histos/hDeltaVsLambdaObs_LYA.txt')
                # plt.errorbar(data[:,0]+shift__, data[:,1], label=r'$eBOSS$')
 
-		#data = numpy.loadtxt(path+'hDeltaVsLambdaObs_LYA'+mockNumber+'.txt')
-		#plt.errorbar(data[:,0]+shift__, data[:,1], label=r'$MockJM-mockExpander$')
+		data = numpy.loadtxt(path+'hDeltaVsLambdaObs_LYA'+mockNumber+'.txt')
+		plt.errorbar(data[:,0]+shift__, data[:,1], label=r'$MockJM-mockExpander$')
+		print numpy.mean(data[:,1])
 
-		data = numpy.loadtxt('/home/gpfs/manip/mnt/bao/hdumasde/Data/CIV/FitsFile_DR12_Guy_noCut_lambdaOBS/DR12_primery/histos/hDeltaVsLambdaObs_CIV.txt')
-		plt.errorbar(data[:,0]+3447.5, data[:,1], label=r'$CIV \, forest$')
-		data = numpy.loadtxt(path+'hDeltaVsLambdaObs_'+forest__+mockNumber+'.txt')
-		plt.errorbar(data[:,0]+shift__, data[:,1], label=r'$'+str(i)+' \, '+str(j)+'$')
+		#data = numpy.loadtxt('/home/gpfs/manip/mnt/bao/hdumasde/Data/CIV/FitsFile_DR12_Guy_noCut_lambdaOBS/DR12_primery/histos/hDeltaVsLambdaObs_CIV.txt')
+		#plt.errorbar(data[:,0]+3447.5, data[:,1], label=r'$CIV \, forest$')
+		#data = numpy.loadtxt(path+'hDeltaVsLambdaObs_'+forest__+mockNumber+'.txt')
+		#plt.errorbar(data[:,0]+shift__, data[:,1], label=r'$'+str(i)+' \, '+str(j)+'$')
 
 		#data = numpy.loadtxt(path+'hDeltaVsLambdaObs_CIV'+mockNumber+'.txt')
 		#plt.errorbar(data[:,0]+3547.5, data[:,1], label=r'$CIV \, forest$',color='green')
@@ -78,9 +78,14 @@ for i in range (0,chunckNb):
 
 		#data = numpy.loadtxt(path+'hDeltaVsLambdaObs_SIIV.txt')
                 #plt.errorbar(data[:,0]+3547.5, data[:,1], label=r'$CIV \, forest$',color='black')
-
-		#data = numpy.loadtxt('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/hDeltaVsLambdaObs_LYA_JMC.txt')
-		#plt.errorbar(data[:,1][ data[:,2]!=0. ], data[:,2][ data[:,2]!=0. ], label=r'$Simulation \, input$', color='orange')
+		data = numpy.loadtxt('/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Resources/PDF/hDeltaVsLambdaObs_LYA_JMC.txt')
+		plt.errorbar(data[:,1][ data[:,2]!=0. ], data[:,2][ data[:,2]!=0. ], label=r'$v1547$', color='red')
+		data = numpy.loadtxt('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/v1575_hDeltaVsLambdaObs_LYA_JMC.txt')
+		plt.errorbar(data[:,1][ data[:,2]!=0. ], data[:,2][ data[:,2]!=0. ], label=r'$v1575$', color='orange')
+		print numpy.mean(data[:,2][ numpy.logical_and( numpy.logical_and( data[:,2]!=0.,data[:,2]!=1.), numpy.isfinite(data[:,2]))  ])
+		print data[:,2][ numpy.logical_and( numpy.logical_and( data[:,2]!=0.,data[:,2]!=1.), numpy.isfinite(data[:,2]))  ]
+		data = numpy.loadtxt('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/v1588_hDeltaVsLambdaObs_LYA_JMC.txt')
+		plt.errorbar(data[:,1][ data[:,2]!=0. ], data[:,2][ data[:,2]!=0. ], label=r'$v1588$', color='cyan')
 		#data = numpy.loadtxt('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_second_generation/Box_000/Simu_000/Run/hDeltaVsLambdaObs_LYA_0_0.txt')
 		#plt.errorbar(data[:,0]+3500.5, data[:,1], label=r'$Simulation \, output$', color='black')
 		#data = numpy.loadtxt('/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_histos_test_PDFMocksJMC/hDeltaVsLambdaObs_LYA.txt')
@@ -132,7 +137,9 @@ for i in range (0,chunckNb):
 			path = rawPath + 'Box_00'+str(i)+'/Simu_00'+str(j)+'/Run/'
 			mockNumber = '_'+str(i)+'_'+str(j)
 		data = numpy.loadtxt(path+'hDeltaVsLambdaRF_'+forest__+mockNumber+'.txt')
-		plt.errorbar(lambdaRFMin__-2.5+data[:,0], data[:,1]*numpy.mean(saveYYY0), marker='o')
+		plt.errorbar(lambdaRFMin__-2.5+data[:,0], data[:,1], marker='o')
+
+		plt.errorbar(lambdaRFMin__-2.5+data[:,0], data[:,1]/saveYYY0, marker='o')
 
 #plt.title(r'$Template$', fontsize=40)
 plt.xlabel(r'$\lambda_{R.F.} \, [\AA]$', fontsize=40)
@@ -168,6 +175,7 @@ for i in range (0,chunckNb):
 		plt.errorbar(data[:,0], data[:,1], fmt='o', label=r'$'+str(i)+' \, '+str(j)+'$')
 		plt.plot([lambdaRFMin__,lambdaRFMin__],[numpy.min(data[:,1]),numpy.max(data[:,1])],color='red')
 		plt.plot([lambdaRFMax__,lambdaRFMax__],[numpy.min(data[:,1]),numpy.max(data[:,1])],color='red')
+
 plt.title(r'$Residual$', fontsize=40)
 plt.xlabel(r'$\lambda_{R.F.} \, [\AA]$', fontsize=40)
 plt.ylabel(r'$< \delta >$', fontsize=40)

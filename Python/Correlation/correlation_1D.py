@@ -150,6 +150,8 @@ class Correlation_1D:
 			'name' : 'Data'
 			}
 
+		verbose__ = False	
+
 		### folder wher data are
 		self._path_to_txt_file_folder = copy.deepcopy(dic['path_to_txt_file_folder'])
 
@@ -239,18 +241,18 @@ class Correlation_1D:
 			self._middlefix = self._f1 + '_' + self._f2
 
 		path = self._path_to_txt_file_folder + self._prefix + '_' + self._middlefix + '.txt'
-		print '  Correlation_1D::__init__::  path = ', path
+		if (verbose__): print '  Correlation_1D::__init__::  path = ', path
 
 		### Get data
 		self._xi = self.fill_data(path, True)
 
 		self._nbBin = self._xi[:,0].size
 
-
-		
 		return
 
 	def fill_data(self, path, init=False):
+
+		verbose__ = False	
 
 		data = numpy.loadtxt(path)
 		cut = (data[:,5]>1.)
@@ -271,17 +273,18 @@ class Correlation_1D:
 			self._nbBin = nbBin
 			self._meanZ = numpy.sum(data[:,3][cut])/numpy.sum(data[:,4][cut])
 
-			print "  ||              ||                ||              ||"
-			print "  || nb pairs     ||  sum weight    ||  <z>         ||"
-			print "  ||              ||                ||              ||"
-			print "  ||  %1.4e  ||  %1.4e    ||  %1.4e  ||" % (numpy.sum(data[:,5][cut]), numpy.sum(data[:,4][cut]), self._meanZ)
-			print "  ||              ||                ||              ||"
+			if (verbose__): 
+				print "  ||              ||                ||              ||"
+				print "  || nb pairs     ||  sum weight    ||  <z>         ||"
+				print "  ||              ||                ||              ||"
+				print "  ||  %1.4e  ||  %1.4e    ||  %1.4e  ||" % (numpy.sum(data[:,5][cut]), numpy.sum(data[:,4][cut]), self._meanZ)
+				print "  ||              ||                ||              ||"
 
 		return xi
 	def save_list_realisation_simulation(self, dic_class, dic_simu):
 
 		pathToSave = dic_simu['path_to_simu']
-		if (dic_simu['projected']):
+		if (dic_simu['prefix']):
 			pathToSave += 'Results_nicolasEstimator/'
 		else:
 			pathToSave += 'Results/'
@@ -294,12 +297,15 @@ class Correlation_1D:
 			for j in range(0,dic_simu['nb_simu']):
 
 				raw = dic_simu['path_to_simu'] + 'Box_00' + str(i) + '/Simu_00' + str(j) +'/'
-				if (dic_simu['projected']):
+				if (dic_simu['prefix']):
 					dic_class['path_to_txt_file_folder'] = raw+'Results_nicolasEstimator/'
 				else:
 					dic_class['path_to_txt_file_folder'] = raw+'Results/'
 
-				corr = Correlation_1D(dic_class)
+				try:
+					corr = Correlation_1D(dic_class)
+				except:
+					print '  ERROR: ', i, j
 				list1[:,i*10+j] = corr._xi[:,1]
 
 		numpy.save(pathToSave,list1)
@@ -308,17 +314,18 @@ class Correlation_1D:
 	def set_values_on_mean_simulation(self, dic_simu):
 
 		path_to_load = dic_simu['path_to_simu']
-		if (dic_simu['projected']):
+		if (dic_simu['prefix']):
 			path_to_load += 'Results_nicolasEstimator/'
 		else:
 			path_to_load += 'Results/'
 		path_to_load += self._prefix + '_' + self._middlefix + '_result_list.npy'
 
-		nb_realisation = dic_simu['nb_box']*dic_simu['nb_simu']
-
 		list1 = numpy.load(path_to_load)
+		nb_realisation = list1[0,:].size
 		self._xi[:,1] = numpy.mean(list1,axis=1)
 		self._xi[:,2] = numpy.sqrt( numpy.diag(numpy.cov(list1))/nb_realisation )
+
+		print '  nb_realisation = ', nb_realisation
 
 		return
 	def fit_CAMB(self):
@@ -450,7 +457,7 @@ class Correlation_1D:
 			mod += mod2
 			'''
 
-			plt.errorbar(TMP_xxx, TMP_yyy, yerr=TMP_yer, marker='o', label=r'$'+el._name+'$', markersize=8,linewidth=2,color='red')
+			plt.errorbar(TMP_xxx, TMP_yyy, yerr=TMP_yer, marker='o', label=r'$'+el._name+'$', markersize=8,linewidth=2)
 			#plt.errorbar(tmp_xxx, mod, linewidth=2)
 
 			xMin = min(xMin, numpy.amin(TMP_xxx) )
@@ -535,23 +542,23 @@ dic_class = {
 }
 dic_simu = {
 	'path_to_simu' : '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575/',
-	'nb_box' : 3,
+	'nb_box' : 10,
 	'nb_simu' : 10,
-	'projected' : False
+	'prefix' : ''
 }
 
 
 list_corr = []
 
 ### Data
-dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
+dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator/'
 dic_class['name'] = "Data"
 dic_class['correlation'] = "f_f_lRF_devide"
 corr = Correlation_1D(dic_class)
 list_corr += [corr]
 #
 dic_class['f1'] = 'LYA'
-dic_class['name'] = 'Simulation'
+dic_class['name'] = 'v1575'
 dic_class['f1'] = "LYA"
 dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575/Box_000/Simu_000/Results/'
 dic_class['correlation'] = "f_f_lRF_devide"
@@ -559,9 +566,17 @@ corr = Correlation_1D(dic_class)
 corr.save_list_realisation_simulation(dic_class, dic_simu)
 corr.set_values_on_mean_simulation(dic_simu)
 list_corr += [corr]
+#
+dic_class['f1'] = 'LYA'
+dic_class['name'] = 'v1588'
+dic_class['f1'] = "LYA"
+dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1588/Box_000/Simu_000/Results_nicolasEstimator/'
+dic_class['correlation'] = "f_f_lRF_devide"
+corr = Correlation_1D(dic_class)
+list_corr += [corr]
 
 #list_corr[0].plot(True,True)
-list_corr[0].plot(True,False,list_corr[1:])
+list_corr[0].plot(False,False,list_corr[1:])
 
 
 

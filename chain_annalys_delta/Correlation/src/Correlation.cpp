@@ -91,12 +91,16 @@ std::string alQSO[19] = {"QSO_ALL_TESTS",
 
 ///// Constants
 const unsigned int nbBinlambdaObs__  = int(lambdaObsMax__-lambdaObsMin__);
+const double onePlusZ0__ = 1.+z0__;
+const double halfGama__  = gama__/2.;
 double distMinPixel__ = 0.;
 double distMinPixelDelta2__ = 0.;
 unsigned int idxCommand_[6] = {0};
 const std::string pathToMockJMC__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575/";
 std::string pathToRaw__ = "";
-std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/";  //_nicolasEstimator   //_method1
+std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator/";  //_nicolasEstimator   //_method1
+std::string correlation_type__ = "NOTHING";
+
 
 ///// Type of data
 const bool mocks              = false;
@@ -105,9 +109,11 @@ const bool mockBox__          = false;
 //// Attributes of data
  // versin=0 for old version, version=1 for mockExpander, version=2 for files from Jean-Marc
 const unsigned int mock_version = 2;
-const bool mocks_raw          = false;
+const bool mocks_raw          = true;
+const bool meanOver3pixels__     = false;
 const bool mocksNoNoiseNoCont = false;
 const double randomPositionOfQSOInCellNotBeforeCorrelation__ = true;
+unsigned int seed_for_random_position__ = 42;
 //// Flags for covariance matrix estimation
 const bool shuffleQSO     = false;
 const bool shuffleForest  = false;
@@ -116,12 +122,12 @@ const bool randomForest   = false;
 const bool doBootstraps__ = false;
 
 
-const bool doVetoLines__ = true;
-const bool nicolasEstimator__ = false;
+const bool doVetoLines__          = false;
+const bool nicolasEstimator__     = false;
 const bool doingCoAddSoRemoving__ = false;
 
-const bool saveInRootFile__ = false;
-const bool cutNotFittedSpectra__ = true;
+const bool saveInRootFile__      = false;
+const bool cutNotFittedSpectra__ = false;
 
 Correlation::Correlation(int argc, char **argv) {
 
@@ -134,6 +140,13 @@ Correlation::Correlation(int argc, char **argv) {
 	for (unsigned int i=0; i<6; i++) {
 		std::string string = argv[i+1];
 		idxCommand_[i] = atoi(string.c_str());
+	}
+
+	//// seed for random position
+	std::srand(42);
+	for (unsigned int i=0; i<1000; i++) {
+		const unsigned int seed = rand();
+		if (i == (idxCommand_[4]*10 + idxCommand_[5]) ) seed_for_random_position__ = seed;
 	}
 
 	
@@ -200,18 +213,19 @@ Correlation::Correlation(int argc, char **argv) {
 		else pathForest__ += "Data/delta.fits";
 		
 		pathQ1__ += "Data/QSO_withRSD.fits";
-		//pathQ1__ += "Data/QSO_noRSD.fits";
-		
+
 		pathToSave__ += "Results";
-		//pathToSave__ += "Results_noRSD";
+		
 		if (mocks_raw) {
 			if (mock_version==1) pathToSave__ += "_Raw/";
-			if (mock_version==2) pathToSave__ += "_PureRaw/";
+			if (mock_version==2) pathToSave__ += "_devide_instead_of_removing_PureRaw/";
+			if (mock_version==3) pathToSave__ += "_Flux_Notemplate_WithMetals_WithNoise_WithSpectroResolution/";
 		}
 		else {
 			if (nicolasEstimator__) pathToSave__ += "_nicolasEstimator/";
 			else pathToSave__ += "/";
 		}
+		
 
 		pathToRaw__ += "Raw/mocks-*";
 
@@ -244,6 +258,13 @@ Correlation::Correlation(int argc, char **argv) {
 	
 	const unsigned int command = idxCommand_[0];
 
+
+	/// Set the type of correlation
+	if (command == 10 || command == 21)      correlation_type__ = "q_q";
+	else if (command == 5  || command == 19) correlation_type__ = "f_f";
+	else if (command == 8 )                  correlation_type__ = "f_f2";
+
+
 	//
 	if      (command == 0)  xi_1D_delta_delta();
 	else if (command == 1)  xi_1DlRF_delta_delta();
@@ -251,30 +272,31 @@ Correlation::Correlation(int argc, char **argv) {
 	else if (command == 3)  xi_1D_delta_delta2();
 	else if (command == 4)  xi_1DlRFDevide_delta_delta2();
 	//
-	else if (command == 5)  xi_A_delta_delta();
+	else if (command == 5)  xi_A_delta_delta(idxCommand_[2]);
 	else if (command == 6)  xi_A_delta_delta_lambda();
 	else if (command == 7)  xi_A_delta_delta_Metals_Models(absorber__[idxCommand_[1]],absorberName__[idxCommand_[1]],absorber__[idxCommand_[2]],absorberName__[idxCommand_[2]]);
 	else if (command == 8)  xi_A_delta_delta2( idxCommand_[2] );
 	else if (command == 9)  xi_A_delta_delta2_lambda();
 	//
-	else if (command == 10) xi_delta_QSO(doBootstraps__,idxCommand_[2]);
-	else if (command == 11) xi_delta_QSO_theta(doBootstraps__,idxCommand_[2]);
-	else if (command == 12) xi_delta_QSO_lambda(doBootstraps__,idxCommand_[2]);
+	else if (command == 10) xi_delta_QSO(idxCommand_[2]);
+	else if (command == 11) xi_delta_QSO_theta(idxCommand_[2]);
+	else if (command == 12) xi_delta_QSO_lambda(idxCommand_[2]);
 	else if (command == 13) xi_delta_QSO_distortionMatrix();
 	else if (command == 14) xi_delta_QSO_distortionMatrix_1D();
 	else if (command == 15) xi_delta_QSO_Metals_Models(absorber__[idxCommand_[2]],absorberName__[idxCommand_[2]]);
 	else if (command == 16) xi_delta_QSO_Wick(idxCommand_[3]);
 	//
-	else if (command == 17) xi_QSO_QSO(doBootstraps__,idxCommand_[2]);
+	else if (command == 17) xi_QSO_QSO(idxCommand_[2]);
 	else if (command == 18) xi_Q1_Q2();
 	//
-	else if (command == 19) xi_A_delta_delta_MockJMc();
+	else if (command == 19) xi_A_delta_delta_MockJMc(idxCommand_[2]);
 	else if (command == 20) xi_A_delta_delta_Metals_Models_MockJMc(absorber__[idxCommand_[1]],absorberName__[idxCommand_[1]],absorber__[idxCommand_[2]],absorberName__[idxCommand_[2]]);
-	else if (command == 21) xi_delta_QSO_MockJMc(doBootstraps__,idxCommand_[2]);
+	else if (command == 21) xi_delta_QSO_MockJMc(idxCommand_[2]);
 	else if (command == 22) xi_delta_QSO_MockJMc_distortionMatrix();
 	else if (command == 23) xi_delta_QSO_MockJMc_distortionMatrix_1D();
 	else if (command == 24) xi_delta_QSO_Metals_Models_MockJMc(absorber__[idxCommand_[2]],absorberName__[idxCommand_[2]]);
-	else if (command == 25) xi_QSO_QSO_MockJMc(doBootstraps__,idxCommand_[2]);
+	else if (command == 25) xi_QSO_QSO_MockJMc(idxCommand_[2]);
+
 
 	std::cout << "\n\n\n\n" << std::endl;
 }
@@ -900,7 +922,7 @@ void Correlation::xi_1DlRFDevide_delta_delta2(void) {
 //		3D, forest 1 - forest 2 correlation
 //
 // ---------------------------------------------------------------------
-void Correlation::xi_A_delta_delta(void) {
+void Correlation::xi_A_delta_delta(unsigned int bootIdx/*=0*/) {
 
 	std::cout << "\n\n\n\n  ------ xi_A_delta_delta ------" << std::endl;
 	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_A_delta_delta.py";
@@ -908,9 +930,8 @@ void Correlation::xi_A_delta_delta(void) {
 	std::cout << command << "\n" << std::endl;
 
 	///// Load forest
-	loadDataForest(pathForest__);
+	loadDataForest(pathForest__, bootIdx);
 	v_zz__.clear();
-	v_idx__.clear();
 	v_lRF__.clear();
 	v_lObs__.clear();
 	v_nb__.clear();
@@ -929,20 +950,27 @@ void Correlation::xi_A_delta_delta(void) {
 	const double cosmaxTheta = cos(maxTheta);
 	std::cout << "  maxTheta = " << maxTheta*180./M_PI << " degree" << std::endl;
 
+
+	///// get an array for nb of pairs for the forest
+	double a_nbPairs[nbForest_];
+	for (unsigned int i=0; i<nbForest_; i++) {
+		a_nbPairs[i] = 0.;
+	}
+
 	///// Arrays for data
-	double dataMu[nbBin][nbBinM][7];
-	double data2D[nbBin][nbBin][7];
+	double dataMu[nbBin][nbBinM][9];
+	double data2D[nbBin][nbBin][9];
 
 	for (unsigned int i=0; i<nbBin; i++) {
 		for (unsigned int j=0; j<nbBinM; j++) {
-			for (unsigned int k=0; k<7; k++) {
+			for (unsigned int k=0; k<9; k++) {
 				dataMu[i][j][k] = 0.;
 			}
 		}
 	}
 	for (unsigned int i=0; i<nbBin; i++) {
 		for (unsigned int j=0; j<nbBin; j++) {
-			for (unsigned int k=0; k<7; k++) {
+			for (unsigned int k=0; k<9; k++) {
 				data2D[i][j][k] = 0.;
 			}
 		}
@@ -951,6 +979,9 @@ void Correlation::xi_A_delta_delta(void) {
 	std::cout << "\n  Starting\n" << std::endl;			
 	
 	for (unsigned int f1=0; f1<nbForest_; f1++) {
+
+		if (doBootstraps__ && v_region_Map__[f1]!=bootIdx) continue;
+
 		const unsigned int nb1      = v_nbPixelDelta1__[f1];
 		const double cosDe          = v_CosDe__[f1];
 		const double sinDe          = v_SinDe__[f1];
@@ -983,9 +1014,11 @@ void Correlation::xi_A_delta_delta(void) {
 				const unsigned int rPerpBinIdx = int(rPerp);
 				const double tmp_rParral = v_r__[f1][i1]*cosTheta;
 
-				const double w1 = v_w__[f1][i1];
-				const double d1 = v_d__[f1][i1];
-				const double z1 = v_z__[f1][i1];
+				const double w1        = v_w__[f1][i1];
+				const double d1        = v_d__[f1][i1];
+				const double z1        = v_z__[f1][i1];
+				const double res_lRF1  = v_residual_delta_vs_lRF__[f1][i1];
+				const double res_lObs1 = v_residual_delta_vs_lObs__[f1][i1];
 
 				for (unsigned int i2=0; i2<nb2; i2++) {
 
@@ -993,9 +1026,15 @@ void Correlation::xi_A_delta_delta(void) {
 					if (rParral>=max) continue;
 					const double distTotPow2 = rPerp*rPerp + rParral*rParral;
 
-					const double w1w2 = w1*v_w__[f2][i2];
-					const double d1d2 = d1*v_d__[f2][i2];
-					const double z1z2 = z1+v_z__[f2][i2];
+					const double w1w2                 = w1*v_w__[f2][i2];
+					const double d1d2                 = d1*v_d__[f2][i2];
+					const double w1w2_d1d2            = w1w2*d1d2;
+					const double w1w2_d1d2_d1d2       = w1w2_d1d2*d1d2;
+					const double w1w2_z1z2            = w1w2*(z1+v_z__[f2][i2]);
+					//const double w1w2_res_lRF1_lRF2   = w1w2*res_lRF1*v_d__[f2][i2];
+					//const double w1w2_res_lObs1_lObs2 = w1w2*res_lObs1*v_d__[f2][i2];
+					const double w1w2_res_lRF1_lRF2   = w1w2*res_lRF1*v_residual_delta_vs_lRF__[f2][i2];
+					const double w1w2_res_lObs1_lObs2 = w1w2*res_lObs1*v_residual_delta_vs_lObs__[f2][i2];
 
 					if (distTotPow2 < maxPow2) {
 						const double distTot    = sqrt(distTotPow2);
@@ -1003,24 +1042,32 @@ void Correlation::xi_A_delta_delta(void) {
 						const unsigned int idx  = int(distTot);
 						const unsigned int idxM = int(mu*50.);
 
-						dataMu[idx][idxM][0] += w1w2*d1d2;
-						dataMu[idx][idxM][1] += w1w2*d1d2*d1d2;
+						dataMu[idx][idxM][0] += w1w2_d1d2;
+						dataMu[idx][idxM][1] += w1w2_d1d2_d1d2;
 						dataMu[idx][idxM][2] += w1w2*distTot;
 						dataMu[idx][idxM][3] += w1w2*mu;
-						dataMu[idx][idxM][4] += w1w2*z1z2;
+						dataMu[idx][idxM][4] += w1w2_z1z2;
 						dataMu[idx][idxM][5] += w1w2;
 						dataMu[idx][idxM][6] ++;
+						dataMu[idx][idxM][7] += w1w2_res_lRF1_lRF2;
+						dataMu[idx][idxM][8] += w1w2_res_lObs1_lObs2;
 					}
 					
 					///// Fill the histogramm of xi(r_{perp}, r_{paral}
 					const unsigned int rParralBinIdx = int(rParral);
-					data2D[rPerpBinIdx][rParralBinIdx][0] += w1w2*d1d2;
-					data2D[rPerpBinIdx][rParralBinIdx][1] += w1w2*d1d2*d1d2;
+					data2D[rPerpBinIdx][rParralBinIdx][0] += w1w2_d1d2;
+					data2D[rPerpBinIdx][rParralBinIdx][1] += w1w2_d1d2_d1d2;
 					data2D[rPerpBinIdx][rParralBinIdx][2] += w1w2*rPerp;
 					data2D[rPerpBinIdx][rParralBinIdx][3] += w1w2*rParral;
-					data2D[rPerpBinIdx][rParralBinIdx][4] += w1w2*z1z2;
+					data2D[rPerpBinIdx][rParralBinIdx][4] += w1w2_z1z2;
 					data2D[rPerpBinIdx][rParralBinIdx][5] += w1w2;
 					data2D[rPerpBinIdx][rParralBinIdx][6] ++;
+					data2D[rPerpBinIdx][rParralBinIdx][7] += w1w2_res_lRF1_lRF2;
+					data2D[rPerpBinIdx][rParralBinIdx][8] += w1w2_res_lObs1_lObs2;
+
+					///// Get the number of pairs
+					a_nbPairs[f1] += w1w2;
+					a_nbPairs[f2] += w1w2;
 				}
 			}
 		}
@@ -1028,7 +1075,18 @@ void Correlation::xi_A_delta_delta(void) {
 
 	std::cout << "\n  Saving\n" << std::endl;
 
+
+	//// Set the prefix for different type of runs
 	std::string prefix = forest__;
+	if (doBootstraps__) {
+
+		std::stringstream convert;
+		convert << bootIdx;
+		const std::string strBootIdx = convert.str();
+
+		prefix += "_subsampling_";
+		prefix += strBootIdx;
+	}
 	prefix += ".txt";
 
 	std::ofstream fFile;
@@ -1056,6 +1114,8 @@ void Correlation::xi_A_delta_delta(void) {
 			fFile << " " << data2D[i][j][4]/2.;
 			fFile << " " << data2D[i][j][5];
 			fFile << " " << data2D[i][j][6];
+			fFile << " " << data2D[i][j][7];
+			fFile << " " << data2D[i][j][8];
 			fFile << std::endl;
 
 			sumZZZ += data2D[i][j][4]/2.;
@@ -1090,10 +1150,62 @@ void Correlation::xi_A_delta_delta(void) {
 			fFile << " " << dataMu[i][j][4]/2.;
 			fFile << " " << dataMu[i][j][5];
 			fFile << " " << dataMu[i][j][6];
+			fFile << " " << dataMu[i][j][7];
+			fFile << " " << dataMu[i][j][8];
 			fFile << std::endl;
 		}
 	}
 	fFile.close();
+
+
+	if (!doBootstraps__ && !shuffleForest && !shuffleQSO && !randomQSO) {
+
+		std::vector< std::vector< double > > forests;
+		std::vector< double > tmp_forests_id;
+		std::vector< double > tmp_forests_pa;
+		
+		for (unsigned int i=0; i<nbForest_; i++) {
+			tmp_forests_id.push_back( v_idx__[i] );
+			tmp_forests_pa.push_back( a_nbPairs[i] );
+		}
+		forests.push_back(tmp_forests_id);
+		forests.push_back(v_ra__);
+		forests.push_back(v_de__);
+		forests.push_back(tmp_forests_pa);
+
+
+		// Save the list of pairs
+		pathToSave = pathToSave__;
+		pathToSave += "xi_A_delta_delta_list_pairs_";
+		pathToSave += forest__;
+		pathToSave += ".txt";
+		std::cout << "\n  " << pathToSave << std::endl;
+
+		std::ofstream fFile;
+		fFile.open(pathToSave.c_str());
+		fFile << std::scientific;
+		fFile.precision(std::numeric_limits<double>::digits10);
+
+		for (unsigned int i=0; i<nbForest_; i++) {
+			fFile << v_idx__[i];
+			fFile << " " << 0;
+			fFile << " " << v_ra__[i];
+			fFile << " " << v_de__[i];
+			fFile << " " << a_nbPairs[i];
+			fFile << std::endl;
+		}
+		fFile.close();
+		
+
+		//// find the index of each forest among the C_NBSUBSAMPLES sub-samples
+		LymanForest* lymanForestObject = new LymanForest(forests, C_NBSUBSAMPLES, C_RA_SEPERATION_NGC_SGC, mockJMC__);
+		pathToSave = pathToSave__;
+		pathToSave += "xi_A_delta_delta_map_";
+		pathToSave += forest__;
+		pathToSave += ".txt";
+		lymanForestObject->SaveRegionMap(pathToSave);
+		delete lymanForestObject;
+	}
 
 
 	return;
@@ -1498,7 +1610,7 @@ void Correlation::xi_A_delta_delta2( unsigned int bootIdx/*=0*/ ) {
 	std::cout << command << "\n" << std::endl;
 
 	///// Forest 1
-	loadDataForest(pathForest__);
+	loadDataForest(pathForest__, bootIdx);
 	if (doBootstraps__) removeFalseCorrelations();
 	v_idx__.clear();
 	v_lRF__.clear();
@@ -1526,19 +1638,19 @@ void Correlation::xi_A_delta_delta2( unsigned int bootIdx/*=0*/ ) {
 	std::cout << "  maxTheta = " << maxTheta*180./M_PI << " degree" << std::endl;
 
 	///// Arrays for data
-	double dataMu[nbBin][nbBinM][7];
-	double data2D[nbBinX][nbBinY][7];
+	double dataMu[nbBin][nbBinM][9];
+	double data2D[nbBinX][nbBinY][9];
 
 	for (unsigned int i=0; i<nbBin; i++) {
 		for (unsigned int j=0; j<nbBinM; j++) {
-			for (unsigned int k=0; k<7; k++) {
+			for (unsigned int k=0; k<9; k++) {
 				dataMu[i][j][k] = 0.;
 			}
 		}
 	}
 	for (unsigned int i=0; i<nbBinX; i++) {
 		for (unsigned int j=0; j<nbBinY; j++) {
-			for (unsigned int k=0; k<7; k++) {
+			for (unsigned int k=0; k<9; k++) {
 				data2D[i][j][k] = 0.;
 			}
 		}
@@ -1590,6 +1702,8 @@ void Correlation::xi_A_delta_delta2( unsigned int bootIdx/*=0*/ ) {
 				const double w1 = v_w__[f1][i1];
 				const double d1 = v_d__[f1][i1];
 				const double z1 = v_z__[f1][i1];
+				const double res_lRF1  = v_residual_delta_vs_lRF__[f1][i1];
+				const double res_lObs1 = v_residual_delta_vs_lObs__[f1][i1];
 
 				for (unsigned int i2=0; i2<nb2; i2++) {
 
@@ -1597,9 +1711,13 @@ void Correlation::xi_A_delta_delta2( unsigned int bootIdx/*=0*/ ) {
 					if (fabs(rParral)>=max) continue;
 					const double distTotPow2 = rPerp*rPerp + rParral*rParral;
 
-					const double w1w2     = w1*v_wDelta2__[f2][i2];
-					const double d1d2     = d1*v_dDelta2__[f2][i2];
-					const double w1w2z1z2 = w1w2*(z1+v_zDelta2__[f2][i2]);
+					const double w1w2                 = w1*v_wDelta2__[f2][i2];
+					const double d1d2                 = d1*v_dDelta2__[f2][i2];
+					const double w1w2_d1d2            = w1w2*d1d2;
+					const double w1w2_d1d2_d1d2       = w1w2_d1d2*d1d2;
+					const double w1w2_z1z2            = w1w2*(z1+v_zDelta2__[f2][i2]);
+					const double w1w2_res_lRF1_lRF2   = w1w2*res_lRF1*v_residual2_delta_vs_lRF__[f2][i2];
+					const double w1w2_res_lObs1_lObs2 = w1w2*res_lObs1*v_residual2_delta_vs_lObs__[f2][i2];
 
 					if (distTotPow2 < maxPow2) {
 						const double distTot    = sqrt(distTotPow2);
@@ -1607,24 +1725,28 @@ void Correlation::xi_A_delta_delta2( unsigned int bootIdx/*=0*/ ) {
 						const unsigned int idx  = int(distTot);
 						const unsigned int idxM = int((1.+mu)*50.);
 
-						dataMu[idx][idxM][0] += w1w2*d1d2;
-						dataMu[idx][idxM][1] += w1w2*d1d2*d1d2;
+						dataMu[idx][idxM][0] += w1w2_d1d2;
+						dataMu[idx][idxM][1] += w1w2_d1d2_d1d2;
 						dataMu[idx][idxM][2] += w1w2*distTot;
 						dataMu[idx][idxM][3] += w1w2*mu;
-						dataMu[idx][idxM][4] += w1w2z1z2;
+						dataMu[idx][idxM][4] += w1w2_z1z2;
 						dataMu[idx][idxM][5] += w1w2;
 						dataMu[idx][idxM][6] ++;
+						dataMu[idx][idxM][7] += w1w2_res_lRF1_lRF2;
+						dataMu[idx][idxM][8] += w1w2_res_lObs1_lObs2;
 					}
 					
 					///// Fill the histogramm of xi(r_{perp}, r_{paral}
 					const unsigned int rParralBinIdx = int(max+rParral);
-					data2D[rPerpBinIdx][rParralBinIdx][0] += w1w2*d1d2;
-					data2D[rPerpBinIdx][rParralBinIdx][1] += w1w2*d1d2*d1d2;
+					data2D[rPerpBinIdx][rParralBinIdx][0] += w1w2_d1d2;
+					data2D[rPerpBinIdx][rParralBinIdx][1] += w1w2_d1d2_d1d2;
 					data2D[rPerpBinIdx][rParralBinIdx][2] += w1w2*rPerp;
 					data2D[rPerpBinIdx][rParralBinIdx][3] += w1w2*rParral;
-					data2D[rPerpBinIdx][rParralBinIdx][4] += w1w2z1z2;
+					data2D[rPerpBinIdx][rParralBinIdx][4] += w1w2_z1z2;
 					data2D[rPerpBinIdx][rParralBinIdx][5] += w1w2;
 					data2D[rPerpBinIdx][rParralBinIdx][6] ++;
+					data2D[rPerpBinIdx][rParralBinIdx][7] += w1w2_res_lRF1_lRF2;
+					data2D[rPerpBinIdx][rParralBinIdx][8] += w1w2_res_lObs1_lObs2;
 
 					///// Get the number of pairs
 					nbPairs += w1w2;
@@ -1689,6 +1811,8 @@ void Correlation::xi_A_delta_delta2( unsigned int bootIdx/*=0*/ ) {
 			fFile << " " << data2D[i][j][4]/2.;
 			fFile << " " << data2D[i][j][5];
 			fFile << " " << data2D[i][j][6];
+			fFile << " " << data2D[i][j][7];
+			fFile << " " << data2D[i][j][8];
 			fFile << std::endl;
 
 			sumZZZ += data2D[i][j][4]/2.;
@@ -1724,6 +1848,8 @@ void Correlation::xi_A_delta_delta2( unsigned int bootIdx/*=0*/ ) {
 			fFile << " " << dataMu[i][j][4]/2.;
 			fFile << " " << dataMu[i][j][5];
 			fFile << " " << dataMu[i][j][6];
+			fFile << " " << dataMu[i][j][7];
+			fFile << " " << dataMu[i][j][8];
 			fFile << std::endl;
 		}
 	}
@@ -1744,6 +1870,28 @@ void Correlation::xi_A_delta_delta2( unsigned int bootIdx/*=0*/ ) {
 		forests.push_back(v_ra__);
 		forests.push_back(v_de__);
 		forests.push_back(tmp_forests_pa);
+
+		// Save the list of pairs
+		pathToSave = pathToSave__;
+		pathToSave += "xi_A_delta_delta2_list_pairs_";
+		pathToSave += prefix1;
+		pathToSave += ".txt";
+		std::cout << "\n  " << pathToSave << std::endl;
+
+		std::ofstream fFile;
+		fFile.open(pathToSave.c_str());
+		fFile << std::scientific;
+		fFile.precision(std::numeric_limits<double>::digits10);
+
+		for (unsigned int i=0; i<nbForest_; i++) {
+			fFile << v_idx__[i];
+			fFile << " " << 0;
+			fFile << " " << v_ra__[i];
+			fFile << " " << v_de__[i];
+			fFile << " " << a_nbPairs[i];
+			fFile << std::endl;
+		}
+		fFile.close();
 		
 
 		/// find the index of each forest among the C_NBSUBSAMPLES sub-samples
@@ -1751,6 +1899,7 @@ void Correlation::xi_A_delta_delta2( unsigned int bootIdx/*=0*/ ) {
 		pathToSave = pathToSave__;
 		pathToSave += "xi_A_delta_delta2_map_";
 		pathToSave += prefix1;
+		pathToSave += ".txt";
 		lymanForestObject->SaveRegionMap(pathToSave);
 		delete lymanForestObject;
 	}
@@ -1910,21 +2059,21 @@ void Correlation::xi_A_delta_delta2_lambda(void) {
 //		3D QSO - forest correlation
 //
 // ---------------------------------------------------------------------
-void Correlation::xi_delta_QSO(bool doBootstraps/*=False*/, unsigned int bootIdx/*=0*/) {
+void Correlation::xi_delta_QSO(unsigned int bootIdx/*=0*/) {
 
 	std::cout << "\n\n\n\n  ------ xi_delta_QSO ------" << std::endl;
 	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_delta_QSO.py";
 	command += commandEnd__;
 	std::cout << command << "\n" << std::endl;
-	if (doBootstraps)  std::cout << "  subsampling N° "     << bootIdx << std::endl;
+	if (doBootstraps__)  std::cout << "  subsampling N° "     << bootIdx << std::endl;
 	if ( shuffleForest || shuffleQSO || randomQSO ) std::cout << "  shuffleForest seed " << bootIdx*10 << std::endl;
 
 	///// QSO
 	loadDataQ1();
 	if (nbQ1__==0) return;
 	///// Forest
-	loadDataForest(pathForest__,doBootstraps,bootIdx);
-	if (!nicolasEstimator__ && (doBootstraps || doingCoAddSoRemoving__) ) removeFalseCorrelations();
+	loadDataForest(pathForest__,bootIdx);
+	if (doingCoAddSoRemoving__) removeFalseCorrelations();
 
 	///// Empty useless vectors
 	v_zz__.clear();
@@ -2014,12 +2163,12 @@ void Correlation::xi_delta_QSO(bool doBootstraps/*=False*/, unsigned int bootIdx
 
 		///// Copy data
 		std::vector<double> tmp_zz(v_zzQ1__);
-		std::vector<double> tmp_r(v_rQ1__);
+		std::vector<double> tmp_r(v_rrQ1__);
 		///// Put the new data
 		for (unsigned int i=0; i<nbQ1__; i++) {
 			const unsigned int ii = randomIdx[i];
 			v_zzQ1__[i] = tmp_zz[ii];
-			v_rQ1__[i]  = tmp_r[ii];
+			v_rrQ1__[i]  = tmp_r[ii];
 		}
 	}
 	///// Needed to randomize the QSO
@@ -2058,19 +2207,19 @@ void Correlation::xi_delta_QSO(bool doBootstraps/*=False*/, unsigned int bootIdx
 	}
 
 	///// Arrays for data
-	double data2D[nbBinX][nbBinY][7];
-	double dataMu[nbBin][nbBinM][7];
+	double data2D[nbBinX][nbBinY][9];
+	double dataMu[nbBin][nbBinM][9];
 
 	for (unsigned int i=0; i<nbBin; i++) {
 		for (unsigned int j=0; j<nbBinM; j++) {
-			for (unsigned int k=0; k<7; k++) {
+			for (unsigned int k=0; k<9; k++) {
 				dataMu[i][j][k] = 0.;
 			}
 		}
 	}
 	for (unsigned int i=0; i<nbBinX; i++) {
 		for (unsigned int j=0; j<nbBinY; j++) {
-			for (unsigned int k=0; k<7; k++) {
+			for (unsigned int k=0; k<9; k++) {
 				data2D[i][j][k] = 0.;
 			}
 		}
@@ -2100,11 +2249,11 @@ void Correlation::xi_delta_QSO(bool doBootstraps/*=False*/, unsigned int bootIdx
 			const double cosTheta = cosDe*v_CosDeQ1__[q]*cos(ra-v_raQ1__[q]) + sinDe*v_SinDeQ1__[q];
 
 			///// reject QSO with a distance too large
-			const double distTransQsoLyaPow2 = v_rQ1__[q]*v_rQ1__[q]*(1.-cosTheta*cosTheta);
+			const double distTransQsoLyaPow2 = v_rrQ1__[q]*v_rrQ1__[q]*(1.-cosTheta*cosTheta);
 			if (distTransQsoLyaPow2 >= maxPow2) continue;
 
 			///// Parrallel distance between the qso and the lya
-			const double distParalQsoLya = v_rQ1__[q]*cosTheta;
+			const double distParalQsoLya = v_rrQ1__[q]*cosTheta;
 
 			///// Distance between the qso and the first pixel
 			const double distParalQsoFirstPixel = firstPixel - distParalQsoLya;
@@ -2143,7 +2292,9 @@ void Correlation::xi_delta_QSO(bool doBootstraps/*=False*/, unsigned int bootIdx
 				const double d   = v_d__[f][ii];
 				const double wd  = w*d;
 				const double wdd = wd*d;
-	
+				const double w_res_lRF  = w*v_residual_delta_vs_lRF__[f][ii];
+				const double w_res_lObs = w*v_residual_delta_vs_lObs__[f][ii];
+
 				if (distTotPow2 < maxPow2) {
 					const double distTot    = sqrt(distTotPow2);
 					const double mu         = distP/distTot;
@@ -2157,6 +2308,8 @@ void Correlation::xi_delta_QSO(bool doBootstraps/*=False*/, unsigned int bootIdx
 					dataMu[idx][idxM][4] += w*(zQSO+v_z__[f][ii]);
 					dataMu[idx][idxM][5] += w;
 					dataMu[idx][idxM][6] ++;
+					dataMu[idx][idxM][7] += w_res_lRF;
+					dataMu[idx][idxM][8] += w_res_lObs;
 				}
 
 				///// Fill the histogramm of xi(r_{perp}, r_{paral}
@@ -2168,6 +2321,8 @@ void Correlation::xi_delta_QSO(bool doBootstraps/*=False*/, unsigned int bootIdx
 				data2D[rPerpBinIdx][rParralBinIdx][4] += w*(zQSO+v_z__[f][ii]);
 				data2D[rPerpBinIdx][rParralBinIdx][5] += w;
 				data2D[rPerpBinIdx][rParralBinIdx][6] ++;
+				data2D[rPerpBinIdx][rParralBinIdx][7] += w_res_lRF;
+				data2D[rPerpBinIdx][rParralBinIdx][8] += w_res_lObs;
 
 				///// Get the number of pairs
 				nbPairs += w;
@@ -2208,7 +2363,7 @@ void Correlation::xi_delta_QSO(bool doBootstraps/*=False*/, unsigned int bootIdx
 
 	//// Set the prefix for different type of runs
 	std::string prefix = "_";
-	if (doBootstraps)  prefix += "subsampling";
+	if (doBootstraps__)  prefix += "subsampling";
 	if (shuffleForest) prefix += "shuffleForest";
 	if (shuffleQSO)    prefix += "shuffleQSO";
 	if (randomQSO)     prefix += "randomQSO";
@@ -2226,7 +2381,7 @@ void Correlation::xi_delta_QSO(bool doBootstraps/*=False*/, unsigned int bootIdx
 	pathToSave = pathToSave__;
 	pathToSave += "xi_delta_QSO_2D_";
 	pathToSave += prefix1;
-	if (doBootstraps || shuffleForest || shuffleQSO || randomQSO) pathToSave += prefix;
+	if (doBootstraps__ || shuffleForest || shuffleQSO || randomQSO) pathToSave += prefix;
 	pathToSave += ".txt";
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
@@ -2249,6 +2404,8 @@ void Correlation::xi_delta_QSO(bool doBootstraps/*=False*/, unsigned int bootIdx
 			fFile << " " << data2D[i][j][4]/2.;
 			fFile << " " << data2D[i][j][5];
 			fFile << " " << data2D[i][j][6];
+			fFile << " " << data2D[i][j][7];
+			fFile << " " << data2D[i][j][8];
 			fFile << std::endl;
 
 			sumZZZ += data2D[i][j][4]/2.;
@@ -2269,7 +2426,7 @@ void Correlation::xi_delta_QSO(bool doBootstraps/*=False*/, unsigned int bootIdx
 	pathToSave = pathToSave__;
 	pathToSave += "xi_delta_QSO_Mu_";
 	pathToSave += prefix1;
-	if (doBootstraps || shuffleForest || shuffleQSO || randomQSO) pathToSave += prefix;
+	if (doBootstraps__ || shuffleForest || shuffleQSO || randomQSO) pathToSave += prefix;
 	pathToSave += ".txt";
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
@@ -2287,13 +2444,15 @@ void Correlation::xi_delta_QSO(bool doBootstraps/*=False*/, unsigned int bootIdx
 			fFile << " " << dataMu[i][j][4]/2.;
 			fFile << " " << dataMu[i][j][5];
 			fFile << " " << dataMu[i][j][6];
+			fFile << " " << dataMu[i][j][7];
+			fFile << " " << dataMu[i][j][8];
 			fFile << std::endl;
 		}
 	}
 	fFile.close();
 
 	
-	if (!doBootstraps && !shuffleForest && !shuffleQSO && !randomQSO) {
+	if (!doBootstraps__ && !shuffleForest && !shuffleQSO && !randomQSO) {
 
 		std::vector< std::vector< double > > forests;
 		std::vector< double > tmp_forests_id;
@@ -2307,6 +2466,29 @@ void Correlation::xi_delta_QSO(bool doBootstraps/*=False*/, unsigned int bootIdx
 		forests.push_back(v_ra__);
 		forests.push_back(v_de__);
 		forests.push_back(tmp_forests_pa);
+
+
+		// Save the list of pairs
+		pathToSave = pathToSave__;
+		pathToSave += "xi_delta_QSO_list_pairs_";
+		pathToSave += prefix1;
+		pathToSave += ".txt";
+		std::cout << "\n  " << pathToSave << std::endl;
+
+		std::ofstream fFile;
+		fFile.open(pathToSave.c_str());
+		fFile << std::scientific;
+		fFile.precision(std::numeric_limits<double>::digits10);
+
+		for (unsigned int i=0; i<nbForest_; i++) {
+			fFile << v_idx__[i];
+			fFile << " " << 0;
+			fFile << " " << v_ra__[i];
+			fFile << " " << v_de__[i];
+			fFile << " " << a_nbPairs[i];
+			fFile << std::endl;
+		}
+		fFile.close();
 		
 
 		//// find the index of each forest among the C_NBSUBSAMPLES sub-samples
@@ -2321,7 +2503,7 @@ void Correlation::xi_delta_QSO(bool doBootstraps/*=False*/, unsigned int bootIdx
 
 	return;
 }
-void Correlation::xi_delta_QSO_theta(bool doBootstraps/*=False*/, unsigned int bootIdx/*=0*/) {
+void Correlation::xi_delta_QSO_theta(unsigned int bootIdx/*=0*/) {
 
 	std::cout << "\n\n\n\n  ------ xi_delta_QSO_theta ------" << std::endl;
 	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_delta_QSO_theta.py";
@@ -2334,10 +2516,10 @@ void Correlation::xi_delta_QSO_theta(bool doBootstraps/*=False*/, unsigned int b
 	///// QSO
 	loadDataQ1();
 	v_zzQ1__.clear();
-	v_rQ1__.clear();
+	v_rrQ1__.clear();
 	v_nb__.clear();
 	///// Forest
-	loadDataForest(pathForest__,doBootstraps,bootIdx);
+	loadDataForest(pathForest__,bootIdx);
 	v_zz__.clear();
 	v_r__.clear();
 	v_z__.clear();
@@ -2436,21 +2618,21 @@ void Correlation::xi_delta_QSO_theta(bool doBootstraps/*=False*/, unsigned int b
 
 	return;
 }
-void Correlation::xi_delta_QSO_lambda(bool doBootstraps/*=False*/, unsigned int bootIdx/*=0*/) {
+void Correlation::xi_delta_QSO_lambda(unsigned int bootIdx/*=0*/) {
 
 	std::cout << "\n\n\n\n  ------ xi_delta_QSO_lambda ------" << std::endl;
 	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_delta_QSO_lambda.py";
 	command += commandEnd__;
 	std::cout << command << "\n" << std::endl;
-	if (doBootstraps)  std::cout << "  subsampling N° "     << bootIdx << std::endl;
+	if (doBootstraps__)  std::cout << "  subsampling N° "     << bootIdx << std::endl;
 	if (shuffleForest) std::cout << "  shuffleForest seed " << bootIdx*10 << std::endl;
 
 	///// QSO
 	loadDataQ1();
 	if (nbQ1__==0) return;
 	///// Forest
-	loadDataForest(pathForest__,doBootstraps,bootIdx);
-	if (doBootstraps) removeFalseCorrelations();
+	loadDataForest(pathForest__,bootIdx);
+	if (doBootstraps__) removeFalseCorrelations();
 	v_zz__.clear();
 	v_r__.clear();
 	v_idx__.clear();
@@ -2699,11 +2881,11 @@ void Correlation::xi_delta_QSO_distortionMatrix(void) {
 			const double cosTheta = cosDe*v_CosDeQ1__[q]*cos(ra-v_raQ1__[q]) + sinDe*v_SinDeQ1__[q];
 
 			///// reject QSO with a distance too large
-			const double distTransQsoLyaPow2 = v_rQ1__[q]*v_rQ1__[q]*(1.-cosTheta*cosTheta);
+			const double distTransQsoLyaPow2 = v_rrQ1__[q]*v_rrQ1__[q]*(1.-cosTheta*cosTheta);
 			if (distTransQsoLyaPow2 >= maxPow2) continue;
 
 			///// Parrallel distance between the qso and the lya
-			const double distParalQsoLya = v_rQ1__[q]*cosTheta;
+			const double distParalQsoLya = v_rrQ1__[q]*cosTheta;
 
 			///// Distance between the qso and the first pixel
 			const double distParalQsoFirstPixel = firstPixel - distParalQsoLya;
@@ -2923,11 +3105,11 @@ void Correlation::xi_delta_QSO_distortionMatrix_1D(void) {
 			const double cosTheta = cosDe*v_CosDeQ1__[q]*cos(ra-v_raQ1__[q]) + sinDe*v_SinDeQ1__[q];
 
 			///// reject QSO with a distance too large
-			const double distTransQsoLyaPow2 = v_rQ1__[q]*v_rQ1__[q]*(1.-cosTheta*cosTheta);
+			const double distTransQsoLyaPow2 = v_rrQ1__[q]*v_rrQ1__[q]*(1.-cosTheta*cosTheta);
 			if (distTransQsoLyaPow2 >= maxPow2) continue;
 
 			///// Parrallel distance between the qso and the lya
-			const double distParalQsoLya = v_rQ1__[q]*cosTheta;
+			const double distParalQsoLya = v_rrQ1__[q]*cosTheta;
 
 			///// Distance between the qso and the first pixel
 			const double distParalQsoFirstPixel = firstPixel - distParalQsoLya;
@@ -3167,11 +3349,11 @@ void Correlation::xi_delta_QSO_Metals_Models(double lambdaFrMetal, std::string l
 			const double cosTheta = cosDe*v_CosDeQ1__[q]*cos(ra-v_raQ1__[q]) + sinDe*v_SinDeQ1__[q];
 
 			///// reject QSO with a distance too large
-			const double distTransQsoLyaPow2 = v_rQ1__[q]*v_rQ1__[q]*(1.-cosTheta*cosTheta);
+			const double distTransQsoLyaPow2 = v_rrQ1__[q]*v_rrQ1__[q]*(1.-cosTheta*cosTheta);
 			if (distTransQsoLyaPow2 >= maxPow2) continue;
 
 			///// Parrallel distance between the qso and the lya
-			const double distParalQsoLya = v_rQ1__[q]*cosTheta;
+			const double distParalQsoLya = v_rrQ1__[q]*cosTheta;
 
 			///// Distance between the qso and the first pixel
 			const double distParalQsoFirstPixel = firstPixel - distParalQsoLya;
@@ -3480,11 +3662,11 @@ void Correlation::xi_delta_QSO_Wick(unsigned int diagramIdx) {
 			const double cosTheta = cosDe*v_CosDeQ1__[q]*cos(ra-v_raQ1__[q]) + sinDe*v_SinDeQ1__[q];
 			
 			//// reject QSO with a distance too large
-			const double distTransQsoLyaPow2 = v_rQ1__[q]*v_rQ1__[q]*(1.-cosTheta*cosTheta);
+			const double distTransQsoLyaPow2 = v_rrQ1__[q]*v_rrQ1__[q]*(1.-cosTheta*cosTheta);
 			if (distTransQsoLyaPow2 >= maxPow2) continue;
 			
 			//// Parrallel distance between the qso and the lya
-			const double distParalQsoLya = v_rQ1__[q]*cosTheta;
+			const double distParalQsoLya = v_rrQ1__[q]*cosTheta;
 			
 			//// Distance between the qso and the first pixel
 			const double distParalQsoFirstPixel = firstPixel - distParalQsoLya;
@@ -3624,7 +3806,7 @@ void Correlation::xi_delta_QSO_Wick(unsigned int diagramIdx) {
 //		3D QSO 1 - QSO 2 correlation
 //
 // ---------------------------------------------------------------------
-void Correlation::xi_QSO_QSO(bool doBootstraps/*=false*/, unsigned int bootIdx/*=0*/) {
+void Correlation::xi_QSO_QSO(unsigned int bootIdx/*=0*/) {
 
 	std::cout << "\n\n\n\n  ------ xi_QSO_QSO ------" << std::endl;
 	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_Q_Q.py";
@@ -3709,7 +3891,7 @@ void Correlation::xi_QSO_QSO(bool doBootstraps/*=false*/, unsigned int bootIdx/*
 		const double cosDe1 = v_CosDeQ1__[q1];
 		const double sinDe1 = v_SinDeQ1__[q1];
 		const double zz1 = v_zzQ1__[q1];
-		const double rr1 = v_rQ1__[q1];
+		const double rr1 = v_rrQ1__[q1];
 
 		for (unsigned int q2=0; q2<q1; q2++) {
 
@@ -3721,7 +3903,7 @@ void Correlation::xi_QSO_QSO(bool doBootstraps/*=false*/, unsigned int bootIdx/*
 			if (distTransQsoQsoPow2 >= maxPow2) continue;
 
 			//// Parrallel distance between the two QSOs
-			const double rPara = fabs(rr1*cosTheta-v_rQ1__[q2]);
+			const double rPara = fabs(rr1*cosTheta-v_rrQ1__[q2]);
 			if (rPara >= max) continue;
 			const unsigned int idxPara = int(rPara);
 
@@ -3850,7 +4032,7 @@ void Correlation::xi_QSO_QSO(bool doBootstraps/*=false*/, unsigned int bootIdx/*
 			const double cosDe1 = dataCoDe[q1];
 			const double sinDe1 = dataSiDe[q1];
 			const double zz1 = v_zzQ1__[q1];
-			const double rr1 = v_rQ1__[q1];
+			const double rr1 = v_rrQ1__[q1];
 	
 			for (unsigned int q2=0; q2<nbQ1__; q2++) {
 	
@@ -3862,7 +4044,7 @@ void Correlation::xi_QSO_QSO(bool doBootstraps/*=false*/, unsigned int bootIdx/*
 				if (distTransQsoQsoPow2 >= maxPow2) continue;
 	
 				//// Parrallel distance between the two QSOs
-				const double rPara = fabs(rr1*cosTheta-v_rQ1__[q2]);
+				const double rPara = fabs(rr1*cosTheta-v_rrQ1__[q2]);
 				if (rPara >= max) continue;
 				const unsigned int idxPara = int(rPara);
 	
@@ -4000,7 +4182,7 @@ void Correlation::xi_Q1_Q2(void) {
 		const double cosDe1 = v_CosDeQ1__[q1];
 		const double sinDe1 = v_SinDeQ1__[q1];
 		const double ra1    = v_raQ1__[q1];
-		const double r1    = v_rQ1__[q1];
+		const double r1    = v_rrQ1__[q1];
 		const double z1    = v_zzQ1__[q1];
 
 		for (unsigned int q2=0; q2<nbQ2__; q2++) {
@@ -4014,7 +4196,7 @@ void Correlation::xi_Q1_Q2(void) {
 			if (distTransQsoQsoPow2 >= maxPow2) continue;
 
 			//// Parrallel distance between the qso and the lya
-			const double distParalQsoQso = r1*cosTheta-v_rQ2__[q2];
+			const double distParalQsoQso = r1*cosTheta-v_rrQ2__[q2];
 			if (fabs(distParalQsoQso) >= max) continue;
 			const unsigned int rParralBinIdx = int(max+distParalQsoQso);
 
@@ -4146,7 +4328,7 @@ void Correlation::xi_Q1_Q2(void) {
 //			(i.e. mocks in euclidean geometry)
 //
 // ---------------------------------------------------------------------
-void Correlation::xi_A_delta_delta_MockJMc(void) {
+void Correlation::xi_A_delta_delta_MockJMc(unsigned int bootIdx/*=0*/) {
 
 	std::cout << "\n\n\n\n  ------ xi_A_delta_delta_MockJMc ------" << std::endl;
 	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_A_delta_delta.py";
@@ -4154,7 +4336,7 @@ void Correlation::xi_A_delta_delta_MockJMc(void) {
 	std::cout << command << "\n" << std::endl;
 
 	if (mocks_raw) loadDataForest_Raw();
-	else loadDataForest(pathForest__);
+	else loadDataForest(pathForest__, bootIdx);
 	if (mocksNoNoiseNoCont || mocks_raw) {
 		removeFalseCorrelations();
 	}
@@ -4170,22 +4352,27 @@ void Correlation::xi_A_delta_delta_MockJMc(void) {
 	const unsigned int max = 200.;
 	const unsigned int nbBin = int(max);
 	const unsigned int nbBinM = 50.;
-
 	const double maxPow2      = max*max;
 
+	///// get an array for nb of pairs for the forest
+	double a_nbPairs[nbForest_];
+	for (unsigned int i=0; i<nbForest_; i++) {
+		a_nbPairs[i] = 0.;
+	}
+
 	///// Arrays for data
-	double dataMu[nbBin][nbBinM][7];
-	double data2D[nbBin][nbBin][7];
+	double dataMu[nbBin][nbBinM][9];
+	double data2D[nbBin][nbBin][9];
 	for (unsigned int i=0; i<nbBin; i++) {
 		for (unsigned int j=0; j<nbBinM; j++) {
-			for (unsigned int k=0; k<7; k++) {
+			for (unsigned int k=0; k<9; k++) {
 				dataMu[i][j][k] = 0.;
 			}
 		}
 	}
 	for (unsigned int i=0; i<nbBin; i++) {
 		for (unsigned int j=0; j<nbBin; j++) {
-			for (unsigned int k=0; k<7; k++) {
+			for (unsigned int k=0; k<9; k++) {
 				data2D[i][j][k] = 0.;
 			}
 		}
@@ -4197,11 +4384,11 @@ void Correlation::xi_A_delta_delta_MockJMc(void) {
 	std::vector<double> v_deRandForest;
 	if (randomPositionOfQSOInCellNotBeforeCorrelation__) {
 
-		std::srand (42);
+		std::cout << "  Seed is = " << seed_for_random_position__ << std::endl; 
+		std::srand(seed_for_random_position__);
 
 		v_raRandForest.resize(nbForest_,0.);
 		v_deRandForest.resize(nbForest_,0.);
-
 		for (unsigned int i=0; i<nbForest_; i++) {
 			v_raRandForest[i] = v_ra__[i] + sizeCell__*(1.*rand()/RAND_MAX-0.5);
 			v_deRandForest[i] = v_de__[i] + sizeCell__*(1.*rand()/RAND_MAX-0.5);
@@ -4211,6 +4398,9 @@ void Correlation::xi_A_delta_delta_MockJMc(void) {
 	std::cout << "\n  Starting\n" << std::endl;
 
 	for (unsigned int f1=0; f1<nbForest_; f1++) {
+
+		if (doBootstraps__ && v_region_Map__[f1]!=bootIdx) continue;
+
 		const unsigned int nb1  = v_nbPixelDelta1__[f1];
 		const double x1         = v_ra__[f1];
 		const double y1         = v_de__[f1];
@@ -4263,6 +4453,8 @@ void Correlation::xi_A_delta_delta_MockJMc(void) {
 				const double w1 = v_w__[f1][i1];
 				const double d1 = v_d__[f1][i1];
 				const double z1 = v_z__[f1][i1];
+				const double res_lRF1  = v_residual_delta_vs_lRF__[f1][i1];
+				const double res_lObs1 = v_residual_delta_vs_lObs__[f1][i1];
 
 				for (unsigned int i2=0; i2<nb2; i2++) {
 
@@ -4270,9 +4462,13 @@ void Correlation::xi_A_delta_delta_MockJMc(void) {
 					if (rParral>=max) continue;
 					const double distTotPow2 = distTransPow2 + rParral*rParral;
 
-					const double w1w2     = w1*v_w__[f2][i2];
-					const double d1d2     = d1*v_d__[f2][i2];
-					const double w1w2z1z2 = w1w2*(z1+v_z__[f2][i2]);
+					const double w1w2                 = w1*v_w__[f2][i2];
+					const double d1d2                 = d1*v_d__[f2][i2];
+					const double w1w2_d1d2            = w1w2*d1d2;
+					const double w1w2_d1d2_d1d2       = w1w2_d1d2*d1d2;
+					const double w1w2_z1z2            = w1w2*(z1+v_z__[f2][i2]);
+					const double w1w2_res_lRF1_lRF2   = w1w2*res_lRF1*v_residual_delta_vs_lRF__[f2][i2];
+					const double w1w2_res_lObs1_lObs2 = w1w2*res_lObs1*v_residual_delta_vs_lObs__[f2][i2];
 
 					if (distTotPow2 < maxPow2) {
 						const double distTot    = sqrt(distTotPow2);
@@ -4280,30 +4476,51 @@ void Correlation::xi_A_delta_delta_MockJMc(void) {
 						const unsigned int idx  = int(distTot);
 						const unsigned int idxM = int(mu*50.);
 
-						dataMu[idx][idxM][0] += w1w2*d1d2;
-						dataMu[idx][idxM][1] += w1w2*d1d2*d1d2;
+						dataMu[idx][idxM][0] += w1w2_d1d2;
+						dataMu[idx][idxM][1] += w1w2_d1d2_d1d2;
 						dataMu[idx][idxM][2] += w1w2*distTot;
 						dataMu[idx][idxM][3] += w1w2*mu;
-						dataMu[idx][idxM][4] += w1w2z1z2;
+						dataMu[idx][idxM][4] += w1w2_z1z2;
 						dataMu[idx][idxM][5] += w1w2;
 						dataMu[idx][idxM][6] ++;
+						dataMu[idx][idxM][7] += w1w2_res_lRF1_lRF2;
+						dataMu[idx][idxM][8] += w1w2_res_lObs1_lObs2;
 					}
 					
 					///// Fill the histogramm of xi(r_{perp}, r_{paral}
 					const unsigned int rParralBinIdx = int(rParral);
-					data2D[rPerpBinIdx][rParralBinIdx][0] += w1w2*d1d2;
-					data2D[rPerpBinIdx][rParralBinIdx][1] += w1w2*d1d2*d1d2;
+					data2D[rPerpBinIdx][rParralBinIdx][0] += w1w2_d1d2;
+					data2D[rPerpBinIdx][rParralBinIdx][1] += w1w2_d1d2_d1d2;
 					data2D[rPerpBinIdx][rParralBinIdx][2] += w1w2*rPerp;
 					data2D[rPerpBinIdx][rParralBinIdx][3] += w1w2*rParral;
-					data2D[rPerpBinIdx][rParralBinIdx][4] += w1w2z1z2;
+					data2D[rPerpBinIdx][rParralBinIdx][4] += w1w2_z1z2;
 					data2D[rPerpBinIdx][rParralBinIdx][5] += w1w2;
 					data2D[rPerpBinIdx][rParralBinIdx][6] ++;
+					data2D[rPerpBinIdx][rParralBinIdx][7] += w1w2_res_lRF1_lRF2;
+					data2D[rPerpBinIdx][rParralBinIdx][8] += w1w2_res_lObs1_lObs2;
+
+					///// Get the number of pairs
+					a_nbPairs[f1] += w1w2;
+					a_nbPairs[f2] += w1w2;
 				}
 			}
 		}
 	}
 
 	std::cout << "\n  Saving\n" << std::endl;
+
+	//// Set the prefix for different type of runs
+	std::string prefix = forest__;
+	if (doBootstraps__) {
+
+		std::stringstream convert;
+		convert << bootIdx;
+		const std::string strBootIdx = convert.str();
+
+		prefix += "_subsampling_";
+		prefix += strBootIdx;
+	}
+	prefix += ".txt";
 
 	std::ofstream fFile;
 	long double sumZZZ = 0.;
@@ -4313,8 +4530,7 @@ void Correlation::xi_A_delta_delta_MockJMc(void) {
 	///// Save the 2D cross-correlation
 	std::string pathToSave = pathToSave__;
 	pathToSave += "xi_A_delta_delta_2D_";
-	pathToSave += forest__;
-	pathToSave += ".txt";
+	pathToSave += prefix;
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
 	fFile << std::scientific;
@@ -4335,6 +4551,8 @@ void Correlation::xi_A_delta_delta_MockJMc(void) {
 			fFile << " " << data2D[i][j][4]/2.;
 			fFile << " " << data2D[i][j][5];
 			fFile << " " << data2D[i][j][6];
+			fFile << " " << data2D[i][j][7];
+			fFile << " " << data2D[i][j][8];
 			fFile << std::endl;
 
 			sumZZZ += data2D[i][j][4]/2.;
@@ -4353,8 +4571,7 @@ void Correlation::xi_A_delta_delta_MockJMc(void) {
 	///// Mu
 	pathToSave = pathToSave__;
 	pathToSave += "xi_A_delta_delta_Mu_";
-	pathToSave += forest__;
-	pathToSave += ".txt";
+	pathToSave += prefix;
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
 	fFile << std::scientific;
@@ -4369,11 +4586,61 @@ void Correlation::xi_A_delta_delta_MockJMc(void) {
 			fFile << " " << dataMu[i][j][4]/2.;
 			fFile << " " << dataMu[i][j][5];
 			fFile << " " << dataMu[i][j][6];
+			fFile << " " << dataMu[i][j][7];
+			fFile << " " << dataMu[i][j][8];
 			fFile << std::endl;
 		}
 	}
 	fFile.close();
 
+	if (!doBootstraps__ && !shuffleForest && !shuffleQSO && !randomQSO) {
+
+		std::vector< std::vector< double > > forests;
+		std::vector< double > tmp_forests_id;
+		std::vector< double > tmp_forests_pa;
+		
+		for (unsigned int i=0; i<nbForest_; i++) {
+			tmp_forests_id.push_back( v_idx__[i] );
+			tmp_forests_pa.push_back( a_nbPairs[i] );
+		}
+		forests.push_back(tmp_forests_id);
+		forests.push_back(v_ra__);
+		forests.push_back(v_de__);
+		forests.push_back(tmp_forests_pa);
+
+
+		// Save the list of pairs
+		pathToSave = pathToSave__;
+		pathToSave += "xi_A_delta_delta_list_pairs_";
+		pathToSave += forest__;
+		pathToSave += ".txt";
+		std::cout << "\n  " << pathToSave << std::endl;
+
+		std::ofstream fFile;
+		fFile.open(pathToSave.c_str());
+		fFile << std::scientific;
+		fFile.precision(std::numeric_limits<double>::digits10);
+
+		for (unsigned int i=0; i<nbForest_; i++) {
+			fFile << v_idx__[i];
+			fFile << " " << 0;
+			fFile << " " << v_ra__[i];
+			fFile << " " << v_de__[i];
+			fFile << " " << a_nbPairs[i];
+			fFile << std::endl;
+		}
+		fFile.close();
+		
+
+		//// find the index of each forest among the C_NBSUBSAMPLES sub-samples
+		LymanForest* lymanForestObject = new LymanForest(forests, C_NBSUBSAMPLES, C_RA_SEPERATION_NGC_SGC, mockJMC__);
+		pathToSave = pathToSave__;
+		pathToSave += "xi_A_delta_delta_map_";
+		pathToSave += forest__;
+		pathToSave += ".txt";
+		lymanForestObject->SaveRegionMap(pathToSave);
+		delete lymanForestObject;
+	}
 
 	return;
 }
@@ -4479,7 +4746,8 @@ void Correlation::xi_A_delta_delta_Metals_Models_MockJMc(double lambdaRFMetal1, 
 	std::vector<double> v_deRandForest;
 	if (randomPositionOfQSOInCellNotBeforeCorrelation__) {
 
-		std::srand (42);
+		std::cout << "  Seed is = " << seed_for_random_position__ << std::endl;
+		std::srand (seed_for_random_position__);
 
 		v_raRandForest.resize(nbForest_,0.);
 		v_deRandForest.resize(nbForest_,0.);
@@ -4664,7 +4932,7 @@ void Correlation::xi_A_delta_delta_Metals_Models_MockJMc(double lambdaRFMetal1, 
 
 	return;
 }
-void Correlation::xi_delta_QSO_MockJMc(bool doBootstraps/*=False*/, unsigned int bootIdx/*=0*/) {
+void Correlation::xi_delta_QSO_MockJMc(unsigned int bootIdx/*=0*/) {
 
 	std::cout << "\n\n\n\n  ------ xi_delta_QSO_MockJMc ------" << std::endl;
 	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_delta_QSO.py";
@@ -4675,16 +4943,16 @@ void Correlation::xi_delta_QSO_MockJMc(bool doBootstraps/*=False*/, unsigned int
 	loadDataQ1();
 	//// Forest
 	if (mocks_raw) loadDataForest_Raw(bootIdx);
-	else loadDataForest(pathForest__,doBootstraps,bootIdx);
-	if ( (!nicolasEstimator__ && doBootstraps) || mocksNoNoiseNoCont || mocks_raw ) {
-		removeFalseCorrelations();
-	}
+	else loadDataForest(pathForest__,bootIdx);
+	if (mocksNoNoiseNoCont || mocks_raw ) removeFalseCorrelations();
 	v_CosDe__.clear();
 	v_SinDe__.clear();
 	v_zz__.clear();
 	v_lRF__.clear();
 	v_lObs__.clear();
 	v_nb__.clear();
+	v_CosDeQ1__.clear();
+	v_SinDeQ1__.clear();
 
 	//// Schiffle the forest
 	if (shuffleForest) {
@@ -4744,19 +5012,19 @@ void Correlation::xi_delta_QSO_MockJMc(bool doBootstraps/*=False*/, unsigned int
 
 
 	//// Arrays for data
-	double dataMu[nbBin][nbBinM][7];
-	double data2D[nbBinX][nbBinY][7];
+	double dataMu[nbBin][nbBinM][9];
+	double data2D[nbBinX][nbBinY][9];
 
 	for (unsigned int i=0; i<nbBin; i++) {
 		for (unsigned int j=0; j<nbBinM; j++) {
-			for (unsigned int k=0; k<7; k++) {
+			for (unsigned int k=0; k<9; k++) {
 				dataMu[i][j][k] = 0.;
 			}
 		}
 	}
 	for (unsigned int i=0; i<nbBinX; i++) {
 		for (unsigned int j=0; j<nbBinY; j++) {
-			for (unsigned int k=0; k<7; k++) {
+			for (unsigned int k=0; k<9; k++) {
 				data2D[i][j][k] = 0.;
 			}
 		}
@@ -4768,9 +5036,11 @@ void Correlation::xi_delta_QSO_MockJMc(bool doBootstraps/*=False*/, unsigned int
 	std::vector<double> v_deRandForest;
 	std::vector<double> v_raRandQSO;
 	std::vector<double> v_deRandQSO;
+	std::vector<double> v_rrRandQSO;
 	if (randomPositionOfQSOInCellNotBeforeCorrelation__) {
 
-		std::srand (42);
+		std::cout << "  Seed is = " << seed_for_random_position__ << std::endl;
+		std::srand (seed_for_random_position__);
 
 		//// Forest
 		v_raRandForest.resize(nbForest_,0.);
@@ -4783,9 +5053,11 @@ void Correlation::xi_delta_QSO_MockJMc(bool doBootstraps/*=False*/, unsigned int
 		//// QSO
 		v_raRandQSO.resize(nbQ1__,0.);
 		v_deRandQSO.resize(nbQ1__,0.);
+		v_rrRandQSO.resize(nbQ1__,0.);
 		for (unsigned int i=0; i<nbQ1__; i++) {
 			v_raRandQSO[i] = v_raQ1__[i] + sizeCell__*(1.*rand()/RAND_MAX-0.5);
 			v_deRandQSO[i] = v_deQ1__[i] + sizeCell__*(1.*rand()/RAND_MAX-0.5);
+			v_rrRandQSO[i] = v_rrQ1__[i] + sizeCell__*(1.*rand()/RAND_MAX-0.5);
 		}
 	}
 
@@ -4802,7 +5074,6 @@ void Correlation::xi_delta_QSO_MockJMc(bool doBootstraps/*=False*/, unsigned int
 		const double x = v_ra__[f];
 		const double y = v_de__[f];
 
-		
 		double x1 = x;
 		double y1 = y;
 		//// If random position in the cell
@@ -4815,29 +5086,30 @@ void Correlation::xi_delta_QSO_MockJMc(bool doBootstraps/*=False*/, unsigned int
 
 			double x2 = v_raQ1__[q];
 			double y2 = v_deQ1__[q];
-			const double z2 = v_zzQ1__[q];
 
 			//// Not in the same line of sight
 			if (x==x2 && y==y2) continue;
+
+			double r2 = v_rrQ1__[q];
+			const double z2 = v_zzQ1__[q];
 
 			//// If random position in the cell
 			if (randomPositionOfQSOInCellNotBeforeCorrelation__) {
 				x2 = v_raRandQSO[q];
 				y2 = v_deRandQSO[q];
+				r2 = v_rrRandQSO[q];
 			}
-			
+
+			//// distance of QSO
+			const double rQSO = r2;
+			//// Distance between the qso and the first pixel
+			if ( firstPixel-rQSO >= max) continue;
+			//// Distance between the qso and the last pixel
+			if ( lastPixel-rQSO <= -max) continue;
+
 			//// Get the r_perp distance at the poxer of two
 			const double distTransQsoLyaPow2 = (x1-x2)*(x1-x2) + (y1-y2)*(y1-y2);
 			if (distTransQsoLyaPow2 >= maxPow2) continue;
-
-			//// distance of QSO
-			const double rQSO = v_rQ1__[q];
-			
-			//// Distance between the qso and the first pixel
-			if ( firstPixel-rQSO >= max) continue;
-			
-			//// Distance between the qso and the last pixel
-			if ( lastPixel-rQSO <= -max) continue;
 
 			//// Transvers distance between the qso and the lya
 			const double distTransQsoLya = sqrt(distTransQsoLyaPow2);
@@ -4852,11 +5124,13 @@ void Correlation::xi_delta_QSO_MockJMc(bool doBootstraps/*=False*/, unsigned int
 				if (fabs(distP) >= max) continue;
 
 				const double distTotPow2 = distTransQsoLyaPow2 + distP*distP;
-				const double w   = v_w__[f][i];
-				const double d   = v_d__[f][i];
-				const double wd  = w*d;
-				const double wdd = wd*d;
-				const double wZpair = w*(zQSO+v_z__[f][i]);
+				const double w           = v_w__[f][i];
+				const double d           = v_d__[f][i];
+				const double wd          = w*d;
+				const double wdd         = wd*d;
+				const double wZpair      = w*(zQSO+v_z__[f][i]);
+				const double w_res_lRF   = w*v_residual_delta_vs_lRF__[f][i];
+                                const double w_res_lObs  = w*v_residual_delta_vs_lObs__[f][i];
 
 				if (distTotPow2 < maxPow2) {
 					const double distTot    = sqrt(distTotPow2);
@@ -4871,6 +5145,8 @@ void Correlation::xi_delta_QSO_MockJMc(bool doBootstraps/*=False*/, unsigned int
 					dataMu[idx][idxM][4] += wZpair;
 					dataMu[idx][idxM][5] += w;
 					dataMu[idx][idxM][6] ++;
+					dataMu[idx][idxM][7] += w_res_lRF;
+					dataMu[idx][idxM][8] += w_res_lObs;
 				}
 	
 				//// Fill the histogramm of xi(r_{perp}, r_{paral}
@@ -4883,6 +5159,8 @@ void Correlation::xi_delta_QSO_MockJMc(bool doBootstraps/*=False*/, unsigned int
 				data2D[rPerpBinIdx][rParralBinIdx][4] += wZpair;
 				data2D[rPerpBinIdx][rParralBinIdx][5] += w;
 				data2D[rPerpBinIdx][rParralBinIdx][6] ++;
+				data2D[rPerpBinIdx][rParralBinIdx][7] += w_res_lRF;
+				data2D[rPerpBinIdx][rParralBinIdx][8] += w_res_lObs;
 
 				//// Get the number of pairs
 				nbPairs += w;
@@ -4906,7 +5184,7 @@ void Correlation::xi_delta_QSO_MockJMc(bool doBootstraps/*=False*/, unsigned int
 
 	//// Set the prefix for different type of runs
 	std::string prefix = "_";
-	if (doBootstraps)  prefix += "subsampling";
+	if (doBootstraps__)  prefix += "subsampling";
 	if (shuffleForest) prefix += "shuffleForest";
 	if (shuffleQSO)    prefix += "shuffleQSO";
 	if (randomQSO)     prefix += "randomQSO";
@@ -4923,7 +5201,7 @@ void Correlation::xi_delta_QSO_MockJMc(bool doBootstraps/*=False*/, unsigned int
 	std::string pathToSave = pathToSave__;
 	pathToSave += "xi_delta_QSO_2D_";
 	pathToSave += prefix1;
-	if (doBootstraps || shuffleForest || shuffleQSO || randomQSO) pathToSave += prefix;
+	if (doBootstraps__ || shuffleForest || shuffleQSO || randomQSO) pathToSave += prefix;
 	pathToSave += ".txt";
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
@@ -4946,6 +5224,8 @@ void Correlation::xi_delta_QSO_MockJMc(bool doBootstraps/*=False*/, unsigned int
 			fFile << " " << data2D[i][j][4]/2.;
 			fFile << " " << data2D[i][j][5];
 			fFile << " " << data2D[i][j][6];
+			fFile << " " << data2D[i][j][7];
+			fFile << " " << data2D[i][j][8];
 			fFile << std::endl;
 
 			sumZZZ += data2D[i][j][4]/2.;
@@ -4966,7 +5246,7 @@ void Correlation::xi_delta_QSO_MockJMc(bool doBootstraps/*=False*/, unsigned int
 	pathToSave = pathToSave__;
 	pathToSave += "xi_delta_QSO_Mu_";
 	pathToSave += prefix1;
-	if (doBootstraps || shuffleForest || shuffleQSO || randomQSO) pathToSave += prefix;
+	if (doBootstraps__ || shuffleForest || shuffleQSO || randomQSO) pathToSave += prefix;
 	pathToSave += ".txt";
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
@@ -4984,13 +5264,15 @@ void Correlation::xi_delta_QSO_MockJMc(bool doBootstraps/*=False*/, unsigned int
 			fFile << " " << dataMu[i][j][4]/2.;
 			fFile << " " << dataMu[i][j][5];
 			fFile << " " << dataMu[i][j][6];
+			fFile << " " << dataMu[i][j][7];
+			fFile << " " << dataMu[i][j][8];
 			fFile << std::endl;
 		}
 	}
 	fFile.close();
 
 	
-	if (!doBootstraps && !shuffleForest && !shuffleQSO && !randomQSO) {
+	if (!doBootstraps__ && !shuffleForest && !shuffleQSO && !randomQSO) {
 
 		std::vector< std::vector< double > > forests;
 		std::vector< double > tmp_forests_id;
@@ -5004,6 +5286,28 @@ void Correlation::xi_delta_QSO_MockJMc(bool doBootstraps/*=False*/, unsigned int
 		forests.push_back(v_ra__);
 		forests.push_back(v_de__);
 		forests.push_back(tmp_forests_pa);
+
+		// Save the list of pairs
+		pathToSave = pathToSave__;
+		pathToSave += "xi_delta_QSO_list_pairs_";
+		pathToSave += prefix1;
+		pathToSave += ".txt";
+		std::cout << "\n  " << pathToSave << std::endl;
+
+		std::ofstream fFile;
+		fFile.open(pathToSave.c_str());
+		fFile << std::scientific;
+		fFile.precision(std::numeric_limits<double>::digits10);
+
+		for (unsigned int i=0; i<nbForest_; i++) {
+			fFile << v_idx__[i];
+			fFile << " " << 0;
+			fFile << " " << v_ra__[i];
+			fFile << " " << v_de__[i];
+			fFile << " " << a_nbPairs[i];
+			fFile << std::endl;
+		}
+		fFile.close();
 		
 
 		//// find the index of each forest among the C_NBSUBSAMPLES sub-samples
@@ -5041,6 +5345,8 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix(void) {
 	v_idx__.clear();
 	v_lObs__.clear();
 	v_nb__.clear();
+	v_CosDeQ1__.clear();
+	v_SinDeQ1__.clear();
 
 	//// Set usefull vectors
 	std::vector<double> v_invSumWeight(nbForest_,0.);
@@ -5081,9 +5387,11 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix(void) {
 	std::vector<double> v_deRandForest;
 	std::vector<double> v_raRandQSO;
 	std::vector<double> v_deRandQSO;
+	std::vector<double> v_rrRandQSO;
 	if (randomPositionOfQSOInCellNotBeforeCorrelation__) {
 
-		std::srand (42);
+		std::cout << "  Seed is = " << seed_for_random_position__ << std::endl;
+		std::srand(seed_for_random_position__);
 
 		//// Forest
 		v_raRandForest.resize(nbForest_,0.);
@@ -5099,6 +5407,7 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix(void) {
 		for (unsigned int i=0; i<nbQ1__; i++) {
 			v_raRandQSO[i] = v_raQ1__[i] + sizeCell__*(1.*rand()/RAND_MAX-0.5);
 			v_deRandQSO[i] = v_deQ1__[i] + sizeCell__*(1.*rand()/RAND_MAX-0.5);
+			v_rrRandQSO[i] = v_rrQ1__[i] + sizeCell__*(1.*rand()/RAND_MAX-0.5);
 		}
 	}
 
@@ -5150,6 +5459,7 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix(void) {
 
 			double x2 = v_raQ1__[q];
 			double y2 = v_deQ1__[q];
+			double r2 = v_rrQ1__[q];
 
 			//// Not in the same line of sight
 			if (x==x2 && y==y2) continue;
@@ -5158,20 +5468,19 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix(void) {
 			if (randomPositionOfQSOInCellNotBeforeCorrelation__) {
 				x2 = v_raRandQSO[q];
 				y2 = v_deRandQSO[q];
+				r2 = v_rrRandQSO[q];
 			}
 			
+			//// distance of QSO
+			const double rQSO = r2;
+			//// Distance between the qso and the first pixel
+			if ( firstPixel-rQSO >= max) continue;
+			//// Distance between the qso and the last pixel
+			if ( lastPixel-rQSO <= -max) continue;
+
 			//// Get the r_perp distance at the poxer of two
 			const double distTransQsoLyaPow2 = (x1-x2)*(x1-x2) + (y1-y2)*(y1-y2);
 			if (distTransQsoLyaPow2 >= maxPow2) continue;
-
-			//// distance of QSO
-			const double rQSO = v_rQ1__[q];
-			
-			//// Distance between the qso and the first pixel
-			if ( firstPixel-rQSO >= max) continue;
-			
-			//// Distance between the qso and the last pixel
-			if ( lastPixel-rQSO <= -max) continue;
 
 			//// Transvers distance between the qso and the lya
 			const double distTransQsoLya = sqrt(distTransQsoLyaPow2);
@@ -5293,6 +5602,8 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix_1D(void) {
 	v_idx__.clear();
 	v_lObs__.clear();
 	v_nb__.clear();
+	v_CosDeQ1__.clear();
+	v_SinDeQ1__.clear();
 
 	//// Set usefull vectors
 	std::vector<double> v_invSumWeight(nbForest_,0.);
@@ -5333,9 +5644,11 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix_1D(void) {
 	std::vector<double> v_deRandForest;
 	std::vector<double> v_raRandQSO;
 	std::vector<double> v_deRandQSO;
+	std::vector<double> v_rrRandQSO;
 	if (randomPositionOfQSOInCellNotBeforeCorrelation__) {
 
-		std::srand (42);
+		std::cout << "  Seed is = " << seed_for_random_position__ << std::endl;
+		std::srand(seed_for_random_position__);
 
 		//// Forest
 		v_raRandForest.resize(nbForest_,0.);
@@ -5351,6 +5664,7 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix_1D(void) {
 		for (unsigned int i=0; i<nbQ1__; i++) {
 			v_raRandQSO[i] = v_raQ1__[i] + sizeCell__*(1.*rand()/RAND_MAX-0.5);
 			v_deRandQSO[i] = v_deQ1__[i] + sizeCell__*(1.*rand()/RAND_MAX-0.5);
+			v_rrRandQSO[i] = v_rrQ1__[i] + sizeCell__*(1.*rand()/RAND_MAX-0.5);
 		}
 	}
 
@@ -5399,6 +5713,7 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix_1D(void) {
 
 			double x2 = v_raQ1__[q];
 			double y2 = v_deQ1__[q];
+			double r2 = v_rrQ1__[q];
 
 			//// Not in the same line of sight
 			if (x==x2 && y==y2) continue;
@@ -5407,20 +5722,19 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix_1D(void) {
 			if (randomPositionOfQSOInCellNotBeforeCorrelation__) {
 				x2 = v_raRandQSO[q];
 				y2 = v_deRandQSO[q];
+				r2 = v_rrRandQSO[q];
 			}
+
+			//// distance of QSO
+			const double rQSO = r2;
+			//// Distance between the qso and the first pixel
+			if ( firstPixel-rQSO >= max) continue;
+			//// Distance between the qso and the last pixel
+			if ( lastPixel-rQSO <= -max) continue;
 			
 			//// Get the r_perp distance at the poxer of two
 			const double distTransQsoLyaPow2 = (x1-x2)*(x1-x2) + (y1-y2)*(y1-y2);
 			if (distTransQsoLyaPow2 >= maxPow2) continue;
-
-			//// distance of QSO
-			const double rQSO = v_rQ1__[q];
-			
-			//// Distance between the qso and the first pixel
-			if ( firstPixel-rQSO >= max) continue;
-			
-			//// Distance between the qso and the last pixel
-			if ( lastPixel-rQSO <= -max) continue;
 			
 			//// get the weight and mean lambda
 			double xValue[50]  = {0.};
@@ -5550,7 +5864,8 @@ void Correlation::xi_delta_QSO_Metals_Models_MockJMc(double lambdaFrMetal, std::
 	v_lRF__.clear();
 	v_lObs__.clear();
 	v_nb__.clear();
-
+	v_CosDeQ1__.clear();
+	v_SinDeQ1__.clear();
 
 	//// Get the monopole, quadrupol, exadecapol
 	std::string pathToLoad = PATHTOWORK;
@@ -5622,9 +5937,11 @@ void Correlation::xi_delta_QSO_Metals_Models_MockJMc(double lambdaFrMetal, std::
 	std::vector<double> v_deRandForest;
 	std::vector<double> v_raRandQSO;
 	std::vector<double> v_deRandQSO;
+	std::vector<double> v_rrRandQSO;
 	if (randomPositionOfQSOInCellNotBeforeCorrelation__) {
 
-		std::srand (42);
+		std::cout << "  Seed is = " << seed_for_random_position__ << std::endl;
+		std::srand(seed_for_random_position__);
 
 		//// Forest
 		v_raRandForest.resize(nbForest_,0.);
@@ -5640,6 +5957,7 @@ void Correlation::xi_delta_QSO_Metals_Models_MockJMc(double lambdaFrMetal, std::
 		for (unsigned int i=0; i<nbQ1__; i++) {
 			v_raRandQSO[i] = v_raQ1__[i] + sizeCell__*(1.*rand()/RAND_MAX-0.5);
 			v_deRandQSO[i] = v_deQ1__[i] + sizeCell__*(1.*rand()/RAND_MAX-0.5);
+			v_rrRandQSO[i] = v_rrQ1__[i] + sizeCell__*(1.*rand()/RAND_MAX-0.5);
 		}
 	}
 
@@ -5667,6 +5985,7 @@ void Correlation::xi_delta_QSO_Metals_Models_MockJMc(double lambdaFrMetal, std::
 
 			double x2 = v_raQ1__[q];
 			double y2 = v_deQ1__[q];
+			double r2 = v_rrQ1__[q];
 			const double z2 = v_zzQ1__[q];
 
 			//// Not in the same line of sight
@@ -5676,20 +5995,19 @@ void Correlation::xi_delta_QSO_Metals_Models_MockJMc(double lambdaFrMetal, std::
 			if (randomPositionOfQSOInCellNotBeforeCorrelation__) {
 				x2 = v_raRandQSO[q];
 				y2 = v_deRandQSO[q];
+				r2 = v_rrRandQSO[q];
 			}
+
+			//// distance of QSO
+			const double rQSO = r2;
+			//// Distance between the qso and the first pixel
+			if ( firstPixel-rQSO >= max) continue;
+			//// Distance between the qso and the last pixel
+			if ( lastPixel-rQSO <= -max) continue;
 			
 			//// Get the r_perp distance at the poxer of two
 			const double distTransQsoLyaPow2 = (x1-x2)*(x1-x2) + (y1-y2)*(y1-y2);
 			if (distTransQsoLyaPow2 >= maxPow2) continue;
-
-			//// distance of QSO
-			const double rQSO = v_rQ1__[q];
-			
-			//// Distance between the qso and the first pixel
-			if ( firstPixel-rQSO >= max) continue;
-			
-			//// Distance between the qso and the last pixel
-			if ( lastPixel-rQSO <= -max) continue;
 
 			//// Transvers distance between the qso and the lya
 			const double distTransQsoLya = sqrt(distTransQsoLyaPow2);
@@ -5813,7 +6131,7 @@ void Correlation::xi_delta_QSO_Metals_Models_MockJMc(double lambdaFrMetal, std::
 
 	return;
 }
-void Correlation::xi_QSO_QSO_MockJMc(bool doBootstraps/*=false*/, unsigned int bootIdx/*=0*/) {
+void Correlation::xi_QSO_QSO_MockJMc(unsigned int bootIdx/*=0*/) {
 
 	std::cout << "\n\n\n\n  ------ xi_QSO_QSO_MockJMc ------" << std::endl;
 	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_Q_Q.py";
@@ -5821,6 +6139,8 @@ void Correlation::xi_QSO_QSO_MockJMc(bool doBootstraps/*=false*/, unsigned int b
 	std::cout << command << "\n" << std::endl;
 
 	loadDataQ1();
+	v_CosDeQ1__.clear();
+	v_SinDeQ1__.clear();
 
 	//// If doing with random
 	std::stringstream convert;
@@ -5829,7 +6149,7 @@ void Correlation::xi_QSO_QSO_MockJMc(bool doBootstraps/*=false*/, unsigned int b
 
 	std::vector<double> dataX(v_raQ1__);
 	std::vector<double> dataY(v_deQ1__);
-	std::vector<double> dataR(v_rQ1__);
+	std::vector<double> dataR(v_rrQ1__);
 	std::vector<double> dataZ(v_zzQ1__);
 
 	if (randomQSO) {
@@ -5843,14 +6163,14 @@ void Correlation::xi_QSO_QSO_MockJMc(bool doBootstraps/*=false*/, unsigned int b
 			//// Pick a QSO on the grid
 			double x = sizeCell__*(int(  1.*sizeGridX__*rand()/RAND_MAX) + 0.5);
 			double y = sizeCell__*(int(  1.*sizeGridY__*rand()/RAND_MAX) + 0.5);
-			const double r = v_rQ1__[nbQSO];
+			const double r = v_rrQ1__[nbQSO];
 			const double z = v_zzQ1__[nbQSO];
 
 			bool cont = false;
 
 			//// Pick a new one if already picked
 			for (unsigned int i=0; i<nbQSO; i++) {
-				if (v_raQ1__[i]==x && v_deQ1__[i]==y && v_rQ1__[i]==r) {
+				if (v_raQ1__[i]==x && v_deQ1__[i]==y && v_rrQ1__[i]==r) {
 					cont = true;
 					continue;
 				}
@@ -5859,7 +6179,7 @@ void Correlation::xi_QSO_QSO_MockJMc(bool doBootstraps/*=false*/, unsigned int b
 
 			v_raQ1__[nbQSO] = x;
 			v_deQ1__[nbQSO] = y;
-			v_rQ1__[nbQSO]  = r;
+			v_rrQ1__[nbQSO]  = r;
 			v_zzQ1__[nbQSO] = z;
 			nbQSO++;
 		}
@@ -5871,19 +6191,6 @@ void Correlation::xi_QSO_QSO_MockJMc(bool doBootstraps/*=false*/, unsigned int b
 		dataR.clear();
 		dataZ.clear();
 	}
-
-
-	///// Vectors of randomized positions in cell
-	if (randomPositionOfQSOInCellNotBeforeCorrelation__) {
-
-		std::srand (42);
-
-		for (unsigned int i=0; i<nbQ1__; i++) {
-			v_raQ1__[i] += sizeCell__*(1.*rand()/RAND_MAX-0.5);
-			v_deQ1__[i] += sizeCell__*(1.*rand()/RAND_MAX-0.5);
-		}
-	}
-
 
 	//// Constants:
 	const double max          = 200.;
@@ -5909,24 +6216,42 @@ void Correlation::xi_QSO_QSO_MockJMc(bool doBootstraps/*=false*/, unsigned int b
 		}
 	}
 
+
+	///// Vectors of randomized positions in cell
+	if (randomPositionOfQSOInCellNotBeforeCorrelation__) {
+
+		std::cout << "  Seed is = " << seed_for_random_position__ << std::endl;
+		std::srand(seed_for_random_position__);
+
+		for (unsigned int i=0; i<nbQ1__; i++) {
+			v_raQ1__[i] += sizeCell__*(1.*rand()/RAND_MAX-0.5);
+			v_deQ1__[i] += sizeCell__*(1.*rand()/RAND_MAX-0.5);
+			v_rrQ1__[i] += sizeCell__*(1.*rand()/RAND_MAX-0.5);
+			dataX[i]    += sizeCell__*(1.*rand()/RAND_MAX-0.5);
+                        dataY[i]    += sizeCell__*(1.*rand()/RAND_MAX-0.5);
+			dataR[i]    += sizeCell__*(1.*rand()/RAND_MAX-0.5);
+		}
+	}
+
+
 	std::cout << "\n  Starting\n" << std::endl;
 
 	for (unsigned int q1=0; q1<nbQ1__; q1++) {
 		
 		const double x1 = v_raQ1__[q1];
 		const double y1 = v_deQ1__[q1];
-		const double r1 = v_rQ1__[q1];
+		const double r1 = v_rrQ1__[q1];
 		const double z1 = v_zzQ1__[q1];
 
 		for (unsigned int q2=0; q2<q1; q2++) {
 
+			//// s_paral
+			const double rParaPow2 = (r1-v_rrQ1__[q2])*(r1-v_rrQ1__[q2]);
+			if (rParaPow2>=maxPow2) continue;
+
 			//// s_perp
 			const double rPerpPow2 = (x1-v_raQ1__[q2])*(x1-v_raQ1__[q2]) + (y1-v_deQ1__[q2])*(y1-v_deQ1__[q2]);
 			if (rPerpPow2>=maxPow2) continue;
-
-			//// s_paral
-			const double rParaPow2 = (r1-v_rQ1__[q2])*(r1-v_rQ1__[q2]);
-			if (rParaPow2>=maxPow2) continue;
 
 			//// |s|
 			const double distTotPow2 = rPerpPow2+rParaPow2;
@@ -6065,14 +6390,14 @@ void Correlation::xi_QSO_QSO_MockJMc(bool doBootstraps/*=false*/, unsigned int b
 			
 			//// Get a random
 			for (unsigned int q2=0; q2<nbQ1__; q2++) {
-			
+
+				//// s_paral
+				const double rParaPow2 = (r1-v_rrQ1__[q2])*(r1-v_rrQ1__[q2]);
+                                if (rParaPow2>=maxPow2) continue;
+
 				//// s_perp
 				const double rPerpPow2 = (x1-v_raQ1__[q2])*(x1-v_raQ1__[q2]) + (y1-v_deQ1__[q2])*(y1-v_deQ1__[q2]);
 				if (rPerpPow2>=maxPow2) continue;
-				
-				//// s_paral
-				const double rParaPow2 = (r1-v_rQ1__[q2])*(r1-v_rQ1__[q2]);
-				if (rParaPow2>=maxPow2) continue;
 				
 				//// |s|
 				const double distTotPow2 = rPerpPow2+rParaPow2;
@@ -6292,8 +6617,8 @@ void Correlation::loadDataQ1(void) {
 		v_CosDeQ1__.push_back(cos(de));
 		v_SinDeQ1__.push_back(sin(de));
 		v_zzQ1__.push_back(zz);
-		if (mockBox__) v_rQ1__.push_back( zz );
-		else v_rQ1__.push_back( hConvertRedshDist->Interpolate(zz) );
+		if (mockBox__) v_rrQ1__.push_back( zz );
+		else v_rrQ1__.push_back( hConvertRedshDist->Interpolate(zz) );
 	}
 
 	nbQ1__ = v_raQ1__.size();
@@ -6348,7 +6673,7 @@ void Correlation::loadDataQ2(void) {
 		v_CosDeQ2__.push_back(cos(de));
 		v_SinDeQ2__.push_back(sin(de));
 		v_zzQ2__.push_back(zz);
-		v_rQ2__.push_back( hConvertRedshDist->Interpolate(zz) );
+		v_rrQ2__.push_back( hConvertRedshDist->Interpolate(zz) );
 	}
 
 	nbQ2__ = v_raQ2__.size();
@@ -6358,7 +6683,7 @@ void Correlation::loadDataQ2(void) {
 
 	return;
 }
-void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=false*/, unsigned int bootIdx/*=0*/) {
+void Correlation::loadDataForest(std::string pathToFits,unsigned int bootIdx/*=0*/) {
 
 	std::cout << "\n\n  ------ load Data Forest ------" << std::endl;
 
@@ -6385,25 +6710,34 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 	std::cout << "  number of        forest = " << nrows << std::endl;
 	std::cout << "  number of loaded forest = " << nbForest_ << std::endl;
 
-	unsigned int regionMap[nrows];
+	v_region_Map__.assign(nrows, 100000);
 	//// If doing sub-sampling, geting the array to know if the forest is in the given region
-	if (doBootstraps) {
-
-		//// Init the values
-		for (unsigned int i=0; i<nrows; i++) {
-			regionMap[i] = 100000;
-		}
+	if (doBootstraps__) {
 
 		//// For the cross-correlation
 		std::string pathToLoad = pathToSave__;
-		pathToLoad += "xi_delta_QSO_map_";
-		pathToLoad += forest__;
-		pathToLoad += "_";
-		pathToLoad += QSO__;
-		pathToLoad += ".txt";
+		if (correlation_type__ == "q_q") {
+			pathToLoad += "xi_delta_QSO_map_";
+			pathToLoad += forest__;
+			pathToLoad += "_";
+			pathToLoad += QSO__;
+			pathToLoad += ".txt";
+		}
+		else if (correlation_type__ == "f_f") {
+			pathToLoad += "xi_A_delta_delta_map_";
+			pathToLoad += forest__;
+			pathToLoad += ".txt";
+		}
+		else if (correlation_type__ == "f_f2") {
+			pathToLoad += "xi_A_delta_delta2_map_";
+			pathToLoad += forest__;
+			pathToLoad += "_";
+			pathToLoad += forest2__;
+			pathToLoad += ".txt";
+		}
 
 		LymanForest* lymanForestObject = new LymanForest(pathToLoad, C_NBSUBSAMPLES, C_RA_SEPERATION_NGC_SGC, mockJMC__);
-		lymanForestObject->GetRegionArray(regionMap);
+		lymanForestObject->GetRegionArray(v_region_Map__);
 		lymanForestObject->PrintRegionDetail(bootIdx);
 		delete lymanForestObject;
 		std::cout << "\n\n" << std::endl;
@@ -6413,53 +6747,31 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 	long double meanDelta[3] = {0.};
 	long double meanDelta_Nicolas[7] = {0.};
 
-	
+	// Setup the root file where to store the data
+	const TString tPathToSave = "../run/test.root";
+	TFile* storeFile = new TFile(tPathToSave,"RECREATE","delta");
+	storeFile->cd();
 	// TH1D
-	TH1D* h_delta;
-	TH1D* h_delta_projected;
-	TH1D* h_meandelta;
-	TH1D* h_fluxDLA;
+	TH1D* h_delta     = new TH1D("h_delta","",20000,-5000.,5000.);
+	TH1D* h_delta_projected     = new TH1D("h_delta_projected","",20000,-5000.,5000.);
+	TH1D* h_meandelta = new TH1D("h_meandelta","",1000,-10.,10.);
+	TH1D* h_fluxDLA   = new TH1D("h_fluxDLA","",10000,-1.,2.);
 	// TProfile
-	TProfile* tp_flux_vs_lambdaRF;
-	TProfile* tp_flux_vs_lambdaOBS;
-	TProfile* tp_delta_vs_lambdaRF;
-	TProfile* tp_delta_vs_lambdaOBS;
-	TProfile* tp_delta_vs_z;
-	TProfile* tp_delta_vs_r;
-	TProfile* tp_delta_projected_vs_lambdaRF;
-	TProfile* tp_delta_projected_vs_lambdaOBS;
-	TProfile* tp_delta_projected_vs_z;
-	TProfile* tp_delta_projected_vs_r;
-	// TFile
-	TFile* storeFile;
-	if (saveInRootFile__) {
-		// TFile
-		// Setup the root file where to store the data
-		const TString tPathToSave = "../run/test.root";
-		storeFile = new TFile(tPathToSave,"RECREATE","delta");
-		storeFile->cd();
-		// TH1D
-		h_delta     = new TH1D("h_delta","",20000,-5000.,5000.);
-		h_delta_projected     = new TH1D("h_delta_projected","",20000,-5000.,5000.);
-		h_meandelta = new TH1D("h_meandelta","",1000,-10.,10.);
-		h_fluxDLA   = new TH1D("h_fluxDLA","",10000,-1.,2.);
-		// TProfile
-		tp_flux_vs_lambdaRF  = new TProfile("tp_flux_vs_lambdaRF","",(int)(20+lambdaRFMax__-lambdaRFMin__),lambdaRFMin__-10.,lambdaRFMax__+10.);
-		tp_flux_vs_lambdaOBS = new TProfile("tp_flux_vs_lambdaOBS","",(int)(20+lambdaObsMax__-lambdaObsMin__),lambdaObsMin__-10.,lambdaObsMax__+10.);
-		tp_delta_vs_lambdaRF  = new TProfile("tp_delta_vs_lambdaRF","",(int)(20+lambdaRFMax__-lambdaRFMin__),lambdaRFMin__-10.,lambdaRFMax__+10.);
-		tp_delta_vs_lambdaOBS = new TProfile("tp_delta_vs_lambdaOBS","",(int)(20+lambdaObsMax__-lambdaObsMin__),lambdaObsMin__-10.,lambdaObsMax__+10.);
-		tp_delta_vs_z = new TProfile("tp_delta_vs_z","",1000,1.7,6.7);
-		tp_delta_vs_r = new TProfile("tp_delta_vs_r","",1000,3000.,6000.);
-		tp_delta_projected_vs_lambdaRF  = new TProfile("tp_delta_projected_vs_lambdaRF","",(int)(20+lambdaRFMax__-lambdaRFMin__),lambdaRFMin__-10.,lambdaRFMax__+10.);
-		tp_delta_projected_vs_lambdaOBS = new TProfile("tp_delta_projected_vs_lambdaOBS","",(int)(20+lambdaObsMax__-lambdaObsMin__),lambdaObsMin__-10.,lambdaObsMax__+10.);
-		tp_delta_projected_vs_z = new TProfile("tp_delta_projected_vs_z","",1000,1.7,6.7);
-		tp_delta_projected_vs_r = new TProfile("tp_delta_projected_vs_r","",1000,3000.,6000.);
-	}
+	TProfile* tp_flux_vs_lambdaRF  = new TProfile("tp_flux_vs_lambdaRF","",(int)(20+lambdaRFMax__-lambdaRFMin__),lambdaRFMin__-10.,lambdaRFMax__+10.);
+	TProfile* tp_flux_vs_lambdaOBS = new TProfile("tp_flux_vs_lambdaOBS","",(int)(20+lambdaObsMax__-lambdaObsMin__),lambdaObsMin__-10.,lambdaObsMax__+10.);
+	TProfile* tp_delta_vs_lambdaRF  = new TProfile("tp_delta_vs_lambdaRF","",(int)(20+lambdaRFMax__-lambdaRFMin__),lambdaRFMin__-10.,lambdaRFMax__+10.);
+	TProfile* tp_delta_vs_lambdaOBS = new TProfile("tp_delta_vs_lambdaOBS","",(int)(20+lambdaObsMax__-lambdaObsMin__),lambdaObsMin__-10.,lambdaObsMax__+10.);
+	TProfile* tp_delta_vs_z = new TProfile("tp_delta_vs_z","",1000,1.7,6.7);
+	TProfile* tp_delta_vs_r = new TProfile("tp_delta_vs_r","",1000,3000.,6000.);
+	TProfile* tp_delta_projected_vs_lambdaRF  = new TProfile("tp_delta_projected_vs_lambdaRF","",(int)(20+lambdaRFMax__-lambdaRFMin__),lambdaRFMin__-10.,lambdaRFMax__+10.);
+	TProfile* tp_delta_projected_vs_lambdaOBS = new TProfile("tp_delta_projected_vs_lambdaOBS","",(int)(20+lambdaObsMax__-lambdaObsMin__),lambdaObsMin__-10.,lambdaObsMax__+10.);
+	TProfile* tp_delta_projected_vs_z = new TProfile("tp_delta_projected_vs_z","",1000,1.7,6.7);
+	TProfile* tp_delta_projected_vs_r = new TProfile("tp_delta_projected_vs_r","",1000,3000.,6000.);
 
 	//// Load data
 	for (unsigned int i=0; i<nbForest_; i++) {
 
-		if (doBootstraps && regionMap[i]!=bootIdx) continue;
+		if (doBootstraps__ && v_region_Map__[i]!=bootIdx && (correlation_type__=="f_f2" || correlation_type__=="q_q") ) continue;
 
 		//// Variables for data in FITS
 		double ra, de, zz, alpha, beta, meanForestLambdaRF;
@@ -6556,11 +6868,10 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 				meanNeeded[3] += DELTA_WEIGHT[j]*lambdaRF*DELTA[j];
 				meanNeeded[4] += DELTA_WEIGHT[j];
 			}
-			if (saveInRootFile__) {
-				tp_flux_vs_lambdaRF->Fill(lambdaRF,NORM_FLUX[j],DELTA_WEIGHT[j]);
-				tp_flux_vs_lambdaOBS->Fill(LAMBDA_OBS[j],NORM_FLUX[j],DELTA_WEIGHT[j]);
-				h_fluxDLA->Fill(FLUX_DLA[j]);
-			}
+
+			tp_flux_vs_lambdaRF->Fill(lambdaRF,NORM_FLUX[j],DELTA_WEIGHT[j]);
+			tp_flux_vs_lambdaOBS->Fill(LAMBDA_OBS[j],NORM_FLUX[j],DELTA_WEIGHT[j]);
+			h_fluxDLA->Fill(FLUX_DLA[j]);
 		}
 
 		const unsigned int tmp_nb = v_tmp_r.size();
@@ -6576,44 +6887,39 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 		meanDelta[2] += tmp_meanDelta[2];
 
 		//// For Nicolas's estimator
-		if (nicolasEstimator__) {
-			const long double meanDelta   = meanNeeded[0]/meanNeeded[4];
-			const long double meanLambda  = meanNeeded[1]/meanNeeded[4];
-			const long double numerator   = meanNeeded[3]-meanLambda*meanNeeded[0];
-			const long double denominator = meanNeeded[2]-meanLambda*meanLambda*meanNeeded[4];
-			const long double coef        = numerator/denominator;
-			for (unsigned int j=0; j<tmp_nb; j++) {
+		const long double meanDelta   = meanNeeded[0]/meanNeeded[4];
+		const long double meanLambda  = meanNeeded[1]/meanNeeded[4];
+		const long double numerator   = meanNeeded[3]-meanLambda*meanNeeded[0];
+		const long double denominator = meanNeeded[2]-meanLambda*meanLambda*meanNeeded[4];
+		const long double coef        = numerator/denominator;
+		for (unsigned int j=0; j<tmp_nb; j++) {
 
-				if (saveInRootFile__) {
-					h_delta->Fill(v_tmp_d[j],v_tmp_w[j]);
-					tp_delta_vs_lambdaRF->Fill(v_tmp_lRF[j], v_tmp_d[j],v_tmp_w[j]);
-					tp_delta_vs_lambdaOBS->Fill(v_tmp_lObs[j], v_tmp_d[j],v_tmp_w[j]);
-					tp_delta_vs_z->Fill(v_tmp_z[j], v_tmp_d[j],v_tmp_w[j]);
-					tp_delta_vs_r->Fill(v_tmp_r[j], v_tmp_d[j],v_tmp_w[j]);
-				}
+			h_delta->Fill(v_tmp_d[j],v_tmp_w[j]);
+			tp_delta_vs_lambdaRF->Fill(v_tmp_lRF[j], v_tmp_d[j],v_tmp_w[j]);
+			tp_delta_vs_lambdaOBS->Fill(v_tmp_lObs[j], v_tmp_d[j],v_tmp_w[j]);
+			tp_delta_vs_z->Fill(v_tmp_z[j], v_tmp_d[j],v_tmp_w[j]);
+			tp_delta_vs_r->Fill(v_tmp_r[j], v_tmp_d[j],v_tmp_w[j]);
+			
+			if (nicolasEstimator__) v_tmp_d[j] -= meanDelta + (v_tmp_lRF[j]-meanLambda)*coef;
 
-				v_tmp_d[j] -= meanDelta + (v_tmp_lRF[j]-meanLambda)*coef;
+			h_delta_projected->Fill(v_tmp_d[j],v_tmp_w[j]);
+			tp_delta_projected_vs_lambdaRF->Fill(v_tmp_lRF[j], v_tmp_d[j],v_tmp_w[j]);
+			tp_delta_projected_vs_lambdaOBS->Fill(v_tmp_lObs[j], v_tmp_d[j],v_tmp_w[j]);
+			tp_delta_projected_vs_z->Fill(v_tmp_z[j], v_tmp_d[j],v_tmp_w[j]);
+			tp_delta_projected_vs_r->Fill(v_tmp_r[j], v_tmp_d[j],v_tmp_w[j]);
 
-				if (saveInRootFile__) {
-					h_delta_projected->Fill(v_tmp_d[j],v_tmp_w[j]);
-					tp_delta_projected_vs_lambdaRF->Fill(v_tmp_lRF[j], v_tmp_d[j],v_tmp_w[j]);
-					tp_delta_projected_vs_lambdaOBS->Fill(v_tmp_lObs[j], v_tmp_d[j],v_tmp_w[j]);
-					tp_delta_projected_vs_z->Fill(v_tmp_z[j], v_tmp_d[j],v_tmp_w[j]);
-					tp_delta_projected_vs_r->Fill(v_tmp_r[j], v_tmp_d[j],v_tmp_w[j]);
-				}
-
-				//// Get Nb Pixel in forest
-				meanDelta_Nicolas[0] += v_tmp_w[j]*v_tmp_d[j];
-				meanDelta_Nicolas[1] += v_tmp_w[j]*meanDelta;
-				meanDelta_Nicolas[2] += v_tmp_w[j]*coef;
-				meanDelta_Nicolas[3] += v_tmp_w[j]*(v_tmp_lRF[j]-meanLambda)*coef;
-				meanDelta_Nicolas[4] += v_tmp_w[j]*(meanLambda-meanForestLambdaRF);
-				meanDelta_Nicolas[5] += v_tmp_w[j];
-				meanDelta_Nicolas[6] ++;
-			}
-
-			if (saveInRootFile__) h_meandelta->Fill(meanDelta);
+			//// Get Nb Pixel in forest
+			meanDelta_Nicolas[0] += v_tmp_w[j]*v_tmp_d[j];
+			meanDelta_Nicolas[1] += v_tmp_w[j]*meanDelta;
+			meanDelta_Nicolas[2] += v_tmp_w[j]*coef;
+			meanDelta_Nicolas[3] += v_tmp_w[j]*(v_tmp_lRF[j]-meanLambda)*coef;
+			meanDelta_Nicolas[4] += v_tmp_w[j]*(meanLambda-meanForestLambdaRF);
+			meanDelta_Nicolas[5] += v_tmp_w[j];
+			meanDelta_Nicolas[6] ++;
 		}
+
+		h_meandelta->Fill(meanDelta);
+		
 
 		//// If not dealing with Jean-Marc's simulations
 		if (!mockJMC__) {
@@ -6634,7 +6940,8 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 		v_z__.push_back(v_tmp_z);
 		v_lRF__.push_back(v_tmp_lRF);
 		v_lObs__.push_back(v_tmp_lObs);
-
+		v_residual_delta_vs_lRF__.push_back(v_tmp_lRF);
+		v_residual_delta_vs_lObs__.push_back(v_tmp_lObs);
 		std::vector< unsigned int > v_tmp_nb(tmp_nb,0);
 		v_nb__.push_back(v_tmp_nb);
 	}
@@ -6661,29 +6968,44 @@ void Correlation::loadDataForest(std::string pathToFits,bool doBootstraps/*=fals
 
 	delete hConvertRedshDist;
 
+	//// Replace the values of delta by the one of the stack of delta vs. lambda_RF 
+	for ( unsigned int i=0; i<nbForest_; i++ ) {
+		const unsigned int nbDelta = v_d__[i].size();
+		for ( unsigned int j=0; j<nbDelta; j++ ) {
+			if (nicolasEstimator__) {
+				v_residual_delta_vs_lRF__[i][j]  = tp_delta_projected_vs_lambdaRF->Interpolate( v_lRF__[i][j]  );
+				v_residual_delta_vs_lObs__[i][j] = tp_delta_projected_vs_lambdaOBS->Interpolate( v_lObs__[i][j]  );
+			}
+			else {
+				v_residual_delta_vs_lRF__[i][j]  = tp_delta_vs_lambdaRF->Interpolate( v_lRF__[i][j]  );
+                                v_residual_delta_vs_lObs__[i][j] = tp_delta_vs_lambdaOBS->Interpolate( v_lObs__[i][j]  );
+			}
+		}
+	}
+
+	// TH1D
+	R_plot1D(h_meandelta,"<\\delta>");
+	R_plot1D(h_fluxDLA,"< f_{DLA} >");
+	R_plot1D(h_delta,"\\delta");
+	R_plot1D(h_delta_projected,"\\delta_{proj.}");
+	// TProfile
+	R_plot1D(tp_flux_vs_lambdaRF,"\\lambda_{R.F.}","flux");
+	R_plot1D(tp_flux_vs_lambdaOBS,"\\lambda_{Obs.}","flux");
+	R_plot1D(tp_delta_vs_lambdaRF,"\\lambda_{R.F.}","\\delta");
+	R_plot1D(tp_delta_vs_lambdaOBS,"\\lambda_{Obs.}","\\delta");
+	R_plot1D(tp_delta_vs_z,"z_{pixel}","\\delta");
+	R_plot1D(tp_delta_vs_r,"r_{pixel}","\\delta");
+	R_plot1D(tp_delta_projected_vs_lambdaRF,"\\lambda_{R.F.}","\\delta_{proj.}");
+	R_plot1D(tp_delta_projected_vs_lambdaOBS,"\\lambda_{Obs.}","\\delta_{proj.}");
+	R_plot1D(tp_delta_projected_vs_z,"z_{pixel}","\\delta_{proj.}");
+	R_plot1D(tp_delta_projected_vs_r,"r_{pixel}","\\delta_{proj.}");
 	if (saveInRootFile__) {
-		// TH1D
-		R_plot1D(h_meandelta,"<\\delta>");
-		R_plot1D(h_fluxDLA,"< f_{DLA} >");
-		R_plot1D(h_delta,"\\delta");
-		R_plot1D(h_delta_projected,"\\delta_{proj.}");
-		// TProfile
-		R_plot1D(tp_flux_vs_lambdaRF,"\\lambda_{R.F.}","flux");
-		R_plot1D(tp_flux_vs_lambdaOBS,"\\lambda_{Obs.}","flux");
-		R_plot1D(tp_delta_vs_lambdaRF,"\\lambda_{R.F.}","\\delta");
-		R_plot1D(tp_delta_vs_lambdaOBS,"\\lambda_{Obs.}","\\delta");
-		R_plot1D(tp_delta_vs_z,"z_{pixel}","\\delta");
-		R_plot1D(tp_delta_vs_r,"r_{pixel}","\\delta");
-		R_plot1D(tp_delta_projected_vs_lambdaRF,"\\lambda_{R.F.}","\\delta_{proj.}");
-		R_plot1D(tp_delta_projected_vs_lambdaOBS,"\\lambda_{Obs.}","\\delta_{proj.}");
-		R_plot1D(tp_delta_projected_vs_z,"z_{pixel}","\\delta_{proj.}");
-		R_plot1D(tp_delta_projected_vs_r,"r_{pixel}","\\delta_{proj.}");
-		// TFile
 		storeFile->Write();
 		storeFile->Close();
-		// TFile
-		delete storeFile;
 	}
+	delete storeFile;
+
+	if (!(correlation_type__=="f_f") || !doBootstraps__) v_region_Map__.clear();
 
 	return;
 }
@@ -6720,6 +7042,27 @@ void Correlation::loadDataDelta2(int dataNeeded/*=100*/) {
 	long unsigned int nbCutted[5] = {0};
 	long double meanDelta[3] = {0.};
 	long double meanDelta_Nicolas[7] = {0.};
+
+	// Setup the root file where to store the data
+	const TString tPathToSave = "../run/test.root";
+	TFile* storeFile = new TFile(tPathToSave,"RECREATE","delta");
+	storeFile->cd();
+	// TH1D
+	TH1D* h_delta     = new TH1D("h_delta","",20000,-5000.,5000.);
+	TH1D* h_delta_projected     = new TH1D("h_delta_projected","",20000,-5000.,5000.);
+	TH1D* h_meandelta = new TH1D("h_meandelta","",1000,-10.,10.);
+	TH1D* h_fluxDLA   = new TH1D("h_fluxDLA","",10000,-1.,2.);
+	// TProfile
+	TProfile* tp_flux_vs_lambdaRF  = new TProfile("tp_flux_vs_lambdaRF","",(int)(20+lambdaRFMax__-lambdaRFMin__),lambdaRFMin__-10.,lambdaRFMax__+10.);
+	TProfile* tp_flux_vs_lambdaOBS = new TProfile("tp_flux_vs_lambdaOBS","",(int)(20+lambdaObsMax__-lambdaObsMin__),lambdaObsMin__-10.,lambdaObsMax__+10.);
+	TProfile* tp_delta_vs_lambdaRF  = new TProfile("tp_delta_vs_lambdaRF","",(int)(20+lambdaRFMax__-lambdaRFMin__),lambdaRFMin__-10.,lambdaRFMax__+10.);
+	TProfile* tp_delta_vs_lambdaOBS = new TProfile("tp_delta_vs_lambdaOBS","",(int)(20+lambdaObsMax__-lambdaObsMin__),lambdaObsMin__-10.,lambdaObsMax__+10.);
+	TProfile* tp_delta_vs_z = new TProfile("tp_delta_vs_z","",1000,1.7,6.7);
+	TProfile* tp_delta_vs_r = new TProfile("tp_delta_vs_r","",1000,3000.,6000.);
+	TProfile* tp_delta_projected_vs_lambdaRF  = new TProfile("tp_delta_projected_vs_lambdaRF","",(int)(20+lambdaRFMax__-lambdaRFMin__),lambdaRFMin__-10.,lambdaRFMax__+10.);
+	TProfile* tp_delta_projected_vs_lambdaOBS = new TProfile("tp_delta_projected_vs_lambdaOBS","",(int)(20+lambdaObsMax__-lambdaObsMin__),lambdaObsMin__-10.,lambdaObsMax__+10.);
+	TProfile* tp_delta_projected_vs_z = new TProfile("tp_delta_projected_vs_z","",1000,1.7,6.7);
+	TProfile* tp_delta_projected_vs_r = new TProfile("tp_delta_projected_vs_r","",1000,3000.,6000.);
 
 	//// Load data
 	for (unsigned int i=0; i<nbForest2__; i++) {
@@ -6810,6 +7153,10 @@ void Correlation::loadDataDelta2(int dataNeeded/*=100*/) {
 				meanNeeded[3] += DELTA_WEIGHT[j]*lambdaRF*DELTA[j];
 				meanNeeded[4] += DELTA_WEIGHT[j];
 			}
+
+			tp_flux_vs_lambdaRF->Fill(lambdaRF,NORM_FLUX[j],DELTA_WEIGHT[j]);
+			tp_flux_vs_lambdaOBS->Fill(LAMBDA_OBS[j],NORM_FLUX[j],DELTA_WEIGHT[j]);
+			h_fluxDLA->Fill(FLUX_DLA[j]);
 		}
 
 		const unsigned int tmp_nb = v_tmp_r.size();
@@ -6825,29 +7172,43 @@ void Correlation::loadDataDelta2(int dataNeeded/*=100*/) {
 		meanDelta[2] += tmp_meanDelta[2];
 
 		//// For Nicolas's estimator
-		if (nicolasEstimator__) {
-			const long double meanDelta   = meanNeeded[0]/meanNeeded[4];
-			const long double meanLambda  = meanNeeded[1]/meanNeeded[4];
-			const long double numerator   = meanNeeded[3]-meanLambda*meanNeeded[0];
-			const long double denominator = meanNeeded[2]-meanLambda*meanLambda*meanNeeded[4];
-			const long double coef        = numerator/denominator;
-			for (unsigned int j=0; j<tmp_nb; j++) {
-				v_tmp_d[j] -= meanDelta+(v_tmp_lRF[j]-meanLambda)*coef;
+		const long double meanDelta   = meanNeeded[0]/meanNeeded[4];
+		const long double meanLambda  = meanNeeded[1]/meanNeeded[4];
+		const long double numerator   = meanNeeded[3]-meanLambda*meanNeeded[0];
+		const long double denominator = meanNeeded[2]-meanLambda*meanLambda*meanNeeded[4];
+		const long double coef        = numerator/denominator;
+		for (unsigned int j=0; j<tmp_nb; j++) {
 
+			h_delta->Fill(v_tmp_d[j],v_tmp_w[j]);
+			tp_delta_vs_lambdaRF->Fill(v_tmp_lRF[j], v_tmp_d[j],v_tmp_w[j]);
+			tp_delta_vs_lambdaOBS->Fill(v_tmp_lObs[j], v_tmp_d[j],v_tmp_w[j]);
+			tp_delta_vs_z->Fill(v_tmp_z[j], v_tmp_d[j],v_tmp_w[j]);
+			tp_delta_vs_r->Fill(v_tmp_r[j], v_tmp_d[j],v_tmp_w[j]);
+			
+			if (nicolasEstimator__) v_tmp_d[j] -= meanDelta + (v_tmp_lRF[j]-meanLambda)*coef;
 
-				//// Get Nb Pixel in forest
-				meanDelta_Nicolas[0] += v_tmp_w[j]*v_tmp_d[j];
-				meanDelta_Nicolas[1] += v_tmp_w[j]*meanDelta;
-				meanDelta_Nicolas[2] += v_tmp_w[j]*coef;
-				meanDelta_Nicolas[3] += v_tmp_w[j]*(v_tmp_lRF[j]-meanLambda)*coef;
-				meanDelta_Nicolas[4] += v_tmp_w[j]*(meanLambda-meanForestLambdaRF);
-				meanDelta_Nicolas[5] += v_tmp_w[j];
-				meanDelta_Nicolas[6] ++;
-			}
+			h_delta_projected->Fill(v_tmp_d[j],v_tmp_w[j]);
+			tp_delta_projected_vs_lambdaRF->Fill(v_tmp_lRF[j], v_tmp_d[j],v_tmp_w[j]);
+			tp_delta_projected_vs_lambdaOBS->Fill(v_tmp_lObs[j], v_tmp_d[j],v_tmp_w[j]);
+			tp_delta_projected_vs_z->Fill(v_tmp_z[j], v_tmp_d[j],v_tmp_w[j]);
+			tp_delta_projected_vs_r->Fill(v_tmp_r[j], v_tmp_d[j],v_tmp_w[j]);
+
+			//// Get Nb Pixel in forest
+			meanDelta_Nicolas[0] += v_tmp_w[j]*v_tmp_d[j];
+			meanDelta_Nicolas[1] += v_tmp_w[j]*meanDelta;
+			meanDelta_Nicolas[2] += v_tmp_w[j]*coef;
+			meanDelta_Nicolas[3] += v_tmp_w[j]*(v_tmp_lRF[j]-meanLambda)*coef;
+			meanDelta_Nicolas[4] += v_tmp_w[j]*(meanLambda-meanForestLambdaRF);
+			meanDelta_Nicolas[5] += v_tmp_w[j];
+			meanDelta_Nicolas[6] ++;
 		}
 
-		ra = ra*C_DEGTORAD;
-		de = de*C_DEGTORAD;
+		h_meandelta->Fill(meanDelta);
+
+		if (!mockJMC__) {
+			ra = ra*C_DEGTORAD;
+			de = de*C_DEGTORAD;
+		}
 
 		v_raDelta2__.push_back(ra);
 		v_deDelta2__.push_back(de);
@@ -6862,6 +7223,8 @@ void Correlation::loadDataDelta2(int dataNeeded/*=100*/) {
 		v_zDelta2__.push_back(v_tmp_z);
 		v_lRFDelta2__.push_back(v_tmp_lRF);
 		v_lObsDelta2__.push_back(v_tmp_lObs);
+		v_residual2_delta_vs_lRF__.push_back(v_tmp_lRF);
+		v_residual2_delta_vs_lObs__.push_back(v_tmp_lObs);
 	}
 
 	fits_close_file(fitsptrSpec,&sta);
@@ -6886,6 +7249,43 @@ void Correlation::loadDataDelta2(int dataNeeded/*=100*/) {
 
 	delete hConvertRedshDist;
 
+	//// Replace the values of delta by the one of the stack of delta vs. lambda_RF 
+	for ( unsigned int i=0; i<nbForest2__; i++ ) {
+		const unsigned int nbDelta = v_dDelta2__[i].size();
+		for ( unsigned int j=0; j<nbDelta; j++ ) {
+			if (nicolasEstimator__) {
+				v_residual2_delta_vs_lRF__[i][j]  = tp_delta_projected_vs_lambdaRF->Interpolate( v_lRFDelta2__[i][j]  );
+				v_residual2_delta_vs_lObs__[i][j] = tp_delta_projected_vs_lambdaOBS->Interpolate( v_lObsDelta2__[i][j]  );
+			}
+			else {
+				v_residual2_delta_vs_lRF__[i][j]  = tp_delta_vs_lambdaRF->Interpolate( v_lRFDelta2__[i][j]  );
+                                v_residual2_delta_vs_lObs__[i][j] = tp_delta_vs_lambdaOBS->Interpolate( v_lObsDelta2__[i][j]  );
+			}
+		}
+	}
+
+	// TH1D
+	R_plot1D(h_meandelta,"<\\delta>");
+	R_plot1D(h_fluxDLA,"< f_{DLA} >");
+	R_plot1D(h_delta,"\\delta");
+	R_plot1D(h_delta_projected,"\\delta_{proj.}");
+	// TProfile
+	R_plot1D(tp_flux_vs_lambdaRF,"\\lambda_{R.F.}","flux");
+	R_plot1D(tp_flux_vs_lambdaOBS,"\\lambda_{Obs.}","flux");
+	R_plot1D(tp_delta_vs_lambdaRF,"\\lambda_{R.F.}","\\delta");
+	R_plot1D(tp_delta_vs_lambdaOBS,"\\lambda_{Obs.}","\\delta");
+	R_plot1D(tp_delta_vs_z,"z_{pixel}","\\delta");
+	R_plot1D(tp_delta_vs_r,"r_{pixel}","\\delta");
+	R_plot1D(tp_delta_projected_vs_lambdaRF,"\\lambda_{R.F.}","\\delta_{proj.}");
+	R_plot1D(tp_delta_projected_vs_lambdaOBS,"\\lambda_{Obs.}","\\delta_{proj.}");
+	R_plot1D(tp_delta_projected_vs_z,"z_{pixel}","\\delta_{proj.}");
+	R_plot1D(tp_delta_projected_vs_r,"r_{pixel}","\\delta_{proj.}");
+	if (saveInRootFile__) {
+		storeFile->Write();
+		storeFile->Close();
+	}
+	delete storeFile;
+
 	return;
 }
 void Correlation::loadDataForest_Raw(unsigned int bootIdx/*=0*/) {
@@ -6896,6 +7296,10 @@ void Correlation::loadDataForest_Raw(unsigned int bootIdx/*=0*/) {
 	// Get the minimal distance of pixels
 	distMinPixel__ = cosmo->GetMinDistPixels(lambdaObsMin__, lambdaRFLine__);
 	delete cosmo;
+
+	// TProfile
+	TProfile* tp_flux_vs_lambdaRF  = new TProfile("tp_flux_vs_lambdaRF","",(int)(20+lambdaRFMax__-lambdaRFMin__),lambdaRFMin__-10.,lambdaRFMax__+10.);
+	TProfile* tp_flux_vs_lambdaOBS = new TProfile("tp_flux_vs_lambdaOBS","",(int)(20+lambdaObsMax__-lambdaObsMin__),lambdaObsMin__-10.,lambdaObsMax__+10.);
 
 	/// index of forest
 	unsigned int forestIdx = 0;
@@ -6975,6 +7379,10 @@ void Correlation::loadDataForest_Raw(unsigned int bootIdx/*=0*/) {
 			}
 			else if (mock_version==1) fits_read_col(fitsptrSpec,TFLOAT, 6,1,1,tmp_nbPixels2,NULL, &FLUX,NULL,&sta);
 			else if (mock_version==2) fits_read_col(fitsptrSpec,TFLOAT, 2,1,1,tmp_nbPixels2,NULL, &FLUX,NULL,&sta);
+			else if (mock_version==3) {
+				fits_read_col(fitsptrSpec,TFLOAT, 2,1,1,tmp_nbPixels2,NULL, &FLUX,NULL,&sta);
+				fits_read_col(fitsptrSpec,TFLOAT, 5,1,1,tmp_nbPixels2,NULL, &CONTINUUM,NULL,&sta);
+			}
 
 	
 			/// Variables for new FITS
@@ -6985,37 +7393,82 @@ void Correlation::loadDataForest_Raw(unsigned int bootIdx/*=0*/) {
 			std::vector< double > v_tmp_z;
 			std::vector< double > v_tmp_lRF;
 			std::vector< double > v_tmp_lObs;
+
+			/// Get the mean over 3 pixels
+			double mean_over3Pixels[5] = {0.};
 	
 			for (unsigned int p=0; p<tmp_nbPixels2; p++) {
 
-				/// Remove 2/3 of pixels because too heavy
-				if (p%3!=0) continue;
+				/// Remove 1/3 of pixels because too heavy
+				if (mock_version==2 && !meanOver3pixels__ && p%3!=0) continue;
 
 				/// bad pixels
-				if (LAMBDA_OBS[p]<=0.) continue;
+				if (LAMBDA_OBS[p]<=0. || std::isnan(FLUX[p]) ) continue;
+				
 
-				if (mock_version==1) LAMBDA_OBS[p] = pow(10.,LAMBDA_OBS[p]);
+				if (mock_version==1 || mock_version==3 ) LAMBDA_OBS[p] = pow(10.,LAMBDA_OBS[p]);
 				const double lambdaRFd = LAMBDA_OBS[p]*oneOverOnePlusZ;
 	
 				/// Pixel outside working region and remove pixels because of CCD and Sky lines 
 				if (lambdaRFd<lambdaRFMin__ || lambdaRFd>lambdaRFMax__ || LAMBDA_OBS[p]<lambdaObsMin__ || LAMBDA_OBS[p]>=lambdaObsMax__) continue;
 
-				if (mock_version==0) FLUX[p] /= CONTINUUM[p];
+				if (mock_version==0 || mock_version==3 ) {
+					if (CONTINUUM[p]==0.) continue;
+					else FLUX[p] /= CONTINUUM[p];
+				}
 
-				meanDelta[0] += FLUX[p];
-				meanDelta[1] ++;
-				meanDelta[2] ++;
+				/// Get the mean over 3 pixels
+				double zi = LAMBDA_OBS[p]/lambdaRFLine__ -1.;
+				double wi = pow( (zi+1.)/onePlusZ0__, halfGama__);
+				mean_over3Pixels[0] += wi*lambdaRFd;
+				mean_over3Pixels[1] += wi*LAMBDA_OBS[p];
+				mean_over3Pixels[2] += wi*FLUX[p];
+				mean_over3Pixels[3] += wi;
+				mean_over3Pixels[4] ++;
 
-				const double zi = LAMBDA_OBS[p]/lambdaRFLine__ -1.;
-				v_tmp_r.push_back(hConvertRedshDist->Interpolate(zi));
-				v_tmp_d.push_back(FLUX[p]);
-				v_tmp_w.push_back(1.);
-				v_tmp_z.push_back(zi);
-				v_tmp_lRF.push_back(lambdaRFd);
-				v_tmp_lObs.push_back(LAMBDA_OBS[p]);
+				if (!meanOver3pixels__) {
+					v_tmp_r.push_back(hConvertRedshDist->Interpolate(zi));
+					v_tmp_d.push_back(FLUX[p]);
+					v_tmp_w.push_back(wi);
+					v_tmp_z.push_back(zi);
+					v_tmp_lRF.push_back(lambdaRFd);
+					v_tmp_lObs.push_back(LAMBDA_OBS[p]);
+
+					meanDelta[0] += wi*FLUX[p];
+					meanDelta[1] += wi;
+					meanDelta[2] ++;
+
+					tp_flux_vs_lambdaRF->Fill( lambdaRFd, FLUX[p], wi );
+					tp_flux_vs_lambdaOBS->Fill( LAMBDA_OBS[p], FLUX[p], wi );
+				}
+				else if (mean_over3Pixels[4]==3.) {
+					mean_over3Pixels[0] /= mean_over3Pixels[3];
+					mean_over3Pixels[1] /= mean_over3Pixels[3];
+					mean_over3Pixels[2] /= mean_over3Pixels[3];
+					zi = mean_over3Pixels[1]/lambdaRFLine__ -1.;
+					wi = pow( (zi+1.)/onePlusZ0__, halfGama__);
+					v_tmp_r.push_back(hConvertRedshDist->Interpolate(zi));
+					v_tmp_d.push_back(mean_over3Pixels[2]);
+					v_tmp_w.push_back(wi);
+					v_tmp_z.push_back(zi);
+					v_tmp_lRF.push_back(mean_over3Pixels[0]);
+					v_tmp_lObs.push_back(mean_over3Pixels[1]);
+					mean_over3Pixels[0] = 0.;
+					mean_over3Pixels[1] = 0.;
+					mean_over3Pixels[2] = 0.;
+					mean_over3Pixels[3] = 0.;
+					mean_over3Pixels[4] = 0.;
+
+					meanDelta[0] += wi*mean_over3Pixels[2];
+					meanDelta[1] += wi;
+					meanDelta[2] ++;
+
+					tp_flux_vs_lambdaRF->Fill( mean_over3Pixels[0], mean_over3Pixels[2], wi );
+					tp_flux_vs_lambdaOBS->Fill( mean_over3Pixels[1], mean_over3Pixels[2], wi );
+				}
 			}
 
-			if (v_tmp_r.size()<C_MIN_NB_PIXEL) continue;
+			if ( v_tmp_r.size()==0. ) continue;
 
 			nbGoodForest ++;
 			v_ra__.push_back(X);
@@ -7032,6 +7485,8 @@ void Correlation::loadDataForest_Raw(unsigned int bootIdx/*=0*/) {
 
 			std::vector< unsigned int > v_tmp_nb( v_tmp_r.size() ,0);
 			v_nb__.push_back(v_tmp_nb);
+			v_residual_delta_vs_lRF__.push_back(v_tmp_lRF);
+			v_residual_delta_vs_lObs__.push_back(v_tmp_lObs);
 
 			if (nbForest_!=0 && nbGoodForest==nbForest_) {
 				breakk = true;
@@ -7049,6 +7504,20 @@ void Correlation::loadDataForest_Raw(unsigned int bootIdx/*=0*/) {
 	std::cout << "  < delta >       = " << meanDelta[0]/meanDelta[1] << std::endl;
 	std::cout << "  sum(w_i)        = " << meanDelta[1]              << std::endl;
 	std::cout << "  nb pixel        = " << (long long unsigned int)meanDelta[2]              << std::endl;
+
+	//// Replace the values of delta by the one of the stack of delta vs. lambda_RF 
+	for ( unsigned int i=0; i<nbForest_; i++ ) {
+		const unsigned int nbDelta = v_d__[i].size();
+		for ( unsigned int j=0; j<nbDelta; j++ ) {
+			v_residual_delta_vs_lRF__[i][j]  = 0.;
+			v_residual_delta_vs_lObs__[i][j] = 0.;
+		}
+	}
+
+	delete tp_flux_vs_lambdaRF;
+	delete tp_flux_vs_lambdaOBS;
+
+	return;
 }
 
 
@@ -7066,24 +7535,31 @@ void Correlation::removeFalseCorrelations(bool firstPass/*=true*/) {
 	//// Constants
 	const unsigned int nbLoop = 50;
 
-	//// Remove <delta> vs. lambda_OBS
-	const unsigned int nbBin = nbBinlambdaObs__;
-	const double min = lambdaObsMin__;
-	const double max = lambdaObsMax__;
-	
-	/*
-	//// Remove <delta> vs. lambda_RF
-	const unsigned int nbBin = int(lambdaRFMax__-lambdaRFMin__)+6;
-	const double min = lambdaRFMin__-3.;
-	const double max = lambdaRFMax__+3.;
-	*/
-	TH1D* histo = new TH1D("histo","",nbBin,min,max);
+	TH1D* hDeltaVsLambdaObs[nbLoop+1];
+	TH1D* hDeltaVsLambdaObs_residual[nbLoop+1];
+	for (unsigned int i=0; i<nbLoop+1; i++) {
+
+		// Mean transmission flux
+		TString name = "hDeltaVsLambdaObs_";
+		name += i;
+		hDeltaVsLambdaObs[i] = new TH1D(name,"",nbBinlambdaObs__+200,lambdaObsMin__-100.,lambdaObsMax__+100.);
+		R_dealWithPlots_1D(hDeltaVsLambdaObs[i], "#lambda_{Obs.} (A)", "Mean transmission flux", "Method2: mean transmission flux");
+		for (unsigned int j=0; j<nbBinlambdaObs__+200; j++) {
+			hDeltaVsLambdaObs[i]->SetBinContent(j+1,1.);
+			hDeltaVsLambdaObs[i]->SetBinError(j+1,0.);
+		}
+		// Mean transmission flux
+		name = "hDeltaVsLambdaObs_residual_";
+		name += i;
+		hDeltaVsLambdaObs_residual[i] = new TH1D(name,"",nbBinlambdaObs__+200,lambdaObsMin__-100.,lambdaObsMax__+100.);
+		R_dealWithPlots_1D(hDeltaVsLambdaObs_residual[i], "#lambda_{Obs.} (A)", "Mean transmission flux", "residual");
+	}
 
 	//// Start the loop
 	for (unsigned int lp=0; lp<nbLoop; lp++) {
 
-		double data[nbBin][4];
-		for (unsigned int i=0; i<nbBin; i++) {
+		double data[nbBinlambdaObs__][4];
+		for (unsigned int i=0; i<nbBinlambdaObs__; i++) {
 			for (unsigned int j=0; j<4; j++) {
 				data[i][j] = 0.;
 			}
@@ -7095,63 +7571,72 @@ void Correlation::removeFalseCorrelations(bool firstPass/*=true*/) {
 			const unsigned int nb = v_nbPixelDelta1__[f];	
 			for (unsigned int i=0; i<nb; i++) {
 
-				double coef = 1.;
-				if (!firstPass) coef = v_nb__[f][i];
-				if (coef==0.) continue; 
-
 				const double l  = v_lObs__[f][i];
-				//const double l    = v_lRF__[f][i];
-				const double w    = v_w__[f][i];
-				const double d    = v_d__[f][i];
-				const double wd   = w*d;
+				double mean_flux = 1.;
+				if (lp>0) mean_flux = hDeltaVsLambdaObs[lp-1]->Interpolate(l);
+				const double d = v_d__[f][i]/mean_flux -1.;
+				const double w = v_w__[f][i]*mean_flux*mean_flux;
+				const double wd = w*d;
 
-				const unsigned int idx = int(l-min);
-				data[idx][0] += coef*wd;
-				data[idx][1] += coef*w;
-				data[idx][2] += coef*wd*d;
+				const unsigned int idx = int( l-lambdaObsMin__);
+				data[idx][0] += wd;
+				data[idx][1] += w;
+				data[idx][2] += wd*d;
 				data[idx][3] ++;
 			}
 		}
 
-		long double mean0[2] = {0.};
 
-		//// Put it into an histo
-		for (unsigned int i=0; i<nbBin; i++) {
-
-			if (data[i][3]==0.) {
-				histo->SetBinContent(i+1,0.);
-				histo->SetBinError(i+1,0.);
-				continue;
-			}
-
-			mean0[0] += data[i][0];
-			mean0[1] += data[i][1];
-
-			const double mean = data[i][0]/data[i][1];
-			const double err  = sqrt( (data[i][2]/data[i][1]-mean*mean)/data[i][3] );
-			
-			histo->SetBinContent(i+1,mean);
-			histo->SetBinError(i+1,err);
+		double meanDelta[4] = {0.};
+		//// Get the number of pixels and the mean delta
+		for (unsigned int i=0; i<nbBinlambdaObs__; i++) {
+			meanDelta[0] += data[i][0];
+			meanDelta[1] += data[i][1];
+			meanDelta[2] += data[i][3];
 		}
+		std::cout << "  step  " << lp << std::endl;
+		std::cout << "  < delta >        = " << meanDelta[0]/meanDelta[1] << std::endl;
+		std::cout << "  sum(w_i)         = " << meanDelta[1]              << std::endl;
+		std::cout << "  nb pixel         = " << (long long unsigned int)meanDelta[2]              << std::endl;
 
-		if (lp==0 || lp==nbLoop-1) std::cout << "  " << lp << " " << mean0[0]/mean0[1] << std::endl;
-
-
-		// Fill empty bins
+	
+		unsigned int loopIdxForHist = lp-1;
+		if (lp==0) loopIdxForHist = nbLoop;
+	
+		//// Delta vs. lambda_Obs
+		for (unsigned int i=0; i<nbBinlambdaObs__; i++) {
+			if (data[i][3]>1.) {
+				double mean = data[i][0]/data[i][1];
+				double err  = sqrt( (data[i][2]/data[i][1]-mean*mean)/data[i][3] );
+				hDeltaVsLambdaObs[lp]->SetBinContent(i+100+1,(mean+1.)*hDeltaVsLambdaObs[loopIdxForHist]->GetBinContent(i+100+1) );
+				hDeltaVsLambdaObs[lp]->SetBinError(i+100+1,err);
+				hDeltaVsLambdaObs_residual[lp]->SetBinContent(i+100+1,mean);
+				hDeltaVsLambdaObs_residual[lp]->SetBinError(i+100+1,err);
+			}
+		}
+	
+		// Method2: Set "hMeanFlux"
 		double xxx1_value_m2 = 0.;
 		double xxx2_value_m2 = 0.;
 		double yyy1_value_m2 = 0.;
 		double yyy2_value_m2 = 0.;
 		double value_m2 = 0.;
 		unsigned int nbEmptyPixels_m2 = 0;
-		for (unsigned int i=0; i<nbBin; i++) {
+		double valueFirstNotEmptyPixels = 0.;
+		unsigned int idxFirstNotEmptyPixels = 0;
+		for (unsigned int i=0; i<nbBinlambdaObs__+200; i++) {
+	
+			if (valueFirstNotEmptyPixels==0. && hDeltaVsLambdaObs[lp]->GetBinError(i+1)!=0.) {
+				valueFirstNotEmptyPixels = hDeltaVsLambdaObs[lp]->GetBinContent(i+1);
+				idxFirstNotEmptyPixels   = i;
+			}
 			
 			// If empty and not the last pixel
-			if (histo->GetBinError(i+1) == 0. && i!=nbBin-1) {
+			if (hDeltaVsLambdaObs[lp]->GetBinError(i+1) == 0. && i!=nbBinlambdaObs__+200-1) {
 				if (nbEmptyPixels_m2 == 0 && i!=0) {
-					xxx1_value_m2 = histo->GetBinCenter(i);
-					yyy1_value_m2 = histo->GetBinContent(i);
-					value_m2 = histo->GetBinContent(i);
+					xxx1_value_m2 = hDeltaVsLambdaObs[lp]->GetBinCenter(i);
+					yyy1_value_m2 = hDeltaVsLambdaObs[lp]->GetBinContent(i);
+					value_m2 = hDeltaVsLambdaObs[lp]->GetBinContent(i);
 				}
 				nbEmptyPixels_m2 ++;
 			}
@@ -7164,33 +7649,33 @@ void Correlation::removeFalseCorrelations(bool firstPass/*=true*/) {
 					double b = 0.;					
 					
 					// Find the mean value between the two not empty pixels
-					if (value_m2!=0. && histo->GetBinError(i+1)!=0.) {
+					if (value_m2!=0. && hDeltaVsLambdaObs[lp]->GetBinError(i+1)!=0.) {
 						// Linear extrapolation
-						xxx2_value_m2 = histo->GetBinCenter(i+1);
-						yyy2_value_m2 = histo->GetBinContent(i+1);
+						xxx2_value_m2 = hDeltaVsLambdaObs[lp]->GetBinCenter(i+1);
+						yyy2_value_m2 = hDeltaVsLambdaObs[lp]->GetBinContent(i+1);
 						a = yyy1_value_m2 - yyy2_value_m2;
 						b = yyy2_value_m2*xxx1_value_m2 - yyy1_value_m2*xxx2_value_m2;
 						if (xxx1_value_m2-xxx2_value_m2 != 0.) {
 							a /= (xxx1_value_m2-xxx2_value_m2);
 							b /= (xxx1_value_m2-xxx2_value_m2);
 						}
-						value_m2 = (value_m2 + histo->GetBinContent(i+1))/2.;
+						value_m2 = (value_m2 + hDeltaVsLambdaObs[lp]->GetBinContent(i+1))/2.;
 					}
 					
 					// Set all the empty pixels 
 					for (unsigned int j=0; j<nbEmptyPixels_m2; j++) {
-						double tmp_value = a*histo->GetBinCenter(i-j) + b;
-						if (histo->GetBinError(i+1)==0.) tmp_value = value_m2;
-						histo->SetBinContent(i-j, tmp_value); //value_m2
-						//histo->SetBinError(i-j, maxError_m2);
+						double tmp_value = a*hDeltaVsLambdaObs[lp]->GetBinCenter(i-j) + b;
+						if (hDeltaVsLambdaObs[lp]->GetBinError(i+1)==0.) tmp_value = value_m2;
+						hDeltaVsLambdaObs[lp]->SetBinContent(i-j, tmp_value); //value_m2
+						//hDeltaVsLambdaObs[lp]->SetBinError(i-j, maxError_m2);
 					}
 					
 					// If the last pixel is also empty
-					if (i==nbBin-1) {
-						histo->SetBinContent(i+1, value_m2);
-						//histo->SetBinError(i+1, maxError_m2);
+					if (i==nbBinlambdaObs__+200-1) {
+						hDeltaVsLambdaObs[lp]->SetBinContent(i+1, value_m2);
+						//hDeltaVsLambdaObs[lp]->SetBinError(i+1, maxError_m2);
 					}
-					
+	
 					// Set all the values to zero
 					nbEmptyPixels_m2 = 0;
 					value_m2 = 0.;
@@ -7201,27 +7686,38 @@ void Correlation::removeFalseCorrelations(bool firstPass/*=true*/) {
 				}
 			}
 		}
-
-		//// Remove the correlation
-		for (unsigned int f=0; f<nbForest_; f++) {
-			
-			const unsigned int nb = v_nbPixelDelta1__[f];	
-			for (unsigned int i=0; i<nb; i++) {
 	
-				const double l = v_lObs__[f][i];
-				//const double l = v_lRF__[f][i];
-	
-				v_d__[f][i] -= histo->Interpolate(l);
-			}
+		//// Set values for the last pixels
+		for (unsigned int i=0; i<idxFirstNotEmptyPixels; i++) {
+			hDeltaVsLambdaObs[lp]->SetBinContent(i+1, valueFirstNotEmptyPixels);
 		}
-	
-		//std::stringstream convert;
-		//convert << lp;
-		//R_plot1D(histo, convert.str());
-
 	}
 
-	delete histo;
+	double meanDelta[4] = {0.};
+	//// Set the new delta
+	for (unsigned int f=0; f<nbForest_; f++) {
+		const unsigned int nb = v_nbPixelDelta1__[f];	
+		for (unsigned int i=0; i<nb; i++) {
+			const double l = v_lObs__[f][i];
+			const double mean_flux = hDeltaVsLambdaObs[nbLoop-1]->Interpolate(l);
+			v_d__[f][i] = v_d__[f][i]/mean_flux -1.;
+			v_w__[f][i] = v_w__[f][i]*mean_flux*mean_flux;
+			v_residual_delta_vs_lObs__[f][i] = hDeltaVsLambdaObs_residual[nbLoop-1]->Interpolate(l);
+
+			meanDelta[0] += v_w__[f][i]*v_d__[f][i];
+			meanDelta[1] += v_w__[f][i];
+			meanDelta[2] ++;
+		}
+	}
+	std::cout << "\n  step  LAST" << std::endl;
+	std::cout << "  < delta >        = " << meanDelta[0]/meanDelta[1] << std::endl;
+	std::cout << "  sum(w_i)         = " << meanDelta[1]              << std::endl;
+	std::cout << "  nb pixel         = " << (long long unsigned int)meanDelta[2]              << std::endl;
+
+	for (unsigned int i=0; i<nbLoop+1; i++) {
+		delete hDeltaVsLambdaObs[i];
+		delete hDeltaVsLambdaObs_residual[i];
+	}
 }
 
 

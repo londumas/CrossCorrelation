@@ -290,18 +290,21 @@ bool LymanForest::DevideInRegions(void) {
 					nbPairsInRegions[i] += tmp2_pa[i][j];
 				}
 			}
-			std::cout << "  nb of pairs in region 0: " << nbPairsInRegions[0] << std::endl;
-			std::cout << "  nb of pairs in region 1: " << nbPairsInRegions[1] << std::endl;
+			std::cout << "  nb of pairs in region 0       : " << nbPairsInRegions[0] << std::endl;
+			if (tmp2_ra[1].size()!=0.) std::cout << "  nb of pairs in region 1       : " << nbPairsInRegions[1] << std::endl;
 
 			// Find the best way to devide the two regions
-			unsigned int nbRegionInRegions[2] = {};
-			nbRegionInRegions[0] = nbRegion_*nbPairsInRegions[0]/(nbPairsInRegions[0]+nbPairsInRegions[1]);
-			nbRegionInRegions[1] = nbRegion_-nbRegionInRegions[0];
+			unsigned int nbRegionInRegions[2] = {0.};
+			if (tmp2_ra[1].size()==0.) nbRegionInRegions[0] = nbRegion_;
+			else {
+				nbRegionInRegions[0] = nbRegion_*nbPairsInRegions[0]/(nbPairsInRegions[0]+nbPairsInRegions[1]);
+				nbRegionInRegions[1] = nbRegion_-nbRegionInRegions[0];
+			}
 			//std::cout << "  " << 1.*nbRegion_*nbPairsInRegions[0]/(nbPairsInRegions[0]+nbPairsInRegions[1]) << " " << 1.*nbRegion_*nbPairsInRegions[1]/(nbPairsInRegions[0]+nbPairsInRegions[1]) << std::endl;
 			//std::cout << "  " << 1.*nbPairsInRegions[0]/(nbPairsInRegions[0]+nbPairsInRegions[1]) << " " << 1.*nbPairsInRegions[1]/(nbPairsInRegions[0]+nbPairsInRegions[1]) << std::endl;
 			//std::cout << "  " << 1.*nbPairsInRegions[1]/nbPairsInRegions[0] << std::endl;
-			std::cout << "  nb of sub-regions in region 0: " << nbRegionInRegions[0] << std::endl;
-			std::cout << "  nb of sub-regions in region 1: " << nbRegionInRegions[1] << std::endl;
+			std::cout << "  nb of sub-regions in region 0 : " << nbRegionInRegions[0] << std::endl;
+			if (tmp2_ra[1].size()!=0.) std::cout << "  nb of sub-regions in region 1 : " << nbRegionInRegions[1] << std::endl;
 			
 			// Get the size of the two regions
 			double deltaRa[2] = {};
@@ -310,17 +313,24 @@ bool LymanForest::DevideInRegions(void) {
 				if (nbRegionInRegions[i]==0) continue;
 				deltaRa[i] = tmp2_co[i][1]-tmp2_co[i][0];
 				deltaDe[i] = tmp2_co[i][3]-tmp2_co[i][2];
+				std::cout << "  size region " << i << "    : " << deltaRa[i] << " " << deltaDe[i] << std::endl;
 			}
-			
+
 			// Get the number of strips in each region in order
 			//  to have regions in approximetly squared shape
 			unsigned int nbStrips[2] = {};
 			for (unsigned int i=0; i<2; i++) {
 				if (nbRegionInRegions[i]==0) continue;
-				if (deltaDe[i]>0. && deltaRa[i]>0.) nbStrips[i] = sqrt(nbRegionInRegions[i]*deltaDe[i]/deltaRa[i]);
+				if (deltaDe[i]>0. && deltaRa[i]>0.) {
+					const double nb_strips = sqrt(nbRegionInRegions[i]*deltaDe[i]/deltaRa[i]);
+					if (nb_strips>1.) nbStrips[i] = nb_strips;
+					else nbStrips[i] = 1;
+				}
 				else nbStrips[i] = 1;
+
 			}
-			std::cout << "  nb of strips per regions = " << nbStrips[0] << " " << nbStrips[1] << std::endl;
+			std::cout << "  nb of strips for regions 0    : " << nbStrips[0] << std::endl;
+			if (tmp2_ra[1].size()!=0.) std::cout << "  nb of strips for regions 1    : " << nbStrips[1] << std::endl;
 			
 			// Get the number of regions per band
 			unsigned int nbColumn[2] = {};
@@ -328,7 +338,8 @@ bool LymanForest::DevideInRegions(void) {
 				if (nbRegionInRegions[i]==0) continue;
 				nbColumn[i] = nbRegionInRegions[i]/nbStrips[i];
 			}
-			std::cout << "  nb of columns per regions = " << nbColumn[0] << " " << nbColumn[1] << std::endl;
+			std::cout << "  nb of columns for regions 0   : " << nbColumn[0] << std::endl;
+			if (tmp2_ra[1].size()!=0.) std::cout << "  nb of columns for regions 1   : " << nbColumn[1] << std::endl;
 			
 			// Get the spear regions to distribute over the sky
 			unsigned int nbSpears[2] = {};
@@ -336,7 +347,8 @@ bool LymanForest::DevideInRegions(void) {
 				if (nbRegionInRegions[i]==0) continue;
 				nbSpears[i] = nbRegionInRegions[i] - nbStrips[i]*nbColumn[i];
 			}
-			std::cout << "  nb of spears regions = " << nbSpears[0] << " " << nbSpears[1] << std::endl;
+			std::cout << "  nb of spears for regions 0    : " << nbSpears[0] << std::endl;
+			if (tmp2_ra[1].size()!=0.) std::cout << "  nb of spears for regions 1    : " << nbSpears[1] << std::endl;
 			
 			// Get the number of regions in each strips
 			std::vector<std::vector<unsigned int> > nbOfRegionsPerStrips(2);
@@ -680,7 +692,7 @@ void LymanForest::PrintRegionDetail(int regionIdx) {
 
 	return;
 }
-void LymanForest::GetRegionArray(unsigned int* array) {
+void LymanForest::GetRegionArray(std::vector <unsigned int >& array) {
 	
 	for (unsigned int i=0; i<nbRegion_; i++) {
 		for (unsigned int j=0; j<ra_[i].size(); j++) {

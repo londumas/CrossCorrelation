@@ -87,6 +87,8 @@ class AnnalyseBAOFIT(correlation_3D.Correlation3D):
 		else:
 			self._path_to_BAOFIT = path_to_BAOFIT
 
+		print self._path_to_BAOFIT
+
 		### Set attributes set after
 		if (self._correlation=='q_f'):
 			self._par_name       = copy.deepcopy(par_name)

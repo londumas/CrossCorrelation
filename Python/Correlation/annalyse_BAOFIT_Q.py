@@ -30,6 +30,8 @@ raw_index_parameter = {
 	'alpha_paral'                 : 8, 
 	'alpha_perp'                  : 9,
 	'gamma-scale'                 : 10,
+	'pixel scale'                 : 11,
+	'beta*bias'                   : 12
 }
 
 class AnnalyseBAOFIT(correlation_3D_Q.Correlation3DQ):

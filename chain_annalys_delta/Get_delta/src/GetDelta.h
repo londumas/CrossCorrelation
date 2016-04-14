@@ -117,8 +117,8 @@ const double sigma2LSSStart  = 0.1;
 const double minAlpha__   = -100.;
 const double maxAlpha__   = 100.;
 const double betaStart__ = 0.;
-const double minBeta__  = -1000.;
-const double maxBeta__  =  1000.;
+const double minBeta__  = -0.6;
+const double maxBeta__  =  0.6;
 
 /// Max values of DLA
 const unsigned int NbDLA0__ = 15;
@@ -127,6 +127,8 @@ const unsigned int nbLoop__ = 10;
 class GetDelta
 {
 	private:
+
+		double coefAlpha__;
 
 		std::vector< double > v_zz__;
 		std::vector< double > v_meanForestLambdaRF__;
