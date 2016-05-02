@@ -27,9 +27,10 @@ sizeMax = 291271
 
 def haveAlookForest():
 
-	cat = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_test_new_file_composition/Box_000/Simu_000/Data/delta.fits', memmap=True)[1].data[0:1000]
-	cat2 = pyfits.open('/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits', memmap=True)[1].data[0:1000]
+	cat = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575/Box_000/Simu_001/Data/delta.fits', memmap=True)[1].data[0:1000]
+	#cat2 = pyfits.open('/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits', memmap=True)[1].data[0:1000]
 
+	"""
 	print cat.size
 	cat = cat[ (cat['Z'] != 0.) ]
 	print cat.size
@@ -88,7 +89,7 @@ def haveAlookForest():
 
 	print numpy.amin(ar_zi), numpy.amax(ar_zi)
 	
-	
+	"""
 	for i in range(0,cat.size):
 		el = cat[i]
 		lamndaRF = el['LAMBDA_OBS']/(1.+el['Z'])
@@ -220,15 +221,15 @@ def haveAlookQSO():
 	return
 
 
-cat = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation/Box_000/Simu_000/Data/delta.fits', memmap=True)[1].data
-print cat.size
+#cat = pyfits.open('/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_new_generation/Box_000/Simu_000/Data/delta.fits', memmap=True)[1].data
+#print cat.size
 
 #createEmptyFitsFile()
 #copyToNormalFits()
 #allNeededFileds()
 #saveCatalogueQSO()
 #saveCatalogueQSOFromAscii()
-haveAlookQSO()
+#haveAlookQSO()
 #removeUselessLines()
 haveAlookForest()
 

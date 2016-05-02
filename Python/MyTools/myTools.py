@@ -119,8 +119,8 @@ def deal_with_plot(logx=False, logy=False, legend=False):
 	#plt.ticklabel_format(style='sci', axis='z', scilimits=(0,0))
 	plt.rc('font', **{'size':'40'})
 	plt.tick_params(axis='both', which='major', labelsize=40)
-	plt.gca().get_xaxis().get_major_formatter().set_useOffset(False)
-	plt.gca().get_yaxis().get_major_formatter().set_useOffset(False)
+	#plt.gca().get_xaxis().get_major_formatter().set_useOffset(False)
+	#plt.gca().get_yaxis().get_major_formatter().set_useOffset(False)
 
 	if (logx):
 		plt.xscale('log')
@@ -431,7 +431,9 @@ def fit_BAO(dist,obs,cov,arg_fit):
 	
 	
 	return m_BAO.values, m_BAO.errors, [x,y_BAO], m_noise.values, m_noise.errors, [x,y_noise], [x,y_noBAO]
-def plotCovar(covList, covNameList,nbBinX=50,nbBinY=100):
+def plotCovar(covList, covNameList,nbBinX=50,nbBinY=100,correlation='q_f'):
+
+	color = ['blue','red','green','orange','black']
 
 	### Diagrams
 	###################################################
@@ -447,6 +449,8 @@ def plotCovar(covList, covNameList,nbBinX=50,nbBinY=100):
 	nbBinX2D__ = nbBin1D__
 
 	minY2D__   = -max1D__
+	if (correlation=='q_q' or correlation=='f_f'):
+		minY2D__ = 0.
 	maxY2D__   = max1D__
 	nbBinY2D__ = nbBinY
 
@@ -457,6 +461,7 @@ def plotCovar(covList, covNameList,nbBinX=50,nbBinY=100):
 
 	nbBin = covList[0][0,:].size
 	print '  nbBin = ', nbBin
+	print '  nbBin2D__ = ', nbBin2D__
 	
 	corList      = [numpy.zeros(shape=(nbBin,nbBin))]*nbCov
 	diagList     = [numpy.diagonal(covList[i]) for i in range(0,nbCov)]
@@ -542,7 +547,7 @@ def plotCovar(covList, covNameList,nbBinX=50,nbBinY=100):
 				xTitle = '|\Delta \, |s|_{1}-|s|_{2} | \, [h^{-1}.Mpc]'
 			else:
 				xTitle = '|\Delta \, s_{\parallel,1}-s_{\parallel,2} | \, [h^{-1}.Mpc], \, for \, |\Delta \, s_{\perp}| = ' + str(i*binSize__)
-			plt.errorbar(tmp_xxx[c], tmp_yyy[c][i], label=r'$'+covNameList[c]+'$', marker='o')
+			plt.errorbar(tmp_xxx[c], tmp_yyy[c][i], label=r'$'+covNameList[c]+'$', marker='o', color=color[c])
 			#plt.plot(tmp_xxx[c], minuit_yyy, label=r'$model$', marker='o')
 
 			### Save the results of the fit
@@ -771,12 +776,8 @@ def plot_chi2_scan(data, edge=None, contour=False, bestFit=None, xTitle='-',yTit
 	plt.ticklabel_format(axis='x',useOffset=False)
 	plt.ticklabel_format(axis='y',useOffset=False)
 	plt.ticklabel_format(axis='z',useOffset=False)
-	#ax.set_xticks([ 0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5 ])
-	#ax.set_yticks([ 0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5 ])
-	ax.set_xticks([ 0.98,0.99,1.0,1.01,1.02 ])
-	ax.set_yticks([ 0.98,0.99,1.0,1.01,1.02 ])
-	#ax.set_xticks([ 0.998,0.999,1.00,1.001,1.002 ])
-	#ax.set_yticks([ 0.998,0.999,1.00,1.001,1.002 ])
+	ax.set_xticks([ 0.98,0.98,1.0,1.02,1.02 ])
+	ax.set_yticks([ 0.98,0.98,1.0,1.02,1.02 ])
 	
 	plt.imshow(data, origin='lower',extent=edge)#, interpolation='None')
 	cbar = plt.colorbar()
@@ -860,9 +861,32 @@ def append_files(all_t, path_to_save):
 	tbhdu.writeto(path_to_save, clobber=True)
 
 	return
+def save_fited_cor_from_cov(path_to_load, path_to_save,nbBinX=50,nbBinY=100,correlation='q_f'):
+	"""
 
+	save a fitted version of a correlation matrix from a covariance matrix
 
+	"""
 
+	### Load covariance
+	cov = numpy.load(path_to_load)
+	plot2D(cov)
+
+	### Ge the correlation matrix
+	cor = getCorrelationMatrix(cov)
+	plot2D(cor)
+
+	### model the mean and fit
+	mean_cor = plotCovar([cor], ['a'], nbBinX,nbBinY,correlation)[0]
+	plot2D(mean_cor)
+
+	### Save the mean fitted
+	numpy.save(path_to_save, mean_cor)
+
+	### Look at the shape of the mean fitted reduced correlation
+	plotCovar([mean_cor], ['a'], nbBinX,nbBinY,correlation)[0]
+
+	return
 
 
 

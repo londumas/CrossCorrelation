@@ -45,6 +45,7 @@ Cosmology::~Cosmology() {
 	delete dChidz__;
 }
 
+
 TH1D* Cosmology::createHistoConvertRedshDist(unsigned int nbBinRedsh, double zExtremaBinConvert0, double zExtremaBinConvert1) {
 	
 	hConvertRedshDist__ = new TH1D("hConvertRedshDist__","",nbBinRedsh,zExtremaBinConvert0,zExtremaBinConvert1);
@@ -60,6 +61,50 @@ TH1D* Cosmology::createHistoConvertRedshDist(unsigned int nbBinRedsh, double zEx
 	delete dt;
 
 	return hConvertRedshDist__;
+}
+TGraph* Cosmology::create_TGraph_to_convert_distance_to_redshift(unsigned int nbBinRedsh, double z_min, double z_max) {
+
+	if (!hConvertRedshDist__) {
+		hConvertRedshDist__ = new TH1D("hConvertRedshDist__","",nbBinRedsh,z_min,z_max);
+		R_dealWithPlots_1D(hConvertRedshDist__, "z", "r (Mpc.h^{-1})", " Distance versus z ");
+	
+		dChidz__ = new TF1("dChidz__", this,&Cosmology::dChidzfunct,z_min,z_max,0,"Cosmology","dChidzfunct");
+		TF1* dt = new TF1("dt", this, &Cosmology::DTfunct, z_min,z_max,0,"Cosmology","DTfunct");
+	
+		const double ratio = z_max/nbBinRedsh;
+		for (unsigned int i=0; i<nbBinRedsh; i++) {
+			hConvertRedshDist__->SetBinContent(i+1,dt->Eval((i+.5)*ratio));
+		}
+		delete dt;
+	}
+
+	/// To interpolate from dist to z
+	double DDD[nbBinRedsh];
+	double ZZZ[nbBinRedsh];
+	for (unsigned int i=0; i<nbBinRedsh; i++) {
+		DDD[i] = hConvertRedshDist__->GetBinContent(i+1);
+		ZZZ[i] = hConvertRedshDist__->GetBinCenter(i+1);
+	}
+	TGraph* gr_from_dist_to_z = new TGraph(nbBinRedsh, DDD, ZZZ);
+
+	return gr_from_dist_to_z;
+}
+TGraph* Cosmology::get_TGraph_to_convert_redshift_to_growth_factor(unsigned int nbBinRedsh, double z_min, double z_max) {
+
+	const double ratio = z_max/nbBinRedsh;
+	const double g0    = get_growth_factor(0.);
+
+	double ZZZ[nbBinRedsh];
+	double GGG[nbBinRedsh];
+
+	for (unsigned int i=0; i<nbBinRedsh; i++) {
+		ZZZ[i] = (i+.5)*ratio;
+		GGG[i] = get_growth_factor(ZZZ[i])/g0;
+	}
+
+	TGraph* gr_z_to_growth_factor = new TGraph(nbBinRedsh, ZZZ, GGG);	
+
+	return gr_z_to_growth_factor;	
 }
 
 double Cosmology::dChidzfunct(double* zz, double* par) {
@@ -81,6 +126,15 @@ double Cosmology::DTfunct(double* zz, double* par) {
 
 	const double z = zz[0];
 	return dChidz__->Integral(0.,z);
+}
+double Cosmology::get_growth_factor(double z) {
+
+	const double den    = omegaL__ + omegaM__*pow(1.+z,3.);
+	const double Omega  = omegaM__*pow(1+z,3.)/den;
+	const double OmegaL = omegaL__/den;
+	double val          = 2.5*Omega/(1.+z)/( pow(Omega,4./7.) -OmegaL + (1.+Omega/2.)*(1.+OmegaL/70.) );
+
+	return val;
 }
 void Cosmology::FindMinMaxRedsift(double maxDist, double lambdaObsMin, double lambdaObsMax, double lambdaRFLine, double* array) {
 

@@ -29,12 +29,12 @@ import cosmolopy.distance as cosmology
 
 ### Constants
 sizeMax = 250000
-sizeMaxForest = 20000 #200000
+sizeMaxForest = 200000
 nbQSO__ = 232399
 nbFor__ = 166968
 nbPixel = 647
 ratioForestToQSO__    = 1.*nbFor__/nbQSO__;
-pathToFolder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1588/'
+pathToFolder = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/'
 
 
 
@@ -63,9 +63,9 @@ def main():
 	#####################
 	if (index_pass==0):
 		subprocess.call('mkdir ' +pathToFolder+'Results/', shell=True)
-		subprocess.call('mkdir ' +pathToFolder+'Results_nicolasEstimator/', shell=True)
-		subprocess.call('mkdir ' +pathToFolder+'Results_PureRaw/', shell=True)
-		subprocess.call('mkdir ' +pathToFolder+'Results_Raw/', shell=True)
+		subprocess.call('mkdir ' +pathToFolder+'Results_no_metals/', shell=True)
+		subprocess.call('mkdir ' +pathToFolder+'Results_no_projection/', shell=True)
+		subprocess.call('mkdir ' +pathToFolder+'Results_raw_from_JeanMarc/', shell=True)
 
 	for i in range(0,1):
 
@@ -85,16 +85,18 @@ def main():
 				subprocess.call('mkdir ' + path, shell=True)
 				subprocess.call('mkdir ' + path + 'Raw', shell=True)
 				subprocess.call('mkdir ' + path + 'Data', shell=True)
+				subprocess.call('mkdir ' + path + 'Data_no_metals', shell=True)
 				subprocess.call('mkdir ' + path + 'Run', shell=True)
-				subprocess.call('mkdir ' + path + 'Results', shell=True)
-				subprocess.call('mkdir ' + path + 'Results_nicolasEstimator', shell=True)
-				subprocess.call('mkdir ' + path + 'Results_PureRaw', shell=True)
-				subprocess.call('mkdir ' + path + 'Results_Raw', shell=True)
+				subprocess.call('mkdir ' + path + 'Run_no_metals', shell=True)
+				subprocess.call('mkdir ' + path + 'Results/', shell=True)
+				subprocess.call('mkdir ' + path + 'Results_no_metals/', shell=True)
+				subprocess.call('mkdir ' + path + 'Results_no_projection/', shell=True)
+				subprocess.call('mkdir ' + path + 'Results_raw_from_JeanMarc/', shell=True)
 
 			if (index_pass==1):
 
 				'''
-				/home/gpfs/manip/mnt0607/bao/hdumasde/Program/LyAMockExpander/Expand.sh -i /home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/v1575/fits/spectra-7850-0.fits -o /home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575/Box_000/Simu_000/Raw/ -columns loglam,flux,ivar,and_mask,mock_contpca,mock_F,mock_Fmet -JM -vac /home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/DR12Q_v2_10.fits -data /home/gpfs/manip/mnt0607/bao/Spectra/SpectraV5_8_guy/spectra -seed 0 -metals 2
+				/home/gpfs/manip/mnt0607/bao/hdumasde/Program/LyAMockExpander/Expand.sh -i /home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/v1575/fits/spectra-7851-5.fits -o /home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/Box_000/Simu_000/Raw/ -columns loglam,flux,ivar,and_mask,mock_contpca,mock_F,mock_Fmet -JM -vac /home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/DR12Q_v2_10.fits -data /home/gpfs/manip/mnt0607/bao/Spectra/SpectraV5_8_guy/spectra -seed 0 -metals 2
 				'''
 
 				command = '/home/gpfs/manip/mnt0607/bao/hdumasde/Program/LyAMockExpander/Expand.sh -i /home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/v1575/fits/spectra-785'+str(i)+'-'+str(j)+'.fits -o ' +path+ 'Raw/ -columns loglam,flux,ivar,and_mask,mock_contpca,mock_F,mock_Fmet -JM -vac /home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/DR12Q_v2_10.fits -data /home/gpfs/manip/mnt0607/bao/Spectra/SpectraV5_8_guy/spectra -seed 0 -metals 2'
@@ -108,60 +110,58 @@ def main():
 				if (i==0 and j==0):
 					#tbhduQSO    = create_fits_qso(sizeMax)
 					#tbhduQSO.writeto(path + 'Data/QSO_withRSD.fits', clobber=True)
-					#tbhduQSO    = create_fits_qso(sizeMax)
-                                        #tbhduQSO.writeto(path + 'Data/QSO_noRSD.fits', clobber=True)
 					tbhduForest = create_fits_forest(sizeMaxForest)
 					tbhduForest.writeto(path + 'Data/delta.fits', clobber=True)
+					tbhduForest.writeto(path + 'Data_no_metals/delta.fits', clobber=True)
 				else:
-					print "helloe"
-					#command = 'clubatch cp ' + pathToFolder + 'Box_000/Simu_000/Data/delta.fits ' + path + 'Data/delta.fits'
-					#subprocess.call(command, shell=True)
+					command = 'cp ' + pathToFolder + 'Box_000/Simu_000/Data/delta.fits ' + path + 'Data/delta.fits'
+					subprocess.call(command, shell=True)
+					command = 'cp ' + pathToFolder + 'Box_000/Simu_000/Data/delta.fits ' + path + 'Data_no_metals/delta.fits'
+					subprocess.call(command, shell=True)
 					#command = 'cp ' + pathToFolder + 'Box_000/Simu_000/Data/QSO_withRSD.fits ' + path + 'Data/QSO_withRSD.fits'
 					#subprocess.call(command, shell=True)
-					#tbhduQSO    = create_fits_qso(sizeMax)
-                                        #tbhduQSO.writeto(path + 'Data/QSO_withRSD.fits', clobber=True)
-					#tbhduForest = create_fits_forest(sizeMaxForest)
-					#tbhduQSO    = create_fits_qso(sizeMax)
-                                        #tbhduQSO.writeto(path + 'Data/QSO_noRSD.fits', clobber=True)
-					#tbhduForest.writeto(path + 'Data/delta.fits', clobber=True)
+
 					#myTools.isReadyForNewJobs(10, 430,'cp')
 					#time.sleep(30)
 			elif (index_pass==3):
 
 				command = "/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Mock_JMLG/ReadFits/bin/main.exe " + str(i) + ' ' + str(j)
-				command = "clubatch \"time ; hostname ; "+ command + "\""
+				command = "clubatch \"echo ; hostname ; "+ command + "\""
 				print command
 				subprocess.call(command, shell=True)
-				myTools.isReadyForNewJobs(10, 1000,'time')
-				time.sleep(30)
+				myTools.isReadyForNewJobs(5, 1000,'echo')
+				time.sleep(60)
 				
 
 			elif (index_pass==4):
 
-				print path + 'Data/QSO_withRSD.fits'
-				cat = pyfits.open(path + 'Data/QSO_withRSD.fits', memmap=True)[1].data
 				
+				print path + 'Data/QSO_withRSD.fits'
+				cat = pyfits.open(path + 'Data/QSO_withRSD.fits')[1].data
+				nbQSO = cat.size
+				"""
+				cat = pyfits.open(path + 'Data/QSO_withRSD.fits', memmap=True)[1].data
 				print '  nb of QSOs before = ', cat.size
 				cat = cat[ (cat['Z'] != 0.) ]
 				print '  nb of QSOs after  = ', cat.size
 				nbQSO = cat.size
 
 				pyfits.writeto(path + 'Data/QSO_withRSD.fits', cat, clobber=True)
-			
+				"""
 				
 				### Remove useless lines in Forest
 				cat = pyfits.open(path + 'Data/delta.fits', memmap=True)[1].data
 
 				print '  nb of QSOs before = ', cat.size
 				cat = cat[ (cat['Z'] != 0.) ]
-				print '  nb of QSOs after  = ', cat.size
 				nbFor = cat.size
-				'''
+				print '  nb of QSOs after  = ', nbFor
+				
 				if ( nbFor>nbFor__ ):
 					print nbFor-int(nbQSO*ratioForestToQSO__)
 					rand = numpy.random.choice(nbFor, nbFor-int(nbQSO*ratioForestToQSO__), replace=False)
 					cat['Z'][rand] = 0.
-				'''
+				
 				print '  nb of QSOs before = ', cat.size
 				cat = cat[ (cat['Z'] != 0.) ]
 				print '  nb of QSOs after  = ', cat.size

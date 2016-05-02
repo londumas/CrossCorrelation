@@ -44,7 +44,7 @@
 std::string pathToTxt__    = "";
 std::string pathToPDF__    = "/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Resources/PDF/";
 const std::string pathToDLACat__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/DLA_all.fits";
-const std::string pathToMockJMC__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1588/";
+const std::string pathToMockJMC__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/";
 const unsigned int nbPixelTemplate__ = int(lambdaRFMax__-lambdaRFMin__)+6;
 const unsigned int nbBinlambdaObs__  = int(lambdaObsMax__-lambdaObsMin__);
 const double onePlusZ0__ = 1.+z0__;
@@ -1084,6 +1084,7 @@ void GetDelta::loadDataForest(std::string fitsnameSpec, unsigned int start, unsi
 
 	long unsigned int nbCutted[5] = {0}; 
 	double meanDelta[3] = {0.};
+	double meanParam[3] = {0.};
 	v_fromFitsIndexToVectorIndex__.resize(nrows,-1);
 
 	//// Load data
@@ -1203,6 +1204,10 @@ void GetDelta::loadDataForest(std::string fitsnameSpec, unsigned int start, unsi
 		meanDelta[0] += tmp_meanDelta[0];
 		meanDelta[1] += tmp_meanDelta[1];
 		meanDelta[2] += tmp_meanDelta[2];
+		//// Get the mean parameter
+		meanParam[0] += alpha;
+		meanParam[1] += beta;
+		meanParam[2] ++;
 
 		v_zz__.push_back(zz);
 		v_meanForestLambdaRF__.push_back(meanForestLambdaRF);
@@ -1233,6 +1238,8 @@ void GetDelta::loadDataForest(std::string fitsnameSpec, unsigned int start, unsi
 	std::cout << "  < delta >       = " << meanDelta[0]/meanDelta[1] << std::endl;
 	std::cout << "  sum(w_i)        = " << meanDelta[1]              << std::endl;
 	std::cout << "  nb pixel        = " << (long long unsigned int)meanDelta[2] << std::endl;
+	std::cout << "  < alpha >       = " << meanParam[0]/meanParam[2]            << std::endl;
+	std::cout << "  < beta >        = " << meanParam[1]/meanParam[2]            << std::endl;
 
 	return;
 }
@@ -1520,7 +1527,8 @@ void GetDelta::setValuesAlphaBetaForest(std::string pathForest, std::string path
 	unsigned int nbLoad = 0;
 	double alpha_a[500000];
 	double beta_a[500000];
-
+	double mean_alpha = 0.;
+	double mean_beta  = 0.;
 
 	/// Get the list 
 	FILE *fp;
@@ -1559,9 +1567,17 @@ void GetDelta::setValuesAlphaBetaForest(std::string pathForest, std::string path
 			nbLoad ++;
 			alpha_a[idx] = alpha;
 			beta_a[idx]  = beta;
+
+			mean_alpha += alpha;
+			mean_beta  += beta;
 		}
 		fileData.close();
 	}
+
+	std::cout << "  < alpha > = " << mean_alpha/nbLoad << std::endl;
+	std::cout << "  < beta >  = " << mean_beta/nbLoad << std::endl;
+	std::cout << "\n"             << std::endl;
+
 
 		
 	//// Variables for FITS

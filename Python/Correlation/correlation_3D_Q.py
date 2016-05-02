@@ -249,7 +249,6 @@ class Correlation3DQ(correlation_3D.Correlation3D):
 		return xiMu, xiWe, xi1D, xi2D
 	def save_list_realisation_simulation(self, dic_class, dic_Q, dic_simu):
 
-		#dic_Q['load_from_txt'] = False
 		nb_realisation = dic_simu['nb_box']*dic_simu['nb_simu']
 		pathToSave = dic_simu['path_to_simu'] + 'Results'+dic_simu['prefix']+'/' + self._prefix + '_result_'
 
@@ -259,6 +258,7 @@ class Correlation3DQ(correlation_3D.Correlation3D):
 		list2D       = numpy.zeros( shape=(self._nbBin2D,nb_realisation) )
 		listMultipol = numpy.zeros( shape=(self._nbBin1D,5,nb_realisation) )
 		listGrid     = numpy.zeros( shape=(self._nbBin2D,3,nb_realisation) )
+		list_mean_z  = numpy.zeros( shape=(nb_realisation) )
 
 		nb = 0
 		for i in range(0,dic_simu['nb_box']):
@@ -280,6 +280,7 @@ class Correlation3DQ(correlation_3D.Correlation3D):
 				listGrid[:,0,nb] = corr._xi2D_grid[:,:,0].flatten()
 				listGrid[:,1,nb] = corr._xi2D_grid[:,:,1].flatten()
 				listGrid[:,2,nb] = corr._xi2D_grid[:,:,2].flatten()
+				list_mean_z[nb]  = corr._meanZ
 
 				nb += 1
 
@@ -289,8 +290,7 @@ class Correlation3DQ(correlation_3D.Correlation3D):
 		list2D       = list2D[:,:nb]
 		listMultipol = listMultipol[:,:,:nb]
 		listGrid     = listGrid[:,:,:nb]
-
-		print listMu[0,:].size, nb
+		list_mean_z  = list_mean_z[:nb]
 
 		numpy.save(pathToSave+'list_Mu',listMu)
 		numpy.save(pathToSave+'list_We',listWe)
@@ -298,6 +298,7 @@ class Correlation3DQ(correlation_3D.Correlation3D):
 		numpy.save(pathToSave+'list_2D',list2D)
 		numpy.save(pathToSave+'list_Multipol',listMultipol)
 		numpy.save(pathToSave+'list_Grid',listGrid)
+		numpy.save(pathToSave+'list_MeanZ',list_mean_z)
 
 		covMu = numpy.cov(listMu)
 		cov1D = numpy.cov(list1D)
@@ -344,13 +345,13 @@ ell-max = 4
 anisotropic = yes
 decoupled   = yes
 custom-grid = yes
-combined-bias = yes
+#combined-bias = yes
 pixelize    = yes
 
 # Parameter setup
 
 model-config = value[beta]=               """+param[0] +""";
-model-config = fix[(1+beta)*bias]=        0.;
+model-config = value[(1+beta)*bias]=      4.;
 model-config = fix[gamma-bias]=           """+param[2] +""";
 model-config = fix[gamma-beta]=           """+param[3] +""";
 model-config = fix[SigmaNL-perp]=         """+param[7] +""";
@@ -360,8 +361,8 @@ model-config = fix[BAO alpha-iso]=        """+param[10] +""";
 model-config = value[BAO alpha-parallel]= """+param[11] +""";
 model-config = value[BAO alpha-perp]=     """+param[12]+""";
 model-config = fix[gamma-scale]=          """+param[13]+""";
-model-config = fix[beta*bias]=            """+param[1] +""";
 model-config = fix[pixel scale]=3.15;
+#model-config = value[beta*bias]=            """+param[1] +""";
 
 # Broadband distortion model
 #dist-add = rP,rT=0:2,-3:1
@@ -373,7 +374,7 @@ model-config = binning[BAO alpha-perp]     ={0.98:1.02}*50
 
 ## Maximum allowed radial dilation (increases the range that model needs to cover)
 dilmin = 0.2
-dilmax = 10.
+dilmax = 20.
 
 # boxprior keeps result positive (since model only depends on squared value)
 #model-config = boxprior[SigmaNL-perp] @ (0,6);

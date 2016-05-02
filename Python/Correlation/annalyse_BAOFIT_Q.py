@@ -16,8 +16,8 @@ import copy
 import correlation_3D_Q
 import myTools
 
-par_name = numpy.asarray(['\\beta','b.(1+\\beta)','gamma-bias','gamma-beta','SigmaNL-perp','1+f',
-	'BAO \, amplitude','\\alpha_{iso}','\\alpha_{\parallel}','\\alpha_{\perp}', 'gamma-scale'])
+par_name = numpy.asarray(['\\beta','b \cdot (1+\\beta)','gamma-bias','gamma-beta','SigmaNL-perp','1+f',
+	'BAO \, amplitude','\\alpha_{iso}','\\alpha_{\parallel}','\\alpha_{\perp}', 'gamma-scale', 'pixel scale','b \cdot \\beta'])
 raw_index_parameter = {
 	'beta'                        : 0,
 	'b.(1+beta)'                  : 1,
@@ -107,6 +107,7 @@ class AnnalyseBAOFIT(correlation_3D_Q.Correlation3DQ):
 		i_alpha_perp  = self._index_parameter['alpha_perp']
 
 		path_to_BAOFIT = self._path_to_BAOFIT
+		print path_to_BAOFIT
 		#path_to_BAOFIT = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/BACKUP_2015_01_15/FitsFile_DR12_Guy/BaoFit_q_f/bao2D.'
 		
 		### Create a file a tmp with the scan minus the two first lines

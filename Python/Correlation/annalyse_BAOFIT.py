@@ -16,7 +16,7 @@ import copy
 import correlation_3D
 import myTools
 
-par_name = numpy.asarray(['\\beta','b.(1+\\beta)','gamma-bias','gamma-beta','\\Delta v','b_{2}','b_{2}.\\beta_{2}',
+par_name = numpy.asarray(['\\beta','b \cdot (1+\\beta)','gamma-bias','gamma-beta','\\Delta v','b_{2}','b_{2} \cdot \\beta_{2}',
 	'1+f','SigmaNL-perp',
 	'BAO \, amplitude','\\alpha_{iso}','\\alpha_{\parallel}','\\alpha_{\perp}',
 	'gamma-scale','Rad \, strength','Rad \, anisotropy','Rad \, mean \, free \, path',

@@ -14,42 +14,81 @@ from iminuit import Minuit
 import scipy
 from scipy import interpolate
 import cosmolopy.perturbation as cp
-
+import copy
 
 ### Perso lib
 import const
 import myTools
 
+raw_dic = {
+	'z' : 2.25,
+	'h_0' : 0.70,
+	'omega_matter_0' : 0.27,
+	'omega_lambda_0' : 0.73,
+	'source'         : 'CAMB'
+}
+
 class CAMB:
+	"""
 
-	##http://arxiv.org/pdf/1301.3456v1.pdf
+	### BAOFIT (Kirkby et al. 2013)
+	http://arxiv.org/pdf/1301.3456v1.pdf
+	### Hamilton 1992
+	http://cdsads.u-strasbg.fr/cgi-bin/nph-iarticle_query?1992ApJ...385L...5H&amp;data_type=PDF_HIGH&amp;whole_paper=YES&amp;type=PRINTER&amp;filetype=.pdf
+
+	"""
 	
-	def __init__(self,source='CAMB'):
+	def __init__(self,dic=None):
 
-		if (source=='CAMB'):
+		if (dic is None):
+			dic = copy.deepcopy(raw_dic)
+		self._z              = dic['z']
+		self._h_0            = dic['h_0']
+		self._omega_matter_0 = dic['omega_matter_0']
+		self._omega_lambda_0 = dic['omega_lambda_0']
+		self._source         = dic['source']
+
+		if (self._source=='CAMB'):
 			self._xi0 = numpy.loadtxt( const.path_to_BAOFIT_model__ + 'DR9LyaMocksLCDM.0.dat')
 			self._xi2 = numpy.loadtxt( const.path_to_BAOFIT_model__ + 'DR9LyaMocksLCDM.2.dat')
 			self._xi4 = numpy.loadtxt( const.path_to_BAOFIT_model__ + 'DR9LyaMocksLCDM.4.dat')
-		if (source=='CAMB_Mocks'):
+		elif (self._source=='CAMB_Mocks'):
 			self._xi0 = numpy.loadtxt( const.path_to_BAOFIT_model__ + 'DR9LyaMocks.0.dat')
 			self._xi2 = numpy.loadtxt( const.path_to_BAOFIT_model__ + 'DR9LyaMocks.2.dat')
 			self._xi4 = numpy.loadtxt( const.path_to_BAOFIT_model__ + 'DR9LyaMocks.4.dat')
-		if (source=='CAMB_Mocks_me'):
-			
+		elif (self._source=='CAMB_Mocks_me'):
 			path_to_pk = '/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Mock_JMLG/Produce_CAMB/DR9LyaMocks_matterpower.dat'
 			self._xi0,self._xi2,self._xi4 = self.get_xi_0_2_4_from_pk(path_to_pk,[0,1],True)
-
-		elif (source=='CHRISTOPHE'):
-
+		elif (self._source=='CHRISTOPHE'):
 			path_to_pk = '/home/gpfs/manip/mnt0607/bao/cmv/Helion/ginit3d_67_0p0_7859_ntpk.txt'
 			self._xi0,self._xi2,self._xi4 = self.get_xi_0_2_4_from_pk(path_to_pk,[0,3],False)
 
 		return
+	### Window functions
+	def window_spherical(self,k,R):
+		"""
+			http://arxiv.org/pdf/astro-ph/9710252v1.pdf
+		"""
+
+		#RR         = numpy.power(3./(4*numpy.pi),1./3.)*R
+		RR         = R
+		a          = numpy.array(k)
+		kk         = k[(k!=0.)]
+		a[(k==0.)] = 1.
+		a[(k!=0.)] = 3.*( numpy.sin(kk*RR)-kk*RR*numpy.cos(kk*RR) )/numpy.power(kk*RR,3.)
+
+		return a
+	def window_gauss(self,k,R):
+		"""
+			http://arxiv.org/pdf/astro-ph/9710252v1.pdf
+		"""
+
+		#RR         = 1./numpy.sqrt(2.*numpy.pi)*R
+		return numpy.exp( -0.5*numpy.power(k*RR,2.) )
 	def get_xi_0_2_4_from_pk(self,path_to_pk,index=[0,1],comoving=True):
 
-		h         = 0.70
-		omega_m_0 = 0.27
-		f         = cp.fgrowth(2.25,omega_m_0)
+		f = cp.fgrowth(self._z,self._omega_matter_0)
+		print '  The growth factor is : f = ', f
 
 		data = numpy.loadtxt(path_to_pk)
 		k  = numpy.zeros( data[:,1].size+1 )
@@ -59,16 +98,10 @@ class CAMB:
 			k = data[:,index[0]]
 			pk = data[:,index[1]]*f*f
 		else:
-			k = data[:,index[0]]/h
-			pk = data[:,index[1]]*numpy.power(h,3.)*f*f
+			k = data[:,index[0]]/self._h_0
+			pk = data[:,index[1]]*numpy.power(self._h_0,3.)*f*f
 
-		#if (index[1]==3):
-		if (False):
-			k_high = numpy.pi/(4.5*h)
-			print '  cut in high k = ', k_high
-			cut = k<k_high
-			k  = k[cut]
-			pk = pk[cut]
+		pk *= numpy.power(self.window_spherical(k,4.5*0.7),2.)
 
 		r2,cric2 = self.xi_from_pk(k,pk)
 		index_of_bin_greeter_than_half_max = numpy.arange(r2.size)[ r2>numpy.max(r2)/2. ][0]
@@ -79,36 +112,91 @@ class CAMB:
 		xi0[:,0] = r2[1:index_of_bin_greeter_than_half_max]
 		xi0[:,1] = cric2[1:index_of_bin_greeter_than_half_max]
 
-		print '  starting integration with r = ', xi0[0,0]
+		xi2, xi4 = self.get_xi2_and_xi4_from_xi0(xi0)
+
+		return xi0, xi2, xi4
+	def get_xi2_and_xi4_from_xi0(self,xi0):
+
+		size = xi0[:,0].size
+
 		step = xi0[1,0]-xi0[0,0]
-		print '  step = ', step
 		diff = 3.*numpy.power(xi0[:,0],-3.)*numpy.cumsum( numpy.power(xi0[:,0],2.)*xi0[:,1])*step
 		xi2 = numpy.zeros( shape=(size,2) )
 		xi2[:,0] = xi0[:,0]
 		xi2[:,1] = xi0[:,1]-diff
-
-		#plt.plot(xi2[:,0], -xi2[:,1] )
-		#plt.plot(xi2[:,0], -numpy.power(xi0[0,0]/xi2[:,0],3.)*(xi2[:,1]-xi0[:,1]) )
-		#plt.show()
-		#xi2[:,1] += numpy.power(xi2[0,0]/xi2[:,0],3.)*(xi2[:,1]-xi0[:,1])
+		xi2[:,1] -= (xi2[0,1]-xi0[0,1])*numpy.power(xi2[0,0]/xi2[:,0],3.)
 
 		step = xi0[1,0]-xi0[0,0]
 		diff = 5.*numpy.power(xi0[:,0],-5.)*numpy.cumsum( numpy.power(xi0[:,0],4.)*(xi0[:,1]+xi2[:,1]) )*step
 		xi4 = numpy.zeros( shape=(size,2) )
 		xi4[:,0] = xi0[:,0]
 		xi4[:,1] = xi0[:,1] - diff
+		xi4[:,1] -= (xi4[0,1]-xi0[0,1])*numpy.power(xi4[0,0]/xi4[:,0],5.)
 
-		#plt.plot(xi4[:,0], abs( xi4[:,1] ) )
-		#plt.plot(xi4[:,0], abs( numpy.power(xi0[0,0]/xi4[:,0],5.)*(xi4[:,1]-xi0[:,1]) ) )
-		#plt.show()
-		#xi4[:,1] += numpy.power(xi4[0,0]/xi4[:,0],5.)*(xi4[:,1]-xi0[:,1])
+		return xi2, xi4
+	def get_beta_knowing_bias_QSO(self,bias,z_eff):
 
-		return xi0, xi2, xi4
+		O_m  = self._omega_matter_0 * numpy.power(1+z_eff,3) / (self._omega_matter_0 * numpy.power(1+z_eff,3) + self._omega_lambda_0)
+		f = numpy.power(O_m,0.55)
+		print '  at z = ', z_eff
+		print '  f = ', f
+		print '  beta = ', f/bias
+		beta = f/bias
+
+		return beta
+	def get_bias_knowing_beta_QSO(self,beta,z_eff):
+
+		O_m  = self._omega_matter_0 * numpy.power(1+z_eff,3) / (self._omega_matter_0 * numpy.power(1+z_eff,3) + self._omega_lambda_0)
+		f = numpy.power(O_m,0.55)
+		print '  at z = ', z_eff, '  f = ', f
+		bias = f/beta
+
+		return bias
+	def get_bias_effectif_knowing_bias_QSO(self,bias,z_eff):
+
+		beta     = self.get_beta_knowing_bias_QSO(bias,z_eff)
+		bias_eff = bias*numpy.sqrt(1.+(2./3.)*beta + (1./5.)*beta*beta )
+
+		return bias_eff
+	def get_bias_effectif_knowing_beta_QSO(self,beta,z_eff):
+
+		bias     = self.get_bias_knowing_beta_QSO(beta,z_eff)
+		bias_eff = bias*numpy.sqrt(1.+(2./3.)*beta + (1./5.)*beta*beta )
+
+		return bias_eff
+	def get_multipol_coef_knowing_bias_QSO(self,bias,z_eff):
+
+		beta     = self.get_beta_knowing_bias_QSO(bias,z_eff)
+
+		c0 = bias*bias*( 1.+(2./3.)*beta + (1./5.)*beta*beta )
+		c2 = bias*bias*( (4./3.)*beta + (4./7.)*beta*beta )
+		c4 = bias*bias*( (8./35.)*beta*beta )
+
+		return c0, c2, c4
+	def get_multipol_coef_knowing_beta_QSO(self,bias,z_eff):
+
+		bias = self.get_bias_knowing_beta_QSO(beta,z_eff)
+
+		c0 = bias*bias*( 1.+(2./3.)*beta + (1./5.)*beta*beta )
+		c2 = bias*bias*( (4./3.)*beta + (4./7.)*beta*beta )
+		c4 = bias*bias*( (8./35.)*beta*beta )
+
+		return c0, c2, c4
+	def get_multipol_coef(self,bias,beta):
+
+		c0 = bias*bias*( 1.+(2./3.)*beta + (1./5.)*beta*beta )
+		c2 = bias*bias*( (4./3.)*beta + (4./7.)*beta*beta )
+		c4 = bias*bias*( (8./35.)*beta*beta )
+
+		return c0, c2, c4
 	def xi_from_pk(self,k,pk):
-		#------------------------------------------------------------
-		#	from P(k) to xi(r) for uneven spaced k points
-		#	From Etienne CamLib.py
-		#------------------------------------------------------------
+		"""
+		------------------------------------------------------------
+			from P(k) to xi(r) for uneven spaced k points
+			From Etienne CamLib.py
+		------------------------------------------------------------
+		"""
+
 		pkInter=scipy.interpolate.InterpolatedUnivariateSpline(k,pk) #,kind='cubic')
 		nk=1000000
 		kmax=numpy.max(k)
@@ -122,41 +210,6 @@ class CAMB:
 		cric = numpy.append([0.], -numpy.imag(numpy.fft.fft(pkk)/nk)[1:]/r[1:]/2./numpy.pi**2*kmax )
 
 		return r,cric
-	'''
-	def get_xi2(self):
-
-		### http://cdsads.u-strasbg.fr/cgi-bin/nph-iarticle_query?1992ApJ...385L...5H&amp;data_type=PDF_HIGH&amp;whole_paper=YES&amp;type=PRINTER&amp;filetype=.pdf
-
-		rr  = self._xi0[:,0]
-		xi = self._xi0[:,1]
-		interp0 = interpolate.interp1d(rr,xi,bounds_error=False,fill_value=1)
-		interp  = interpolate.interp1d(rr,rr*rr*xi,bounds_error=False,fill_value=1)
-
-		def xi_bar(r):
-			y = scipy.integrate.quad(interp,0.,r)[0]
-			return y
-
-		self._xi2[:,0] = self._xi0[:,0]
-
-		a = 0.
-		for i in numpy.arange(1,100):
-			self._xi2[i,1] = scipy.integrate.quad(interp,0.,rr[i+1])[0]
-
-		self._xi2[1:,1] = self._xi0[1:,1] - 3.*numpy.power(self._xi0[1:,0],-3.)*self._xi2[1:,1]
-
-
-		plt.plot(rr,self._xi2[:,1],marker='o')
-		plt.plot(rr,self._xi0[:,1],marker='o')
-		plt.show()
-		plt.plot(rr,rr*self._xi2[:,1],marker='o')
-		plt.plot(rr,rr*self._xi0[:,1],marker='o')
-		plt.show()
-		plt.plot(rr,rr*rr*self._xi2[:,1],marker='o')
-		plt.plot(rr,rr*rr*self._xi0[:,1],marker='o')
-		plt.show()
-
-		return
-	'''
 	def plot_1d(self,x_power=0):
 
 		xxx = self._xi0[:,0]
@@ -233,6 +286,7 @@ class CAMB:
 
 		return
 
+"""
 '''
 camb = CAMB('CAMB_Mocks_me')
 camb.plot_1d(0)
@@ -240,9 +294,14 @@ camb.plot_1d(1)
 camb.plot_1d(2)
 '''
 
-'''
-camb = [ CAMB('CAMB_Mocks_me') ]
-camb += [ CAMB('CHRISTOPHE') ]
+dic = {
+	'z' : 0.,
+	'h_0' : 0.70,
+	'omega_matter_0' : 0.27,
+	'omega_lambda_0' : 0.73,
+	'source'         : 'CAMB_Mocks_me'
+}
+camb  = [ CAMB(dic) ]
 
 for x_power in [0,1,2]:
 	for el in camb:
@@ -264,12 +323,12 @@ for x_power in [0,1,2]:
 		plt.errorbar(xxx,coef*yyy,fmt='o')
 		
 
-	plt.xlim([ numpy.amin(xxx)-10., 200.+10. ])
+	#plt.xlim([ numpy.amin(xxx)-10., 200.+10. ])
 	myTools.deal_with_plot(False,False,False)
 	plt.show()
-'''
-#camb[0].save_in_one_file('/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Resources/CAMB/CAMB_2_25/camb.txt')
 
+camb[0].save_in_one_file('/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Resources/CAMB/CAMB_0/camb.txt')
+"""
 
 
 

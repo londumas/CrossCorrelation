@@ -29,7 +29,7 @@
 // ---------------------------------------------------------------------
 
 #define PATHTOWORK "/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/"
-#define PATHTOCAMB "Resources/CAMB/CAMB_2_25/camb.txt"
+#define PATHTOCAMB "Resources/CAMB/CAMB_0/camb.txt"
 
 // ---------------------------------------------------------------------
 //

@@ -61,6 +61,9 @@ class GetDelta
 
 		/// Histogram to get the PDF
 		TProfile* hFluxVsLambdaObs__;
+		TProfile* hFluxVsRedshift__;
+		TProfile* hFluxPow2VsLambdaObs__;
+                TProfile* hFluxPow2VsRedshift__;
 		TH2D* hFluxPDF__;
 		TH1D* hRedshift__;
 		TH1D* hFlux__;

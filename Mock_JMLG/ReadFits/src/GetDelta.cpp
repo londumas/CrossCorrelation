@@ -76,19 +76,19 @@ GetDelta::GetDelta(int argc, char** argv) {
 
 
 	///
-	pathToDataQSO__ = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/v1588/spectra-785";  //v1575/fits/spectra-785
+	pathToDataQSO__ = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/v1575/fits/spectra-785";
 	pathToDataQSO__ += box_idx;
 	pathToDataQSO__ += "-";
 	pathToDataQSO__ += sim_idx;
 	pathToDataQSO__ += ".fits";
 	///
-	pathToDataForest__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1588/Box_00";
+	pathToDataForest__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/Box_00";
 	pathToDataForest__ += box_idx;
 	pathToDataForest__ += "/Simu_00";
 	pathToDataForest__ += sim_idx;
 	pathToDataForest__ += "/Raw/mocks-*";
 	///
-	pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1588/Box_00";
+	pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/Box_00";
 	pathToSave__ += box_idx;
 	pathToSave__ += "/Simu_00";
 	pathToSave__ += sim_idx;
@@ -101,7 +101,7 @@ GetDelta::GetDelta(int argc, char** argv) {
 	std::cout << "\n"   << std::endl;
 
 	/// QSO
-//	GetQSO();
+	//GetQSO();
 
 	std::cout << "\n"   << std::endl;
 
@@ -109,10 +109,11 @@ GetDelta::GetDelta(int argc, char** argv) {
 	GetData();
 
 	if (findPDF__) {
+
 		for (unsigned int i=0; i<1; i++) {
 			for (unsigned int j=0; j<1; j++) {
-				//TString a = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/v1547/fits/spectra-78";
-				TString a = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/v1588/spectra-785";
+				TString a = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/v1575/fits/spectra-785";
+				//TString a = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/v1588/spectra-785";
 				a += i;
 				a += "-";
 				a += j;
@@ -122,10 +123,12 @@ GetDelta::GetDelta(int argc, char** argv) {
 				GetPDF(2);
 			}
 		}
+
 		//pathToDataQSO__ = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/old/fev16/spectra-highz.fits";
 		//GetPDF(1);
 		//pathToDataQSO__ = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/v1573/fits/spectra-7800-0.fits";
 		//GetPDF(2);
+
 		saveHistos();
 	}
 	std::cout << "\n\n" << std::endl;
@@ -159,7 +162,7 @@ void GetDelta::GetData(void) {
 	/// Get the list 
 	FILE *fp;
 	char path[PATH_MAX];
-	std::string command = "ls " + pathToDataForest__;
+	std::string command = "ls -tr " + pathToDataForest__;
 	std::vector< std::string > listFiles;
 	fp = popen(command.c_str(), "r");
 	while (fgets(path, PATH_MAX, fp) != NULL) listFiles.push_back(path);
@@ -363,7 +366,7 @@ void GetDelta::GetPDF(unsigned int version) {
 	/// Get the number of spectra
 	int tmp_nbSpectra = 0;
 	unsigned int nbSpectra = 0;
-	if (isTest__) nbSpectra = 1000;
+	if (isTest__) nbSpectra = 10000;
 	else {
 		fits_get_num_hdus(fitsptrSpec, &tmp_nbSpectra, &sta);
 		nbSpectra = tmp_nbSpectra-1;
@@ -423,6 +426,10 @@ void GetDelta::GetPDF(unsigned int version) {
 			hRedshift__->Fill(LAMBDA_OBS[p]/lambdaRFLine__-1.);
 			hFlux__->Fill(FLUX[p]);
 			hFluxVsLambdaObs__->Fill(LAMBDA_OBS[p], FLUX[p]);
+			hFluxVsRedshift__->Fill(LAMBDA_OBS[p]/lambdaRFLine__-1., FLUX[p]);
+			hFluxPow2VsLambdaObs__->Fill(LAMBDA_OBS[p], FLUX[p]*FLUX[p]);
+                        hFluxPow2VsRedshift__->Fill(LAMBDA_OBS[p]/lambdaRFLine__-1., FLUX[p]*FLUX[p]);
+
 		}
 		forestIdx ++;
 	}
@@ -544,6 +551,11 @@ void GetDelta::GetQSO(void) {
 void GetDelta::defineHistos() {
 
 	hFluxVsLambdaObs__ = new TProfile("hFluxVsLambdaObs__","",nbBinlambdaObs__+200,lambdaObsMin__-100.,lambdaObsMax__+100.);
+	hFluxVsRedshift__  = new TProfile("hFluxVsRedshift__","",nbBinsRedshift__,minRedshift__,maxRedshift__);
+
+	hFluxPow2VsLambdaObs__ = new TProfile("hFluxPow2VsLambdaObs__","",nbBinlambdaObs__+200,lambdaObsMin__-100.,lambdaObsMax__+100.);
+        hFluxPow2VsRedshift__  = new TProfile("hFluxPow2VsRedshift__","",nbBinsRedshift__,minRedshift__,maxRedshift__);
+
 	hFluxPDF__         = new TH2D("hFluxPDF__",            "",nbBinsFlux__,minFlux__,maxFlux__,nbBinsRedshift__,minRedshift__,maxRedshift__);
 	hRedshift__        = new TH1D("hRedshift__",           "",nbBinsRedshift__,minRedshift__,maxRedshift__);
 	hFlux__            = new TH1D("hFlux__",               "",nbBinsFlux__,minFlux__,maxFlux__);
@@ -565,17 +577,27 @@ void GetDelta::saveHistos() {
 		}
 	}
 	
+        TH1D* h_sigma_LSS_VsRedshift  = new TH1D("h_sigma_LSS_VsRedshift","",nbBinsRedshift__,minRedshift__,maxRedshift__);
+	for (unsigned int i=0; i<nbBinsRedshift__; i++) {
+		const double val1  = hFluxVsRedshift__->GetBinContent(i+1);
+		if (val1==0.) continue;
+		const double value = hFluxPow2VsRedshift__->GetBinContent(i+1)/(val1*val1) -1;
+		h_sigma_LSS_VsRedshift->SetBinContent( i+1, value);
+		h_sigma_LSS_VsRedshift->SetBinError(i+1,0.000000001);
+	}
 	
 	/// Plots histos
 	R_plot1D(hRedshift__,"z", "#");
 	R_plot1D(hFlux__,"flux", "#");
 	R_plot2D(hFluxPDF__,"flux noNosie noCont", "z","pdf");
 	R_plot1D(hFluxVsLambdaObs__,"lambda_{Obs.}", "flux");
-	
+	R_plot1D(hFluxVsRedshift__,"z", "flux");
+	R_plot1D(h_sigma_LSS_VsRedshift,"z", "sigma_2_LSS");
 
+/*
 	/// Save PDF
 	std::ofstream fFile;
-	fFile.open("/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/v1588_FluxPDF_mocksJMC.txt");
+	fFile.open("/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/test_FluxPDF_mocksJMC.txt");
 	fFile << std::scientific;
 	fFile.precision(std::numeric_limits<double>::digits10);
 	for (unsigned int i=0; i<nbBinsFlux__; i++){
@@ -587,20 +609,35 @@ void GetDelta::saveHistos() {
 
 
 	/// Save mean transmission flux
-	fFile.open("/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/v1588_hDeltaVsLambdaObs_LYA_JMC.txt");
+	fFile.open("/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/test_hDeltaVsLambdaObs_LYA_JMC.txt");
 	fFile << std::scientific;
 	fFile.precision(std::numeric_limits<double>::digits10);
 	for (unsigned int i=0; i<nbBinlambdaObs__; i++){
 		fFile << i << " " << hFluxVsLambdaObs__->GetBinCenter(i+1) << " " << hFluxVsLambdaObs__->GetBinContent(i+1) << std::endl;
 	}
 	fFile.close();
+*/
+
+	std::ofstream fFile;
+	fFile.open("/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/v1575_h_sigma_LSS_VsRedshift_LYA_JMC.txt");
+        fFile << std::scientific;
+        fFile.precision(std::numeric_limits<double>::digits10);
+	for (unsigned int i=0; i<nbBinsRedshift__; i++) {
+		const double center = h_sigma_LSS_VsRedshift->GetBinCenter( i+1 );
+                const double value  = h_sigma_LSS_VsRedshift->GetBinContent( i+1 );
+		if (value==0.) continue;
+                fFile << i << " " << center << " " << value << " " << std::endl;
+        }
+	fFile.close();
 
 
-/*	
 	/// Get Nicolas' PDF
 	TH2D* hFluxPDF2 = new TH2D("hFluxPDF2","",100,0.0,1.0,50,1.96,3.5);
-	std::string pathToPDF = "/home/gpfs/manip/mnt0607/bao/hdumasde/CrossCorrelation_StartingAgainFrom1347/CrossCorrelation/RootFile/FluxPDF.txt";
+	std::string pathToPDF = "/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Resources/PDF/FluxPDF_mocksAuto_from_Nicolas.txt";
 	ifstream filePDF(pathToPDF.c_str());
+	///
+	TH1D* hFluxVsLambdaObs2 = new TProfile("hFluxVsLambdaObs2","",nbBinlambdaObs__+200,lambdaObsMin__-100.,lambdaObsMax__+100.);
+	TH1D* hRedshift2        = new TH1D("hRedshift2",           "",50,1.96,3.5);
 
 	for (unsigned int j=0; j<46; j++){
 		for (unsigned int i=0; i<100; i++){
@@ -617,6 +654,59 @@ void GetDelta::saveHistos() {
 		}
 	}
 	R_plot2D(hFluxPDF2,"flux noNosie noCont", "z","pdf");
+
+	/// Fill 1D histo
+	for (unsigned int i=0; i<50; i++) {
+		double value = 0.;
+		for (unsigned int j=0; j<100; j++) {
+			const double T     = hFluxPDF2->GetXaxis()->GetBinCenter(j+1);
+			const double proba = hFluxPDF2->GetBinContent(j+1,i+1);
+			value += T*proba;
+		}
+		value /= 100.;
+		hRedshift2->SetBinContent(i+1, value);
+		hRedshift2->SetBinError(i+1, value/1000.);
+	}
+
+	R_plot1D(hFluxVsLambdaObs2,"lambda_{Obs.}", "flux Nicolas");
+	R_plot1D(hRedshift2,"z", "flux Nicolas");
+
+/*
+	/// Save mean transmission flux
+	std::ofstream fFile;
+	fFile.open("/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/mocksAutoNicolas_hDeltaVsLambdaObs.txt");
+	fFile << std::scientific;
+	fFile.precision(std::numeric_limits<double>::digits10);
+	for (unsigned int i=0; i<50; i++){
+		fFile << i << " " << (hRedshift2->GetBinCenter(i+1)+1.)*lambdaRFLine__ << " " << hRedshift2->GetBinContent(i+1) << std::endl;
+	}
+	fFile.close();
 */
-	
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

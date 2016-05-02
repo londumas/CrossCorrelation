@@ -161,6 +161,45 @@
 
 
 
+#   one day ?
+	- /Mock_JMLG/ReadFits/src/GetDelta.cpp:
+		* read the files in the order of produced with « ls -tr »
+	- /Constants/constants.h
+		* change CAMB file to CAMB at z=0, and add a calcul of the growth factor.
+	- /Python/Correlation/correlation_1D.py
+		* add a grid
+		* add saving meanZ for simulations.
+	- /Python/Correlation/correlation_3D.py
+		* add all calcul all possible multipols
+		* add saving meanZ for simulations.
+	- /Python/MyTools/CAMB.py
+		* add correct calcul of multipols
+		* add top_hat functions
+		* add bias and beta functions
+	- /Python/MyTools/myTools.py
+		* correct plotCovar to take 'f_f' and 'q_q' into acount
+		* add a function to fit a correlation matrix
+	- /chain_annalys_delta/Correlation/src/Correlation.cpp
+		* Correct bug in xi_delta_QSO_MockJMc_distortionMatrix and xi_delta_QSO_MockJMc_distortionMatrix_1D : no init of vector
+		* now CAMB is at z = 0 and we get the growth_factor from an array on each pairs.
+		* When puting a random position in Z, we calculate the new redshift.
+		* Randoms are done way better
+	- /chain_annalys_delta/Correlation/src/Cosmology.cpp
+		* add function to get the growth factor
+	- /chain_annalys_delta/Get_delta/src/GetDelta.cpp
+		* get the mean of alpha and beta
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

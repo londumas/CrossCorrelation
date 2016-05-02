@@ -185,7 +185,6 @@ class Correlation3D:
 		remove_residuals = False
 		if (self._remove_residuals == 'lambda_RF' or self._remove_residuals == 'lambda_OBS'):
 			remove_residuals = True
-		print path1D
 
 		xi2D = numpy.zeros(shape=(self._nbBinX2D,self._nbBinY2D,3))
 		xiMu = numpy.zeros(shape=(self._nbBin1D,self._nbBinM,4))
@@ -683,6 +682,7 @@ class Correlation3D:
 		list2D       = numpy.zeros( shape=(self._nbBin2D,nb_realisation) )
 		listMultipol = numpy.zeros( shape=(self._nbBin1D,5,nb_realisation) )
 		listGrid     = numpy.zeros( shape=(self._nbBin2D,3,nb_realisation) )
+		list_mean_z  = numpy.zeros( shape=(nb_realisation) )
 
 		nb = 0
 		for i in range(0,dic_simu['nb_box']):
@@ -709,6 +709,7 @@ class Correlation3D:
 				listGrid[:,0,nb] = corr._xi2D_grid[:,:,0].flatten()
 				listGrid[:,1,nb] = corr._xi2D_grid[:,:,1].flatten()
 				listGrid[:,2,nb] = corr._xi2D_grid[:,:,2].flatten()
+				list_mean_z[nb]  = corr._meanZ
 
 				nb += 1
 
@@ -718,8 +719,7 @@ class Correlation3D:
 		list2D       = list2D[:,:nb]
 		listMultipol = listMultipol[:,:,:nb]
 		listGrid     = listGrid[:,:,:nb]
-
-		print listMu[0,:].size, nb
+		list_mean_z  = list_mean_z[:nb]
 
 		numpy.save(pathToSave+'list_Mu',listMu)
 		numpy.save(pathToSave+'list_We',listWe)
@@ -727,6 +727,7 @@ class Correlation3D:
 		numpy.save(pathToSave+'list_2D',list2D)
 		numpy.save(pathToSave+'list_Multipol',listMultipol)
 		numpy.save(pathToSave+'list_Grid',listGrid)
+		numpy.save(pathToSave+'list_MeanZ',list_mean_z)
 
 		covMu = numpy.cov(listMu)
 		cov1D = numpy.cov(list1D)
@@ -861,7 +862,7 @@ class Correlation3D:
 		self._xi2D_grid[:,:,0] = myTools.convert1DTo2D( numpy.mean(listGrid[:,0,:],axis=1),self._nbBinX2D,self._nbBinY2D )
 		self._xi2D_grid[:,:,1] = myTools.convert1DTo2D( numpy.mean(listGrid[:,1,:],axis=1),self._nbBinX2D,self._nbBinY2D )
 		self._xi2D_grid[:,:,2] = myTools.convert1DTo2D( numpy.mean(listGrid[:,2,:],axis=1),self._nbBinX2D,self._nbBinY2D )
-		self._meanZ = numpy.mean(self._xi2D_grid[:,:,2])
+		self._meanZ = numpy.mean(numpy.load(path_to_load+'list_MeanZ.npy'))
 
 		print '  nb_realisation = ', nb_realisation
 
@@ -931,14 +932,27 @@ class Correlation3D:
 	
 		### Array with name of variable
 		if (dic is None):
-			dic = {
-				'xi0' : True,
-				'xi1' : True,
-				'xi2' : True,
-				'xi3' : True,
-				'xi4' : True,
-				'plot' : False
-			}
+			if (self._correlation=='q_q' or self._correlation=='f_f'):
+				### No acess to even multipol
+				dic = {
+					'xi0' : True,
+					'xi1' : False,
+					'xi2' : True,
+					'xi3' : False,
+					'xi4' : True,
+					'plot' : False
+				}
+			elif (self._correlation=='q_f' or self._correlation=='f_f2'):
+				### Acess to even multipol
+				dic = {
+					'xi0' : True,
+					'xi1' : True,
+					'xi2' : True,
+					'xi3' : True,
+					'xi4' : True,
+					'plot' : False
+				}
+
 		nameArray = [ 'xi0','xi1','xi2','xi3','xi4']
 		nbXi = len(nameArray)
 
@@ -1326,8 +1340,8 @@ model-config = boxprior[SigmaNL-perp] @ (0,6);
 #nl-broadband = true
 
 # Broadband distortion model
-"""+str_corr+"""dist-add = rP,rT=0:2,-3:1
-"""+str_corr3+"""dist-add = -2:0,0:4:2,0
+#"""+str_corr+"""dist-add = rP,rT=0:2,-3:1
+#"""+str_corr3+"""dist-add = -2:0,0:4:2,0
 
 ### Data Options #############################################
 
@@ -1349,7 +1363,7 @@ rmax = 180
 #rperp-min = 10
 
 # Generate a second set of outputs with the additive distortion turned off
-alt-config = fix[dist*]=0
+#alt-config = fix[dist*]=0
 
 # Do not dump multipoles (since the distortion model multipole integrals are singular)
 ndump = 0
@@ -1364,7 +1378,7 @@ output-prefix = """ + path_to_BAOFIT + """.
 		
 
 		return
-	def send_BAOFIT(self, realisation_type, correlation_matrix_path=None, saving_data=True, scan=False, toyMC=0, dist_matrix=False, only_diagonal=False, with_metals_templates=False, get_param_from_file=False):
+	def send_BAOFIT(self, dic_send_BAOFIT=None):
 		"""
 
 			Send the fit of the BAO with BAOFIT
@@ -1373,6 +1387,34 @@ output-prefix = """ + path_to_BAOFIT + """.
 
 		"""
 
+		if (dic_send_BAOFIT is None):
+			dic_send_BAOFIT = {
+				'realisation_type'        : None,
+				'correlation_matrix_path' : None,
+				'saving_data' : True,
+				'scan' : False,
+				'toyMC' : 0,
+				'dist_matrix' : False,
+				'only_diagonal' : False,
+				'with_metals_templates' : False,
+				'get_param_from_file' : False,
+				'dic_simu'              : None
+			}
+		realisation_type        = dic_send_BAOFIT['realisation_type']
+		correlation_matrix_path = dic_send_BAOFIT['correlation_matrix_path']
+		saving_data             = dic_send_BAOFIT['saving_data']
+		scan                    = dic_send_BAOFIT['scan']
+		toyMC                   = dic_send_BAOFIT['toyMC']
+		dist_matrix             = dic_send_BAOFIT['dist_matrix']
+		only_diagonal           = dic_send_BAOFIT['only_diagonal']
+		with_metals_templates   = dic_send_BAOFIT['with_metals_templates']
+		get_param_from_file     = dic_send_BAOFIT['get_param_from_file']
+		dic_simu                = dic_send_BAOFIT['dic_simu']
+
+		if ( (dic_simu is not None)):
+			raw_path_to_cov = dic_simu['path_to_simu'] + 'Results' + dic_simu['prefix'] + '/'
+			if (realisation_type=='Simu_stack'):
+				self._path_to_txt_file_folder = raw_path_to_cov
 		if (self._correlation=='q_q'):
 			param = numpy.asarray( [0.268344,0.962524,-2.,0.,0.,3.6,0.,0.,1.966,1.,1.,1.,1.,0.,0.,1.4,-0.01,1.4,-0.01,1.4,-0.01,1.4,-0.01] )
 			path_to_BAOFIT = self._path_to_txt_file_folder + 'BaoFit_'+self._correlation+'__'+self._q1
@@ -1386,6 +1428,7 @@ output-prefix = """ + path_to_BAOFIT + """.
 		if (with_metals_templates):
 			path_to_BAOFIT += '__withMetalsTemplates'
 		path_to_BAOFIT += '/'
+		print '  path_to_BAOFIT = ', path_to_BAOFIT
 
 
 		try:
@@ -1426,21 +1469,19 @@ output-prefix = """ + path_to_BAOFIT + """.
 
 			### Save .cov
 			if (self._correlation=='q_q'):
-				path_to_cov = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575/Results_q_q__noSameCell_randXYZ_withRSD/xi_QSO_QSO_result_cov_2D.npy'
-				#path_to_cov = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_second_generation_with_Einseitein_Hu/Results/xi_QSO_QSO_result_cov_2D.npy'
-				#path_to_cov = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575/Results/xi_QSO_QSO_result_cov_2D.npy'
+				if (dic_simu is not None):
+					path_to_cov       = raw_path_to_cov + 'xi_QSO_QSO_result_cov_2D.npy'
+					nb_of_realisation = numpy.load(raw_path_to_cov + 'xi_QSO_QSO_result_list_1D.npy')[0,:].size
 			elif (self._correlation=='q_f'):
-				#path_to_cov = self._path_to_txt_file_folder + self._prefix + '_'+ self._middlefix + '_' + realisation_type + '_cov_2D.npy'
-				#path_to_cov = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575/Results_Flux_Notemplate_WithMetals_WithNoise_WithSpectroResolution/xi_delta_QSO_LYA_QSO_result_cov_2D.npy'
-				#path_to_cov = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575/Results_nicolasEstimator/xi_delta_QSO_LYA_QSO_result_cov_2D.npy'
-				#path_to_cov = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_second_generation/Results_PureRaw/xi_delta_QSO_LYA_QSO_result_cov_2D.npy'
-				#path_to_cov = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1547/Results_Raw/xi_delta_QSO_LYA_QSO_result_cov_2D.npy'
-				#path_to_cov = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575/Results_PureRaw/xi_delta_QSO_LYA_QSO_result_cov_2D.npy'
-				path_to_cov = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575/Results_devide_instead_of_removing_PureRaw/xi_delta_QSO_LYA_QSO_result_cov_2D.npy'
+				if (dic_simu is not None):
+					path_to_cov       = raw_path_to_cov + 'xi_delta_QSO_LYA_QSO_result_cov_2D.npy'
+					nb_of_realisation = numpy.load(raw_path_to_cov + 'xi_delta_QSO_LYA_QSO_result_list_1D.npy')[0,:].size
+				else: path_to_cov = self._path_to_txt_file_folder + self._prefix + '_'+ self._middlefix + '_' + realisation_type + '_cov_2D.npy'
 			elif (self._correlation=='f_f'):
-				path_to_cov = self._path_to_txt_file_folder + self._prefix + '_'+ self._middlefix + '_' + realisation_type + '_cov_2D.npy'
-				#path_to_cov = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575/Results/xi_A_delta_delta_LYA_result_cov_2D.npy'
-				#path_to_cov = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575/Results_PureRaw/xi_A_delta_delta_LYA_result_cov_2D.npy'
+				if (dic_simu is not None):
+					path_to_cov       = raw_path_to_cov + 'xi_A_delta_delta_LYA_result_cov_2D.npy'
+					nb_of_realisation = numpy.load(raw_path_to_cov + 'xi_A_delta_delta_LYA_result_list_1D.npy')[0,:].size
+				else: path_to_cov = self._path_to_txt_file_folder + self._prefix + '_'+ self._middlefix + '_' + realisation_type + '_cov_2D.npy'
 
 			if (correlation_matrix_path is None): correlation_matrix_path = path_to_cov
 			print '  correlation matrix path = ', correlation_matrix_path
@@ -1451,18 +1492,19 @@ output-prefix = """ + path_to_BAOFIT + """.
 
 			print '  Saving .cov'
 			cov = myTools.getCovarianceMatrix(cor,numpy.diag(cov))
-			#cov /= 100
-			#cov *= 2.
+			if ( (dic_simu is not None) and realisation_type=='Simu_stack' ):
+				print '  nb of realisation = ', nb_of_realisation
+				cov /= nb_of_realisation
 			if (only_diagonal):
-				
+				"""
 				mean_cor_off_diag = self._nbBin2D/(self._nbBin2D-1.)*numpy.mean( cor-numpy.diag( numpy.diag(cor)) )
 				print '  The mean off diagonal term is = ', mean_cor_off_diag
 				mean_cor_matrix = numpy.ones( shape=(self._nbBin2D,self._nbBin2D) )*mean_cor_off_diag
 				mean_cor_matrix -= numpy.diag(numpy.diag(mean_cor_matrix))
 				cor = numpy.diag( numpy.diag(cor) ) + mean_cor_matrix
 				cov = myTools.getCovarianceMatrix(cor,numpy.diag(cov))
-				
-				#cov = numpy.diag( numpy.diag(cov) )
+				"""
+				cov = numpy.diag( numpy.diag(cov) )
 
 			covarianceMatrix = numpy.zeros( shape=(self._nbBin2D*self._nbBin2D,3) )
 			indexMatrix1 = numpy.arange(self._nbBin2D*self._nbBin2D).reshape(self._nbBin2D,self._nbBin2D)/self._nbBin2D
@@ -1514,6 +1556,8 @@ output-prefix = """ + path_to_BAOFIT + """.
 
 		with_camb = False
 		list_corr_to_plot = numpy.append( [self],other )
+		color = ['blue','red','green','orange']
+		nb = 0
 
 		for el in list_corr_to_plot:
 			TMP_xxx = el._xi1D[:,0]
@@ -1528,7 +1572,8 @@ output-prefix = """ + path_to_BAOFIT + """.
 			TMP_yyy = TMP_yyy[ TMP_cut ]
 			TMP_yer = TMP_yer[ TMP_cut ]
 			TMP_coef = numpy.power(TMP_xxx,x_power)
-			plt.errorbar(TMP_xxx, TMP_coef*TMP_yyy, yerr=TMP_coef*TMP_yer, markersize=10,linewidth=2, marker='o',alpha=0.6,label=r'$'+el._name+'$')
+			plt.errorbar(TMP_xxx, TMP_coef*TMP_yyy, yerr=TMP_coef*TMP_yer, markersize=10,linewidth=2, marker='o',alpha=0.6,label=r'$'+el._name+'$', color=color[nb])
+			nb += 1
 
 		if (with_camb):
 			camb = CAMB.CAMB()
@@ -1544,11 +1589,11 @@ output-prefix = """ + path_to_BAOFIT + """.
 		if (x_power==0):
 			plt.ylabel(r'$'+self._label+' (|s|)$', fontsize=40)
 		if (x_power==1):
-			plt.ylabel(r'$|s|.'+self._label+' (|s|) \, [h^{-1}.Mpc]$', fontsize=40)
+			plt.ylabel(r'$|s| \cdot '+self._label+' (|s|) \, [h^{-1} \cdot Mpc]$', fontsize=40)
 		if (x_power==2):
-			plt.ylabel(r'$|s|^{2}.'+self._label+' (|s|) \, [(h^{-1}.Mpc)^{2}]$', fontsize=40)
+			plt.ylabel(r'$|s|^{2} \cdot '+self._label+' (|s|) \, [(h^{-1} \cdot Mpc)^{2}]$', fontsize=40)
 		plt.legend(fontsize=30, numpoints=1,ncol=2, loc=2)
-		plt.xlabel(r'$|s| \, [h^{-1}.Mpc]$', fontsize=40)
+		plt.xlabel(r'$|s| \, [h^{-1} \cdot Mpc]$', fontsize=40)
 		plt.xlim([ numpy.amin(xxx)-10., numpy.amax(xxx)+10. ])
 		myTools.deal_with_plot(False,False,True)
 		plt.show()
@@ -1899,7 +1944,7 @@ output-prefix = """ + path_to_BAOFIT + """.
 		### Show the result
 		for i in numpy.arange(0, self._xiMul[0,:,0].size ):
 
-			##if (i%2==0): continue
+			##if (i!=0): continue
 
 			cut = (self._xiMul[:,i,2]>0.)
 			if ( self._xiMul[:,i,1][cut].size == 0): continue

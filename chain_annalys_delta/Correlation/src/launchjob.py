@@ -9,7 +9,7 @@ import subprocess
 import time
 import myTools
 
-commandProd     = "/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/chain_annalys_delta/Correlation/bin/main.exe"
+commandProd     = "/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/chain_annalys_delta/Correlation/bin/main.exe_for_lya_lya"
 
 def main():
 
@@ -29,7 +29,7 @@ def main():
 				tmp_command = "echo \" \n ------ Start ------ \n \" " 
 				subprocess.call(tmp_command, shell=True)
 
-				tmp_command = "clubatch \"time ; hostname ; " + commandProd + ' 21 0 ' + str(k) + ' 0 ' + str(i) + " " + str(j) + "\""
+				tmp_command = "clubatch \"time ; hostname ; " + commandProd + ' 19 0 ' + str(k) + ' 0 ' + str(i) + " " + str(j) + "\""
 				subprocess.call(tmp_command, shell=True)
 
 				tmp_command = "echo " + tmp_command
@@ -37,9 +37,9 @@ def main():
 				tmp_command = "echo " + time.ctime()
 				subprocess.call(tmp_command, shell=True)
 
-				time.sleep(60)
-                	        myTools.isReadyForNewJobs(200, 1000,'time')
-		time.sleep(120)
+				time.sleep(120)
+                	        myTools.isReadyForNewJobs(60, 1000,'time')
+		#time.sleep(120)
 	'''
 	
 	'''
@@ -66,7 +66,7 @@ def main():
 		tmp_command = "echo \" \n ------ Start ------ \n \" " 
 		subprocess.call(tmp_command, shell=True)
 
-		tmp_command = "clubatch \"time ; hostname ; " + commandProd + ' 14 0 ' + str(k) + " 0 0 0 \""
+		tmp_command = "clubatch \"time ; hostname ; " + commandProd + ' 15 0 ' + str(k) + " 0 0 0 \""
 		subprocess.call(tmp_command, shell=True)
 
 		tmp_command = "echo " + tmp_command
@@ -86,6 +86,7 @@ def main():
 			print command
 			subprocess.call(command, shell=True)
 			time.sleep(0.1)
+		time.sleep(10)
 	
 
 	'''

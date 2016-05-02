@@ -20,6 +20,7 @@
 
 #include "TH1.h"
 #include "TF1.h"
+#include "TGraph.h"
 
 #ifndef COSMOLOGY_H
 #define COSMOLOGY_H
@@ -63,6 +64,21 @@ class Cosmology
 		// return TH1D* : histogram to convert redshift into comoving distance in h^{-1}.Mpc
 		TH1D* createHistoConvertRedshDist(unsigned int nbBinRedsh, double zExtremaBinConvert0, double zExtremaBinConvert1);
 
+		// Return a graph to convert comoving distance in h^{-1}.Mpc into redshift
+		//		- unsigned int nbBinRedsh    : number of redshift bin
+		//		- double zExtremaBinConvert0 : minimum of redshift
+		//		- double zExtremaBinConvert1 : maximum of redshift
+		// return TGraph* : graph to convert comoving distance in h^{-1}.Mpc into redshift
+		TGraph* create_TGraph_to_convert_distance_to_redshift(unsigned int nbBinRedsh, double z_min, double z_max);
+
+
+		// Return a graph to convert redshift into growth factor
+		//		- unsigned int nbBinRedsh    : number of redshift bin
+		//		- double z_min               : minimum of redshift
+		//		- double z_max               : maximum of redshift
+		// return TGraph* : graph to convert redshift into growth factor
+		TGraph* get_TGraph_to_convert_redshift_to_growth_factor(unsigned int nbBinRedsh, double z_min, double z_max);
+
 		// Estimate d(Chi(z))/dz
 		//	in h^{-1}.Mpc
 		double dChidzfunct(double* zz, double *par);
@@ -78,6 +94,12 @@ class Cosmology
 		// Transverse distance
 		//	in h^{-1}.Mpc
 		double DTfunct(double* zz, double *par);
+
+		// Growth factor
+		//	accoriding to Eisenstein & Hu (1999 ApJ 511 5) equation 10
+		//	http://arxiv.org/pdf/astro-ph/9710252v1.pdf
+		//	Has to be normalized manually
+		double get_growth_factor(double z);
 
 		// Fill an array with redshift min and max of QSO according to lambda_obs_min and lambda_obs_max of pixels
 		//		- double maxDist      : maximum distance of correlation in h^{-1}.Mpc

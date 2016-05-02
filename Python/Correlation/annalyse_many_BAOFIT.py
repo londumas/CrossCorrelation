@@ -442,9 +442,10 @@ class AnnalyseManyBAOFIT:
 		plt.show()
 
 		return
-	def plot_scatter_hist(self,index_1, index_2, other=[]):
+	def plot_scatter_hist(self,index_1, index_2, other=None, single_point=None):
 
-		list_of_fit = numpy.append( [self],other )
+		list_of_fit = numpy.array( [self] )
+		if (other is not None): list_of_fit = numpy.append( list_of_fit,other )
 
 		### Constants
 		nb_bins = 10
@@ -542,6 +543,12 @@ class AnnalyseManyBAOFIT:
 			a, b, c = axHisty.hist(y, bins=bins, orientation='horizontal', histtype='step',linewidth=2, color=color[nb],alpha=0.6)
 			max_hist_y = numpy.max( [numpy.max(a), max_hist_y])
 
+			nb += 1
+
+		### Plot single points
+		if (single_point is not None):
+			for el in single_point:
+				axScatter.errorbar(el[0], el[1], fmt='*',linewidth=2, markersize=30, color=color[nb],alpha=0.9)
 			nb += 1
 
 

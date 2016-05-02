@@ -96,7 +96,7 @@ const double halfGama__  = gama__/2.;
 double distMinPixel__ = 0.;
 double distMinPixelDelta2__ = 0.;
 unsigned int idxCommand_[6] = {0};
-const std::string pathToMockJMC__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575/";
+const std::string pathToMockJMC__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_test_metals_4/";
 std::string pathToRaw__ = "";
 std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator/";  //_nicolasEstimator   //_method1
 std::string correlation_type__ = "NOTHING";
@@ -109,8 +109,8 @@ const bool mockBox__          = false;
 //// Attributes of data
  // versin=0 for old version, version=1 for mockExpander, version=2 for files from Jean-Marc
 const unsigned int mock_version = 2;
-const bool mocks_raw          = true;
-const bool meanOver3pixels__     = false;
+const bool mocks_raw          = false;
+const bool meanOver3pixels__  = false;
 const bool mocksNoNoiseNoCont = false;
 const double randomPositionOfQSOInCellNotBeforeCorrelation__ = true;
 unsigned int seed_for_random_position__ = 42;
@@ -122,12 +122,12 @@ const bool randomForest   = false;
 const bool doBootstraps__ = false;
 
 
-const bool doVetoLines__          = false;
-const bool nicolasEstimator__     = false;
+const bool doVetoLines__          = true;
+const bool nicolasEstimator__     = true;
 const bool doingCoAddSoRemoving__ = false;
 
 const bool saveInRootFile__      = false;
-const bool cutNotFittedSpectra__ = false;
+const bool cutNotFittedSpectra__ = true;
 
 Correlation::Correlation(int argc, char **argv) {
 
@@ -218,11 +218,11 @@ Correlation::Correlation(int argc, char **argv) {
 		
 		if (mocks_raw) {
 			if (mock_version==1) pathToSave__ += "_Raw/";
-			if (mock_version==2) pathToSave__ += "_devide_instead_of_removing_PureRaw/";
+			if (mock_version==2) pathToSave__ += "_raw_from_JeanMarc/";
 			if (mock_version==3) pathToSave__ += "_Flux_Notemplate_WithMetals_WithNoise_WithSpectroResolution/";
 		}
 		else {
-			if (nicolasEstimator__) pathToSave__ += "_nicolasEstimator/";
+			if (!nicolasEstimator__) pathToSave__ += "_no_projection/";
 			else pathToSave__ += "/";
 		}
 		
@@ -1362,6 +1362,16 @@ void Correlation::xi_A_delta_delta_Metals_Models(double lambdaRFMetal1, std::str
 	//// Create the conversion table from redshift to distance
 	Cosmology* cosmo = new Cosmology(C_H, C_OMEGAM, C_OMEGAB);
 	TH1D* hConvertRedshDist = cosmo->createHistoConvertRedshDist(C_NBBINREDSH, C_ZEXTREMABINCONVERT0, C_ZEXTREMABINCONVERT1);
+	
+	/// Get an arrey to get te growth factor
+	double from_z_to_growth_factor_pow_2[C_NBBINREDSH] = {0.};
+	const double g0    = cosmo->get_growth_factor(0.);
+	const double growth_factor_step_size = C_ZEXTREMABINCONVERT1/C_NBBINREDSH;
+	const double inverse_growth_factor_step_size = 1./growth_factor_step_size;
+	for (unsigned int i=0; i<C_NBBINREDSH; i++) {
+		const double ZZZ = i*growth_factor_step_size;
+		from_z_to_growth_factor_pow_2[i] = (cosmo->get_growth_factor(ZZZ)/g0)*(cosmo->get_growth_factor(ZZZ)/g0);
+	}
 
 	//// Get the distance if it was this metal
 	std::vector< std::vector< double > > v_r_metal1(v_r__);
@@ -1375,6 +1385,7 @@ void Correlation::xi_A_delta_delta_Metals_Models(double lambdaRFMetal1, std::str
 
 	//// Empty useless vectors
 	delete cosmo;
+	delete hConvertRedshDist;
 	v_zz__.clear();
 	v_idx__.clear();
 	v_d__.clear();
@@ -1498,9 +1509,10 @@ void Correlation::xi_A_delta_delta_Metals_Models(double lambdaRFMetal1, std::str
 
 					unsigned int idxBinCAMB = nbBinCAMB;
 					if (distTotMetal<maxDistCAMB) idxBinCAMB = int(distTotMetal*inverse_step_size);
-					const double wxi0 = w1w2*data_xi0[idxBinCAMB];
-					const double wxi2 = w1w2*data_xi2[idxBinCAMB];
-					const double wxi4 = w1w2*data_xi4[idxBinCAMB];
+					const double growth_factor_pow_2 = from_z_to_growth_factor_pow_2[ int(0.5*(z1+v_z__[f2][i2])*inverse_growth_factor_step_size) ];
+					const double wxi0 = w1w2*growth_factor_pow_2*data_xi0[idxBinCAMB];
+					const double wxi2 = w1w2*growth_factor_pow_2*data_xi2[idxBinCAMB];
+					const double wxi4 = w1w2*growth_factor_pow_2*data_xi4[idxBinCAMB];
 
 					if (distTotPow2 < maxPow2) {
 						const double distTot    = sqrt(distTotPow2);
@@ -1598,7 +1610,6 @@ void Correlation::xi_A_delta_delta_Metals_Models(double lambdaRFMetal1, std::str
 		}
 	}
 	fFile.close();
-
 
 	return;
 }
@@ -3230,6 +3241,7 @@ void Correlation::xi_delta_QSO_distortionMatrix_1D(void) {
 }
 void Correlation::xi_delta_QSO_Metals_Models(double lambdaFrMetal, std::string lambdaFrMetalName) {
 
+	// 21,24,25,26,27
 	std::cout << "\n\n\n\n  ------ xi_delta_QSO_Metals_Models ------" << std::endl;
 	std::string command = "  ";
 	command += commandEnd__;
@@ -3247,6 +3259,16 @@ void Correlation::xi_delta_QSO_Metals_Models(double lambdaFrMetal, std::string l
 	Cosmology* cosmo = new Cosmology(C_H, C_OMEGAM, C_OMEGAB);
 	TH1D* hConvertRedshDist = cosmo->createHistoConvertRedshDist(C_NBBINREDSH, C_ZEXTREMABINCONVERT0, C_ZEXTREMABINCONVERT1);
 
+	/// Get an arrey to get te growth factor
+	double from_z_to_growth_factor_pow_2[C_NBBINREDSH] = {0.};
+	const double g0    = cosmo->get_growth_factor(0.);
+	const double growth_factor_step_size = C_ZEXTREMABINCONVERT1/C_NBBINREDSH;
+	const double inverse_growth_factor_step_size = 1./growth_factor_step_size;
+	for (unsigned int i=0; i<C_NBBINREDSH; i++) {
+		const double ZZZ = i*growth_factor_step_size;
+		from_z_to_growth_factor_pow_2[i] = (cosmo->get_growth_factor(ZZZ)/g0)*(cosmo->get_growth_factor(ZZZ)/g0);
+	}
+	
 	//// Get the distance if it was this metal
 	std::vector< std::vector< double > > v_r_metal(v_r__);
 	for (unsigned int i=0; i<v_r_metal.size(); i++) {
@@ -3257,6 +3279,7 @@ void Correlation::xi_delta_QSO_Metals_Models(double lambdaFrMetal, std::string l
 
 	//// Empty useless vectors
 	delete cosmo;
+	delete hConvertRedshDist;
 	v_zz__.clear();
 	v_d__.clear();
 	v_lRF__.clear();
@@ -3394,9 +3417,10 @@ void Correlation::xi_delta_QSO_Metals_Models(double lambdaFrMetal, std::string l
 				const double w   = v_w__[f][ii];
 				unsigned int idxBinCAMB = nbBinCAMB;
 				if (distTotMetal<maxDistCAMB) idxBinCAMB = int(distTotMetal*inverse_step_size);
-				const double wxi0 = w*data_xi0[idxBinCAMB];
-				const double wxi2 = w*data_xi2[idxBinCAMB];
-				const double wxi4 = w*data_xi4[idxBinCAMB];
+				const double growth_factor_pow_2 = from_z_to_growth_factor_pow_2[ int(0.5*(zQSO+v_z__[f][ii])*inverse_growth_factor_step_size) ];
+				const double wxi0 = w*growth_factor_pow_2*data_xi0[idxBinCAMB];
+				const double wxi2 = w*growth_factor_pow_2*data_xi2[idxBinCAMB];
+				const double wxi4 = w*growth_factor_pow_2*data_xi4[idxBinCAMB];
 				const double wz   = w*(zQSO+v_z__[f][ii]);
 
 				if (distTot < max) {
@@ -4661,6 +4685,16 @@ void Correlation::xi_A_delta_delta_Metals_Models_MockJMc(double lambdaRFMetal1, 
 	//// Create the conversion table from redshift to distance
 	Cosmology* cosmo = new Cosmology(C_H, C_OMEGAM, C_OMEGAB);
 	TH1D* hConvertRedshDist = cosmo->createHistoConvertRedshDist(C_NBBINREDSH, C_ZEXTREMABINCONVERT0, C_ZEXTREMABINCONVERT1);
+	
+	/// Get an arrey to get te growth factor
+	double from_z_to_growth_factor_pow_2[C_NBBINREDSH] = {0.};
+	const double g0    = cosmo->get_growth_factor(0.);
+	const double growth_factor_step_size = C_ZEXTREMABINCONVERT1/C_NBBINREDSH;
+	const double inverse_growth_factor_step_size = 1./growth_factor_step_size;
+	for (unsigned int i=0; i<C_NBBINREDSH; i++) {
+		const double ZZZ = i*growth_factor_step_size;
+		from_z_to_growth_factor_pow_2[i] = (cosmo->get_growth_factor(ZZZ)/g0)*(cosmo->get_growth_factor(ZZZ)/g0);
+	}
 
 	//// Get the distance if it was this metal
 	std::vector< std::vector< double > > v_r_metal1(v_r__);
@@ -4674,6 +4708,7 @@ void Correlation::xi_A_delta_delta_Metals_Models_MockJMc(double lambdaRFMetal1, 
 
 	//// Empty useless vectors
 	delete cosmo;
+	delete hConvertRedshDist;
 	v_CosDe__.clear();
 	v_SinDe__.clear();
 	v_zz__.clear();
@@ -4828,9 +4863,10 @@ void Correlation::xi_A_delta_delta_Metals_Models_MockJMc(double lambdaRFMetal1, 
 
 					unsigned int idxBinCAMB = nbBinCAMB;
 					if (distTotMetal<maxDistCAMB) idxBinCAMB = int(distTotMetal*inverse_step_size);
-					const double wxi0 = w1w2*data_xi0[idxBinCAMB];
-					const double wxi2 = w1w2*data_xi2[idxBinCAMB];
-					const double wxi4 = w1w2*data_xi4[idxBinCAMB];
+					const double growth_factor_pow_2 = from_z_to_growth_factor_pow_2[ int(0.5*(z1+v_z__[f2][i2])*inverse_growth_factor_step_size) ];
+					const double wxi0 = w1w2*growth_factor_pow_2*data_xi0[idxBinCAMB];
+					const double wxi2 = w1w2*growth_factor_pow_2*data_xi2[idxBinCAMB];
+					const double wxi4 = w1w2*growth_factor_pow_2*data_xi4[idxBinCAMB];
 
 					if (distTotPow2 < maxPow2) {
 						const double distTot    = sqrt(distTotPow2);
@@ -4928,7 +4964,6 @@ void Correlation::xi_A_delta_delta_Metals_Models_MockJMc(double lambdaRFMetal1, 
 		}
 	}
 	fFile.close();
-
 
 	return;
 }
@@ -5037,7 +5072,13 @@ void Correlation::xi_delta_QSO_MockJMc(unsigned int bootIdx/*=0*/) {
 	std::vector<double> v_raRandQSO;
 	std::vector<double> v_deRandQSO;
 	std::vector<double> v_rrRandQSO;
+	std::vector<double> v_zzRandQSO;
 	if (randomPositionOfQSOInCellNotBeforeCorrelation__) {
+
+		//// Create the conversion table from redshift to distance
+		Cosmology* cosmo = new Cosmology(C_H, C_OMEGAM, C_OMEGAB);
+		TGraph* gr_from_dist_to_z = cosmo->create_TGraph_to_convert_distance_to_redshift(C_NBBINREDSH, C_ZEXTREMABINCONVERT0, C_ZEXTREMABINCONVERT1);
+		delete cosmo;
 
 		std::cout << "  Seed is = " << seed_for_random_position__ << std::endl;
 		std::srand (seed_for_random_position__);
@@ -5054,11 +5095,15 @@ void Correlation::xi_delta_QSO_MockJMc(unsigned int bootIdx/*=0*/) {
 		v_raRandQSO.resize(nbQ1__,0.);
 		v_deRandQSO.resize(nbQ1__,0.);
 		v_rrRandQSO.resize(nbQ1__,0.);
+		v_zzRandQSO.resize(nbQ1__,0.);
 		for (unsigned int i=0; i<nbQ1__; i++) {
 			v_raRandQSO[i] = v_raQ1__[i] + sizeCell__*(1.*rand()/RAND_MAX-0.5);
 			v_deRandQSO[i] = v_deQ1__[i] + sizeCell__*(1.*rand()/RAND_MAX-0.5);
 			v_rrRandQSO[i] = v_rrQ1__[i] + sizeCell__*(1.*rand()/RAND_MAX-0.5);
+			v_zzRandQSO[i] = gr_from_dist_to_z->Eval(v_rrRandQSO[i]);
 		}
+
+		delete gr_from_dist_to_z;
 	}
 
 	std::cout << "\n  Starting\n" << std::endl;
@@ -5086,18 +5131,18 @@ void Correlation::xi_delta_QSO_MockJMc(unsigned int bootIdx/*=0*/) {
 
 			double x2 = v_raQ1__[q];
 			double y2 = v_deQ1__[q];
+			double r2 = v_rrQ1__[q];
+			double z2 = v_zzQ1__[q];
 
 			//// Not in the same line of sight
 			if (x==x2 && y==y2) continue;
-
-			double r2 = v_rrQ1__[q];
-			const double z2 = v_zzQ1__[q];
 
 			//// If random position in the cell
 			if (randomPositionOfQSOInCellNotBeforeCorrelation__) {
 				x2 = v_raRandQSO[q];
 				y2 = v_deRandQSO[q];
 				r2 = v_rrRandQSO[q];
+				z2 = v_zzRandQSO[q];
 			}
 
 			//// distance of QSO
@@ -5378,7 +5423,7 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix(void) {
 			v_varLambda[f][i] = (v_lRF__[f][i]-meanLambda)*stdLambda;
 		}
 	}
-	
+
 	//// Clear usless vector
 	v_lRF__.clear();
 	
@@ -5404,6 +5449,7 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix(void) {
 		//// QSO
 		v_raRandQSO.resize(nbQ1__,0.);
 		v_deRandQSO.resize(nbQ1__,0.);
+		v_rrRandQSO.resize(nbQ1__,0.);
 		for (unsigned int i=0; i<nbQ1__; i++) {
 			v_raRandQSO[i] = v_raQ1__[i] + sizeCell__*(1.*rand()/RAND_MAX-0.5);
 			v_deRandQSO[i] = v_deQ1__[i] + sizeCell__*(1.*rand()/RAND_MAX-0.5);
@@ -5661,6 +5707,7 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix_1D(void) {
 		//// QSO
 		v_raRandQSO.resize(nbQ1__,0.);
 		v_deRandQSO.resize(nbQ1__,0.);
+		v_rrRandQSO.resize(nbQ1__,0.);
 		for (unsigned int i=0; i<nbQ1__; i++) {
 			v_raRandQSO[i] = v_raQ1__[i] + sizeCell__*(1.*rand()/RAND_MAX-0.5);
 			v_deRandQSO[i] = v_deQ1__[i] + sizeCell__*(1.*rand()/RAND_MAX-0.5);
@@ -5848,6 +5895,16 @@ void Correlation::xi_delta_QSO_Metals_Models_MockJMc(double lambdaFrMetal, std::
 	Cosmology* cosmo = new Cosmology(C_H, C_OMEGAM, C_OMEGAB);
 	TH1D* hConvertRedshDist = cosmo->createHistoConvertRedshDist(C_NBBINREDSH, C_ZEXTREMABINCONVERT0, C_ZEXTREMABINCONVERT1);
 
+	/// Get an arrey to get te growth factor
+	double from_z_to_growth_factor_pow_2[C_NBBINREDSH] = {0.};
+	const double g0    = cosmo->get_growth_factor(0.);
+	const double growth_factor_step_size = C_ZEXTREMABINCONVERT1/C_NBBINREDSH;
+	const double inverse_growth_factor_step_size = 1./growth_factor_step_size;
+	for (unsigned int i=0; i<C_NBBINREDSH; i++) {
+		const double ZZZ = i*growth_factor_step_size;
+		from_z_to_growth_factor_pow_2[i] = (cosmo->get_growth_factor(ZZZ)/g0)*(cosmo->get_growth_factor(ZZZ)/g0);
+	}
+
 	//// Get the distance if it was this metal
 	std::vector< std::vector< double > > v_r_metal(v_r__);
 	for (unsigned int i=0; i<v_r_metal.size(); i++) {
@@ -5857,6 +5914,7 @@ void Correlation::xi_delta_QSO_Metals_Models_MockJMc(double lambdaFrMetal, std::
 	}
 
 	delete cosmo;
+	delete hConvertRedshDist;
 	v_CosDe__.clear();
 	v_SinDe__.clear();
 	v_zz__.clear();
@@ -5938,10 +5996,16 @@ void Correlation::xi_delta_QSO_Metals_Models_MockJMc(double lambdaFrMetal, std::
 	std::vector<double> v_raRandQSO;
 	std::vector<double> v_deRandQSO;
 	std::vector<double> v_rrRandQSO;
+	std::vector<double> v_zzRandQSO;
 	if (randomPositionOfQSOInCellNotBeforeCorrelation__) {
 
+		//// Create the conversion table from redshift to distance
+		Cosmology* cosmo = new Cosmology(C_H, C_OMEGAM, C_OMEGAB);
+		TGraph* gr_from_dist_to_z = cosmo->create_TGraph_to_convert_distance_to_redshift(C_NBBINREDSH, C_ZEXTREMABINCONVERT0, C_ZEXTREMABINCONVERT1);
+		delete cosmo;
+
 		std::cout << "  Seed is = " << seed_for_random_position__ << std::endl;
-		std::srand(seed_for_random_position__);
+		std::srand (seed_for_random_position__);
 
 		//// Forest
 		v_raRandForest.resize(nbForest_,0.);
@@ -5954,11 +6018,16 @@ void Correlation::xi_delta_QSO_Metals_Models_MockJMc(double lambdaFrMetal, std::
 		//// QSO
 		v_raRandQSO.resize(nbQ1__,0.);
 		v_deRandQSO.resize(nbQ1__,0.);
+		v_rrRandQSO.resize(nbQ1__,0.);
+		v_zzRandQSO.resize(nbQ1__,0.);
 		for (unsigned int i=0; i<nbQ1__; i++) {
 			v_raRandQSO[i] = v_raQ1__[i] + sizeCell__*(1.*rand()/RAND_MAX-0.5);
 			v_deRandQSO[i] = v_deQ1__[i] + sizeCell__*(1.*rand()/RAND_MAX-0.5);
 			v_rrRandQSO[i] = v_rrQ1__[i] + sizeCell__*(1.*rand()/RAND_MAX-0.5);
+			v_zzRandQSO[i] = gr_from_dist_to_z->Eval(v_rrRandQSO[i]);
 		}
+
+		delete gr_from_dist_to_z;
 	}
 
 	std::cout << "\n  Starting\n" << std::endl;
@@ -5986,7 +6055,7 @@ void Correlation::xi_delta_QSO_Metals_Models_MockJMc(double lambdaFrMetal, std::
 			double x2 = v_raQ1__[q];
 			double y2 = v_deQ1__[q];
 			double r2 = v_rrQ1__[q];
-			const double z2 = v_zzQ1__[q];
+			double z2 = v_zzQ1__[q];
 
 			//// Not in the same line of sight
 			if (x==x2 && y==y2) continue;
@@ -5996,6 +6065,7 @@ void Correlation::xi_delta_QSO_Metals_Models_MockJMc(double lambdaFrMetal, std::
 				x2 = v_raRandQSO[q];
 				y2 = v_deRandQSO[q];
 				r2 = v_rrRandQSO[q];
+				z2 = v_zzRandQSO[q];
 			}
 
 			//// distance of QSO
@@ -6028,9 +6098,10 @@ void Correlation::xi_delta_QSO_Metals_Models_MockJMc(double lambdaFrMetal, std::
 				const double w   = v_w__[f][i];
 				unsigned int idxBinCAMB = nbBinCAMB;
 				if (distTotMetal<maxDistCAMB) idxBinCAMB = int(distTotMetal*inverse_step_size);
-				const double wxi0 = w*data_xi0[idxBinCAMB];
-				const double wxi2 = w*data_xi2[idxBinCAMB];
-				const double wxi4 = w*data_xi4[idxBinCAMB];
+				const double growth_factor_pow_2 = from_z_to_growth_factor_pow_2[ int(0.5*(zQSO+v_z__[f][i])*inverse_growth_factor_step_size) ];
+				const double wxi0 = w*growth_factor_pow_2*data_xi0[idxBinCAMB];
+				const double wxi2 = w*growth_factor_pow_2*data_xi2[idxBinCAMB];
+				const double wxi4 = w*growth_factor_pow_2*data_xi4[idxBinCAMB];
 
 				if (distTot < max) {
 					const double mu         = distP/distTot;
@@ -6179,7 +6250,7 @@ void Correlation::xi_QSO_QSO_MockJMc(unsigned int bootIdx/*=0*/) {
 
 			v_raQ1__[nbQSO] = x;
 			v_deQ1__[nbQSO] = y;
-			v_rrQ1__[nbQSO]  = r;
+			v_rrQ1__[nbQSO] = r;
 			v_zzQ1__[nbQSO] = z;
 			nbQSO++;
 		}
@@ -6220,6 +6291,11 @@ void Correlation::xi_QSO_QSO_MockJMc(unsigned int bootIdx/*=0*/) {
 	///// Vectors of randomized positions in cell
 	if (randomPositionOfQSOInCellNotBeforeCorrelation__) {
 
+		//// Create the conversion table from redshift to distance
+		Cosmology* cosmo = new Cosmology(C_H, C_OMEGAM, C_OMEGAB);
+		TGraph* gr_from_dist_to_z = cosmo->create_TGraph_to_convert_distance_to_redshift(C_NBBINREDSH, C_ZEXTREMABINCONVERT0, C_ZEXTREMABINCONVERT1);
+		delete cosmo;
+
 		std::cout << "  Seed is = " << seed_for_random_position__ << std::endl;
 		std::srand(seed_for_random_position__);
 
@@ -6227,10 +6303,16 @@ void Correlation::xi_QSO_QSO_MockJMc(unsigned int bootIdx/*=0*/) {
 			v_raQ1__[i] += sizeCell__*(1.*rand()/RAND_MAX-0.5);
 			v_deQ1__[i] += sizeCell__*(1.*rand()/RAND_MAX-0.5);
 			v_rrQ1__[i] += sizeCell__*(1.*rand()/RAND_MAX-0.5);
-			dataX[i]    += sizeCell__*(1.*rand()/RAND_MAX-0.5);
-                        dataY[i]    += sizeCell__*(1.*rand()/RAND_MAX-0.5);
-			dataR[i]    += sizeCell__*(1.*rand()/RAND_MAX-0.5);
+			v_zzQ1__[i]  = gr_from_dist_to_z->Eval(v_rrQ1__[i]);
+
+			if (randomQSO) {
+				dataX[i]    += sizeCell__*(1.*rand()/RAND_MAX-0.5);
+                        	dataY[i]    += sizeCell__*(1.*rand()/RAND_MAX-0.5);
+				dataR[i]    += sizeCell__*(1.*rand()/RAND_MAX-0.5);
+				dataZ[i]     = gr_from_dist_to_z->Eval(dataR[i]);
+			}
 		}
+		delete gr_from_dist_to_z;
 	}
 
 
@@ -7516,6 +7598,7 @@ void Correlation::loadDataForest_Raw(unsigned int bootIdx/*=0*/) {
 
 	delete tp_flux_vs_lambdaRF;
 	delete tp_flux_vs_lambdaOBS;
+	delete hConvertRedshDist;
 
 	return;
 }
@@ -7533,7 +7616,7 @@ void Correlation::removeFalseCorrelations(bool firstPass/*=true*/) {
 	std::cout << "\n\n\n  ------ removeFalseCorrelations ------ " << std::endl;
 
 	//// Constants
-	const unsigned int nbLoop = 50;
+	const unsigned int nbLoop = 10;
 
 	TH1D* hDeltaVsLambdaObs[nbLoop+1];
 	TH1D* hDeltaVsLambdaObs_residual[nbLoop+1];

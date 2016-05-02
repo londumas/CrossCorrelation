@@ -33,13 +33,13 @@ nbFor = 166968
 pathMocks = '/home/gpfs/manip/mnt0607/bao/hdumasde/MockV4/M3_0_0/000/mock.fits'
 
 
-pathSimu    = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575/Box_000/Simu_000/Data/'
-rawPathSimu = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575/'
+pathSimu    = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_test_metals_1/Box_000/Simu_000/Data/'
+rawPathSimu = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_test_metals_1/'
 zKey = 'Z'
 alphaKey = 'ALPHA'
 area_simu = 9078.1
-chunckNb = 10
-simulNb  = 10
+chunckNb = 1
+simulNb  = 1
 show_mean = False
 
 num_plots = 10
@@ -106,7 +106,7 @@ def comparePlot():
 
 	del catData
 	del catSimu
-	'''
+	
 	## Get number of QSO
 	nb = numpy.array([])
 	vel = numpy.array([])
@@ -128,7 +128,7 @@ def comparePlot():
 			print i, j, catSimu.size
 	
 			del catSimu
-	'''
+	
 	print '  mean number of QSO = ', numpy.mean(nb)
 	print '  compare to data it is = ', (numpy.mean(nb)-nbQSO)/nbQSO*100.
 	plt.plot(numpy.arange(chunckNb*simulNb), nb,linewidth=2, label='Simulation',color='blue',marker='o')
@@ -146,7 +146,7 @@ def comparePlot():
 	myTools.deal_with_plot(False,False,True)
 	plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
 	plt.show()
-	'''
+	
 
 	print vel
 	print '  mean velocity = ', numpy.mean(vel)
@@ -171,7 +171,7 @@ def comparePlot():
         plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
         plt.show()
 
-	'''
+	
 	## Get number of Forest
 	nb = numpy.array([])
 	for i in range (0,chunckNb):
@@ -386,7 +386,7 @@ def comparePlot():
 			if (i==0 and j==0): meanData = data[:,1]
 			else: meanData += data[:,1]
 	if (show_mean): meanData /= chunckNb*simulNb
-	if (show_mean): plt.errorbar(data[:,0], meanData, marker='o', markersize=8,linewidth=2, label=r'$Simulation$',color='red')
+	if (show_mean): plt.errorbar(data[:,0], meanData, marker='o', markersize=8,linewidth=2, label=r'$Mean \, Simulation$',color='red')
 
 	plt.xlabel(r'$\lambda_{R.F.} \, [\AA]$', fontsize=40)
 	plt.ylabel(r'$\delta$', fontsize=40)
@@ -422,7 +422,7 @@ def comparePlot():
 				saveData = numpy.array(data[:,1])
 			else: meanData += data[:,1]
 	if (show_mean): meanData /= chunckNb*simulNb
-	if (show_mean): plt.errorbar(data[:,0]+1037.5, meanData, markersize=8,linewidth=4, label=r'$Simulation$',color='red')
+	if (show_mean): plt.errorbar(data[:,0]+1037.5, meanData, markersize=8,linewidth=4, label=r'$Mean \, Simulation$',color='red')
 
 	data = numpy.loadtxt(path + 'hDeltaVsLambdaRF_LYA.txt')
 	plt.errorbar(data[:,0]+1037.5, data[:,1],color='blue', markersize=8,linewidth=4)
@@ -448,7 +448,8 @@ def comparePlot():
 	maxA = numpy.max(data[:,1])
 
 	data = numpy.loadtxt('/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Resources/PDF/hDeltaVsLambdaObs_LYA_JMC.txt')
-	ax1.errorbar(data[:,1][ data[:,2]!=0. ], data[:,2][ data[:,2]!=0. ], label=r'$Simulation \, input$', color='orange',linewidth=2)
+	#print data[:,1]
+	ax1.errorbar(data[:,1][ numpy.logical_and(data[:,2]!=0.,data[:,1]<=5589.5) ], data[:,2][ numpy.logical_and(data[:,2]!=0.,data[:,1]<=5589.5) ], label=r'$Mean \, Simulation \, Input$', color='orange',linewidth=2)
 
 	for i in range (0,chunckNb):
 		for j in range(0,simulNb):
@@ -466,13 +467,14 @@ def comparePlot():
 			if (i==0 and j==0): meanData = data[:,1]
 			else: meanData += data[:,1]
 	if (show_mean): meanData /= chunckNb*simulNb
-	if (show_mean): ax1.errorbar(data[100:2090,0]+3500.5, meanData[100:2090], markersize=8,linewidth=2, label=r'$Simulation \, recovered$',color='red')  ##[100:2089]
+	#print data[100:2090,0]+3500.5
+	if (show_mean): ax1.errorbar(data[100:2090,0]+3500.5, meanData[100:2090], markersize=8,linewidth=2, label=r'$Mean \, Simulation \, Recovered$',color='red')  ##[100:2089]
 
 	#plt.plot([lambdaObsMin__,lambdaObsMin__],[min(numpy.min(data[:,1]),minA),max(numpy.max(data[:,1]),maxA)],color='green', markersize=8,linewidth=2)
 	#plt.plot([7235.,7235.],[min(numpy.min(data[:,1]),minA),max(numpy.max(data[:,1]),maxA)],color='green', markersize=8,linewidth=2)
 
 	ax1.set_xlabel(r'$\lambda_{Obs.} \, [\AA]$', fontsize=40)
-	ax1.set_ylabel(r'$F(\lambda_{Obs.})$', fontsize=40)
+	ax1.set_ylabel(r'$\overline{F}(\lambda_{Obs.})$', fontsize=40)
 	myTools.deal_with_plot(False,False,False)
 
 	
