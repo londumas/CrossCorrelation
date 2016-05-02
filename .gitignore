@@ -41,6 +41,8 @@ echo.e*
 echo.o*
 cp.o*
 cp.e*
+Expand.sh.e*
+Expand.sh.o*
 
 # Job failed
 core.*

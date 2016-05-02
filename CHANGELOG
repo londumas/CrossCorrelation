@@ -159,9 +159,7 @@
 	- Python/Correlation/CAMB.py:
 		* add calculation of monopole, quadupole, hexadecapole.
 
-
-
-#   one day ?
+# 2016 - 05 - 02 - (09h50)
 	- /Mock_JMLG/ReadFits/src/GetDelta.cpp:
 		* read the files in the order of produced with « ls -tr »
 	- /Constants/constants.h
@@ -189,8 +187,9 @@
 	- /chain_annalys_delta/Get_delta/src/GetDelta.cpp
 		* get the mean of alpha and beta
 
-
-
+# 2016 - 05 - 02 - (09h50)
+	- /Python/Correlation/transform_CAMB_by_Bias.py
+		* add this file that allows to apply the transformations done to CAMB by the simulations selection functions
 
 
 
