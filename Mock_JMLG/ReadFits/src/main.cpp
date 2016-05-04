@@ -29,13 +29,13 @@
 int main(int argc, char** argv)
 {	
 	// Needed to see the plots when running inside a program
-	TRint theApp("App", &argc, argv);
+	//TRint theApp("App", &argc, argv);
 
 	GetDelta* xCorr = new GetDelta(argc, argv);
 	delete xCorr;
 	
 	// Needed to see the plots when running inside a program
-	theApp.Run();
+	//theApp.Run();
 
 	return 0;
 }

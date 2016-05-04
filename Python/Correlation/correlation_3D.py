@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 from iminuit import Minuit
 import copy
 import sys
+import scipy
 
 ### Perso lib
 import myTools
@@ -28,6 +29,7 @@ raw_dic_class = {
 	'nb_Sub_Sampling': 80,
 	'size_bin_calcul_s': 1.,
 	'size_bin_calcul_m': 0.02,
+	'nb_multipole_max' : 5,
 	'remove_residuales' : 'lambda_OBS',
 	'path_to_txt_file_folder': 'NOTHING',
 	'correlation': 'q_f',
@@ -153,7 +155,9 @@ class Correlation3D:
 		self._nbBinM_calcul = int( (self._maxM-self._minM)/dic['size_bin_calcul_m'] )
 			
 		### Sub sampling
-		self.nb_Sub_Sampling = int(dic['nb_Sub_Sampling'])
+		self.nb_Sub_Sampling = dic['nb_Sub_Sampling']
+		### Number maximum of multipols
+		self._nb_multipole_max = dic['index_multipole_max']+1
 
 		### Set attributes set after
 		self._xi2D_grid = None
@@ -606,7 +610,7 @@ class Correlation3D:
 
 		### Set attributes set after
 		self._meanZ = 0.
-		self._xiMul = numpy.zeros(shape=(self._nbBin1D,5,3))
+		self._xiMul = numpy.zeros(shape=(self._nbBin1D,self._nb_multipole_max,3))
 
 		### Correlations data
 		self._xiMu = numpy.zeros(shape=(self._nbBin1D,self._nbBinM,4))
@@ -624,7 +628,7 @@ class Correlation3D:
 		listWe       = numpy.zeros( shape=(self._nbBin1D,3,nb_realisation) )
 		list1D       = numpy.zeros( shape=(self._nbBin1D,nb_realisation) )
 		list2D       = numpy.zeros( shape=(self._nbBin2D,nb_realisation) )
-		listMultipol = numpy.zeros( shape=(self._nbBin1D,5,nb_realisation) )
+		listMultipol = numpy.zeros( shape=(self._nbBin1D,self._nb_multipole_max,nb_realisation) )
 
 		path1D = self._path_to_txt_file_folder + self._prefix + '_Mu_' + self._middlefix + '_' + realisation_type + '_'
 		path2D = self._path_to_txt_file_folder + self._prefix + '_2D_' + self._middlefix + '_' + realisation_type + '_'
@@ -680,7 +684,7 @@ class Correlation3D:
 		listWe       = numpy.zeros( shape=(self._nbBin1D,3,nb_realisation) )
 		list1D       = numpy.zeros( shape=(self._nbBin1D,nb_realisation) )
 		list2D       = numpy.zeros( shape=(self._nbBin2D,nb_realisation) )
-		listMultipol = numpy.zeros( shape=(self._nbBin1D,5,nb_realisation) )
+		listMultipol = numpy.zeros( shape=(self._nbBin1D,self._nb_multipole_max,nb_realisation) )
 		listGrid     = numpy.zeros( shape=(self._nbBin2D,3,nb_realisation) )
 		list_mean_z  = numpy.zeros( shape=(nb_realisation) )
 
@@ -854,7 +858,7 @@ class Correlation3D:
 		### Multipol
 		listMultipol = numpy.load(path_to_load+'list_Multipol.npy')
 		self._xiMul = self.get_multipol(self._xiMu)
-		for i in numpy.arange(5):
+		for i in numpy.arange(self._nb_multipole_max):
 			self._xiMul[:,i,1] = numpy.mean(listMultipol[:,i,:],axis=1)
 			self._xiMul[:,i,2] = numpy.sqrt( numpy.diag(numpy.cov( listMultipol[:,i,:] )/nb_realisation))
 		### Grid
@@ -895,7 +899,7 @@ class Correlation3D:
 		if (self._xiMul is None): self._xiMul = self.get_multipol(self._xiMu)
 		path = raw_path + 'list_Multipol.npy'
 		listMultipol = numpy.load(path)
-		for i in numpy.arange(5):
+		for i in numpy.arange(self._nb_multipole_max):
 			self._xiMul[:,i,2] = numpy.sqrt( numpy.diag(numpy.cov( listMultipol[:,i,:] )/coef))
 
 		return
@@ -929,33 +933,34 @@ class Correlation3D:
 	
 		return
 	def get_multipol(self, xiMu, dic=None):
+		"""
+			https://fr.wikipedia.org/wiki/Polyn%C3%B4me_de_Legendre
+		"""
 	
 		### Array with name of variable
+		xi         = numpy.array(['xi']*10)
+		index      = numpy.arange(0,10,1).astype('int').astype('str')
+		nameArray  = numpy.core.defchararray.add(xi,index)
 		if (dic is None):
+			dic = {
+				'xi0' : True,
+				'xi1' : True,
+				'xi2' : True,
+				'xi3' : True,
+				'xi4' : True,
+				'xi5' : True,
+				'xi6' : True,
+				'xi7' : True,
+				'xi8' : True,
+				'xi9' : True,
+				'plot' : False
+			}
 			if (self._correlation=='q_q' or self._correlation=='f_f'):
-				### No acess to even multipol
-				dic = {
-					'xi0' : True,
-					'xi1' : False,
-					'xi2' : True,
-					'xi3' : False,
-					'xi4' : True,
-					'plot' : False
-				}
-			elif (self._correlation=='q_f' or self._correlation=='f_f2'):
-				### Acess to even multipol
-				dic = {
-					'xi0' : True,
-					'xi1' : True,
-					'xi2' : True,
-					'xi3' : True,
-					'xi4' : True,
-					'plot' : False
-				}
-
-		nameArray = [ 'xi0','xi1','xi2','xi3','xi4']
-		nbXi = len(nameArray)
-
+				for i in range(0,10):
+					if (i%2==1): dic[ nameArray[i] ] = False
+			for i in range(self._nb_multipole_max,10):
+				dic[ nameArray[i] ] = False
+		
 		### Get the data
 		xxx = xiMu[:,:,0]
 		muu = xiMu[:,:,1]
@@ -963,9 +968,9 @@ class Correlation3D:
 		yer = xiMu[:,:,3]
 
 		### Keep the results
-		result_xi = numpy.zeros(shape=(self._nbBin1D,nbXi,3))
+		result_xi = numpy.zeros(shape=(self._nbBin1D,self._nb_multipole_max,3))
 		meanXXX   = numpy.mean(xxx,axis=1)
-		for i in numpy.arange(0,nbXi):
+		for i in numpy.arange(0,self._nb_multipole_max):
 			result_xi[:,i,0] = meanXXX
 	
 		for i in numpy.arange(self._nbBin1D):
@@ -974,38 +979,55 @@ class Correlation3D:
 			tmpyyy      = yyy[i,:][cut]
 			tmpyer      = yer[i,:][cut]
 			xxxMu       = muu[i,:][cut]
-			xxxMuPower1 = numpy.power(xxxMu,1.)
-			xxxMuPower2 = numpy.power(xxxMu,2.)
-			xxxMuPower3 = numpy.power(xxxMu,3.)
-			xxxMuPower4 = numpy.power(xxxMu,4.)
+
+			legendre = [ scipy.special.eval_legendre(j,xxxMu) for j in range(0,10) ]
 			
-			### Define the fit function
-			def chi2(xi0,xi1,xi2,xi3,xi4):
-				fit = (xi0 - 0.5*xi2 + 0.375*xi4) + (xi1-1.5*xi3)*xxxMuPower1 + (1.5*xi2 - 3.75*xi4)*xxxMuPower2 + 2.5*xi3*xxxMuPower3 + 4.375*xi4*xxxMuPower4
+			def chi2(xi0,xi1,xi2,xi3,xi4,xi5,xi6,xi7,xi8,xi9):
+
+				fit = 0.
+				if (dic[ nameArray[0] ]): fit += xi0*legendre[0]
+				if (dic[ nameArray[1] ]): fit += xi1*legendre[1]
+				if (dic[ nameArray[2] ]): fit += xi2*legendre[2]
+				if (dic[ nameArray[3] ]): fit += xi3*legendre[3]
+				if (dic[ nameArray[4] ]): fit += xi4*legendre[4]
+				if (dic[ nameArray[5] ]): fit += xi5*legendre[5]
+				if (dic[ nameArray[6] ]): fit += xi6*legendre[6]
+				if (dic[ nameArray[7] ]): fit += xi7*legendre[7]
+				if (dic[ nameArray[8] ]): fit += xi8*legendre[8]
+				if (dic[ nameArray[9] ]): fit += xi9*legendre[9]
+				
 				return numpy.sum( numpy.power( (tmpyyy-fit)/tmpyer ,2.) )
-	
+
 			### Init ad perform the fit
-			m = Minuit(chi2, xi0=0.,error_xi0=0.1,xi1=0.,error_xi1=0.1,xi2=0.,error_xi2=0.1,xi3=0.,error_xi3=0.1,xi4=0.,error_xi4=0.1, print_level=-1, errordef=0.01,
-				fix_xi0=not dic['xi0'],fix_xi1=not dic['xi1'],fix_xi2=not dic['xi2'], fix_xi3=not dic['xi3'],fix_xi4=not dic['xi4'])
+			m = Minuit(chi2, print_level=-1, pedantic=False)
 			m.migrad()
 	
 			### Keep the results
-			for j in numpy.arange(0,nbXi):
+			for j in numpy.arange(0,self._nb_multipole_max):
 				result_xi[i,j,1] = m.values[ nameArray[j] ]
 				result_xi[i,j,2] = m.errors[ nameArray[j] ]
 
 			if (dic['plot']):
-				xi0 = m.values[ nameArray[0] ]
-				xi1 = m.values[ nameArray[1] ]
-				xi2 = m.values[ nameArray[2] ]
-				xi3 = m.values[ nameArray[3] ]
-				xi4 = m.values[ nameArray[4] ]
-				print xi0,xi1,xi2,xi3,xi4
-				plt.errorbar(xxxMu,tmpyyy,yerr=tmpyer, fmt='o')
-				plt.errorbar(xxxMu,(xi0 - 0.5*xi2 + 0.375*xi4) + (xi1-1.5*xi3)*xxxMuPower1 + (1.5*xi2 - 3.75*xi4)*xxxMuPower2 + 2.5*xi3*xxxMuPower3 + 4.375*xi4*xxxMuPower4)
+				plt.errorbar(xxxMu,tmpyyy,yerr=tmpyer, markersize=10,linewidth=2, marker='o',alpha=0.6)
+				fit  = 0.
+				for j in numpy.arange(0,self._nb_multipole_max):
+					fit += m.values[ nameArray[j] ]*scipy.special.eval_legendre(j,xxxMu)
+					print m.values[ nameArray[j] ]
+				print
+				plt.errorbar(xxxMu,fit)
+				plt.xlabel(r'$\mu$', fontsize=40)
+				plt.ylabel(r'$\xi(\mu,|s|)$', fontsize=40)
+				myTools.deal_with_plot(False,False,False)
 				plt.show()
 
-		cut = (result_xi[:,:,2]==0.1)
+				### Residuals
+				plt.errorbar( xxxMu, (tmpyyy-fit)/tmpyer, markersize=10,linewidth=2, marker='o',alpha=0.6)
+				plt.xlabel(r'$\mu$', fontsize=40)
+				plt.ylabel(r'$Residulas \, \xi(\mu,|s|)$', fontsize=40)
+				myTools.deal_with_plot(False,False,False)
+				plt.show()
+
+		cut = (result_xi[:,:,1]==0.)
 		result_xi[cut] = 0.
 
 		return result_xi
@@ -1486,7 +1508,7 @@ output-prefix = """ + path_to_BAOFIT + """.
 			if (correlation_matrix_path is None): correlation_matrix_path = path_to_cov
 			print '  correlation matrix path = ', correlation_matrix_path
 
-			print '  covaraince matrix path = ', path_to_cov
+			print '  covariance matrix path = ', path_to_cov
 			cov = numpy.load(path_to_cov)
 			cor = myTools.getCorrelationMatrix( numpy.load(correlation_matrix_path) )
 
@@ -1589,11 +1611,11 @@ output-prefix = """ + path_to_BAOFIT + """.
 		if (x_power==0):
 			plt.ylabel(r'$'+self._label+' (|s|)$', fontsize=40)
 		if (x_power==1):
-			plt.ylabel(r'$|s| \cdot '+self._label+' (|s|) \, [h^{-1} \cdot Mpc]$', fontsize=40)
+			plt.ylabel(r'$|s| \cdot '+self._label+' (|s|) \, [$h$^{-1}$Mpc$]$', fontsize=40)
 		if (x_power==2):
-			plt.ylabel(r'$|s|^{2} \cdot '+self._label+' (|s|) \, [(h^{-1} \cdot Mpc)^{2}]$', fontsize=40)
+			plt.ylabel(r'$|s|^{2} \cdot '+self._label+' (|s|) \, [($h$^{-1}$Mpc$)^{2}]$', fontsize=40)
+		plt.xlabel(r'$|s| \, [$h$^{-1}$Mpc$]$', fontsize=40)
 		plt.legend(fontsize=30, numpoints=1,ncol=2, loc=2)
-		plt.xlabel(r'$|s| \, [h^{-1} \cdot Mpc]$', fontsize=40)
 		plt.xlim([ numpy.amin(xxx)-10., numpy.amax(xxx)+10. ])
 		myTools.deal_with_plot(False,False,True)
 		plt.show()
@@ -1636,10 +1658,10 @@ output-prefix = """ + path_to_BAOFIT + """.
 		if (x_power==0):
 			plt.ylabel(r'$'+self._label+' (|s|)$', fontsize=40)
 		if (x_power==1):
-			plt.ylabel(r'$|s|.'+self._label+' (|s|) \, [h^{-1}.Mpc]$', fontsize=40)
+			plt.ylabel(r'$|s|.'+self._label+' (|s|) \, [$h$^{-1}$Mpc$]$', fontsize=40)
 		if (x_power==2):
-			plt.ylabel(r'$|s|^{2}.'+self._label+' (|s|) \, [(h^{-1}.Mpc)^{2}]$', fontsize=40)
-		plt.xlabel(r'$|s| \, [h^{-1}.Mpc]$', fontsize=40)
+			plt.ylabel(r'$|s|^{2}.'+self._label+' (|s|) \, [($h$^{-1}$Mpc$)^{2}]$', fontsize=40)
+		plt.xlabel(r'$|s| \, [$h$^{-1}$Mpc$]$', fontsize=40)
 		plt.xlim([ numpy.amin(xxx)-10., numpy.amax(xxx)+10. ])
 		plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
 		myTools.deal_with_plot(False,False,True)
@@ -1704,14 +1726,14 @@ output-prefix = """ + path_to_BAOFIT + """.
 				plt.ylabel(r'$'+self._label+' (|s|)$', fontsize=40)
 				plt.legend(fontsize=30, numpoints=1,ncol=2, loc=4)
 			if (x_power==1):
-				plt.ylabel(r'$|s|.'+self._label+' (|s|) \, [h^{-1}.Mpc]$', fontsize=40)
+				plt.ylabel(r'$|s|.'+self._label+' (|s|) \, [$h$^{-1}$Mpc$]$', fontsize=40)
 				plt.legend(fontsize=30, numpoints=1,ncol=2, loc=4)
 			if (x_power==2):
-				plt.ylabel(r'$|s|^{2}.'+self._label+' (|s|) \, [(h^{-1}.Mpc)^{2}]$', fontsize=40)
+				plt.ylabel(r'$|s|^{2}.'+self._label+' (|s|) \, [($h$^{-1}$Mpc$)^{2}]$', fontsize=40)
 				plt.legend(fontsize=30, numpoints=1,ncol=2, loc=2)
 		
 		if (title): plt.title(r'$'+self._title+'$', fontsize=40)
-		plt.xlabel(r'$|s| \, [h^{-1}.Mpc]$', fontsize=40)
+		plt.xlabel(r'$|s| \, [$h$^{-1}$Mpc$]$', fontsize=40)
 		plt.xlim([ numpy.amin(xxx)-10., numpy.amax(xxx)+10. ])
 		myTools.deal_with_plot(False,False,False)
 		plt.show()
@@ -1749,9 +1771,9 @@ output-prefix = """ + path_to_BAOFIT + """.
 		if (x_power==0):
 			cbar.set_label(r'$'+self._label+'(\, \overrightarrow{s} \,)$',size=40)
 		if (x_power==1):
-			cbar.set_label(r'$|s|.'+self._label+'(\, \overrightarrow{s} \,) \, [h^{-1}.Mpc]$',size=40)
+			cbar.set_label(r'$|s|.'+self._label+'(\, \overrightarrow{s} \,) \, [$h$^{-1}$Mpc$]$',size=40)
 		if (x_power==2):
-			cbar.set_label(r'$|s|^{2}.'+self._label+'(\, \overrightarrow{s} \,) \, [(h^{-1}.Mpc)^{2}]$',size=40)
+			cbar.set_label(r'$|s|^{2}.'+self._label+'(\, \overrightarrow{s} \,) \, [($h$^{-1}$Mpc$)^{2}]$',size=40)
 	
 		'''
 		plt.plot( [0.,200.],[0.,4*200.],color='white',linewidth=2 )
@@ -1762,9 +1784,9 @@ output-prefix = """ + path_to_BAOFIT + """.
 		plt.ylim( [-200.,200.] )
 		'''
 
-		plt.title(r'$'+self._title+'$', fontsize=40)
-		plt.xlabel(r'$s_{\perp} \, [h^{-1} Mpc]$', fontsize=40)
-		plt.ylabel(r'$s_{\parallel} \, [h^{-1} Mpc]$', fontsize=40)
+		#plt.title(r'$'+self._title+'$', fontsize=40)
+		plt.xlabel(r'$s_{\perp} \, [$h$^{-1}$Mpc$]$', fontsize=40)
+		plt.ylabel(r'$s_{\parallel} \, [$h$^{-1}$Mpc$]$', fontsize=40)
 		plt.grid(True)
 		cbar.formatter.set_powerlimits((0, 0))
 		cbar.update_ticks()
@@ -1800,10 +1822,10 @@ output-prefix = """ + path_to_BAOFIT + """.
 			plt.errorbar(xxx, yyy, yerr=yer,linewidth=2,marker='o',alpha=0.6, label=r'$'+el._name+'$')
 
 		if (sliceX is not None):
-			plt.xlabel(r'$s_{\parallel} \, [h^{-1} Mpc]$', fontsize=40)
+			plt.xlabel(r'$s_{\parallel} \, [$h$^{-1}$Mpc$]$', fontsize=40)
 			plt.title(r'$<s_{\perp}> = %2f$' % mean)
 		else:
-			plt.xlabel(r'$s_{\perp} \, [h^{-1} Mpc]$', fontsize=40)
+			plt.xlabel(r'$s_{\perp} \, [$h$^{-1}$Mpc$]$', fontsize=40)
 			plt.title(r'$<s_{\parallel}> = %2f$' % mean)
 		plt.ylabel(r'$'+self._label+'(\, \overrightarrow{s} \,)$',fontsize=40)
 
@@ -1835,10 +1857,10 @@ output-prefix = """ + path_to_BAOFIT + """.
 			b = ''
 		if (x_power==1):
 			a = '|s|.'
-			b = '[h^{-1}.Mpc]'
+			b = '[$h$^{-1}$Mpc$]'
 		if (x_power==2):
 			a = '|s|^{2}.'
-			b = '[(h^{-1}.Mpc)^{2}]'
+			b = '[($h$^{-1}$Mpc$)^{2}]'
 		
 		
 		plt.imshow(coef*yyy, origin='lower', interpolation='None',extent=extent,aspect='auto')
@@ -1846,7 +1868,7 @@ output-prefix = """ + path_to_BAOFIT + """.
 		cbar.set_label(r'$'+a+self._label+'\, (|s|, \mu) \, '+b+'$',size=40)
 		plt.title(r'$'+self._title+'$', fontsize=40)
 		plt.xlabel(r'$\mu$', fontsize=40)
-		plt.ylabel(r'$|s| \, [h^{-1} Mpc]$', fontsize=40)
+		plt.ylabel(r'$|s| \, [$h$^{-1}$Mpc$]$', fontsize=40)
 		plt.grid(True)
 		cbar.formatter.set_powerlimits((0, 0))
 		cbar.update_ticks()
@@ -1919,11 +1941,11 @@ output-prefix = """ + path_to_BAOFIT + """.
 		if (x_power==0):
 			plt.ylabel(r'$'+self._label+' (|s|)$', fontsize=40)
 		if (x_power==1):
-			plt.ylabel(r'$|s|^{1}.'+self._label+' (|s|) \, [h^{-1}.Mpc]$', fontsize=40)
+			plt.ylabel(r'$|s|^{1}.'+self._label+' (|s|) \, [$h$^{-1}$Mpc$]$', fontsize=40)
 		if (x_power==2):
-			plt.ylabel(r'$|s|^{2}.'+self._label+' (|s|) \, [(h^{-1}.Mpc)^{2}]$', fontsize=40)
+			plt.ylabel(r'$|s|^{2}.'+self._label+' (|s|) \, [($h$^{-1}$Mpc$)^{2}]$', fontsize=40)
 			
-		plt.xlabel(r'$|s| \, [h^{-1}.Mpc]$', fontsize=40)
+		plt.xlabel(r'$|s| \, [$h$^{-1}$Mpc$]$', fontsize=40)
 		plt.xlim([ numpy.amin(xxx)-10., numpy.amax(xxx)+10. ])
 		#plt.ylim([ min( min( numpy.amin(coef*yyy)*1.1,numpy.amin(coef*yyy)*0.9),min( numpy.amin(coef2*result_1D_camb[:,1])*1.1,numpy.amin(coef2*result_1D_camb[:,1])*0.9) ) , max( max( numpy.amax(coef*yyy)*1.1,numpy.amax(coef*yyy)*0.9),max( numpy.amax(coef2*result_1D_camb[:,1])*1.1,numpy.amax(coef2*result_1D_camb[:,1])*0.9) ) ])
 		myTools.deal_with_plot(False,False,False)
@@ -1939,10 +1961,10 @@ output-prefix = """ + path_to_BAOFIT + """.
 				el._xiMul = el.get_multipol(el._xiMu)
 	
 		color = ['blue','green','red','orange','black']
-		ylabel = ['\\xi^{qf} (|s|)','|s|.\\xi^{qf} (|s|) \, [h^{-1}.Mpc]','|s|^{2}.\\xi^{qf} (|s|) \, [(h^{-1}.Mpc)^{2}]']
+		ylabel = ['\\xi^{qf} (|s|)','|s|.\\xi^{qf} (|s|) \, [$h$^{-1}$Mpc$]','|s|^{2}.\\xi^{qf} (|s|) \, [($h$^{-1}$Mpc$)^{2}]']
 	
 		### Show the result
-		for i in numpy.arange(0, self._xiMul[0,:,0].size ):
+		for i in numpy.arange(0, self._nb_multipole_max ):
 
 			##if (i!=0): continue
 
@@ -1970,10 +1992,10 @@ output-prefix = """ + path_to_BAOFIT + """.
 		if (x_power==0):
 			plt.ylabel(r'$'+self._label+' (|s|)$', fontsize=40)
 		if (x_power==1):
-			plt.ylabel(r'$|s|.'+self._label+' (|s|) \, [h^{-1}.Mpc]$', fontsize=40)
+			plt.ylabel(r'$|s|.'+self._label+' (|s|) \, [$h$^{-1}$Mpc$]$', fontsize=40)
 		if (x_power==2):
-			plt.ylabel(r'$|s|^{2}.'+self._label+' (|s|) \, [(h^{-1}.Mpc)^{2}]$', fontsize=40)
-		plt.xlabel(r'$|s| \, [h^{-1}.Mpc]$', fontsize=40)
+			plt.ylabel(r'$|s|^{2}.'+self._label+' (|s|) \, [($h$^{-1}$Mpc$)^{2}]$', fontsize=40)
+		plt.xlabel(r'$|s| \, [$h$^{-1}$Mpc$]$', fontsize=40)
 		plt.xlim([ numpy.amin(xxx)-10., numpy.amax(xxx)+10. ])
 		myTools.deal_with_plot(False,False,True)
 		plt.show()
@@ -2029,6 +2051,7 @@ output-prefix = """ + path_to_BAOFIT + """.
 		for i in numpy.arange( len(cov) ):
 			myTools.plot2D(myTools.getCorrelationMatrix(cov[i]), None,None,None,None,realisation_type[i])
 
+		realisation_type[0] = 'Subsampling'
 		myTools.plotCovar(cov,realisation_type)
 
 		return
@@ -2089,8 +2112,8 @@ output-prefix = """ + path_to_BAOFIT + """.
 		cbar = plt.colorbar()
 	
 		#plt.title(r'$'+self._title+'$', fontsize=40)
-		plt.xlabel(r'$s_{\perp} \, [h^{-1} Mpc]$', fontsize=40)
-		plt.ylabel(r'$s_{\parallel} \, [h^{-1} Mpc]$', fontsize=40)
+		plt.xlabel(r'$s_{\perp} \, [$h$^{-1}$Mpc$]$', fontsize=40)
+		plt.ylabel(r'$s_{\parallel} \, [$h$^{-1}$Mpc$]$', fontsize=40)
 		cbar.set_label(r'$'+z_axis[index]+'$',size=40)
 		plt.grid(True)
 		#cbar.formatter.set_powerlimits((0, 0))
@@ -2123,8 +2146,8 @@ output-prefix = """ + path_to_BAOFIT + """.
 		#plt.ylim([-90.,90.])
 		plt.ticklabel_format(style='sci', axis='z', scilimits=(0,0))
 		if (euclidean):
-			plt.xlabel(r'$x \, [h^{-1.}.Mpc]$')
-			plt.ylabel(r'$y \, [h^{-1.}.Mpc]$')
+			plt.xlabel(r'$x \, [$h$^{-1}$Mpc$]$')
+			plt.ylabel(r'$y \, [$h$^{-1}$Mpc$]$')
 		else:
 			plt.xlabel(r'$R.A. \, [\degree]$')
 			plt.ylabel(r'$Dec. \, [\degree]$')
@@ -2140,8 +2163,8 @@ output-prefix = """ + path_to_BAOFIT + """.
 		ax.grid(True,linestyle='-',color='0.75')
 
 		if (euclidean):
-			plt.xlabel(r'$x \, [h^{-1.}.Mpc]$')
-			plt.ylabel(r'$y \, [h^{-1.}.Mpc]$')
+			plt.xlabel(r'$x \, [$h$^{-1}$Mpc$]$')
+			plt.ylabel(r'$y \, [$h$^{-1}$Mpc$]$')
 		else:
 			plt.xlabel(r'$R.A. \, [\degree]$')
 			plt.ylabel(r'$Dec. \, [\degree]$')
@@ -2179,8 +2202,8 @@ output-prefix = """ + path_to_BAOFIT + """.
 
 		plt.ticklabel_format(style='sci', axis='z', scilimits=(0,0))
 		if (euclidean):
-			plt.xlabel(r'$x \, [h^{-1.}.Mpc]$')
-			plt.ylabel(r'$y \, [h^{-1.}.Mpc]$')
+			plt.xlabel(r'$x \, [$h$^{-1}$Mpc$]$')
+			plt.ylabel(r'$y \, [$h$^{-1}$Mpc$]$')
 		else:
 			plt.xlabel(r'$R.A. \, [\degree]$')
 			plt.ylabel(r'$Dec. \, [\degree]$')
@@ -2196,8 +2219,8 @@ output-prefix = """ + path_to_BAOFIT + """.
 		ax.grid(True,linestyle='-',color='0.75')
 
 		if (euclidean):
-			plt.xlabel(r'$x \, [h^{-1.}.Mpc]$')
-			plt.ylabel(r'$y \, [h^{-1.}.Mpc]$')
+			plt.xlabel(r'$x \, [$h$^{-1}$Mpc$]$')
+			plt.ylabel(r'$y \, [$h$^{-1}$Mpc$]$')
 		else:
 			plt.xlabel(r'$R.A. \, [\degree]$')
 			plt.ylabel(r'$Dec. \, [\degree]$')

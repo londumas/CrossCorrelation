@@ -53,6 +53,7 @@ class GetDelta
 		std::string pathToDataQSO__;
 		std::string pathToDataForest__;
 		std::string pathToSave__;
+		bool noMetals__;
 		bool noCont__;
 		bool noNoise__;
 		bool isTest__;

@@ -26,6 +26,9 @@ import re
 import cosmolopy.distance as cosmology
 
 
+###
+# http://www.sdss3.org/svn/repo/boss/LyAMockExpander/tags/v1_4
+###
 
 ### Constants
 sizeMax = 250000
@@ -67,7 +70,7 @@ def main():
 		subprocess.call('mkdir ' +pathToFolder+'Results_no_projection/', shell=True)
 		subprocess.call('mkdir ' +pathToFolder+'Results_raw_from_JeanMarc/', shell=True)
 
-	for i in range(0,1):
+	for i in range(0,2):
 
 		path = pathToFolder + 'Box_00' + str(i) + '/'
 
@@ -76,7 +79,9 @@ def main():
 		if (index_pass==0):
 			subprocess.call('mkdir ' +path, shell=True)
 
-		for j in range(0,1):
+		for j in range(0,10):
+
+			#if (i==0 and j==0): continue
 
 			print i, j
 			path = pathToFolder+ 'Box_00' + str(i) + '/Simu_00'+str(j) + '/'
@@ -96,15 +101,15 @@ def main():
 			if (index_pass==1):
 
 				'''
-				/home/gpfs/manip/mnt0607/bao/hdumasde/Program/LyAMockExpander/Expand.sh -i /home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/v1575/fits/spectra-7851-5.fits -o /home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/Box_000/Simu_000/Raw/ -columns loglam,flux,ivar,and_mask,mock_contpca,mock_F,mock_Fmet -JM -vac /home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/DR12Q_v2_10.fits -data /home/gpfs/manip/mnt0607/bao/Spectra/SpectraV5_8_guy/spectra -seed 0 -metals 2
+				/home/gpfs/manip/mnt0607/bao/hdumasde/Program/LyAMockExpander/Expand.sh -i /home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/v1575/fits/spectra-7850-0.fits -o /home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/Box_000/Simu_000/Raw/ -columns loglam,flux,ivar,and_mask,mock_contpca,mock_F,mock_Fmet -JM -vac /home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/DR12Q_v2_10.fits -data /home/gpfs/manip/mnt0607/bao/Spectra/SpectraV5_8_guy/spectra -seed 0 -metals 2
 				'''
 
-				command = '/home/gpfs/manip/mnt0607/bao/hdumasde/Program/LyAMockExpander/Expand.sh -i /home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/v1575/fits/spectra-785'+str(i)+'-'+str(j)+'.fits -o ' +path+ 'Raw/ -columns loglam,flux,ivar,and_mask,mock_contpca,mock_F,mock_Fmet -JM -vac /home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/DR12Q_v2_10.fits -data /home/gpfs/manip/mnt0607/bao/Spectra/SpectraV5_8_guy/spectra -seed 0 -metals 2'
+				command = '/home/gpfs/manip/mnt0607/bao/hdumasde/Program/LyAMockExpander/Expand.sh -i /home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/v1575/fits/spectra-785'+str(i)+'-'+str(j)+'.fits -o ' +path+ 'Raw/ -columns loglam,flux,ivar,and_mask,mock_contpca,mock_F,mock_Fmet -JM -vac /home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/DR12Q_v2_10.fits -data /home/gpfs/manip/mnt0607/bao/Spectra/SpectraV5_8_guy/spectra -metals 2 -seed ' + str(j)+ ' -seed_first_index ' + str(i)
 				command = "clubatch \"echo ; hostname ; "+ command + "\""
 				print command
-                                subprocess.call(command, shell=True)
+				subprocess.call(command, shell=True)
 				myTools.isReadyForNewJobs(20, 1000,'echo')
-                               	time.sleep(60)
+				time.sleep(60)
 
 			if (index_pass==2):
 				if (i==0 and j==0):
@@ -112,12 +117,12 @@ def main():
 					#tbhduQSO.writeto(path + 'Data/QSO_withRSD.fits', clobber=True)
 					tbhduForest = create_fits_forest(sizeMaxForest)
 					tbhduForest.writeto(path + 'Data/delta.fits', clobber=True)
-					tbhduForest.writeto(path + 'Data_no_metals/delta.fits', clobber=True)
+					#tbhduForest.writeto(path + 'Data_no_metals/delta.fits', clobber=True)
 				else:
 					command = 'cp ' + pathToFolder + 'Box_000/Simu_000/Data/delta.fits ' + path + 'Data/delta.fits'
 					subprocess.call(command, shell=True)
-					command = 'cp ' + pathToFolder + 'Box_000/Simu_000/Data/delta.fits ' + path + 'Data_no_metals/delta.fits'
-					subprocess.call(command, shell=True)
+					#command = 'cp ' + pathToFolder + 'Box_000/Simu_000/Data/delta.fits ' + path + 'Data_no_metals/delta.fits'
+					#subprocess.call(command, shell=True)
 					#command = 'cp ' + pathToFolder + 'Box_000/Simu_000/Data/QSO_withRSD.fits ' + path + 'Data/QSO_withRSD.fits'
 					#subprocess.call(command, shell=True)
 
@@ -129,7 +134,7 @@ def main():
 				command = "clubatch \"echo ; hostname ; "+ command + "\""
 				print command
 				subprocess.call(command, shell=True)
-				myTools.isReadyForNewJobs(5, 1000,'echo')
+				myTools.isReadyForNewJobs(25, 1000,'echo')
 				time.sleep(60)
 				
 

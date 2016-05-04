@@ -256,7 +256,7 @@ class Correlation3DQ(correlation_3D.Correlation3D):
 		listWe       = numpy.zeros( shape=(self._nbBin1D,3,nb_realisation) )
 		list1D       = numpy.zeros( shape=(self._nbBin1D,nb_realisation) )
 		list2D       = numpy.zeros( shape=(self._nbBin2D,nb_realisation) )
-		listMultipol = numpy.zeros( shape=(self._nbBin1D,5,nb_realisation) )
+		listMultipol = numpy.zeros( shape=(self._nbBin1D,self._nb_multipole_max,nb_realisation) )
 		listGrid     = numpy.zeros( shape=(self._nbBin2D,3,nb_realisation) )
 		list_mean_z  = numpy.zeros( shape=(nb_realisation) )
 

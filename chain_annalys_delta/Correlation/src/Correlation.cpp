@@ -96,7 +96,7 @@ const double halfGama__  = gama__/2.;
 double distMinPixel__ = 0.;
 double distMinPixelDelta2__ = 0.;
 unsigned int idxCommand_[6] = {0};
-const std::string pathToMockJMC__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_test_metals_4/";
+const std::string pathToMockJMC__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/";
 std::string pathToRaw__ = "";
 std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator/";  //_nicolasEstimator   //_method1
 std::string correlation_type__ = "NOTHING";
@@ -112,6 +112,7 @@ const unsigned int mock_version = 2;
 const bool mocks_raw          = false;
 const bool meanOver3pixels__  = false;
 const bool mocksNoNoiseNoCont = false;
+const bool noMetals__         = false;
 const double randomPositionOfQSOInCellNotBeforeCorrelation__ = true;
 unsigned int seed_for_random_position__ = 42;
 //// Flags for covariance matrix estimation
@@ -205,17 +206,16 @@ Correlation::Correlation(int argc, char **argv) {
 		pathForest__ += "/Simu_00";
 		pathForest__ += argv[6];
 		pathForest__ += "/";
-		pathQ1__      = pathForest__;
 		pathToSave__  = pathForest__;
 		pathToRaw__   = pathForest__;
 
-		if (!mocksNoNoiseNoCont) pathForest__ += "Data/delta.fits";
-		else pathForest__ += "Data/delta.fits";
-		
+		pathQ1__ = pathForest__;
 		pathQ1__ += "Data/QSO_withRSD.fits";
 
+		if (noMetals__) pathForest__ += "Data_no_metals/delta.fits";
+		else            pathForest__ += "Data/delta.fits";
+
 		pathToSave__ += "Results";
-		
 		if (mocks_raw) {
 			if (mock_version==1) pathToSave__ += "_Raw/";
 			if (mock_version==2) pathToSave__ += "_raw_from_JeanMarc/";
@@ -223,7 +223,8 @@ Correlation::Correlation(int argc, char **argv) {
 		}
 		else {
 			if (!nicolasEstimator__) pathToSave__ += "_no_projection/";
-			else pathToSave__ += "/";
+			else if (noMetals__)     pathToSave__ += "_no_metals/";
+			else                     pathToSave__ += "/";
 		}
 		
 

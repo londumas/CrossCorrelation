@@ -407,30 +407,28 @@ list_corr += [corr]
 #
 dic_simu['path_to_simu'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/'
 dic_class['f1'] = 'LYA'
-dic_class['name'] = 'Simulation \, raw'
-dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/Box_000/Simu_000/Results_raw_from_JeanMarc/'
+dic_class['name'] = 'Simulation'
+dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/Box_000/Simu_000/Results/'
 dic_class['correlation'] = "f_f_lRF_devide"
 corr = Correlation_1D(dic_class)
 #corr.save_list_realisation_simulation(dic_class, dic_simu)
-corr.set_values_on_mean_simulation(dic_simu)
+#corr.set_values_on_mean_simulation(dic_simu)
 list_corr += [corr]
 
 
 #
+dic_simu['path_to_simu'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/'
 dic_class['f1'] = 'LYA'
-dic_class['name'] = 'Simulation \, now'
-dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_test_metals_3/Box_000/Simu_000/Results/'
+dic_class['name'] = 'Simulation'
+dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/Box_000/Simu_000/Results_no_metals/'
 dic_class['correlation'] = "f_f_lRF_devide"
 corr = Correlation_1D(dic_class)
+#corr.save_list_realisation_simulation(dic_class, dic_simu)
+#corr.set_values_on_mean_simulation(dic_simu)
 list_corr += [corr]
 
-#
-dic_class['f1'] = 'LYA'
-dic_class['name'] = 'Simulation \, now \, v4'
-dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_test_metals_4/Box_000/Simu_000/Results/'
-dic_class['correlation'] = "f_f_lRF_devide"
-corr = Correlation_1D(dic_class)
-list_corr += [corr]
+
+
 
 #list_corr[0].plot(True,True)
 list_corr[0].plot(False,False,list_corr[1:])

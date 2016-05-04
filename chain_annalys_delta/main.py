@@ -72,7 +72,7 @@ def main():
 		last  = step
 		while (first <= nbSpectra):
 		
-			tmp_command = "clubatch \"echo ; hostname ; /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/chain_annalys_delta/Get_delta/bin/main.exe 0 0 " + str(first) + " " + str(last) +" 2 1 \""
+			tmp_command = "clubatch \"echo ; hostname ; /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/chain_annalys_delta/Get_delta/bin/main.exe 0 1 " + str(first) + " " + str(last) +" 2 1 \""
 			subprocess.call(tmp_command, shell=True)
 		
 			tmp_command = "echo " + tmp_command

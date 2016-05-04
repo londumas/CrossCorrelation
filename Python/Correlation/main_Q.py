@@ -33,9 +33,10 @@ dic_class = {
 	'nb_Sub_Sampling': 80,
 	'size_bin_calcul_s': 1.,
 	'size_bin_calcul_m': 0.02,
-	'correlation': 'q_q',
-	'path_to_txt_file_folder': '',
+	'index_multipole_max' : 4,
 	'remove_residuales' : '',
+	'path_to_txt_file_folder': '',
+	'correlation': 'q_q',
 	'f1': 'LYA',
 	'f2': '',
 	'q1': 'QSO',
@@ -102,7 +103,7 @@ if (True):
 	dic_class['name'] = 'random \, XYZ'
 	dic_Q['path_to_cat']                 = raw+'Data/'+dic_Q['sufix']+'.fits'
 	corr = correlation_3D_Q.Correlation3DQ(dic_class,dic_Q)
-	#corr.save_list_realisation_simulation(dic_class, dic_Q, dic_simu)
+	corr.save_list_realisation_simulation(dic_class, dic_Q, dic_simu)
 	corr.set_values_on_mean_simulation(dic_simu)
 
 	'''
@@ -122,6 +123,7 @@ if (True):
 	myTools.save_fited_cor_from_cov(path_to_load, path_to_save,50,50,'q_q')
 	"""
 
+	"""
 	print corr._meanZ
 
 	### Test CAMB and CAMB transformed
@@ -225,10 +227,10 @@ if (True):
 		plt.xlim([0.,200.])
 		myTools.deal_with_plot(False,False,True)
 		plt.show()
-	
-
-
 	"""
+
+
+	
 	dic_CAMB['mulpol_index'] = 0
 	dic_CAMB = corr.fit_CAMB(corr._xiMul[:,0,:],dic_CAMB_fit,False)
 	print numpy.sqrt(dic_CAMB_fit['b'])
@@ -248,7 +250,7 @@ if (True):
 	corr.plot_CAMB(corr._xiMul[:,4,:],dic_CAMB_fit,1,False)
 	corr.plot_CAMB(corr._xiMul[:,4,:],dic_CAMB_fit,2,False)
 	
-	
+	"""
 	corr.plot_1d(0)
 	corr.plot_1d(1)
 	corr.plot_1d(2)
@@ -261,6 +263,7 @@ if (True):
 	corr.plot_mu(0)
 	corr.plot_mu(1)
 	corr.plot_mu(2)
+	"""
 	corr.plot_multipol(0)
 	corr.plot_multipol(1)
 	corr.plot_multipol(2)
@@ -268,7 +271,7 @@ if (True):
 	corr.plot_grid(0,True)
 	corr.plot_grid(1,True)
 	corr.plot_grid(2,True)
-	"""
+	
 	#corr.send_BAOFIT(dic_send_BAOFIT)
 	
 

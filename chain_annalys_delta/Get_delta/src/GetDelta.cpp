@@ -82,6 +82,7 @@ const bool cutNotFittedSpectra__  = true;
 const bool mocksColab__           = false;
 const bool mockJMC__              = true;
 const bool putReobsTogether__     = false;
+const bool noMetals__             = false;
 double isReobsFlag__ = -100.;
 
 GetDelta::GetDelta(int argc, char** argv) {
@@ -161,9 +162,13 @@ GetDelta::GetDelta(int argc, char** argv) {
 			pathForest__ += "/Simu_00";
 			pathForest__ += sim;
 			pathToTxt__   = pathForest__;
-			pathForest__ += "/Data/delta.fits";
+			pathForest__ += "/Data";
+			if (noMetals__) pathForest__ += "_no_metals";
+			pathForest__ += "/delta.fits";
 
-			pathToTxt__  += "/Run/";
+			pathToTxt__  += "/Run";
+			if (noMetals__) pathToTxt__ += "_no_metals";
+			pathToTxt__  += "/";
 		}
 	}
 

@@ -286,14 +286,14 @@ class CAMB:
 
 		return
 
-"""
+
 '''
 camb = CAMB('CAMB_Mocks_me')
 camb.plot_1d(0)
 camb.plot_1d(1)
 camb.plot_1d(2)
 '''
-
+"""
 dic = {
 	'z' : 0.,
 	'h_0' : 0.70,
@@ -309,26 +309,36 @@ for x_power in [0,1,2]:
 		xxx = el._xi0[:,0]
 		yyy = el._xi0[:,1]
 		coef = numpy.power(xxx,x_power)
-		plt.errorbar(xxx,coef*yyy,fmt='o')
+		plt.errorbar(xxx,coef*yyy, markersize=10,linewidth=5, alpha=0.6)
 
-		
+		'''
 		xxx = el._xi2[:,0]
 		yyy = el._xi2[:,1]
 		coef = numpy.power(xxx,x_power)
-		plt.errorbar(xxx,coef*yyy,fmt='o')
+		plt.errorbar(xxx,coef*yyy,fmt='o', markersize=10,linewidth=2, marker='o',alpha=0.6)
 
 		xxx = el._xi4[:,0]
 		yyy = el._xi4[:,1]
 		coef = numpy.power(xxx,x_power)
-		plt.errorbar(xxx,coef*yyy,fmt='o')
-		
+		plt.errorbar(xxx,coef*yyy,fmt='o', markersize=10,linewidth=2, marker='o',alpha=0.6)
+		'''
 
-	#plt.xlim([ numpy.amin(xxx)-10., 200.+10. ])
+	plt.xlim([ numpy.amin(xxx)-10., 200.+10. ])
+	if (x_power==0):
+		plt.ylabel(r'$ \\xi (|s|)$', fontsize=40)
+	if (x_power==1):
+		plt.ylabel(r'$|s| \cdot \\xi (|s|) \, [$h$^{-1}$Mpc$]$', fontsize=40)
+	if (x_power==2):
+		plt.ylabel(r'$|s|^{2} \cdot \\xi (|s|) \, [($h$^{-1}$Mpc$)^{2}]$', fontsize=40)
+	plt.xlabel(r'$|s| \, [$h$^{-1}$Mpc$]$', fontsize=40)
+	plt.legend(fontsize=30, numpoints=1,ncol=2, loc=2)
+	plt.xlim([ numpy.amin(xxx)-10., 200.+10. ])
+
 	myTools.deal_with_plot(False,False,False)
 	plt.show()
-
-camb[0].save_in_one_file('/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Resources/CAMB/CAMB_0/camb.txt')
 """
+#camb[0].save_in_one_file('/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Resources/CAMB/CAMB_0/camb.txt')
+
 
 
 

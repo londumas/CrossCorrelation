@@ -59,8 +59,9 @@ const bool doVetoLines__ = true;
 
 GetDelta::GetDelta(int argc, char** argv) {
 
-	isTest__  = false;
-	withRSD__ = true;
+	isTest__   = false;
+	withRSD__  = true;
+	noMetals__ = true;
 
 	std::cout << std::scientific;
 	std::cout.precision(std::numeric_limits<double>::digits10);
@@ -92,7 +93,9 @@ GetDelta::GetDelta(int argc, char** argv) {
 	pathToSave__ += box_idx;
 	pathToSave__ += "/Simu_00";
 	pathToSave__ += sim_idx;
-	pathToSave__ += "/Data/";
+	pathToSave__ += "/Data";
+	if (noMetals__) pathToSave__ += "_no_metals";
+	pathToSave__ += "/";
 
 	std::cout << "\n"   << std::endl;
 	std::cout << "  " << pathToDataQSO__ << std::endl;
@@ -230,6 +233,7 @@ void GetDelta::GetData(void) {
 			float IVAR[tmp_nbPixels2];
 			long  AND_MASK[tmp_nbPixels2];
 			float CONTINUUM[tmp_nbPixels2];
+			float METAL_FLUX[tmp_nbPixels2];
 			fits_read_key(fitsptrSpec,TINT,"PLATE",  &plate,NULL,&sta);
 			fits_read_key(fitsptrSpec,TINT,"MJD",    &mjd,NULL,&sta);
 			fits_read_key(fitsptrSpec,TINT,"FIBERID",&fiberid,NULL,&sta);
@@ -239,7 +243,8 @@ void GetDelta::GetData(void) {
 			fits_read_col(fitsptrSpec,TFLOAT, 3,1,1,tmp_nbPixels2,NULL, &IVAR,      NULL,&sta);
 			fits_read_col(fitsptrSpec,TLONG,  4,1,1,tmp_nbPixels2,NULL, &AND_MASK,  NULL,&sta);
 			fits_read_col(fitsptrSpec,TFLOAT, 5,1,1,tmp_nbPixels2,NULL, &CONTINUUM, NULL,&sta);
-	
+			if (noMetals__) fits_read_col(fitsptrSpec,TFLOAT, 7,1,1,tmp_nbPixels2,NULL, &METAL_FLUX, NULL,&sta);
+
 			/// Variables for new FITS
 			double XX = X;
                         double YY = Y;
@@ -277,6 +282,7 @@ void GetDelta::GetData(void) {
 					}
 				}
 				if (isLine) continue;
+				if (noMetals__) FLUX[p] /= METAL_FLUX[p];
 	
 				/// Normalisation zone
 				if (lambdaRFd>=lambdaRFNormaMin__ && lambdaRFd<lambdaRFNormaMax__) {

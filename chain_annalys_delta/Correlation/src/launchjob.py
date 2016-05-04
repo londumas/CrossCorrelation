@@ -9,27 +9,27 @@ import subprocess
 import time
 import myTools
 
-commandProd     = "/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/chain_annalys_delta/Correlation/bin/main.exe_for_lya_lya"
+commandProd     = "/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/chain_annalys_delta/Correlation/bin/main.exe"
 
 def main():
 
 	
 	### For mocks
-	'''
+
 	### mock catalogue
-	for i in range(0,10):
+	for i in range(0,1):
 		### mock catalogue
-		for j in range(0,10):
+		for j in range(0,1):
 
 			### for region
-			for k in range(0,1):
+			for k in range(0,80):
 
 			### for metals 
 			#for k in [21,24,25,26,27]:
 				tmp_command = "echo \" \n ------ Start ------ \n \" " 
 				subprocess.call(tmp_command, shell=True)
 
-				tmp_command = "clubatch \"time ; hostname ; " + commandProd + ' 19 0 ' + str(k) + ' 0 ' + str(i) + " " + str(j) + "\""
+				tmp_command = "clubatch \"time ; hostname ; " + commandProd + ' 21 0 ' + str(k) + ' 0 ' + str(i) + " " + str(j) + "\""
 				subprocess.call(tmp_command, shell=True)
 
 				tmp_command = "echo " + tmp_command
@@ -37,10 +37,10 @@ def main():
 				tmp_command = "echo " + time.ctime()
 				subprocess.call(tmp_command, shell=True)
 
-				time.sleep(120)
-                	        myTools.isReadyForNewJobs(60, 1000,'time')
+				#time.sleep(120)
+                	        #myTools.isReadyForNewJobs(60, 1000,'time')
 		#time.sleep(120)
-	'''
+
 	
 	'''
 	for i in range(0,29):
@@ -77,7 +77,8 @@ def main():
 		time.sleep(10)
 		myTools.isReadyForNewJobs(100, 430,'time')
 	'''
-	
+
+	'''	
 	for i in range(0,10):
 		for j in range(0,10):
 			### Get the data to 'good' files
@@ -87,7 +88,7 @@ def main():
 			subprocess.call(command, shell=True)
 			time.sleep(0.1)
 		time.sleep(10)
-	
+	'''
 
 	'''
 	for i in range(0,10000):

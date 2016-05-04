@@ -33,13 +33,13 @@ nbFor = 166968
 pathMocks = '/home/gpfs/manip/mnt0607/bao/hdumasde/MockV4/M3_0_0/000/mock.fits'
 
 
-pathSimu    = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_test_metals_1/Box_000/Simu_000/Data/'
-rawPathSimu = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_test_metals_1/'
+pathSimu    = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/Box_000/Simu_000/Data/'
+rawPathSimu = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/'
 zKey = 'Z'
 alphaKey = 'ALPHA'
 area_simu = 9078.1
-chunckNb = 1
-simulNb  = 1
+chunckNb = 10
+simulNb  = 10
 show_mean = False
 
 num_plots = 10
@@ -341,8 +341,9 @@ def comparePlot():
 			tmp_path = rawPathSimu + 'Box_00'+str(i)+'/Simu_00'+str(j)+'/Run/'
 			try:
 				data = numpy.loadtxt(tmp_path + 'template_LYA_'+str(i)+'_'+str(j)+'.txt')
+				if (i==1 and j==1): continue
 			except:
-				print i, j
+				#print ' ERROR: ', i, j
 				continue
 			if (len(data)==0):
 				print i, j
@@ -377,7 +378,7 @@ def comparePlot():
 			try:
 				data = numpy.loadtxt(tmp_path + 'deltaVSLambdaRF_LYA_'+str(i)+'_'+str(j)+'.txt')
 			except:
-				print i, j
+				print ' ERROR: ', i, j
 				continue
 			if (len(data)==0):
 				print i, j
@@ -411,7 +412,7 @@ def comparePlot():
 			try:
 				data = numpy.loadtxt(tmp_path + 'hDeltaVsLambdaRF_LYA_'+str(i)+'_'+str(j)+'.txt')
 			except:
-				print i, j
+				print ' ERROR: ', i, j
 				continue
 			if (len(data)==0):
 				print i, j
@@ -458,7 +459,7 @@ def comparePlot():
 			try:
 				data = numpy.loadtxt(tmp_path + 'hDeltaVsLambdaObs_LYA_'+str(i)+'_'+str(j)+'.txt')
 			except:
-				print i, j
+				print ' ERROR: ', i, j
 				continue
 			if (len(data)==0):
 				print i, j
@@ -515,7 +516,7 @@ def comparePlot():
 			try:
 				data = numpy.loadtxt(tmp_path + 'deltaVSLambdaObs_LYA_'+str(i)+'_'+str(j)+'.txt')
 			except:
-				print i, j
+				print ' ERROR: ', i, j
 				continue
 			if (len(data)==0):
 				print i, j
@@ -548,7 +549,7 @@ def comparePlot():
 			try:
 				data = numpy.loadtxt(tmp_path + 'eta_LYA_'+str(i)+'_'+str(j)+'.txt')
 			except:
-				print i, j
+				print ' ERROR: ', i, j
 				continue
 			if (len(data)==0):
 				print i, j
@@ -580,7 +581,7 @@ def comparePlot():
 			try:
 				data = numpy.loadtxt(tmp_path + 'sigma2LSS_LYA_'+str(i)+'_'+str(j)+'.txt')
 			except:
-				print i, j
+				print ' ERROR: ', i, j
 				continue
 			if (len(data)==0):
 				print i, j
