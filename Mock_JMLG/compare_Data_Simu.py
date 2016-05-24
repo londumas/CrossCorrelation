@@ -33,7 +33,8 @@ nbFor = 166968
 pathMocks = '/home/gpfs/manip/mnt0607/bao/hdumasde/MockV4/M3_0_0/000/mock.fits'
 
 
-pathSimu    = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/Box_000/Simu_000/Data/'
+with_metals = '_no_metals'
+pathSimu    = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/Box_000/Simu_000/Data' + with_metals  + '/'
 rawPathSimu = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/'
 zKey = 'Z'
 alphaKey = 'ALPHA'
@@ -326,7 +327,7 @@ def comparePlot():
 
 
 
-	
+
 	### Template
 	data = numpy.loadtxt(path + 'template_LYA.txt')
 	plt.errorbar(data[:,0], data[:,1], marker='o', label=r'$Data$',color='blue', markersize=8,linewidth=2)
@@ -338,10 +339,10 @@ def comparePlot():
 	for i in range (0,chunckNb):
 		for j in range(0,simulNb):
 			#print i, j
-			tmp_path = rawPathSimu + 'Box_00'+str(i)+'/Simu_00'+str(j)+'/Run/'
+			tmp_path = rawPathSimu + 'Box_00'+str(i)+'/Simu_00'+str(j)+'/Run'+with_metals+'/'
 			try:
 				data = numpy.loadtxt(tmp_path + 'template_LYA_'+str(i)+'_'+str(j)+'.txt')
-				if (i==1 and j==1): continue
+				#if (i==1 and j==1): continue
 			except:
 				#print ' ERROR: ', i, j
 				continue
@@ -374,7 +375,7 @@ def comparePlot():
 	for i in range (0,chunckNb):
 		for j in range(0,simulNb):
 			#print i, j
-			tmp_path = rawPathSimu + 'Box_00'+str(i)+'/Simu_00'+str(j)+'/Run/'
+			tmp_path = rawPathSimu + 'Box_00'+str(i)+'/Simu_00'+str(j)+'/Run'+with_metals+'/'
 			try:
 				data = numpy.loadtxt(tmp_path + 'deltaVSLambdaRF_LYA_'+str(i)+'_'+str(j)+'.txt')
 			except:
@@ -408,7 +409,7 @@ def comparePlot():
 	for i in range (0,chunckNb):
 		for j in range(0,simulNb):
 			#print i, j
-			tmp_path = rawPathSimu + 'Box_00'+str(i)+'/Simu_00'+str(j)+'/Run/'
+			tmp_path = rawPathSimu + 'Box_00'+str(i)+'/Simu_00'+str(j)+'/Run'+with_metals+'/'
 			try:
 				data = numpy.loadtxt(tmp_path + 'hDeltaVsLambdaRF_LYA_'+str(i)+'_'+str(j)+'.txt')
 			except:
@@ -455,9 +456,10 @@ def comparePlot():
 	for i in range (0,chunckNb):
 		for j in range(0,simulNb):
 			#print i, j
-			tmp_path = rawPathSimu + 'Box_00'+str(i)+'/Simu_00'+str(j)+'/Run/'
+			tmp_path = rawPathSimu + 'Box_00'+str(i)+'/Simu_00'+str(j)+'/Run'+with_metals+'/'
 			try:
 				data = numpy.loadtxt(tmp_path + 'hDeltaVsLambdaObs_LYA_'+str(i)+'_'+str(j)+'.txt')
+				if (data[0,1]>1.): print '  yyy>1 : ', i, j
 			except:
 				print ' ERROR: ', i, j
 				continue
@@ -512,7 +514,7 @@ def comparePlot():
 	for i in range (0,chunckNb):
 		for j in range(0,simulNb):
 			#print i, j
-			tmp_path = rawPathSimu + 'Box_00'+str(i)+'/Simu_00'+str(j)+'/Run/'
+			tmp_path = rawPathSimu + 'Box_00'+str(i)+'/Simu_00'+str(j)+'/Run'+with_metals+'/'
 			try:
 				data = numpy.loadtxt(tmp_path + 'deltaVSLambdaObs_LYA_'+str(i)+'_'+str(j)+'.txt')
 			except:
@@ -545,7 +547,7 @@ def comparePlot():
 	for i in range (0,chunckNb):
 		for j in range(0,simulNb):
 			#print i, j
-			tmp_path = rawPathSimu + 'Box_00'+str(i)+'/Simu_00'+str(j)+'/Run/'
+			tmp_path = rawPathSimu + 'Box_00'+str(i)+'/Simu_00'+str(j)+'/Run'+with_metals+'/'
 			try:
 				data = numpy.loadtxt(tmp_path + 'eta_LYA_'+str(i)+'_'+str(j)+'.txt')
 			except:
@@ -577,7 +579,7 @@ def comparePlot():
 	for i in range (0,chunckNb):
 		for j in range(0,simulNb):
 			#print i, j
-			tmp_path = rawPathSimu + 'Box_00'+str(i)+'/Simu_00'+str(j)+'/Run/'
+			tmp_path = rawPathSimu + 'Box_00'+str(i)+'/Simu_00'+str(j)+'/Run'+with_metals+'/'
 			try:
 				data = numpy.loadtxt(tmp_path + 'sigma2LSS_LYA_'+str(i)+'_'+str(j)+'.txt')
 			except:

@@ -78,18 +78,18 @@ dic_simu = {
 }
 dic_send_BAOFIT = {
 	'realisation_type'        : 'Simu_stack',
-	'correlation_matrix_path' : None,
-	'saving_data' : False,
-	'scan' : False,
-	'toyMC' : 0,
-	'dist_matrix' : False,
-	'only_diagonal' : True,
-	'with_metals_templates' : False,
-	'get_param_from_file' : False,
-	'dic_simu'              : dic_simu
+	'correlation_matrix_path' : '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/Results_raw_from_JeanMarc/xi_QSO_QSO_result_cor_2D_from_fit.npy',
+	'saving_data'             : True,
+	'scan'                    : False,
+	'toyMC'                   : 0,
+	'dist_matrix'             : False,
+	'only_diagonal'           : False,
+	'with_metals_templates'   : False,
+	'get_param_from_file'     : False,
+	'dic_simu'               : dic_simu
 }
 
-if (True):
+if (False):
 
 	
 	
@@ -103,7 +103,7 @@ if (True):
 	dic_class['name'] = 'random \, XYZ'
 	dic_Q['path_to_cat']                 = raw+'Data/'+dic_Q['sufix']+'.fits'
 	corr = correlation_3D_Q.Correlation3DQ(dic_class,dic_Q)
-	corr.save_list_realisation_simulation(dic_class, dic_Q, dic_simu)
+	#corr.save_list_realisation_simulation(dic_class, dic_Q, dic_simu)
 	corr.set_values_on_mean_simulation(dic_simu)
 
 	'''
@@ -230,7 +230,7 @@ if (True):
 	"""
 
 
-	
+	'''
 	dic_CAMB['mulpol_index'] = 0
 	dic_CAMB = corr.fit_CAMB(corr._xiMul[:,0,:],dic_CAMB_fit,False)
 	print numpy.sqrt(dic_CAMB_fit['b'])
@@ -250,7 +250,7 @@ if (True):
 	corr.plot_CAMB(corr._xiMul[:,4,:],dic_CAMB_fit,1,False)
 	corr.plot_CAMB(corr._xiMul[:,4,:],dic_CAMB_fit,2,False)
 	
-	"""
+	
 	corr.plot_1d(0)
 	corr.plot_1d(1)
 	corr.plot_1d(2)
@@ -263,7 +263,7 @@ if (True):
 	corr.plot_mu(0)
 	corr.plot_mu(1)
 	corr.plot_mu(2)
-	"""
+	
 	corr.plot_multipol(0)
 	corr.plot_multipol(1)
 	corr.plot_multipol(2)
@@ -271,8 +271,8 @@ if (True):
 	corr.plot_grid(0,True)
 	corr.plot_grid(1,True)
 	corr.plot_grid(2,True)
-	
-	#corr.send_BAOFIT(dic_send_BAOFIT)
+	'''	
+	corr.send_BAOFIT(dic_send_BAOFIT)
 	
 
 '''
@@ -300,15 +300,35 @@ if (False):
 	dic_class['path_to_txt_file_folder'] = dic_simu['path_to_simu'] + 'Box_000/Simu_000/Results'+dic_simu['prefix']+'/'
 	path_to_BAOFIT = dic_simu['path_to_simu'] + 'Results' + dic_simu['prefix']+'/BaoFit_q_q__QSO/bao2D.'
 	corr = annalyse_BAOFIT_Q.AnnalyseBAOFIT(dic_class, None,path_to_BAOFIT,dic_Q)
+
+	### Matting from 2D to 1D
+	path_to_mapping_1D = dic_simu['path_to_simu']+'Results' + dic_simu['prefix'] + '/xi_QSO_QSO_result_mapping_2D_to_1D'
+	'''
+	mapping_2D_to_1D = corr.get_mapping_2D_to_1D()
+	numpy.save( path_to_mapping_1D, mapping_2D_to_1D )
+	mapping_2D_to_1D[ mapping_2D_to_1D == 0. ] = numpy.float('nan')
+	myTools.plot2D( mapping_2D_to_1D[:,:,20] )
+	'''
+	path_to_mapping_1D += '.npy'
+	### Matting from 2D to wedge
+	path_to_mapping = dic_simu['path_to_simu']+'Results' + dic_simu['prefix'] + '/xi_QSO_QSO_result_mapping_2D_to_we'
+	"""
+	mapping_2D_to_we = corr.get_mapping_2D_to_we()
+	numpy.save( path_to_mapping, mapping_2D_to_we )
+	mapping_2D_to_we[ mapping_2D_to_we == 0. ] = numpy.float('nan')
+	myTools.plot2D( mapping_2D_to_we[:,:,20,2] )
+	"""
+	path_to_mapping += '.npy'
+
 	corr.set_values_on_mean_simulation(dic_simu)
 	corr.print_results()
-	'''
-	corr.plot_data_and_fit_1d(0)
-	corr.plot_data_and_fit_1d(1)
-	corr.plot_data_and_fit_1d(2)
-	corr.plot_data_and_fit_we(0)
-	corr.plot_data_and_fit_we(1)
-	corr.plot_data_and_fit_we(2)
+	
+	corr.plot_data_and_fit_1d(0,path_to_mapping_1D)
+	corr.plot_data_and_fit_1d(1,path_to_mapping_1D)
+	corr.plot_data_and_fit_1d(2,path_to_mapping_1D)
+	corr.plot_data_and_fit_we(0,path_to_mapping)
+	corr.plot_data_and_fit_we(1,path_to_mapping)
+	corr.plot_data_and_fit_we(2,path_to_mapping)
 	corr.plot_fit_2d(0)
 	corr.plot_fit_2d(1)
 	corr.plot_fit_2d(2)
@@ -316,7 +336,7 @@ if (False):
 	corr.plot_residuals_2d(1)
 	corr.plot_residuals_2d(2)
 	corr.plot_histo_residuals()
-	'''
+	
 	corr.plot_chi2_scan(50,50, [0.98,1.02,0.98,1.02], False, False, None)
 
 
@@ -326,24 +346,24 @@ if (False):
 # ---------------------------------
 ### For Many Fit
 # ---------------------------------
-if (False):
+if (True):
 
 	i = sys.argv[1]
 	j = sys.argv[2]
 
 	raw = dic_simu['path_to_simu'] + 'Box_00'+str(i)+'/Simu_00'+str(j)+'/'
 	dic_class['path_to_txt_file_folder'] = raw+'Results'+dic_simu['prefix']+'/'
-	dic_class['name'] = 'qso-qso'
+	dic_class['name'] = 'q-q'
 	dic_Q['path_to_cat']                 = raw+'Data/'+dic_Q['sufix']+'.fits'
 	aMB = annalyse_many_BAOFIT.AnnalyseManyBAOFIT(dic_class,None,dic_Q,dic_simu,False)
-
-	#aMB.print_results_for_chi2()
-	#aMB.print_results(0)
-	#aMB.print_results(1)
-	#aMB.print_results(8)
-	#aMB.print_results(9)
-
-	aMB.plot_scatter_hist(0,1,None,[ [0.261,3.70*(1.+0.261)] ])
+	'''
+	aMB.print_results_for_chi2()
+	aMB.print_results(0)
+	aMB.print_results(1)
+	aMB.print_results(8)
+	aMB.print_results(9)
+	'''
+	aMB.plot_scatter_hist(0,1) #,None,[ [0.261,3.70*(1.+0.261)] ])
 	aMB.plot_scatter_hist(0,8)
 	aMB.plot_scatter_hist(0,9)
 	aMB.plot_scatter_hist(1,8)

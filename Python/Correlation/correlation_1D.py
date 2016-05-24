@@ -243,18 +243,31 @@ class Correlation_1D:
 		print '  nb_realisation = ', nb_realisation
 
 		return
-	def fit_CAMB(self):
+	def fit_CAMB(self,distortion=False,dic=None):
 
 		### Get the data
-		cut = (self._xi[:,0]>10.)
-		xxx = self._xi[:,0][cut]
-		yyy = self._xi[:,1][cut]
-		yer = self._xi[:,2][cut]
+		xxx = self._xi[:,0]
+		yyy = self._xi[:,1]
+		yer = self._xi[:,2]
+		xMin = numpy.amin(xxx)
+		xMax = numpy.amax(xxx)
 
 		### Get CAMB
-		camb = CAMB.CAMB()._xi0
+		camb = CAMB.CAMB(dic)._xi0
+		xxx_Camb = copy.deepcopy(xxx)
 		yyy_Camb = numpy.interp(xxx,camb[:,0],camb[:,1])
 
+		if (distortion):
+			path = self._path_to_txt_file_folder + self._prefix + '_distortionMatrix_'+ self._middlefix + '.txt'
+			matrix = numpy.loadtxt(path)
+			xxx_Camb = numpy.append(xxx_Camb,numpy.zeros(2100-xxx.size) )
+			yyy_Camb = numpy.append(yyy_Camb,numpy.zeros(2100-yyy_Camb.size) )
+			yyy_Camb = numpy.dot(matrix,yyy_Camb)
+			yyy_Camb = yyy_Camb[(xxx_Camb!=0.)]
+			xxx_Camb = xxx_Camb[(xxx_Camb!=0.)]
+		b = 0.15
+
+		'''
 		### Chi^{2}
 		def chi2(b):
 			model = yyy_Camb*b
@@ -267,16 +280,25 @@ class Correlation_1D:
 		b = m.values['b']
 		#b = 0.01
 		print b
+		'''
 
-		for i in [0,1,2]:
+		for i in numpy.arange(1):
 			coef = numpy.power(xxx,i)
-			plt.errorbar(xxx, coef*yyy, yerr=coef*yer, fmt='o')
+			plt.errorbar(xxx, coef*yyy, yerr=coef*yer, fmt='o',color='blue')
 
-			coef = numpy.power(camb[:,0],i)
-			plt.errorbar(camb[:,0],coef*b*camb[:,1])
+			coef = numpy.power(xxx_Camb,i)
+			plt.errorbar(xxx_Camb,coef*b*yyy_Camb,color='red')
+
+			plt.title(r'$'+self._title+'$', fontsize=40)
+			plt.xlabel(r'$'+self._xTitle+'$', fontsize=40)
+			plt.ylabel(r'$'+self._yTitle+'$', fontsize=40)
+
+			if (self._correlation=='f_f_r' or self._correlation=='f_f2_r' or self._correlation=='f_f_lRF' or self._correlation=='f_f_lRF'):
+				plt.xlim([ numpy.min(xxx)-10., numpy.max(xxx)+10. ])
+			if (self._correlation=='f_f_lRF_devide' or self._correlation=='f_f2_lRF_devide'):
+				plt.xlim([ 0.99*xMin, 1.01*xMax ])
+
 			myTools.deal_with_plot(False,False,False)
-			plt.xlim([ 0., 200. ])
-
 			plt.show()
 
 		return
@@ -365,7 +387,18 @@ class Correlation_1D:
 		plt.show()
 
 		return
+	def plot_distortion_matrix(self):
+	
+		path = self._path_to_txt_file_folder + self._prefix + '_distortionMatrix_'+ self._middlefix + '.txt'
+		matrix = numpy.loadtxt(path)
+		
+		### Blind the zero terms
+		matrix[ (matrix==0.) ] = numpy.float('nan')
 
+		myTools.plot2D(matrix)
+		#myTools.plotCovar([matrix],['Distortion matrix'])
+
+		return
 
 
 
@@ -390,41 +423,56 @@ dic_simu = {
 	'path_to_simu' : '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/',
 	'nb_box' : 10,
 	'nb_simu' : 10,
-	'prefix' : '_raw_from_JeanMarc'
+	'prefix' : ''
 }
-
+dic_CAMB_corr = {
+	'z' : 0.,
+	'h_0' : 0.70,
+	'omega_matter_0' : 0.27,
+	'omega_lambda_0' : 0.73,
+	'source'         : 'CAMB_Mocks_me'
+}
 
 list_corr = []
 
+"""
 ### Data
 dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator/'
 dic_class['name'] = "Data"
-dic_class['correlation'] = "f_f_lRF_devide"
+dic_class['correlation'] = "f_f_r"
 corr = Correlation_1D(dic_class)
 list_corr += [corr]
-
+corr.plot_distortion_matrix()
+dic_CAMB_corr['z'] = corr._meanZ
+#corr.fit_CAMB()
+corr.fit_CAMB(True,dic_CAMB_corr)
+"""
 
 #
 dic_simu['path_to_simu'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/'
 dic_class['f1'] = 'LYA'
-dic_class['name'] = 'Simulation'
+dic_class['name'] = 'Mean \, Simulation'
 dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/Box_000/Simu_000/Results/'
-dic_class['correlation'] = "f_f_lRF_devide"
+dic_class['correlation'] = "f_f_r"
 corr = Correlation_1D(dic_class)
-#corr.save_list_realisation_simulation(dic_class, dic_simu)
-#corr.set_values_on_mean_simulation(dic_simu)
+corr.save_list_realisation_simulation(dic_class, dic_simu)
+corr.set_values_on_mean_simulation(dic_simu)
 list_corr += [corr]
+corr.plot_distortion_matrix()
+dic_CAMB_corr['z'] = corr._meanZ
+corr.fit_CAMB(True,dic_CAMB_corr)
 
-
+"""
 #
+dic_simu['prefix'] = '_no_metals'
 dic_simu['path_to_simu'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/'
 dic_class['f1'] = 'LYA'
-dic_class['name'] = 'Simulation'
+dic_class['name'] = 'Mean \, Simulation \, no \, metals'
 dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/Box_000/Simu_000/Results_no_metals/'
-dic_class['correlation'] = "f_f_lRF_devide"
+dic_class['correlation'] = "f_f_r"
 corr = Correlation_1D(dic_class)
-#corr.save_list_realisation_simulation(dic_class, dic_simu)
-#corr.set_values_on_mean_simulation(dic_simu)
+corr.save_list_realisation_simulation(dic_class, dic_simu)
+corr.set_values_on_mean_simulation(dic_simu)
 list_corr += [corr]
 
 
@@ -432,7 +480,7 @@ list_corr += [corr]
 
 #list_corr[0].plot(True,True)
 list_corr[0].plot(False,False,list_corr[1:])
-
+"""
 
 
 

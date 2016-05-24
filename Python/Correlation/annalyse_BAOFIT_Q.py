@@ -16,7 +16,7 @@ import copy
 import correlation_3D_Q
 import myTools
 
-par_name = numpy.asarray(['\\beta','b \cdot (1+\\beta)','gamma-bias','gamma-beta','SigmaNL-perp','1+f',
+par_name = numpy.asarray(['\\beta_{q}','b_{q} \cdot (1+\\beta_{q})','\\gamma_{bias_{q}}','\\gamma_{\\beta_{q}}','SigmaNL-perp','1+f',
 	'BAO \, amplitude','\\alpha_{iso}','\\alpha_{\parallel}','\\alpha_{\perp}', 'gamma-scale', 'pixel scale','b \cdot \\beta'])
 raw_index_parameter = {
 	'beta'                        : 0,
@@ -250,40 +250,43 @@ class AnnalyseBAOFIT(correlation_3D_Q.Correlation3DQ):
 		print string
 
 		return
-	def plot_data_and_fit_1d(self,x_power):
+	def plot_data_and_fit_1d(self,x_power,path_to_mapping_1D):
 
-		xxx = self._xi1D[:,0]
-		yyy = self._xi1D[:,1]
-		yer = self._xi1D[:,2]
-		
-		cut = (yer>0.)
-		if (xxx[cut].size==0):
-			return
-
-		xxx = xxx[ cut ]
-		yyy = yyy[ cut ]
-		yer = yer[ cut ]
-		coef = numpy.power(xxx,x_power)
-		plt.errorbar(xxx, coef*yyy, yerr=coef*yer, fmt='o', label=r'$'+self._name+'$', markersize=10,linewidth=2)
-
+		### Load the mapping from 2D to 1D
+		mapping_2D_to_1D = numpy.load( path_to_mapping_1D )
 
 		### Fit
-		xi1D_fit = numpy.zeros(shape=(self._nbBin1D,3))
+		xi1D_data = numpy.zeros(shape=(self._nbBin1D,3))
+		xi1D_fit  = numpy.zeros(shape=(self._nbBin1D,3))
 		for i in numpy.arange(self._nbBinX2D):
 			for j in numpy.arange(self._nbBinY2D):
+
 				if (self._xi2D_fit[i,j,8]<=0.): continue
-				else:
-					if (self._xi2D_fit[i,j,3]>=self._max1D): continue
-					idx = int( self._xi2D_fit[i,j,3]/self._binSize )
-					ivar = 1./(self._xi2D_fit[i,j,8]*self._xi2D_fit[i,j,8])
-					xi1D_fit[idx,0] += ivar*self._xi2D_fit[i,j,3]
-					xi1D_fit[idx,1] += ivar*self._xi2D_fit[i,j,6]
-					xi1D_fit[idx,2] += ivar
+				ivar = 1./( self._xi2D_fit[i,j,8]*self._xi2D_fit[i,j,8]  )
+				for k in numpy.arange(self._nbBin1D):
+					coef = mapping_2D_to_1D[i,j,k]
+					if (coef==0.): continue
+					xi1D_data[k,0] += coef*ivar*self._xi2D[i,j,0]
+					xi1D_data[k,1] += coef*ivar*self._xi2D[i,j,1]
+					xi1D_data[k,2] += coef*ivar
+
+					xi1D_fit[k,0] += coef*ivar*self._xi2D_fit[i,j,3]
+					xi1D_fit[k,1] += coef*ivar*self._xi2D_fit[i,j,6]
+					xi1D_fit[k,2] += coef*ivar
+
+		### Data
+		cut = (xi1D_data[:,2]>0.)
+		xi1D_data[:,0][cut] /= xi1D_data[:,2][cut]
+		xxx = xi1D_data[:,0][cut]
+		xi1D_data[:,1][cut] /= xi1D_data[:,2][cut]
+		xi1D_data[:,2][cut]  = 1./numpy.sqrt(xi1D_data[:,2][cut])
+		coef = numpy.power(xi1D_data[:,0][cut],x_power)
+		plt.errorbar(xi1D_data[:,0][cut], coef*xi1D_data[:,1][cut], yerr=coef*xi1D_data[:,2][cut], fmt='o', label=r'$'+self._name+'$', markersize=10,linewidth=2)
+		### Fit
 		cut = (xi1D_fit[:,2]>0.)
 		xi1D_fit[:,0][cut] /= xi1D_fit[:,2][cut]
 		xi1D_fit[:,1][cut] /= xi1D_fit[:,2][cut]
 		xi1D_fit[:,2][cut]  = 1./numpy.sqrt(xi1D_fit[:,2][cut])
-
 		coef = numpy.power(xi1D_fit[:,0][cut],x_power)
 		plt.errorbar(xi1D_fit[:,0][cut], coef*xi1D_fit[:,1][cut], label=r'$Fit$', color='red',linewidth=2)
 
@@ -301,38 +304,46 @@ class AnnalyseBAOFIT(correlation_3D_Q.Correlation3DQ):
 		plt.show()
 		
 		return
-	def plot_data_and_fit_we(self,x_power):
+	def plot_data_and_fit_we(self,x_power,path_to_mapping):
 
+		if (self._correlation=='q_q' or self._correlation=='f_f'):
+			label = ['0.8 < \mu', '0.5 < \mu \leq 0.8', '\mu \leq 0.5']
+		elif (self._correlation=='q_f' or self._correlation=='f_f2'):
+			label = ['0.8 < |\mu|', '0.5 < |\mu| \leq 0.8', '|\mu| \leq 0.5']
+		color = ['blue', 'green', 'orange']
+
+		### Load the mapping from 2D to we
+		mapping_2D_to_we = numpy.load( path_to_mapping )
 
 		### Fit
-		xi1D_fit = numpy.zeros(shape=(self._nbBin1D,3,3))
+		xi1D_data = numpy.zeros(shape=(self._nbBin1D,3,3))
+		xi1D_fit  = numpy.zeros(shape=(self._nbBin1D,3,3))
 		for i in numpy.arange(self._nbBinX2D):
 			for j in numpy.arange(self._nbBinY2D):
+
 				if (self._xi2D_fit[i,j,8]<=0.): continue
-				else:
+				ivar = 1./(self._xi2D_fit[i,j,8]*self._xi2D_fit[i,j,8])
+				for k in numpy.arange(self._nbBin1D):
+					for l in numpy.arange(3):
 
-					if (self._xi2D_fit[i,j,3]>=self._max1D): continue
-					mu = numpy.abs(self._xi2D_fit[i,j,4])
-					iX = int( self._xi2D_fit[i,j,3]/self._binSize )
-					if (mu>0.8):
-						iY = 0
-					elif (mu<=0.8 and mu>0.5):
-						iY = 1
-					else:
-						iY = 2
-					ivar = 1./(self._xi2D_fit[i,j,8]*self._xi2D_fit[i,j,8])
-					xi1D_fit[iX,iY,0] += ivar*self._xi2D_fit[i,j,3]
-					xi1D_fit[iX,iY,1] += ivar*self._xi2D_fit[i,j,6]
-					xi1D_fit[iX,iY,2] += ivar
+						coef = mapping_2D_to_we[i,j,k,l]
+						if (coef==0.): continue
+						xi1D_data[k,l,0] += coef*ivar*self._xi2D[i,j,0]
+						xi1D_data[k,l,1] += coef*ivar*self._xi2D[i,j,1]
+						xi1D_data[k,l,2] += coef*ivar
 
+						xi1D_fit[k,l,0] += coef*ivar*self._xi2D_fit[i,j,3]
+						xi1D_fit[k,l,1] += coef*ivar*self._xi2D_fit[i,j,6]
+						xi1D_fit[k,l,2] += coef*ivar
+
+		cut = (xi1D_data[:,:,2]>0.)
+		xi1D_data[:,:,0][cut] /= xi1D_data[:,:,2][cut]
+		xi1D_data[:,:,1][cut] /= xi1D_data[:,:,2][cut]
+		xi1D_data[:,:,2][cut]  = 1./numpy.sqrt(xi1D_data[:,:,2][cut])
 		cut = (xi1D_fit[:,:,2]>0.)
 		xi1D_fit[:,:,0][cut] /= xi1D_fit[:,:,2][cut]
 		xi1D_fit[:,:,1][cut] /= xi1D_fit[:,:,2][cut]
 		xi1D_fit[:,:,2][cut]  = 1./numpy.sqrt(xi1D_fit[:,:,2][cut])
-
-
-		label = ['0.8 < |\mu|', '0.5 < |\mu| \leq 0.8', '|\mu| \leq 0.5']
-		color = ['blue', 'green', 'orange']
 		
 		for i in numpy.arange(0,3):
 		
@@ -340,9 +351,10 @@ class AnnalyseBAOFIT(correlation_3D_Q.Correlation3DQ):
 			if (self._xiWe[:,i,0][cut].size==0):
 				continue
 		
-			xxx = self._xiWe[:,i,0][cut]
-			yyy = self._xiWe[:,i,1][cut]
-			yer = self._xiWe[:,i,2][cut]
+			cut = (xi1D_data[:,i,2]>0.)
+			xxx = xi1D_data[:,i,0][cut]
+			yyy = xi1D_data[:,i,1][cut]
+			yer = xi1D_data[:,i,2][cut]
 			coef = numpy.power(xxx,x_power)
 			plt.errorbar(xxx, coef*yyy, yerr=coef*yer, fmt='o', label=r'$'+label[i]+'$', color=color[i], markersize=10,linewidth=2)
 
@@ -352,16 +364,20 @@ class AnnalyseBAOFIT(correlation_3D_Q.Correlation3DQ):
 			yerF = xi1D_fit[:,i,2][cut]
 			coefF = numpy.power(xxxF,x_power)
 			plt.errorbar(xxxF, coefF*yyyF, color='red',linewidth=2)
-		
+
+			#plt.errorbar(xxx[cut], coef[cut]*(yyy[cut]-yyyF)/yer[cut], fmt='o', markersize=10,linewidth=2, label=r'$'+label[i]+'$')
+
 			if (x_power==0):
 				plt.ylabel(r'$'+self._label+' (|s|)$', fontsize=40)
-				plt.legend(fontsize=40, numpoints=1,ncol=2, loc=4)
+				plt.legend(fontsize=40, numpoints=1,ncol=2, loc=0)
 			if (x_power==1):
 				plt.ylabel(r'$|s|.'+self._label+' (|s|) \, [h^{-1}.Mpc]$', fontsize=40)
-				plt.legend(fontsize=40, numpoints=1,ncol=2, loc=4)
+				plt.legend(fontsize=40, numpoints=1,ncol=2, loc=0)
 			if (x_power==2):
 				plt.ylabel(r'$|s|^{2}.'+self._label+' (|s|) \, [(h^{-1}.Mpc)^{2}]$', fontsize=40)
-				plt.legend(fontsize=40, numpoints=1,ncol=2, loc=2)
+				plt.legend(fontsize=40, numpoints=1,ncol=2, loc=0)
+
+		#plt.ylabel(r'$Residuals (|s|)$', fontsize=40)
 		
 		plt.title(r'$'+self._title+'$', fontsize=40)
 		plt.xlabel(r'$|s| \, [h^{-1}.Mpc]$', fontsize=40)

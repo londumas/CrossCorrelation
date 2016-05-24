@@ -80,7 +80,7 @@ const bool doVetoLines__          = true;
 const bool setDLA__               = false;
 const bool cutNotFittedSpectra__  = true;
 const bool mocksColab__           = false;
-const bool mockJMC__              = true;
+const bool mockJMC__              = false;
 const bool putReobsTogether__     = false;
 const bool noMetals__             = false;
 double isReobsFlag__ = -100.;
@@ -120,11 +120,11 @@ GetDelta::GetDelta(int argc, char** argv) {
 		pathForest__   = "/home/gpfs/manip/mnt/bao/hdumasde/Data/";
 		pathForest__  += forest__;
 		pathToTxt__    = pathForest__;
-		pathForest__  += "/FitsFile_DR12_Guy/DR12_primery/DR12_primery_method1.fits";  //_method1
+		pathForest__  += "/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits";  //_method1
 //		pathForest__  += "/FitsFile_DR12_Guy/DR12_reObs/DR12_reObs.fits";
 //		pathForest__  += "/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits";
 
-		pathToTxt__   += "/FitsFile_DR12_Guy/DR12_primery/histos_method1/";  //_method1
+		pathToTxt__   += "/FitsFile_DR12_Guy/DR12_primery/histos/";  //_method1
 //		pathToTxt__   += "/FitsFile_DR12_Guy/DR12_reObs/histos/";
 //		pathToTxt__   += "/FitsFile_eBOSS_Guy/all_eBOSS_primery/histos/";
 
@@ -963,6 +963,14 @@ void GetDelta::fitForests(unsigned int begin, unsigned int end) {
 		v_betaErr[f]  = err[1];
 		v_iflag[f] = iflag;
 		v_nbPixel[f] = NbPixMeth2;
+
+		if ( std::isinf(v_chi2[f]) || std::isinf(-v_chi2[f]) || std::isnan(v_alphaErr[f]) || std::isnan(-v_alphaErr[f]) || std::isnan(v_betaErr[f]) || std::isnan(-v_betaErr[f]) ) {
+			v_alpha[f]    = -1.e20;
+			v_beta[f]     = 0.;
+			v_chi2[f]     = -1.;
+			v_alphaErr[f] = -1.;
+			v_betaErr[f]  = -1.;
+		}
 	}
 	
 	//// alpha_beta
@@ -1530,8 +1538,10 @@ void GetDelta::updateDelta(std::string fitsnameSpec, unsigned int loopIdx, unsig
 void GetDelta::setValuesAlphaBetaForest(std::string pathForest, std::string pathToTxt) {
 
 	unsigned int nbLoad = 0;
-	double alpha_a[500000];
-	double beta_a[500000];
+	double alpha_a[500000] = {-1.};
+	double beta_a[500000]  = {-1.};
+	bool found_in_file[500000] = {false};
+	unsigned int nbLoad2 = 0;
 	double mean_alpha = 0.;
 	double mean_beta  = 0.;
 
@@ -1552,7 +1562,6 @@ void GetDelta::setValuesAlphaBetaForest(std::string pathForest, std::string path
 		path.erase(std::remove(path.begin(), path.end(), '\n'), path.end());
 		path.erase(std::remove(path.begin(), path.end(), ' '), path.end());
 
-
 		//// Get the file
 		std::ifstream fileData(path.c_str());
 
@@ -1568,19 +1577,24 @@ void GetDelta::setValuesAlphaBetaForest(std::string pathForest, std::string path
 			unsigned int nbPixel;
 			fileData >> idx >> alpha >> beta >> chi2 >> alphaErr >> betaErr >> flag >> nbPixel;
 			if (fileData==0) break;
-
+ 
 			nbLoad ++;
 			alpha_a[idx] = alpha;
 			beta_a[idx]  = beta;
 
-			mean_alpha += alpha;
-			mean_beta  += beta;
+			if (alpha != -1.e20) {
+				nbLoad2    ++;
+				mean_alpha += alpha;
+				mean_beta  += beta;
+			}
+
+			found_in_file[idx] = true;
 		}
 		fileData.close();
 	}
 
-	std::cout << "  < alpha > = " << mean_alpha/nbLoad << std::endl;
-	std::cout << "  < beta >  = " << mean_beta/nbLoad << std::endl;
+	std::cout << "  < alpha > = " << mean_alpha/nbLoad2 << std::endl;
+	std::cout << "  < beta >  = " << mean_beta/nbLoad2  << std::endl;
 	std::cout << "\n"             << std::endl;
 
 
@@ -1598,7 +1612,17 @@ void GetDelta::setValuesAlphaBetaForest(std::string pathForest, std::string path
 	unsigned int nLines = nrows;
 	std::cout << "  number of loaded forest = " << nLines << " for read in TXT files " << nbLoad << std::endl;
 	if (nLines!=nbLoad) {
-		std::cout << "  Error :: nLines!=nbLoad " << nLines << " " << nbLoad << std::endl;
+		
+		unsigned int nb_forest_problem = 0;
+		for (unsigned int i=0; i<nLines; i++) {
+			if ( !found_in_file[i] ) {
+				nb_forest_problem ++;
+				std::cout << i << std::endl;
+			}
+		}
+
+		std::cout << "  Error :: nLines!=nbLoad " << nLines << " " << nbLoad << " " << nLines-nbLoad << std::endl;
+		std::cout << "  Error :: nLines!=nbLoad  nb_forest_problem  = " << nb_forest_problem << std::endl;
 		return;
 	}
 

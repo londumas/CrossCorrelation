@@ -83,8 +83,8 @@ std::string alQSO[19] = {"QSO_ALL_TESTS",
 				"CIVHIGHEW_Britt",
 				"VIPERS",
 				"QSO_3DHST",
-				"QSO_EBOSS",
-				"QSO_DR7_DR12_EBOSS_2016_01_08",
+				"QSO_EBOSS_updated_2016_05_24",
+				"QSO_DR7_DR12_EBOSS_2016_05_24",
 				"ALL_OBJECTS",
 				"ALL_EVERY_OBJECTS_2016_01_08"
 };
@@ -104,7 +104,7 @@ std::string correlation_type__ = "NOTHING";
 
 ///// Type of data
 const bool mocks              = false;
-const bool mockJMC__          = true;
+const bool mockJMC__          = false;
 const bool mockBox__          = false;
 //// Attributes of data
  // versin=0 for old version, version=1 for mockExpander, version=2 for files from Jean-Marc
@@ -261,42 +261,47 @@ Correlation::Correlation(int argc, char **argv) {
 
 
 	/// Set the type of correlation
-	if (command == 10 || command == 21)      correlation_type__ = "q_q";
-	else if (command == 5  || command == 19) correlation_type__ = "f_f";
-	else if (command == 8 )                  correlation_type__ = "f_f2";
+	if (command == 14 || command == 26)      correlation_type__ = "q_q";
+	else if (command == 8  || command == 23) correlation_type__ = "f_f";
+	else if (command == 12 )                  correlation_type__ = "f_f2";
 
 
 	//
-	if      (command == 0)  xi_1D_delta_delta();
-	else if (command == 1)  xi_1DlRF_delta_delta();
-	else if (command == 2)  xi_1DlRFDevide_delta_delta();
-	else if (command == 3)  xi_1D_delta_delta2();
-	else if (command == 4)  xi_1DlRFDevide_delta_delta2();
+	if      (command == 0) xi_1D_delta_delta();
+	else if (command == 1) xi_1DlRF_delta_delta();
+	else if (command == 2) xi_1DlRFDevide_delta_delta();
+	else if (command == 3) xi_1D_delta_delta_distortionMatrix();
+	else if (command == 4) xi_1DlRF_delta_delta_distortionMatrix();
+	else if (command == 5) xi_1DlRFDevide_delta_delta_distortionMatrix();
+	else if (command == 6) xi_1D_delta_delta2();
+	else if (command == 7) xi_1DlRFDevide_delta_delta2();
 	//
-	else if (command == 5)  xi_A_delta_delta(idxCommand_[2]);
-	else if (command == 6)  xi_A_delta_delta_lambda();
-	else if (command == 7)  xi_A_delta_delta_Metals_Models(absorber__[idxCommand_[1]],absorberName__[idxCommand_[1]],absorber__[idxCommand_[2]],absorberName__[idxCommand_[2]]);
-	else if (command == 8)  xi_A_delta_delta2( idxCommand_[2] );
-	else if (command == 9)  xi_A_delta_delta2_lambda();
+	else if (command == 8)  xi_A_delta_delta(idxCommand_[2]);
+	else if (command == 9)  xi_A_delta_delta_lambda();
+	else if (command == 10) xi_A_delta_delta_distortionMatrix();
+	else if (command == 11) xi_A_delta_delta_Metals_Models(absorber__[idxCommand_[1]],absorberName__[idxCommand_[1]],absorber__[idxCommand_[2]],absorberName__[idxCommand_[2]]);
+	else if (command == 12) xi_A_delta_delta2( idxCommand_[2] );
+	else if (command == 13) xi_A_delta_delta2_lambda();
 	//
-	else if (command == 10) xi_delta_QSO(idxCommand_[2]);
-	else if (command == 11) xi_delta_QSO_theta(idxCommand_[2]);
-	else if (command == 12) xi_delta_QSO_lambda(idxCommand_[2]);
-	else if (command == 13) xi_delta_QSO_distortionMatrix();
-	else if (command == 14) xi_delta_QSO_distortionMatrix_1D();
-	else if (command == 15) xi_delta_QSO_Metals_Models(absorber__[idxCommand_[2]],absorberName__[idxCommand_[2]]);
-	else if (command == 16) xi_delta_QSO_Wick(idxCommand_[3]);
+	else if (command == 14) xi_delta_QSO(idxCommand_[2]);
+	else if (command == 15) xi_delta_QSO_theta(idxCommand_[2]);
+	else if (command == 16) xi_delta_QSO_lambda(idxCommand_[2]);
+	else if (command == 17) xi_delta_QSO_distortionMatrix();
+	else if (command == 18) xi_delta_QSO_distortionMatrix_1D();
+	else if (command == 19) xi_delta_QSO_Metals_Models(absorber__[idxCommand_[2]],absorberName__[idxCommand_[2]]);
+	else if (command == 20) xi_delta_QSO_Wick(idxCommand_[3]);
 	//
-	else if (command == 17) xi_QSO_QSO(idxCommand_[2]);
-	else if (command == 18) xi_Q1_Q2();
+	else if (command == 21) xi_QSO_QSO(idxCommand_[2]);
+	else if (command == 22) xi_Q1_Q2();
 	//
-	else if (command == 19) xi_A_delta_delta_MockJMc(idxCommand_[2]);
-	else if (command == 20) xi_A_delta_delta_Metals_Models_MockJMc(absorber__[idxCommand_[1]],absorberName__[idxCommand_[1]],absorber__[idxCommand_[2]],absorberName__[idxCommand_[2]]);
-	else if (command == 21) xi_delta_QSO_MockJMc(idxCommand_[2]);
-	else if (command == 22) xi_delta_QSO_MockJMc_distortionMatrix();
-	else if (command == 23) xi_delta_QSO_MockJMc_distortionMatrix_1D();
-	else if (command == 24) xi_delta_QSO_Metals_Models_MockJMc(absorber__[idxCommand_[2]],absorberName__[idxCommand_[2]]);
-	else if (command == 25) xi_QSO_QSO_MockJMc(idxCommand_[2]);
+	else if (command == 23) xi_A_delta_delta_MockJMc(idxCommand_[2]);
+	else if (command == 24) xi_A_delta_delta_MockJMc_distortionMatrix();
+	else if (command == 25) xi_A_delta_delta_Metals_Models_MockJMc(absorber__[idxCommand_[1]],absorberName__[idxCommand_[1]],absorber__[idxCommand_[2]],absorberName__[idxCommand_[2]]);
+	else if (command == 26) xi_delta_QSO_MockJMc(idxCommand_[2]);
+	else if (command == 27) xi_delta_QSO_MockJMc_distortionMatrix();
+	else if (command == 28) xi_delta_QSO_MockJMc_distortionMatrix_1D();
+	else if (command == 29) xi_delta_QSO_Metals_Models_MockJMc(absorber__[idxCommand_[2]],absorberName__[idxCommand_[2]]);
+	else if (command == 30) xi_QSO_QSO_MockJMc(idxCommand_[2]);
 
 
 	std::cout << "\n\n\n\n" << std::endl;
@@ -315,10 +320,7 @@ Correlation::~Correlation(void) {
 // ---------------------------------------------------------------------
 void Correlation::xi_1D_delta_delta(void) {
 
-	std::cout << "\n\n\n\n  ------ xi_1D_delta_delta ------" << std::endl;
-	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_1D_delta_delta.py";
-	command += commandEnd__;
-	std::cout << command << "\n" << std::endl;
+	std::cout << "\n\n\n\n  ------ xi_1D_delta_delta ------\n" << std::endl;
 
 	if (mocks_raw) loadDataForest_Raw();
 	else loadDataForest(pathForest__);
@@ -438,10 +440,7 @@ void Correlation::xi_1D_delta_delta(void) {
 }
 void Correlation::xi_1DlRF_delta_delta(void) {
 
-	std::cout << "\n\n\n\n  ------ xi_1DlRF_delta_delta ------" << std::endl;
-	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_1DlRF_delta_delta.py";
-	command += commandEnd__;
-	std::cout << command << "\n" << std::endl;
+	std::cout << "\n\n\n\n  ------ xi_1DlRF_delta_delta ------\n" << std::endl;
 
 	if (mocks_raw) loadDataForest_Raw();
 	else loadDataForest(pathForest__);
@@ -558,10 +557,7 @@ void Correlation::xi_1DlRF_delta_delta(void) {
 }
 void Correlation::xi_1DlRFDevide_delta_delta(void) {
 
-	std::cout << "\n\n\n\n  ------ xi_1DlRFDevide_delta_delta ------" << std::endl;
-	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_1DlRFDevide_delta_delta.py";
-	command += commandEnd__;
-	std::cout << command << "\n" << std::endl;
+	std::cout << "\n\n\n\n  ------ xi_1DlRFDevide_delta_delta ------\n" << std::endl;
 
 	if (mocks_raw) loadDataForest_Raw();
 	else loadDataForest(pathForest__);
@@ -677,12 +673,247 @@ void Correlation::xi_1DlRFDevide_delta_delta(void) {
 
 	return;
 }
+void Correlation::xi_1D_delta_delta_distortionMatrix(void) {
+
+	std::cout << "\n\n\n\n  ------ xi_1D_delta_delta_distortionMatrix ------\n" << std::endl;
+
+	if (mocks_raw) loadDataForest_Raw();
+	else loadDataForest(pathForest__);
+
+	if (mocksNoNoiseNoCont || mocks_raw) {
+		removeFalseCorrelations();
+	}
+	v_ra__.clear();
+	v_de__.clear();
+	v_CosDe__.clear();
+	v_SinDe__.clear();
+	v_zz__.clear();
+	v_idx__.clear();
+	v_lObs__.clear();
+	v_nb__.clear();
+
+	///// Set usefull vectors
+	std::vector<double> v_invSumWeight(nbForest_,0.);
+	std::vector<double> v_meanLambda(nbForest_,0.);
+	std::vector<double> v_invVarLambda(nbForest_,0.);
+
+	for (unsigned int f=0; f<nbForest_; f++) {
+		const unsigned int nbPixel = v_nbPixelDelta1__[f];
+
+		long double sumWeight  = 0.;
+		long double meanLambda = 0.;
+		long double varLambda  = 0.;
+
+		///// Loops over all pixels of the forest
+		for (unsigned int i=0; i<nbPixel; i++) {
+
+			const long double w = v_w__[f][i];
+			const long double l = v_lRF__[f][i];
+
+			sumWeight  += w;
+			meanLambda += w*l;
+			varLambda  += w*l*l;
+		}
+
+		if (sumWeight<=0.) std::cout << "   ERROR:: sumWeight <= 0. " << std::endl;
+		meanLambda        /= sumWeight;
+		varLambda          = varLambda - meanLambda*meanLambda*sumWeight;
+		if (varLambda<=0.) std::cout << "   ERROR:: varLambda <= 0. " << std::endl;
+
+		v_invSumWeight[f] = 1./sumWeight;
+		v_meanLambda[f]   = meanLambda;
+		v_invVarLambda[f] = 1./varLambda;
+	}
+
+	///// Constants:
+	///// The space between bins is of 1 Mpc.h^-1, the first bin is for deltaR == 0.
+	const double max = 2100.;
+	const unsigned int nbBins = 2100;
+	const double binSize = max/nbBins;
+	const double inv_binSize = 1./binSize;
+
+	///// Arrays for distortion matrix
+	double weight[nbBins];
+	double** dataMatrix = new double*[nbBins];
+	for (unsigned int i=0; i<nbBins; i++) {
+		weight[i] = 0.;
+		dataMatrix[i] = new double[nbBins];
+		for (unsigned int j=0; j<nbBins; j++) {
+			dataMatrix[i][j] = 0.;
+		}
+	}
+
+	std::cout << "\n  Starting\n" << std::endl;
+
+
+	for (unsigned int f=0; f<nbForest_; f++) {
+
+		const unsigned int nb     = v_nbPixelDelta1__[f];
+		const double invSumWeight = v_invSumWeight[f];
+		const double meanLambda   = v_meanLambda[f];
+		const double invVarLambda = v_invVarLambda[f];
+
+		std::vector< std::vector< double > > list_for_pixel_1_0(nb, std::vector<double>(2100,0.));
+		std::vector< std::vector< double > > list_for_pixel_2_0(nb, std::vector<double>(2100,0.));
+                std::vector< std::vector< double > > list_for_pixel_1_1(nb, std::vector<double>(2100,0.));
+                std::vector< std::vector< double > > list_for_pixel_2_1(nb, std::vector<double>(2100,0.));
+		std::vector< std::vector< bool > > binTouched_1(nb, std::vector<bool>(2100,false));
+		std::vector< std::vector< bool > > binTouched_2(nb, std::vector<bool>(2100,false));
+		double value2[2100]   = {0.};
+		double value5[2100]   = {0.};
+		double value6[2100]   = {0.};
+		double value7[2100]   = {0.};
+		bool binTouched[2100] = {false};
+
+		///// Index of the bin
+		std::vector< unsigned int > binIdx;
+		std::vector< unsigned int > fromBinsToPixels1;
+		std::vector< unsigned int > fromBinsToPixels2;
+
+		for (unsigned int i1=0; i1<nb; i1++) {
+
+			const double r1 = v_r__[f][i1];
+			const double w1 = v_w__[f][i1];
+			const double lambda_minus_mean_over_var1 = (v_lRF__[f][i1] -meanLambda)*invVarLambda;
+
+			for (unsigned int i2=0; i2<nb; i2++) {
+
+				///// Find bin index
+				const double r1r2 = fabs( r1-v_r__[f][i2] );
+				unsigned int idx = 0;
+				if (i1!=i2)  idx = 1 + int(r1r2*inv_binSize);
+
+				const double w2   = v_w__[f][i2];
+				const double lambda_minus_mean_over_var2 = (v_lRF__[f][i2] -meanLambda)*invVarLambda;
+
+				//// Fill arrays for the distortion
+				list_for_pixel_1_0[i1][idx] += w2*invSumWeight;
+                                list_for_pixel_2_0[i2][idx] += w1*invSumWeight;
+                                list_for_pixel_1_1[i1][idx] += w2*lambda_minus_mean_over_var2;
+                                list_for_pixel_2_1[i2][idx] += w1*lambda_minus_mean_over_var1;
+				binTouched_1[i1][idx] = true;
+				binTouched_2[i2][idx] = true;
+				value2[idx] += w1*w2*invSumWeight*invSumWeight;
+				value5[idx] += w2*invSumWeight*w1*lambda_minus_mean_over_var1;
+				value6[idx] += w1*invSumWeight*w2*lambda_minus_mean_over_var2;
+				value7[idx] += w1*w2*lambda_minus_mean_over_var1*lambda_minus_mean_over_var2;
+				binIdx.push_back(idx);
+				fromBinsToPixels1.push_back(i1);
+				fromBinsToPixels2.push_back(i2);
+				binTouched[idx] = true;
+
+				///// Fill array of weights
+				weight[idx] += w1*w2;
+			}
+		}
+
+		///// Number of pairs of two pixels ( here = nb*nb)
+		const unsigned int nbPixelsWithPairs = binIdx.size();
+
+		///// Get a vector of not empty bins
+		std::vector< unsigned int> bins_touched;
+		for (unsigned int i=0; i<2100; i++) {
+			if (binTouched[i]) bins_touched.push_back(i);
+		}
+		const unsigned int nbBinsTouched = bins_touched.size();
+
+		std::vector< unsigned int > nbBinsTouched_pixel_1(nb);
+                std::vector< unsigned int > nbBinsTouched_pixel_2(nb);
+		std::vector< std::vector< unsigned int > > bins_Touched_pixel_1(nb);
+		std::vector< std::vector< unsigned int > > bins_Touched_pixel_2(nb);
+		for (unsigned int i=0; i<nb; i++) {
+			std::vector< unsigned int > tmp_bins_Touched_pixel_1;
+			std::vector< unsigned int > tmp_bins_Touched_pixel_2;
+			for (unsigned int b=0; b<2100; b++) {
+				if (binTouched_1[i][b]) tmp_bins_Touched_pixel_1.push_back(b);
+				if (binTouched_2[i][b]) tmp_bins_Touched_pixel_2.push_back(b);
+			}
+			bins_Touched_pixel_1[i] = tmp_bins_Touched_pixel_1;
+			bins_Touched_pixel_2[i] = tmp_bins_Touched_pixel_2;
+			nbBinsTouched_pixel_1[i] = tmp_bins_Touched_pixel_1.size();
+                        nbBinsTouched_pixel_2[i] = tmp_bins_Touched_pixel_2.size();
+		}
+
+		///// Loops over all pixels of the forest (Fill the distortion matrix)
+		for (unsigned int pa=0; pa<nbPixelsWithPairs; pa++) {
+
+			const unsigned int globalBin1 = binIdx[pa];
+			const unsigned int i1 = fromBinsToPixels1[pa];
+			const unsigned int i2 = fromBinsToPixels2[pa];
+
+			const double w1w2 = v_w__[f][i1]*v_w__[f][i2];
+			const double vali1 = v_lRF__[f][i1] -v_meanLambda[f];
+			const double vali2 = v_lRF__[f][i2] -v_meanLambda[f];
+
+			///// Fill the distortion matrix
+			dataMatrix[globalBin1][globalBin1] += w1w2;
+			
+			for (unsigned int b2=0; b2<nbBinsTouched; b2++) {
+				const unsigned int globalBin2 = bins_touched[b2];
+				dataMatrix[globalBin1][globalBin2] += w1w2*( value2[globalBin2]
+					+vali1*value5[globalBin2] +vali2*value6[globalBin2]
+					+vali1*vali2*value7[globalBin2] );
+			}
+			for (unsigned int b2=0; b2<nbBinsTouched_pixel_1[i1]; b2++) {
+				const unsigned int globalBin2 = bins_Touched_pixel_1[i1][b2];
+				dataMatrix[globalBin1][globalBin2] -= w1w2*( list_for_pixel_1_0[i1][globalBin2] + vali2*list_for_pixel_1_1[i1][globalBin2] );
+			}
+			for (unsigned int b2=0; b2<nbBinsTouched_pixel_2[i2]; b2++) {
+				const unsigned int globalBin2 = bins_Touched_pixel_2[i2][b2];
+				dataMatrix[globalBin1][globalBin2] -= w1w2*( list_for_pixel_2_0[i2][globalBin2] + vali1*list_for_pixel_2_1[i2][globalBin2] );
+			}
+		}
+	}
+
+	std::cout << "\n  Saving\n" << std::endl;
+
+	///// Save the 2D cross-correlation
+	std::ofstream fFile;
+        std::string pathToSave = pathToSave__;
+	pathToSave += "xi_1D_delta_delta_distortionMatrix_";
+	pathToSave += forest__;
+	pathToSave += ".txt";
+        std::cout << "\n  " << pathToSave << std::endl;
+        fFile.open(pathToSave.c_str());
+        fFile << std::scientific;
+        fFile.precision(std::numeric_limits<double>::digits10);
+
+	///// Set the values of data
+        ///// [0] for value, [1] for error, [2] for bin center
+	long double value_total  = 0.;
+	long double weight_total = 0.;
+        for (unsigned int i=0; i<nbBins; i++) {
+                for (unsigned int j=0; j<nbBins; j++) {
+                        double value = 0.;
+			if (weight[i]!=0.) {
+				value = dataMatrix[i][j]/weight[i];
+				value_total  += dataMatrix[i][j];
+			}
+                        fFile << value << " ";
+                }
+                fFile << std::endl;
+		weight_total += weight[i];
+        }
+        fFile.close();
+
+	std::cout << "  value_total     = " << value_total << std::endl;
+	std::cout << "  weight_total    = " << weight_total << std::endl;
+	std::cout << "  integral matrix = " << value_total / weight_total << std::endl;
+
+	return;
+}
+void Correlation::xi_1DlRF_delta_delta_distortionMatrix(void) {
+
+	return;
+}
+void Correlation::xi_1DlRFDevide_delta_delta_distortionMatrix(void) {
+
+	return;
+}
 void Correlation::xi_1D_delta_delta2(void) {
 
-	std::cout << "\n\n\n\n  ------ xi_1D_delta_delta2 ------" << std::endl;
-	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_1D_delta_delta2.py";
-	command += commandEnd__;
-	std::cout << command << "\n" << std::endl;
+	std::cout << "\n\n\n\n  ------ xi_1D_delta_delta2 ------\n" << std::endl;
+
 	///// Forest 1
 	loadDataForest(pathForest__);
 	v_CosDe__.clear();
@@ -796,10 +1027,8 @@ void Correlation::xi_1D_delta_delta2(void) {
 }
 void Correlation::xi_1DlRFDevide_delta_delta2(void) {
 
-	std::cout << "\n\n\n\n  ------ xi_1DlRF_delta_delta2 ------" << std::endl;
-	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_1DlRF_delta_delta2.py";
-	command += commandEnd__;
-	std::cout << command << "\n" << std::endl;
+	std::cout << "\n\n\n\n  ------ xi_1DlRF_delta_delta2 ------\n" << std::endl;
+
 	///// Forest 1
 	loadDataForest(pathForest__);
 	v_CosDe__.clear();
@@ -925,10 +1154,7 @@ void Correlation::xi_1DlRFDevide_delta_delta2(void) {
 // ---------------------------------------------------------------------
 void Correlation::xi_A_delta_delta(unsigned int bootIdx/*=0*/) {
 
-	std::cout << "\n\n\n\n  ------ xi_A_delta_delta ------" << std::endl;
-	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_A_delta_delta.py";
-	command += commandEnd__;
-	std::cout << command << "\n" << std::endl;
+	std::cout << "\n\n\n\n  ------ xi_A_delta_delta ------\n" << std::endl;
 
 	///// Load forest
 	loadDataForest(pathForest__, bootIdx);
@@ -938,9 +1164,9 @@ void Correlation::xi_A_delta_delta(unsigned int bootIdx/*=0*/) {
 	v_nb__.clear();
 
 	///// Constants:
-	const unsigned int max    = 200.;
+	const double  max         = 200.;
 	const unsigned int nbBin  = int(max);
-	const unsigned int nbBinM = 50.;
+	const unsigned int nbBinM = 50;
 
 	const double maxPow2      = max*max;
 	const double distMax      = sqrt(2.)*max+1.;
@@ -1213,10 +1439,7 @@ void Correlation::xi_A_delta_delta(unsigned int bootIdx/*=0*/) {
 }
 void Correlation::xi_A_delta_delta_lambda(void) {
 
-	std::cout << "\n\n\n\n  ------ xi_A_delta_delta_lambda ------" << std::endl;
-	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_A_delta_delta_lambda.py";
-	command += commandEnd__;
-	std::cout << command << "\n" << std::endl;
+	std::cout << "\n\n\n\n  ------ xi_A_delta_delta_lambda ------\n" << std::endl;
 
 	///// Load forest
 	loadDataForest(pathForest__);
@@ -1347,12 +1570,293 @@ void Correlation::xi_A_delta_delta_lambda(void) {
 
 	return;
 }
+void Correlation::xi_A_delta_delta_distortionMatrix(void) {
+
+	std::cout << "\n\n\n\n  ------ xi_A_delta_delta_distortionMatrix ------\n" << std::endl;
+
+	///// Forest
+	loadDataForest(pathForest__);
+
+	///// Empty useless vectors
+	v_zz__.clear();
+	v_d__.clear();
+	v_z__.clear();
+	v_lObs__.clear();
+	v_nb__.clear();
+	v_idx__.clear();
+
+	///// Set usefull vectors
+	std::vector<double> v_invSumWeight(nbForest_,0.);
+	std::vector<double> v_meanLambda(nbForest_,0.);
+	std::vector<double> v_invVarLambda(nbForest_,0.);
+
+	for (unsigned int f=0; f<nbForest_; f++) {
+		const unsigned int nbPixel = v_nbPixelDelta1__[f];
+
+		long double sumWeight  = 0.;
+		long double meanLambda = 0.;
+		long double varLambda  = 0.;
+
+		///// Loops over all pixels of the forest
+		for (unsigned int i=0; i<nbPixel; i++) {
+
+			const long double w = v_w__[f][i];
+			const long double l = v_lRF__[f][i];
+
+			sumWeight  += w;
+			meanLambda += w*l;
+			varLambda  += w*l*l;
+		}
+
+		if (sumWeight==0.) std::cout << "   ERROR:: sumWeight = 0. " << std::endl;
+		meanLambda        /= sumWeight;
+		varLambda          = varLambda - meanLambda*meanLambda*sumWeight;
+		if (varLambda==0.) std::cout << "   ERROR:: varLambda = 0. " << std::endl;
+
+		v_invSumWeight[f] = 1./sumWeight;
+		v_meanLambda[f]   = meanLambda;
+		v_invVarLambda[f] = 1./varLambda;
+	}
+
+	///// Constants:
+	const double max         = 200.;
+	const double binSize     = 4.;
+	const unsigned int nbBin = int(max/binSize);
+	const unsigned int nbBin2D = nbBin*nbBin;
+
+	const double distMax      = sqrt(2.)*max+1.;
+	const double distMaxPow2  = 2.*max*max;
+	const double fromValToIdx  = nbBin/max;
+
+	///// Find the maximal angle of seperation
+	const double maxTheta = 2.*asin( distMax/(distMinPixel__*2.) );
+	const double cosmaxTheta = cos(maxTheta);
+	std::cout << "  maxTheta = " << maxTheta*180./M_PI << " degree" << std::endl;
+
+	///// Arrays for distortion matrix
+	double weight2D[nbBin2D];
+	double** data2DMatrix = new double*[nbBin2D];
+	for (unsigned int i=0; i<nbBin2D; i++) {
+		weight2D[i] = 0.;
+		data2DMatrix[i] = new double[nbBin2D];
+		for (unsigned int j=0; j<nbBin2D; j++) {
+			data2DMatrix[i][j] = 0.;
+		}
+	}
+
+
+
+
+
+	std::cout << "\n  Starting\n" << std::endl;
+
+	for (unsigned int f1=0; f1<nbForest_; f1++) {
+
+		const unsigned int nb1      = v_nbPixelDelta1__[f1];
+		const double cosDe          = v_CosDe__[f1];
+		const double sinDe          = v_SinDe__[f1];
+		const double firstPixelPow2 = v_r__[f1][0]*v_r__[f1][0];
+		const double ra1            = v_ra__[f1];
+		const double de1            = v_de__[f1];
+		const double invSumWeight1  = v_invSumWeight[f1];
+		const double meanLambda1    = v_meanLambda[f1];
+		const double invVarLambda1  = v_invVarLambda[f1];
+
+		for (unsigned int f2=0; f2<f1; f2++) {
+
+			///// Usefull for eBOSS data because many re-obs.
+			if (ra1==v_ra__[f2] && de1==v_de__[f2]) continue;
+			else if (fabs(ra1-v_ra__[f2])<C_AUTOCORRCRIT && fabs(de1-v_de__[f2])<C_AUTOCORRCRIT ) continue;
+
+			///// Angle between the two directions of the qso and the lya
+			const double cosTheta = cosDe*v_CosDe__[f2]*cos(ra1-v_ra__[f2]) + sinDe*v_SinDe__[f2];
+			if (cosTheta<cosmaxTheta) continue;
+
+			const double distMinPow2 = std::min(firstPixelPow2,v_r__[f2][0]*v_r__[f2][0])*(1.-cosTheta*cosTheta);
+			if (distMinPow2>distMaxPow2) continue;
+
+			const double sinTheta = sqrt(1.-cosTheta*cosTheta);
+			const unsigned int nb2 = v_nbPixelDelta1__[f2];
+			const double invSumWeight2  = v_invSumWeight[f2];
+			const double meanLambda2    = v_meanLambda[f2];
+			const double invVarLambda2  = v_invVarLambda[f2];
+
+			//// For the distortion-matrix
+			std::vector< std::vector< double > > list_for_pixel_1_0(nb1, std::vector<double>(2500,0.));
+			std::vector< std::vector< double > > list_for_pixel_2_0(nb2, std::vector<double>(2500,0.));
+			std::vector< std::vector< double > > list_for_pixel_1_1(nb1, std::vector<double>(2500,0.));
+			std::vector< std::vector< double > > list_for_pixel_2_1(nb2, std::vector<double>(2500,0.));
+			std::vector< bool > pixelTouched_1(nb1,false);
+			std::vector< bool > pixelTouched_2(nb2,false);
+			std::vector< std::vector< bool > > binTouched_1(nb1, std::vector<bool>(2500,false));
+			std::vector< std::vector< bool > > binTouched_2(nb2, std::vector<bool>(2500,false));
+			double value2[2500]   = {0.};
+			double value5[2500]   = {0.};
+			double value6[2500]   = {0.};
+			double value7[2500]   = {0.};
+			bool binTouched[2500] = {false};
+
+			///// Index of the bin
+			std::vector< unsigned int > binIdx;
+			std::vector< unsigned int > fromBinsToPixels1;
+			std::vector< unsigned int > fromBinsToPixels2;
+
+			for (unsigned int i1=0; i1<nb1; i1++) {
+
+				///// Get the r_perp distance
+				const double rPerp = v_r__[f1][i1]*sinTheta;
+				if (rPerp>=max) continue;
+				const unsigned int rPerpBinIdx           = int(rPerp*fromValToIdx);
+				const double tmp_rParral                 = v_r__[f1][i1]*cosTheta;
+				const double w1                          = v_w__[f1][i1];
+				const double lambda_minus_mean_over_var1 = (v_lRF__[f1][i1] -meanLambda1)*invVarLambda1;
+
+				for (unsigned int i2=0; i2<nb2; i2++) {
+
+					const double rParral = fabs(v_r__[f2][i2]-tmp_rParral);
+					if (rParral>=max) continue;
+					const unsigned int rParralBinIdx = int(rParral*fromValToIdx);
+					const unsigned int globalBin     = rPerpBinIdx*nbBin +rParralBinIdx;
+
+					const double w2                          = v_w__[f2][i2];
+					const double lambda_minus_mean_over_var2 = (v_lRF__[f2][i2] -meanLambda2)*invVarLambda2;
+
+					//// Fill arrays for the distortion
+					list_for_pixel_1_0[i1][globalBin] += w2*invSumWeight2;
+					list_for_pixel_2_0[i2][globalBin] += w1*invSumWeight1;
+					list_for_pixel_1_1[i1][globalBin] += w2*lambda_minus_mean_over_var2;
+					list_for_pixel_2_1[i2][globalBin] += w1*lambda_minus_mean_over_var1;
+					pixelTouched_1[i1] = true;
+					pixelTouched_2[i2] = true;
+					binTouched_1[i1][globalBin] = true;
+					binTouched_2[i2][globalBin] = true;
+					value2[globalBin] += w1*w2*invSumWeight1*invSumWeight2;
+					value5[globalBin] += w2*invSumWeight2*w1*lambda_minus_mean_over_var1;
+					value6[globalBin] += w1*invSumWeight1*w2*lambda_minus_mean_over_var2;
+					value7[globalBin] += w1*w2*lambda_minus_mean_over_var1*lambda_minus_mean_over_var2;
+					binIdx.push_back(globalBin);
+					fromBinsToPixels1.push_back(i1);
+					fromBinsToPixels2.push_back(i2);
+					binTouched[globalBin] = true;
+
+					///// Fill array of weights
+					weight2D[globalBin] += w1*w2;
+				}
+			}
+
+			///// Number of pairs of two pixels ( here = nb*nb)
+			const unsigned int nbPixelsWithPairs = binIdx.size();
+	
+			///// Get a vector of not empty bins
+			std::vector< unsigned int> bins_touched;
+			for (unsigned int b=0; b<2500; b++) {
+				if (binTouched[b]) bins_touched.push_back(b);
+			}
+			const unsigned int nbBinsTouched = bins_touched.size();
+
+			//// For forest 1
+			std::vector< unsigned int > nbBinsTouched_pixel_1(nb1);
+			std::vector< std::vector< unsigned int > > bins_Touched_pixel_1(nb1);
+			for (unsigned int i=0; i<nb1; i++) {
+				if (!pixelTouched_1[i]) continue;
+				std::vector< unsigned int > tmp_bins_Touched_pixel_1;
+				for (unsigned int b=0; b<2500; b++) {
+					if (binTouched_1[i][b]) tmp_bins_Touched_pixel_1.push_back(b);
+				}
+				bins_Touched_pixel_1[i] = tmp_bins_Touched_pixel_1;
+				nbBinsTouched_pixel_1[i] = tmp_bins_Touched_pixel_1.size();
+			}
+			//// For forest 2
+			std::vector< unsigned int > nbBinsTouched_pixel_2(nb2);
+			std::vector< std::vector< unsigned int > > bins_Touched_pixel_2(nb2);
+			for (unsigned int i=0; i<nb2; i++) {
+				if (!pixelTouched_2[i]) continue;
+				std::vector< unsigned int > tmp_bins_Touched_pixel_2;
+				for (unsigned int b=0; b<2500; b++) {
+					if (binTouched_2[i][b]) tmp_bins_Touched_pixel_2.push_back(b);
+				}
+				bins_Touched_pixel_2[i] = tmp_bins_Touched_pixel_2;
+				nbBinsTouched_pixel_2[i] = tmp_bins_Touched_pixel_2.size();
+			}
+	
+			///// Loops over all pairs
+			for (unsigned int p1=0; p1<nbPixelsWithPairs; p1++) {
+	
+				const unsigned int globalBin1 = binIdx[p1];
+				const unsigned int i1 = fromBinsToPixels1[p1];
+				const unsigned int i2 = fromBinsToPixels2[p1];
+	
+				const double w1w2 = v_w__[f1][i1]*v_w__[f2][i2];
+				const double valf1i1 = v_lRF__[f1][i1] -v_meanLambda[f1];
+				const double valf2i2 = v_lRF__[f2][i2] -v_meanLambda[f2];
+	
+				///// Fill the distortion matrix
+				data2DMatrix[globalBin1][globalBin1] += w1w2;
+
+				/// Loop over all not empty bins
+				for (unsigned int b2=0; b2<nbBinsTouched; b2++) {
+					const unsigned int globalBin2 = bins_touched[b2];
+					data2DMatrix[globalBin1][globalBin2] += w1w2*( value2[globalBin2]
+						+valf1i1*value5[globalBin2] +valf2i2*value6[globalBin2]
+						+valf1i1*valf2i2*value7[globalBin2] );
+				}
+				
+				for (unsigned int b2=0; b2<nbBinsTouched_pixel_1[i1]; b2++) {
+					const unsigned int globalBin2 = bins_Touched_pixel_1[i1][b2];
+					data2DMatrix[globalBin1][globalBin2] -= w1w2*( list_for_pixel_1_0[i1][globalBin2] + valf2i2*list_for_pixel_1_1[i1][globalBin2] );
+				}
+				for (unsigned int b2=0; b2<nbBinsTouched_pixel_2[i2]; b2++) {
+					const unsigned int globalBin2 = bins_Touched_pixel_2[i2][b2];
+					data2DMatrix[globalBin1][globalBin2] -= w1w2*( list_for_pixel_2_0[i2][globalBin2] + valf1i1*list_for_pixel_2_1[i2][globalBin2] );
+				}
+			}
+		}
+std::cout << f1 << std::endl;
+	}
+
+
+        std::cout << "\n  Saving\n" << std::endl;
+
+        std::ofstream fFile;
+
+	///// Save the 2D cross-correlation 
+        std::string pathToSave = pathToSave__;
+        pathToSave += "xi_A_delta_delta_distortionMatrix_2D_";
+        pathToSave += forest__;
+        pathToSave += ".txt";
+        std::cout << "\n  " << pathToSave << std::endl;
+        fFile.open(pathToSave.c_str());
+        fFile << std::scientific;
+        fFile.precision(std::numeric_limits<double>::digits10);
+
+	///// Set the values of data
+        ///// [0] for value, [1] for error, [2] for bin center
+	long double value_total  = 0.;
+	long double weight_total = 0.;
+        for (unsigned int i=0; i<nbBin2D; i++) {
+                for (unsigned int j=0; j<nbBin2D; j++) {
+                        double value = 0.;
+			if (weight2D[i]!=0.) {
+				value = data2DMatrix[i][j]/weight2D[i];
+				value_total  += data2DMatrix[i][j];
+			}
+                        fFile << value << " ";
+                }
+                fFile << std::endl;
+		weight_total += weight2D[i];
+        }
+        fFile.close();
+
+	std::cout << "  value_total     = " << value_total << std::endl;
+	std::cout << "  weight_total    = " << weight_total << std::endl;
+	std::cout << "  integral matrix = " << value_total / weight_total << std::endl;
+
+
+	return;
+}
 void Correlation::xi_A_delta_delta_Metals_Models(double lambdaRFMetal1, std::string lambdaRFMetalName1,double lambdaRFMetal2, std::string lambdaRFMetalName2) {
 
-	std::cout << "\n\n\n\n  ------ xi_A_delta_delta_Metals_Models ------" << std::endl;
-	std::string command = "  python ... ";
-	command += commandEnd__;
-	std::cout << command << "\n" << std::endl;
+	std::cout << "\n\n\n\n  ------ xi_A_delta_delta_Metals_Models ------\n" << std::endl;
 
 	std::cout << "  line1 = " << lambdaRFMetalName1 << " : " << lambdaRFMetal1 << std::endl;
 	std::cout << "  line2 = " << lambdaRFMetalName2 << " : " << lambdaRFMetal2 << std::endl;
@@ -1427,7 +1931,7 @@ void Correlation::xi_A_delta_delta_Metals_Models(double lambdaRFMetal1, std::str
 	data_xi4.push_back(0.);
 
 	///// Constants:
-	const unsigned int max    = 200.;
+	const double max          = 200.;
 	const unsigned int nbBin  = int(max);
 	const unsigned int nbBinM = 50.;
 
@@ -1616,10 +2120,7 @@ void Correlation::xi_A_delta_delta_Metals_Models(double lambdaRFMetal1, std::str
 }
 void Correlation::xi_A_delta_delta2( unsigned int bootIdx/*=0*/ ) {
 
-	std::cout << "\n\n\n\n  ------ xi_A_delta_delta2 ------" << std::endl;
-	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_A_delta_delta2.py";
-	command += commandEnd__;
-	std::cout << command << "\n" << std::endl;
+	std::cout << "\n\n\n\n  ------ xi_A_delta_delta2 ------\n" << std::endl;
 
 	///// Forest 1
 	loadDataForest(pathForest__, bootIdx);
@@ -1634,11 +2135,11 @@ void Correlation::xi_A_delta_delta2( unsigned int bootIdx/*=0*/ ) {
 	v_lObsDelta2__.clear();
 
 	///// Constants:
-	const unsigned int max = 200.;
-	const unsigned int nbBin = int(max);
+	const double max          = 200.;
+	const unsigned int nbBin  = int(max);
 	const unsigned int nbBinX = nbBin;
 	const unsigned int nbBinY = 2*nbBin;
-	const unsigned int nbBinM = 100.;
+	const unsigned int nbBinM = 100;
 
 	const double maxPow2      = max*max;
 	const double distMax      = sqrt(2.)*max+1.;
@@ -1921,10 +2422,7 @@ void Correlation::xi_A_delta_delta2( unsigned int bootIdx/*=0*/ ) {
 }
 void Correlation::xi_A_delta_delta2_lambda(void) {
 
-	std::cout << "\n\n\n\n  ------ xi_A_delta_delta2_lambda ------" << std::endl;
-	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_A_delta_delta2_lambda.py";
-	command += commandEnd__;
-	std::cout << command << "\n" << std::endl;
+	std::cout << "\n\n\n\n  ------ xi_A_delta_delta2_lambda ------\n" << std::endl;
 
 	///// Load forest 1
 	loadDataForest(pathForest__);
@@ -2073,10 +2571,8 @@ void Correlation::xi_A_delta_delta2_lambda(void) {
 // ---------------------------------------------------------------------
 void Correlation::xi_delta_QSO(unsigned int bootIdx/*=0*/) {
 
-	std::cout << "\n\n\n\n  ------ xi_delta_QSO ------" << std::endl;
-	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_delta_QSO.py";
-	command += commandEnd__;
-	std::cout << command << "\n" << std::endl;
+	std::cout << "\n\n\n\n  ------ xi_delta_QSO ------\n" << std::endl;
+
 	if (doBootstraps__)  std::cout << "  subsampling N° "     << bootIdx << std::endl;
 	if ( shuffleForest || shuffleQSO || randomQSO ) std::cout << "  shuffleForest seed " << bootIdx*10 << std::endl;
 
@@ -2100,7 +2596,7 @@ void Correlation::xi_delta_QSO(unsigned int bootIdx/*=0*/) {
 	const unsigned int nbBin  = int(max);
 	const unsigned int nbBinX = nbBin;
 	const unsigned int nbBinY = 2*nbBin;
-	const unsigned int nbBinM = 100.;
+	const unsigned int nbBinM = 100;
 
 	const double maxPow2      = max*max;
 
@@ -2517,10 +3013,7 @@ void Correlation::xi_delta_QSO(unsigned int bootIdx/*=0*/) {
 }
 void Correlation::xi_delta_QSO_theta(unsigned int bootIdx/*=0*/) {
 
-	std::cout << "\n\n\n\n  ------ xi_delta_QSO_theta ------" << std::endl;
-	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_delta_QSO_theta.py";
-	command += commandEnd__;
-	std::cout << command << "\n" << std::endl;
+	std::cout << "\n\n\n\n  ------ xi_delta_QSO_theta ------\n" << std::endl;
 
 	///// Constants
 	const double radToDeg = 180.*M_PI;
@@ -2632,10 +3125,8 @@ void Correlation::xi_delta_QSO_theta(unsigned int bootIdx/*=0*/) {
 }
 void Correlation::xi_delta_QSO_lambda(unsigned int bootIdx/*=0*/) {
 
-	std::cout << "\n\n\n\n  ------ xi_delta_QSO_lambda ------" << std::endl;
-	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_delta_QSO_lambda.py";
-	command += commandEnd__;
-	std::cout << command << "\n" << std::endl;
+	std::cout << "\n\n\n\n  ------ xi_delta_QSO_lambda ------\n" << std::endl;
+
 	if (doBootstraps__)  std::cout << "  subsampling N° "     << bootIdx << std::endl;
 	if (shuffleForest) std::cout << "  shuffleForest seed " << bootIdx*10 << std::endl;
 
@@ -2791,10 +3282,7 @@ void Correlation::xi_delta_QSO_lambda(unsigned int bootIdx/*=0*/) {
 }
 void Correlation::xi_delta_QSO_distortionMatrix(void) {
 
-	std::cout << "\n\n\n\n  ------ xi_delta_QSO_distortionMatrix ------" << std::endl;
-	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_delta_QSO_distortionMatrix.py";
-	command += commandEnd__;
-	std::cout << command << "\n" << std::endl;
+	std::cout << "\n\n\n\n  ------ xi_delta_QSO_distortionMatrix ------\n" << std::endl;
 
 	///// QSO
 	loadDataQ1();
@@ -3021,10 +3509,7 @@ void Correlation::xi_delta_QSO_distortionMatrix(void) {
 }
 void Correlation::xi_delta_QSO_distortionMatrix_1D(void) {
 
-	std::cout << "\n\n\n\n  ------ xi_delta_QSO_distortionMatrix_1D ------" << std::endl;
-	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_delta_QSO_distortionMatrix.py";
-	command += commandEnd__;
-	std::cout << command << "\n" << std::endl;
+	std::cout << "\n\n\n\n  ------ xi_delta_QSO_distortionMatrix_1D ------\n" << std::endl;
 
 	///// QSO
 	loadDataQ1();
@@ -3327,7 +3812,7 @@ void Correlation::xi_delta_QSO_Metals_Models(double lambdaFrMetal, std::string l
 	const unsigned int nbBin  = int(max);
 	const unsigned int nbBinX = nbBin;
 	const unsigned int nbBinY = 2*nbBin;
-	const unsigned int nbBinM = 100.;
+	const unsigned int nbBinM = 100;
 
 	const double maxPow2      = max*max;
 
@@ -3530,12 +4015,7 @@ void Correlation::xi_delta_QSO_Wick(unsigned int diagramIdx) {
 	convert << diagramIdx;
 	std::string strConvert = convert.str();
 
-	std::cout << "\n\n\n\n  ------ xi_delta_QSO_Wick ------" << std::endl;
-	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_delta_QSO.py";
-	command += commandEnd__;
-	command += " ";
-	command += strConvert;
-	std::cout << command << "\n" << std::endl;
+	std::cout << "\n\n\n\n  ------ xi_delta_QSO_Wick ------\n" << std::endl;
 	
 	//// QSO
 	loadDataQ1();
@@ -3833,10 +4313,8 @@ void Correlation::xi_delta_QSO_Wick(unsigned int diagramIdx) {
 // ---------------------------------------------------------------------
 void Correlation::xi_QSO_QSO(unsigned int bootIdx/*=0*/) {
 
-	std::cout << "\n\n\n\n  ------ xi_QSO_QSO ------" << std::endl;
-	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_Q_Q.py";
-	command += commandEnd__;
-	std::cout << command << "\n" << std::endl;
+	std::cout << "\n\n\n\n  ------ xi_QSO_QSO ------\n" << std::endl;
+
 	loadDataQ1();
 
 	std::stringstream convert;
@@ -4165,10 +4643,8 @@ void Correlation::xi_QSO_QSO(unsigned int bootIdx/*=0*/) {
 }
 void Correlation::xi_Q1_Q2(void) {
 
-	std::cout << "\n\n\n\n  ------ xi_Q1_Q2 ------" << std::endl;
-	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_Q1_Q2.py";
-	command += commandEnd__;
-	std::cout << command << "\n" << std::endl;
+	std::cout << "\n\n\n\n  ------ xi_Q1_Q2 ------\n" << std::endl;
+
 	loadDataQ1();
 	loadDataQ2();
 
@@ -4355,10 +4831,7 @@ void Correlation::xi_Q1_Q2(void) {
 // ---------------------------------------------------------------------
 void Correlation::xi_A_delta_delta_MockJMc(unsigned int bootIdx/*=0*/) {
 
-	std::cout << "\n\n\n\n  ------ xi_A_delta_delta_MockJMc ------" << std::endl;
-	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_A_delta_delta.py";
-	command += commandEnd__;
-	std::cout << command << "\n" << std::endl;
+	std::cout << "\n\n\n\n  ------ xi_A_delta_delta_MockJMc ------\n" << std::endl;
 
 	if (mocks_raw) loadDataForest_Raw();
 	else loadDataForest(pathForest__, bootIdx);
@@ -4374,9 +4847,9 @@ void Correlation::xi_A_delta_delta_MockJMc(unsigned int bootIdx/*=0*/) {
 	v_nb__.clear();
 
 	///// Constants:
-	const unsigned int max = 200.;
-	const unsigned int nbBin = int(max);
-	const unsigned int nbBinM = 50.;
+	const double max          = 200.;
+	const unsigned int nbBin  = int(max);
+	const unsigned int nbBinM = 50;
 	const double maxPow2      = max*max;
 
 	///// get an array for nb of pairs for the forest
@@ -4669,12 +5142,325 @@ void Correlation::xi_A_delta_delta_MockJMc(unsigned int bootIdx/*=0*/) {
 
 	return;
 }
+void Correlation::xi_A_delta_delta_MockJMc_distortionMatrix(void) {
+
+
+	std::cout << "\n\n\n\n  ------ xi_A_delta_delta_MockJMc_distortionMatrix ------\n" << std::endl;
+
+	///// Forest
+	loadDataForest(pathForest__);
+
+	///// Empty useless vectors
+	v_CosDe__.clear();
+	v_SinDe__.clear();
+	v_zz__.clear();
+	v_idx__.clear();
+	v_lObs__.clear();
+	v_nb__.clear();
+
+	///// Vectors of randomized positions in cell
+	std::vector<double> v_raRandForest;
+	std::vector<double> v_deRandForest;
+	if (randomPositionOfQSOInCellNotBeforeCorrelation__) {
+
+		std::cout << "  Seed is = " << seed_for_random_position__ << std::endl; 
+		std::srand(seed_for_random_position__);
+
+		v_raRandForest.resize(nbForest_,0.);
+		v_deRandForest.resize(nbForest_,0.);
+		for (unsigned int i=0; i<nbForest_; i++) {
+			v_raRandForest[i] = v_ra__[i] + sizeCell__*(1.*rand()/RAND_MAX-0.5);
+			v_deRandForest[i] = v_de__[i] + sizeCell__*(1.*rand()/RAND_MAX-0.5);
+		}
+	}
+
+	///// Set usefull vectors
+	std::vector<double> v_invSumWeight(nbForest_,0.);
+	std::vector<double> v_meanLambda(nbForest_,0.);
+	std::vector<double> v_invVarLambda(nbForest_,0.);
+
+	for (unsigned int f=0; f<nbForest_; f++) {
+		const unsigned int nbPixel = v_nbPixelDelta1__[f];
+
+		long double sumWeight  = 0.;
+		long double meanLambda = 0.;
+		long double varLambda  = 0.;
+
+		///// Loops over all pixels of the forest
+		for (unsigned int i=0; i<nbPixel; i++) {
+
+			const long double w = v_w__[f][i];
+			const long double l = v_lRF__[f][i];
+
+			sumWeight  += w;
+			meanLambda += w*l;
+			varLambda  += w*l*l;
+		}
+
+		if (sumWeight==0.) std::cout << "   ERROR:: sumWeight = 0. " << std::endl;
+		meanLambda        /= sumWeight;
+		varLambda          = varLambda - meanLambda*meanLambda*sumWeight;
+		if (varLambda==0.) std::cout << "   ERROR:: varLambda = 0. " << std::endl;
+
+		v_invSumWeight[f] = 1./sumWeight;
+		v_meanLambda[f]   = meanLambda;
+		v_invVarLambda[f] = 1./varLambda;
+	}
+
+	///// Constants:
+	const double max         = 200.;
+	const double binSize     = 4.;
+	const unsigned int nbBin = int(max/binSize);
+	const unsigned int nbBin2D = nbBin*nbBin;
+
+	const double maxPow2      = max*max;
+	const double fromValToIdx  = nbBin/max;
+
+	///// Arrays for distortion matrix
+	double weight2D[nbBin2D];
+	double** data2DMatrix = new double*[nbBin2D];
+	for (unsigned int i=0; i<nbBin2D; i++) {
+		weight2D[i] = 0.;
+		data2DMatrix[i] = new double[nbBin2D];
+		for (unsigned int j=0; j<nbBin2D; j++) {
+			data2DMatrix[i][j] = 0.;
+		}
+	}
+
+
+
+
+
+	std::cout << "\n  Starting\n" << std::endl;
+
+	for (unsigned int f1=0; f1<nbForest_; f1++) {
+
+		const unsigned int nb1  = v_nbPixelDelta1__[f1];
+		const double x1         = v_ra__[f1];
+		const double y1         = v_de__[f1];
+		const double fpix1      = v_r__[f1][0];
+		const double lPix1      = v_r__[f1][nb1-1];
+		const double invSumWeight1  = v_invSumWeight[f1];
+		const double meanLambda1    = v_meanLambda[f1];
+		const double invVarLambda1  = v_invVarLambda[f1];
+
+		double x11 = x1;
+		double y11 = y1;
+		///// If random position in the cell
+		if (randomPositionOfQSOInCellNotBeforeCorrelation__) {
+			x11 = v_raRandForest[f1];
+			y11 = v_deRandForest[f1];
+		}
+
+		for (unsigned int f2=0; f2<f1; f2++) {
+
+			const double x2 = v_ra__[f2];
+			const double y2 = v_de__[f2];
+
+			///// Not in the same line of sight
+			if (x1==x2 && y1==y2) continue;
+
+			double x22 = x2;
+			double y22 = y2;
+			///// If random position in the cell
+			if (randomPositionOfQSOInCellNotBeforeCorrelation__) {
+				x22 = v_raRandForest[f2];
+				y22 = v_deRandForest[f2];
+			}
+
+			///// If r_perp is too high
+			const double distTransPow2 = (x11-x22)*(x11-x22) + (y11-y22)*(y11-y22);
+			if (distTransPow2 >= maxPow2) continue;
+
+			///// If forests too far from one another
+			const unsigned int nb2 = v_nbPixelDelta1__[f2];
+			const double fpix2 = v_r__[f2][0];
+			const double lPix2 = v_r__[f2][nb2-1];
+			const double minLastPixel = std::min(lPix1,lPix2);
+			if (minLastPixel==lPix1 && fpix2>lPix1 && fpix2-lPix1>=max ) continue;
+			if (minLastPixel==lPix2 && fpix1>lPix2 && fpix1-lPix2>=max ) continue;
+
+			///// Transvers distance
+			const double rPerp = sqrt(distTransPow2);
+			const unsigned int rPerpBinIdx = int( rPerp*fromValToIdx );
+
+			const double invSumWeight2  = v_invSumWeight[f2];
+			const double meanLambda2    = v_meanLambda[f2];
+			const double invVarLambda2  = v_invVarLambda[f2];
+
+			//// For the distortion-matrix
+			std::vector< std::vector< double > > list_for_pixel_1_0(nb1, std::vector<double>(2500,0.));
+			std::vector< std::vector< double > > list_for_pixel_2_0(nb2, std::vector<double>(2500,0.));
+			std::vector< std::vector< double > > list_for_pixel_1_1(nb1, std::vector<double>(2500,0.));
+			std::vector< std::vector< double > > list_for_pixel_2_1(nb2, std::vector<double>(2500,0.));
+			std::vector< bool > pixelTouched_1(nb1,false);
+			std::vector< bool > pixelTouched_2(nb2,false);
+			std::vector< std::vector< bool > > binTouched_1(nb1, std::vector<bool>(2500,false));
+			std::vector< std::vector< bool > > binTouched_2(nb2, std::vector<bool>(2500,false));
+			double value2[2500]   = {0.};
+			double value5[2500]   = {0.};
+			double value6[2500]   = {0.};
+			double value7[2500]   = {0.};
+			bool binTouched[2500] = {false};
+
+			///// Index of the bin
+			std::vector< unsigned int > binIdx;
+			std::vector< unsigned int > fromBinsToPixels1;
+			std::vector< unsigned int > fromBinsToPixels2;
+
+			for (unsigned int i1=0; i1<nb1; i1++) {
+
+				const double r1 = v_r__[f1][i1];
+				const double w1 = v_w__[f1][i1];
+				const double lambda_minus_mean_over_var1 = (v_lRF__[f1][i1] -meanLambda1)*invVarLambda1;
+
+				for (unsigned int i2=0; i2<nb2; i2++) {
+
+					const double rParral = fabs(v_r__[f2][i2]-r1);
+					if (rParral>=max) continue;
+					const unsigned int rParralBinIdx = int(rParral*fromValToIdx);
+					const unsigned int globalBin = rPerpBinIdx*nbBin +rParralBinIdx;
+
+					const double w2 = v_w__[f2][i2];
+					const double lambda_minus_mean_over_var2 = (v_lRF__[f2][i2] -meanLambda2)*invVarLambda2;
+
+					//// Fill arrays for the distortion
+					list_for_pixel_1_0[i1][globalBin] += w2*invSumWeight2;
+					list_for_pixel_2_0[i2][globalBin] += w1*invSumWeight1;
+					list_for_pixel_1_1[i1][globalBin] += w2*lambda_minus_mean_over_var2;
+					list_for_pixel_2_1[i2][globalBin] += w1*lambda_minus_mean_over_var1;
+					pixelTouched_1[i1] = true;
+					pixelTouched_2[i2] = true;
+					binTouched_1[i1][globalBin] = true;
+					binTouched_2[i2][globalBin] = true;
+					value2[globalBin] += w1*w2*invSumWeight1*invSumWeight2;
+					value5[globalBin] += w2*invSumWeight2*w1*lambda_minus_mean_over_var1;
+					value6[globalBin] += w1*invSumWeight1*w2*lambda_minus_mean_over_var2;
+					value7[globalBin] += w1*w2*lambda_minus_mean_over_var1*lambda_minus_mean_over_var2;
+					binIdx.push_back(globalBin);
+					fromBinsToPixels1.push_back(i1);
+					fromBinsToPixels2.push_back(i2);
+					binTouched[globalBin] = true;
+
+					///// Fill array of weights
+					weight2D[globalBin] += w1*w2;
+				}
+			}
+
+			///// Number of pairs of two pixels ( here = nb*nb)
+			const unsigned int nbPixelsWithPairs = binIdx.size();
+	
+			///// Get a vector of not empty bins
+			std::vector< unsigned int> bins_touched;
+			for (unsigned int b=0; b<2500; b++) {
+				if (binTouched[b]) bins_touched.push_back(b);
+			}
+			const unsigned int nbBinsTouched = bins_touched.size();
+
+			//// For forest 1
+			std::vector< unsigned int > nbBinsTouched_pixel_1(nb1);
+			std::vector< std::vector< unsigned int > > bins_Touched_pixel_1(nb1);
+			for (unsigned int i=0; i<nb1; i++) {
+				if (!pixelTouched_1[i]) continue;
+				std::vector< unsigned int > tmp_bins_Touched_pixel_1;
+				for (unsigned int b=0; b<2500; b++) {
+					if (binTouched_1[i][b]) tmp_bins_Touched_pixel_1.push_back(b);
+				}
+				bins_Touched_pixel_1[i] = tmp_bins_Touched_pixel_1;
+				nbBinsTouched_pixel_1[i] = tmp_bins_Touched_pixel_1.size();
+			}
+			//// For forest 2
+			std::vector< unsigned int > nbBinsTouched_pixel_2(nb2);
+			std::vector< std::vector< unsigned int > > bins_Touched_pixel_2(nb2);
+			for (unsigned int i=0; i<nb2; i++) {
+				if (!pixelTouched_2[i]) continue;
+				std::vector< unsigned int > tmp_bins_Touched_pixel_2;
+				for (unsigned int b=0; b<2500; b++) {
+					if (binTouched_2[i][b]) tmp_bins_Touched_pixel_2.push_back(b);
+				}
+				bins_Touched_pixel_2[i] = tmp_bins_Touched_pixel_2;
+				nbBinsTouched_pixel_2[i] = tmp_bins_Touched_pixel_2.size();
+			}
+	
+			///// Loops over all pairs
+			for (unsigned int pa=0; pa<nbPixelsWithPairs; pa++) {
+	
+				const unsigned int globalBin1 = binIdx[pa];
+				const unsigned int i1 = fromBinsToPixels1[pa];
+				const unsigned int i2 = fromBinsToPixels2[pa];
+	
+				const double w1w2 = v_w__[f1][i1]*v_w__[f2][i2];
+				const double valf1i1 = v_lRF__[f1][i1] -v_meanLambda[f1];
+				const double valf2i2 = v_lRF__[f2][i2] -v_meanLambda[f2];
+	
+				///// Fill the distortion matrix
+				data2DMatrix[globalBin1][globalBin1] += w1w2;
+
+				/// Loop over all not empty bins
+				for (unsigned int b2=0; b2<nbBinsTouched; b2++) {
+					const unsigned int globalBin2 = bins_touched[b2];
+					data2DMatrix[globalBin1][globalBin2] += w1w2*( value2[globalBin2]
+						+valf1i1*value5[globalBin2] +valf2i2*value6[globalBin2]
+						+valf1i1*valf2i2*value7[globalBin2] );
+				}
+				
+				for (unsigned int b2=0; b2<nbBinsTouched_pixel_1[i1]; b2++) {
+					const unsigned int globalBin2 = bins_Touched_pixel_1[i1][b2];
+					data2DMatrix[globalBin1][globalBin2] -= w1w2*( list_for_pixel_1_0[i1][globalBin2] + valf2i2*list_for_pixel_1_1[i1][globalBin2] );
+				}
+				for (unsigned int b2=0; b2<nbBinsTouched_pixel_2[i2]; b2++) {
+					const unsigned int globalBin2 = bins_Touched_pixel_2[i2][b2];
+					data2DMatrix[globalBin1][globalBin2] -= w1w2*( list_for_pixel_2_0[i2][globalBin2] + valf1i1*list_for_pixel_2_1[i2][globalBin2] );
+				}
+			}
+		}
+std::cout << f1 << std::endl;
+	}
+
+
+        std::cout << "\n  Saving\n" << std::endl;
+
+        std::ofstream fFile;
+
+	///// Save the 2D cross-correlation 
+        std::string pathToSave = pathToSave__;
+        pathToSave += "xi_A_delta_delta_distortionMatrix_2D_";
+        pathToSave += forest__;
+        pathToSave += ".txt";
+        std::cout << "\n  " << pathToSave << std::endl;
+        fFile.open(pathToSave.c_str());
+        fFile << std::scientific;
+        fFile.precision(std::numeric_limits<double>::digits10);
+
+	///// Set the values of data
+        ///// [0] for value, [1] for error, [2] for bin center
+	long double value_total  = 0.;
+	long double weight_total = 0.;
+        for (unsigned int i=0; i<nbBin2D; i++) {
+                for (unsigned int j=0; j<nbBin2D; j++) {
+                        double value = 0.;
+			if (weight2D[i]!=0.) {
+				value = data2DMatrix[i][j]/weight2D[i];
+				value_total  += data2DMatrix[i][j];
+			}
+                        fFile << value << " ";
+                }
+                fFile << std::endl;
+		weight_total += weight2D[i];
+        }
+        fFile.close();
+
+	std::cout << "  value_total     = " << value_total << std::endl;
+	std::cout << "  weight_total    = " << weight_total << std::endl;
+	std::cout << "  integral matrix = " << value_total / weight_total << std::endl;
+
+
+	return;
+
+}
 void Correlation::xi_A_delta_delta_Metals_Models_MockJMc(double lambdaRFMetal1, std::string lambdaRFMetalName1,double lambdaRFMetal2, std::string lambdaRFMetalName2) {
 
-	std::cout << "\n\n\n\n  ------ xi_A_delta_delta_Metals_Models ------" << std::endl;
-	std::string command = "  python ... ";
-	command += commandEnd__;
-	std::cout << command << "\n" << std::endl;
+	std::cout << "\n\n\n\n  ------ xi_A_delta_delta_Metals_Models ------\n" << std::endl;
 
 	std::cout << "  line1 = " << lambdaRFMetalName1 << " : " << lambdaRFMetal1 << std::endl;
 	std::cout << "  line2 = " << lambdaRFMetalName2 << " : " << lambdaRFMetal2 << std::endl;
@@ -4752,9 +5538,9 @@ void Correlation::xi_A_delta_delta_Metals_Models_MockJMc(double lambdaRFMetal1, 
 	data_xi4.push_back(0.);
 
 	///// Constants:
-	const unsigned int max    = 200.;
+	const double max          = 200.;
 	const unsigned int nbBin  = int(max);
-	const unsigned int nbBinM = 50.;
+	const unsigned int nbBinM = 50;
 
 	const double maxPow2      = max*max;
 
@@ -4970,10 +5756,7 @@ void Correlation::xi_A_delta_delta_Metals_Models_MockJMc(double lambdaRFMetal1, 
 }
 void Correlation::xi_delta_QSO_MockJMc(unsigned int bootIdx/*=0*/) {
 
-	std::cout << "\n\n\n\n  ------ xi_delta_QSO_MockJMc ------" << std::endl;
-	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_delta_QSO.py";
-	command += commandEnd__;
-	std::cout << command << "\n" << std::endl;
+	std::cout << "\n\n\n\n  ------ xi_delta_QSO_MockJMc ------\n" << std::endl;
 
 	//// QSO
 	loadDataQ1();
@@ -5032,12 +5815,12 @@ void Correlation::xi_delta_QSO_MockJMc(unsigned int bootIdx/*=0*/) {
 
 	//// Constants:
 	//// The space between bins is of 10 Mpc.h^-1
-	const double max          =  200.; // 200.;
+	const double max          =  200.;
 
 	const unsigned int nbBin  = int(max);
 	const unsigned int nbBinX = nbBin;
 	const unsigned int nbBinY = 2*nbBin;
-	const unsigned int nbBinM = 100.;
+	const unsigned int nbBinM = 100;
 
 	const double maxPow2      = max*max;
 	//// get an array for nb of pairs for the forest
@@ -5370,10 +6153,7 @@ void Correlation::xi_delta_QSO_MockJMc(unsigned int bootIdx/*=0*/) {
 }
 void Correlation::xi_delta_QSO_MockJMc_distortionMatrix(void) {
 	
-	std::cout << "\n\n\n\n  ------ xi_delta_QSO_MockJMc_distortionMatrix ------" << std::endl;
-	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_delta_QSO_distortionMatrix.py";
-	command += commandEnd__;
-	std::cout << command << "\n" << std::endl;
+	std::cout << "\n\n\n\n  ------ xi_delta_QSO_MockJMc_distortionMatrix ------\n" << std::endl;
 
 	//// QSO
 	loadDataQ1();
@@ -5628,10 +6408,7 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix(void) {
 }
 void Correlation::xi_delta_QSO_MockJMc_distortionMatrix_1D(void) {
 	
-	std::cout << "\n\n\n\n  ------ xi_delta_QSO_MockJMc_distortionMatrix_1D ------" << std::endl;
-	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_delta_QSO_distortionMatrix.py";
-	command += commandEnd__;
-	std::cout << command << "\n" << std::endl;
+	std::cout << "\n\n\n\n  ------ xi_delta_QSO_MockJMc_distortionMatrix_1D ------\n" << std::endl;
 
 	//// QSO
 	loadDataQ1();
@@ -5962,12 +6739,12 @@ void Correlation::xi_delta_QSO_Metals_Models_MockJMc(double lambdaFrMetal, std::
 
 	//// Constants:
 	//// The space between bins is of 10 Mpc.h^-1
-	const double max          =  200.; // 200.;
+	const double max          =  200.;
 
 	const unsigned int nbBin  = int(max);
 	const unsigned int nbBinX = nbBin;
 	const unsigned int nbBinY = 2*nbBin;
-	const unsigned int nbBinM = 100.;
+	const unsigned int nbBinM = 100;
 	const double maxPow2      = max*max;
 
 
@@ -6205,10 +6982,7 @@ void Correlation::xi_delta_QSO_Metals_Models_MockJMc(double lambdaFrMetal, std::
 }
 void Correlation::xi_QSO_QSO_MockJMc(unsigned int bootIdx/*=0*/) {
 
-	std::cout << "\n\n\n\n  ------ xi_QSO_QSO_MockJMc ------" << std::endl;
-	std::string command = "  python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/xi_Q_Q.py";
-	command += commandEnd__;
-	std::cout << command << "\n" << std::endl;
+	std::cout << "\n\n\n\n  ------ xi_QSO_QSO_MockJMc ------\n" << std::endl;
 
 	loadDataQ1();
 	v_CosDeQ1__.clear();

@@ -188,9 +188,9 @@ class CorrelationLambda:
 			tmp_save4[idY][iX] += save4[i]
 			tmp_save5[idY][iX] += save5[i]
 			tmp_save6[idY][iX] += save6[i]
-	
+			'''
 			if (iY>2): continue
-	
+			
 			tmp_save00[iX][idY] += save0[i]
 			tmp_save11[iX][idY] += save1[i]
 			tmp_save22[iX][idY] += save2[i]
@@ -198,7 +198,7 @@ class CorrelationLambda:
 			tmp_save44[iX][idY] += save4[i]
 			tmp_save55[iX][idY] += save5[i]
 			tmp_save66[iX][idY] += save6[i]
-	
+			'''
 			### for xi1D
 			tmp_save000[iX] += save0[i]
 			tmp_save111[iX] += save1[i]
@@ -393,6 +393,8 @@ class CorrelationLambda:
 
 		return
 
+
+
 dic = {
 	'min_l1_over_l2': 0.40,
 	'max_l1_over_l2': 2.30,
@@ -404,11 +406,20 @@ dic = {
 	'size_bin_calcul_theta': 1.e-04,
 	'correlation': 'q_f',
 	'path_to_txt_file_folder': 'NOTHING',
-	'f1': 'LYA',
+	'f1': 'LYB',
 	'f2': 'a',
 	'q': 'QSO',
 	'name' : 'Data'
 }
+
+
+### For q_f
+
+dic['min_l1_over_l2'] = 0.40
+dic['max_l1_over_l2'] = 2.30
+dic['correlation']    = 'q_f'
+dic['min_visual_z'] = -0.04
+dic['max_visual_z'] = 0.04
 
 ### For f_f
 '''
@@ -427,7 +438,7 @@ dic['min_visual_z'] = -0.002
 dic['max_visual_z'] = 0.002
 '''
 
-dic['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy/'
+dic['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator/'
 a = CorrelationLambda(dic)
 a.plot_1d(True)
 a.plot_we()

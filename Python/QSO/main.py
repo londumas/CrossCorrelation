@@ -242,14 +242,14 @@ def getQsoCatalogueEBOSS():
 	plt.title("BOSS DR12")
 	plt.show()
 
-
+	
 	col_ra              = pyfits.Column(name='RA',  format='D', array=cat['RA'], unit='deg')
 	col_de              = pyfits.Column(name='DEC', format='D', array=cat['DEC'], unit='deg')
 	col_zz              = pyfits.Column(name='Z',   format='D', array=cat[redShiftKey] )
 	
 	tbhdu = pyfits.BinTableHDU.from_columns([col_ra, col_de, col_zz])
-	tbhdu.writeto('/home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/QSO_EBOSS.fits_updated', clobber=True)
-
+	tbhdu.writeto('/home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/QSO_EBOSS_updated_2016_05_24.fits', clobber=True)
+	
 	
 	return
 def getQsoCatalogueAllQSO():
@@ -343,7 +343,35 @@ def getQsoCatalogueAllObjects():
 	col_zz              = pyfits.Column(name='Z',   format='D', array=zz)
 	tbhdu = pyfits.BinTableHDU.from_columns([col_ra, col_de, col_zz])
 	tbhdu.writeto('/home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/ALL_EVERY_OBJECTS_2016_01_08.fits', clobber=True)
+def create_fits_qso(cat_path, sizeMax):
 
+	### Create a list of QSOs
+	col_ra              = pyfits.Column(name='RA',  format='D', array=numpy.zeros(sizeMax), unit='deg')
+	col_de              = pyfits.Column(name='DEC',  format='D', array=numpy.zeros(sizeMax), unit='deg')
+	col_zz              = pyfits.Column(name='Z',  format='D', array=numpy.zeros(sizeMax), unit='0 (redshift)')
+
+	tbhdu = pyfits.BinTableHDU.from_columns([col_ra, col_de, col_zz])
+	tbhdu.writeto(cat_path, clobber=True)
+
+	return
+def remove_empty_cell_in_cat(cat_path):
+
+	cat = pyfits.open(cat_path, memmap=True)[1].data
+	print '  nb of QSOs before = ', cat.size
+	cut = numpy.invert(numpy.logical_and( cat['RA']==0., numpy.logical_and( cat['DEC']==0.,cat['Z'] == 0.)))
+	cat = cat[ (cut) ]
+	print '  nb of QSOs after  = ', cat.size
+	nbQSO = cat.size
+	
+	pyfits.writeto(cat_path, cat, clobber=True)
+	
+	return
+
+### Create a catalogue:
+cat_path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/QSO_DR7_DR12_EBOSS_2016_05_24.fits'
+sizeMax  = 2000000
+#create_fits_qso(cat_path, sizeMax)
+remove_empty_cell_in_cat(cat_path)
 
 #getQsoCatalogueAllObjects()
 
@@ -400,6 +428,8 @@ Dec = cat3['DEC']
 plt.errorbar(RA,Dec, fmt='o')
 plt.show()
 '''
+
+"""
 import numpy as np
 import ephem
 
@@ -465,7 +495,7 @@ plt.show()
 
 
 
-
+"""
 
 
 

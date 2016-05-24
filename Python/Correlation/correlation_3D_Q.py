@@ -309,15 +309,23 @@ class Correlation3DQ(correlation_3D.Correlation3D):
 		numpy.save(pathToSave+'cov_2D',cov2D)
 
 		return
-	def write_BAOFIT_ini_and_grid(self, param, dist_matrix=False, with_metals_templates=False):
+	def write_BAOFIT_ini_and_grid(self, param, dist_matrix=False, with_metals_templates=False, prefix2=''):
 
 		precision = 1000.
 		param = param.astype('str')
 
 		if (self._correlation=='q_q'):
-			path_to_BAOFIT = self._path_to_txt_file_folder + 'BaoFit_'+self._correlation+'__'+self._q1 + '/bao2D'
+			path_to_BAOFIT = self._path_to_txt_file_folder + 'BaoFit_'+self._correlation+'__'+self._q1
 		elif (self._correlation=='q_f'):
-			path_to_BAOFIT = self._path_to_txt_file_folder + 'BaoFit_'+self._correlation+'__'+self._f1+'__'+self._q1 + '/bao2D'
+			path_to_BAOFIT = self._path_to_txt_file_folder + 'BaoFit_'+self._correlation+'__'+self._f1+'__'+self._q1
+
+                path_to_data = path_to_BAOFIT + '/bao2D'
+                if (with_metals_templates):
+                        path_to_BAOFIT += '__withMetalsTemplates'
+                if (not dist_matrix):
+                        path_to_BAOFIT += '__noDistortionMatrix'
+                path_to_BAOFIT += prefix2
+                path_to_BAOFIT += '/bao2D'
 
 		string_ini = """
 
@@ -386,7 +394,7 @@ dilmax = 20.
 ### Data Options #############################################
 
 ## Data to analyze
-data             = """+path_to_BAOFIT+"""
+data             = """+path_to_data+"""
 
 ## Data format
 data-format = comoving-cartesian

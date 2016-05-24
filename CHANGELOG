@@ -196,8 +196,16 @@
 		* do better the multipols using "scipy.special.eval_legendre" and seting the index max of the multipol.
 		* change the label of units
 
+# 2016 - 05 - 24 - (16h07)
+	- chain_annalys_delta/Correlation/src/launchjob.sh
+		* add a file to launch jobs in Bash
+	- chain_annalys_delta/Correlation/src/Correlation.cpp
+		* correct a bug when definning "max" as an "unsigned int"
+		* add xi_1D_delta_delta_distortionMatrix
+		* add xi_A_delta_delta_distortionMatrix
+		* add xi_A_delta_delta_MockJMc_distortionMatrix
 
-
+	- a lot of work done on the annalyse chain in PYTHON
 
 
 

@@ -19,6 +19,40 @@ import const_delta
 #import warnings
 #warnings.filterwarnings("error")
 
+def get_precision(error,nb_diggit=2):
+
+        precision = numpy.int( nb_diggit -1 -numpy.floor( numpy.log10(error)  ) )
+
+        return precision
+def precision_and_scale(x):
+
+	'''
+	http://stackoverflow.com/questions/3018758/determine-precision-and-scale-of-particular-number-in-python
+	'''
+
+	max_digits = 14
+	int_part = int(abs(x))
+	magnitude = 1 if int_part == 0 else int(numpy.log10(int_part)) + 1
+	if magnitude >= max_digits:
+		return (magnitude, 0)
+
+	frac_part = abs(x) - int_part
+	multiplier = 10 ** (max_digits - magnitude)
+	frac_digits = multiplier + int(multiplier * frac_part + 0.5)
+	while frac_digits % 10 == 0:
+		frac_digits /= 10
+	scale = int(numpy.log10(frac_digits))
+
+	return (magnitude + scale, scale)
+def format_number_with_precision(number,error,number_of_digit=2):
+	
+	precision = get_precision(error,number_of_digit)
+
+	string = round(number,precision)
+	digit  = precision_and_scale(string)
+	string = str(string).ljust(digit[0]-digit[1]+1+precision,'0')
+
+	return string
 def Rebin(a, shape, weight=None):
 	'''
 
@@ -135,7 +169,7 @@ def deal_with_plot(logx=False, logy=False, legend=False):
 	plt.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.12)
 
 	if (legend):
-		plt.legend(fontsize=40, numpoints=1,ncol=2)
+		plt.legend(fontsize=40, numpoints=1,ncol=2, loc=0)
 	return
 def isReadyForNewJobs(max_nbJobsMe, max_nbJobsAll,word='echo'):
 	'''

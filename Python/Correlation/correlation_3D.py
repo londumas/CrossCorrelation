@@ -14,6 +14,8 @@ from iminuit import Minuit
 import copy
 import sys
 import scipy
+import CAMB
+import cosmolopy.perturbation as cp
 
 ### Perso lib
 import myTools
@@ -161,6 +163,9 @@ class Correlation3D:
 
 		### Set attributes set after
 		self._xi2D_grid = None
+		self._xiMu_grid = None
+		self._xiWe_grid = None
+		self._xi1D_grid = None
 		self._meanZ = None
 		self._xiMul = None
 
@@ -205,6 +210,7 @@ class Correlation3D:
 			save1 = data[:,1]
 			save2 = data[:,2]
 			save3 = data[:,3]
+			save4 = data[:,4]
 			save5 = data[:,5]
 			save6 = data[:,6]
 			if (remove_residuals):
@@ -218,6 +224,7 @@ class Correlation3D:
 			tmp_save1 = numpy.zeros( shape=(self._nbBin1D,self._nbBinM) )
 			tmp_save2 = numpy.zeros( shape=(self._nbBin1D,self._nbBinM) )
 			tmp_save3 = numpy.zeros( shape=(self._nbBin1D,self._nbBinM) )
+			tmp_save4 = numpy.zeros( shape=(self._nbBin1D,self._nbBinM) )
 			tmp_save5 = numpy.zeros( shape=(self._nbBin1D,self._nbBinM) )
 			tmp_save6 = numpy.zeros( shape=(self._nbBin1D,self._nbBinM) )
 			tmp_save7 = numpy.zeros( shape=(self._nbBin1D,self._nbBinM) )
@@ -228,6 +235,7 @@ class Correlation3D:
 			tmp_save11 = numpy.zeros( shape=(self._nbBin1D,3) )
 			tmp_save22 = numpy.zeros( shape=(self._nbBin1D,3) )
 			tmp_save33 = numpy.zeros( shape=(self._nbBin1D,3) )
+			tmp_save44 = numpy.zeros( shape=(self._nbBin1D,3) )
 			tmp_save55 = numpy.zeros( shape=(self._nbBin1D,3) )
 			tmp_save66 = numpy.zeros( shape=(self._nbBin1D,3) )
 			tmp_save77 = numpy.zeros( shape=(self._nbBin1D,3) )
@@ -237,6 +245,7 @@ class Correlation3D:
 			tmp_save111 = numpy.zeros(self._nbBin1D)
 			tmp_save222 = numpy.zeros(self._nbBin1D)
 			tmp_save333 = numpy.zeros(self._nbBin1D)
+			tmp_save444 = numpy.zeros(self._nbBin1D)
 			tmp_save555 = numpy.zeros(self._nbBin1D)
 			tmp_save666 = numpy.zeros(self._nbBin1D)
 			tmp_save777 = numpy.zeros(self._nbBin1D)
@@ -256,6 +265,7 @@ class Correlation3D:
 				tmp_save1[idX][idY] += save1[i]
 				tmp_save2[idX][idY] += save2[i]
 				tmp_save3[idX][idY] += save3[i]
+				tmp_save4[idX][idY] += save4[i]
 				tmp_save5[idX][idY] += save5[i]
 				tmp_save6[idX][idY] += save6[i]
 				tmp_save7[idX][idY] += save7[i]
@@ -281,6 +291,7 @@ class Correlation3D:
 				tmp_save11[idX][idY] += save1[i]
 				tmp_save22[idX][idY] += save2[i]
 				tmp_save33[idX][idY] += save3[i]
+				tmp_save44[idX][idY] += save4[i]
 				tmp_save55[idX][idY] += save5[i]
 				tmp_save66[idX][idY] += save6[i]
 				tmp_save77[idX][idY] += save7[i]
@@ -291,6 +302,7 @@ class Correlation3D:
 				tmp_save111[idX] += save1[i]
 				tmp_save222[idX] += save2[i]
 				tmp_save333[idX] += save3[i]
+				tmp_save444[idX] += save4[i]
 				tmp_save555[idX] += save5[i]
 				tmp_save666[idX] += save6[i]
 				tmp_save777[idX] += save7[i]
@@ -305,6 +317,11 @@ class Correlation3D:
 				xiMu[:,:,2][cut]-= tmp_save7[cut]/tmp_save5[cut]
 			elif (self._remove_residuals == 'lambda_OBS'):
 				xiMu[:,:,2][cut]-= tmp_save8[cut]/tmp_save5[cut]
+			if (init):
+				self._xiMu_grid = numpy.zeros( shape=(self._nbBin1D,self._nbBinM,3) )
+				self._xiMu_grid[:,:,0][cut] = xiMu[:,:,0][cut]
+				self._xiMu_grid[:,:,1][cut] = xiMu[:,:,1][cut]
+				self._xiMu_grid[:,:,2][cut] = tmp_save4[cut]/tmp_save5[cut]
 
 			cut = (tmp_save66>1.)
 			xiWe[:,:,0][cut] = tmp_save22[cut]/tmp_save55[cut]
@@ -314,6 +331,10 @@ class Correlation3D:
 				xiWe[:,:,1][cut]-= tmp_save77[cut]/tmp_save55[cut]
 			elif (self._remove_residuals == 'lambda_OBS'):
 				xiWe[:,:,1][cut]-= tmp_save88[cut]/tmp_save55[cut]
+			if (init):
+				self._xiWe_grid = numpy.zeros( shape=(self._nbBin1D,3,2) )
+				self._xiWe_grid[:,:,0][cut] = xiWe[:,:,0][cut]
+				self._xiWe_grid[:,:,1][cut] = tmp_save44[cut]/tmp_save55[cut]
 
 			cut = (tmp_save666>1.)
 			xi1D[:,0][cut] = tmp_save222[cut]/tmp_save555[cut]
@@ -323,15 +344,10 @@ class Correlation3D:
 				xi1D[:,1][cut]-= tmp_save777[cut]/tmp_save555[cut]
 			elif (self._remove_residuals == 'lambda_OBS'):
 				xi1D[:,1][cut]-= tmp_save888[cut]/tmp_save555[cut]
-				
-			'''
-			for i in range(0,3):
-				coef = numpy.power(xi1D[:,0][cut],i)
-				plt.plot( xi1D[:,0][cut], coef*xi1D[:,1][cut]  )
-				plt.plot( xi1D[:,0][cut], coef*tmp_save777[cut]/tmp_save555[cut]  )
-				plt.plot( xi1D[:,0][cut], coef*tmp_save888[cut]/tmp_save555[cut]  )
-				plt.show()
-			'''
+			if (init):
+				self._xi1D_grid = numpy.zeros( shape=(self._nbBin1D,2) )
+				self._xi1D_grid[:,0][cut] = xi1D[:,0][cut]
+				self._xi1D_grid[:,1][cut] = tmp_save444[cut]/tmp_save555[cut]
 
 			if (init):
 				if (verbose__): print "  ||  |s| < %u                       ||  %1.4e  ||  %1.4e    ||  %1.4e  ||" % (int(self._max1D), numpy.sum(tmp_save666), numpy.sum(tmp_save555), numpy.sum(data[:,4])/numpy.sum(data[:,5]))
@@ -635,8 +651,6 @@ class Correlation3D:
 		pathToSave = self._path_to_txt_file_folder + self._prefix + '_'+ self._middlefix + '_' + realisation_type + '_'
 
 		for i in numpy.arange(nb_realisation):
-			#command = "echo \" " +str(i)+  " \" "
-			#subprocess.call(command, shell=True)
 
 			try:
 				xiMu, xiWe, xi1D, xi2D = self.read_data(path1D+str(i)+'.txt',path2D+str(i)+'.txt')
@@ -647,9 +661,6 @@ class Correlation3D:
 				listMultipol[:,:,i] = self.get_multipol(xiMu)[:,:,1]
 			except:
 				print '   ERROR:: ', path1D+str(i)+'.txt',path2D+str(i)+'.txt'
-			#	commandProd = "/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/chain_annalys_delta/Correlation/bin/main.exe"
-			#	tmp_command = "clubatch \"time ; hostname ; " + commandProd + ' 5 0 ' + str(i) + ' 0 0 0 ' + "\""
-			#	subprocess.call(tmp_command, shell=True)
 			
 
 		numpy.save(pathToSave+'list_Mu',listMu)
@@ -1039,21 +1050,74 @@ class Correlation3D:
 		xi1D[:,:] = self._xiMul[:,index,:]
 
 		return xi1D
-	def get_CAMB(self,distortion=True):
+	def get_CAMB(self,dic=None,dim='2D',distortion=False):
 
 		### Get Camb
-		xi1D = numpy.zeros(shape=(self._nbBin1D,3))
-		data_camb = numpy.loadtxt(const.pathToCamb__)
-		xi1D[:,0] = self._xi1D[:,0]
-		xi1D[:,1] = numpy.interp(xi1D[:,0],data_camb[1:,0],data_camb[1:,1])
-		xi1D[:,2] = 0.00000001
+		if (dic is not None): dic['z'] = 0.
+		camb = CAMB.CAMB(dic)._xi0
 
-		if (distortion):
-			path = self._path_to_txt_file_folder + self._prefix + '_distortionMatrix_1D_'+ self._middlefix + '.txt'
+		if (dim=='2D'):
+			xi = numpy.zeros(shape=(self._nbBinX2D,self._nbBinY2D,3))
+			xi[:,:,0] = self._xi2D[:,:,0]
+			xi[:,:,1] = numpy.interp(xi[:,:,0],camb[:,0],camb[:,1])
+			xi[:,:,2] = 0.00000001
+			cut = self._xi2D[:,:,2]<=0.
+			xi[:,:,1][cut] = 0.
+			xi[:,:,2][cut] = 0.
+			if (self._correlation=='q_f'): xi[:,:,1] *= -1.
+			f = cp.fgrowth(self._xi2D_grid[:,:,2],dic['omega_matter_0'])
+			xi[:,:,1] *= f*f
+		elif (dim=='Mu'):
+			xi = numpy.zeros(shape=(self._nbBin1D,self._nbBinM,4))
+			xi[:,:,0] = self._xiMu[:,:,0]
+			xi[:,:,1] = self._xiMu[:,:,1]
+			xi[:,:,2] = numpy.interp(xi[:,:,0],camb[:,0],camb[:,1])
+			xi[:,:,3] = 0.00000001
+			cut = (self._xiMu[:,:,3]<=0.)
+			xi[:,:,2][cut] = 0.
+			xi[:,:,3][cut] = 0.
+			if (self._correlation=='q_f'): xi[:,:,2] *= -1.
+			f = cp.fgrowth(self._xiMu_grid[:,:,2],dic['omega_matter_0'])
+			xi[:,:,2] *= f*f
+		elif (dim=='We'):
+			xi = numpy.zeros(shape=(self._nbBin1D,3,3))
+			xi[:,:,0] = self._xiWe[:,:,0]
+			xi[:,:,1] = numpy.interp(xi[:,:,0],camb[:,0],camb[:,1])
+			xi[:,:,2] = 0.00000001
+			cut = (self._xiWe[:,:,2]<=0.)
+			xi[:,:,1][cut] = 0.
+			xi[:,:,2][cut] = 0.
+			if (self._correlation=='q_f'): xi[:,:,1] *= -1.
+			f = cp.fgrowth(self._xiWe_grid[:,:,1],dic['omega_matter_0'])
+			xi[:,:,1] *= f*f
+		elif (dim=='1D'):
+			xi = numpy.zeros(shape=(self._nbBin1D,3))
+			xi[:,0] = self._xi1D[:,0]
+			xi[:,1] = numpy.interp(xi[:,0],camb[:,0],camb[:,1])
+			xi[:,2] = 0.00000001
+			cut = (self._xi1D[:,2]<=0.)
+			xi[:,1][cut] = 0.
+			xi[:,2][cut] = 0.
+			if (self._correlation=='q_f'): xi[:,1] *= -1.
+			f = cp.fgrowth(self._xi1D_grid[:,1],dic['omega_matter_0'])
+			xi[:,1] *= f*f
+
+		if (distortion and (dim=='2D' or dim=='1D') ):
+			path = self._path_to_txt_file_folder + self._prefix + '_distortionMatrix_'+dim+'_'+ self._middlefix + '.txt'
 			matrix = numpy.loadtxt(path)
-			xi1D[:,1] = numpy.dot(matrix,xi1D[:,1])
 
-		return xi1D
+			if (dim=='2D'):
+				tmp = myTools.convert2DTo1D(xi[:,:,1], self._nbBinX2D, self._nbBinY2D)
+				tmp = numpy.dot(matrix,tmp)
+				xi[:,:,1] = myTools.convert1DTo2D(tmp, self._nbBinX2D, self._nbBinY2D)
+				cut = (xi[:,:,1]==0.)
+				xi[:,:,2][cut] = 0.
+			elif (dim=='1D'):
+				xi[:,1] = numpy.dot(matrix,xi[:,1])
+				cut = (xi[:,1]==0.)
+				xi[:,2][cut] = 0.
+
+		return xi
 	def fit_CAMB(self,xi1D=None,dic=None,distortion=True):
 		
 		### Constants
@@ -1243,7 +1307,7 @@ class Correlation3D:
 					numpy.savetxt( path_to_BAOFIT + name_metal_to_save_1[i]+name_metal_to_save_2[j] + suffix[k],zip(correlation2[:,2],correlation2[:,3],correlation2[:,1]),fmt='%u %u %1.20e')
 
 		return
-	def write_BAOFIT_ini_and_grid(self, param, dist_matrix=False, with_metals_templates=False):
+	def write_BAOFIT_ini_and_grid(self, param, dist_matrix=False, with_metals_templates=False, prefix2=''):
 
 		precision = 1000.
 		param = param.astype('str')
@@ -1271,8 +1335,12 @@ class Correlation3D:
 		elif (self._correlation=='f_f'):
 			path_to_BAOFIT = self._path_to_txt_file_folder + 'BaoFit_'+self._correlation+'__'+self._f1
 
+		path_to_data = path_to_BAOFIT + '/bao2D'
 		if (with_metals_templates):
 			path_to_BAOFIT += '__withMetalsTemplates'
+		if (not dist_matrix):
+			path_to_BAOFIT += '__noDistortionMatrix'
+		path_to_BAOFIT += prefix2
 		path_to_BAOFIT += '/bao2D'
 
 		string_ini = """
@@ -1309,8 +1377,8 @@ dist-matrix-order = """+str(self._nbBin2D)+"""
 
 # Parameter setup
 model-config = value[beta]=                      """+param[0] +""";
-model-config = """+str_corr2+"""[(1+beta)*bias]= """+param[1] +""";
-#model-config = value[(1+beta)*bias]= """+param[1] +""";
+#model-config = """+str_corr2+"""[(1+beta)*bias]= """+param[1] +""";
+model-config = value[(1+beta)*bias]= """+param[1] +""";
 model-config = fix[gamma-bias]=                  """+param[2] +""";
 model-config = fix[gamma-beta]=                  """+param[3] +""";
 """+str_corr+"""model-config = value[delta-v]=   """+param[4] +""";
@@ -1324,11 +1392,12 @@ model-config = value[BAO alpha-parallel]=        """+param[11]+""";
 model-config = value[BAO alpha-perp]=            """+param[12]+""";
 model-config = fix[gamma-scale]=                 """+param[13]+""";
 model-config = fix[pixel scale]=0.7;
+#model-config = fix[pixel scale]=3.15;
 
 ## Metal correlations
 """+str_metals+"""metal-model-interpolate = true
-#"""+str_metals+"""metal-model-name = """+path_to_BAOFIT+"""
-"""+str_metals+"""metal-model-name = /home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575/Box_000/Simu_000/Results/BaoFit_q_f__LYA__QSO__withMetalsTemplates/bao2D
+"""+str_metals+"""metal-model-name = """+path_to_BAOFIT+"""
+#"""+str_metals+"""metal-model-name = /home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575/Box_000/Simu_000/Results/BaoFit_q_f__LYA__QSO__withMetalsTemplates/bao2D
 """+str_metals+"""model-config = value[beta Si2a] = """+param[15]+""";
 """+str_metals+"""model-config = value[bias Si2a] = """+param[16]+""";
 """+str_metals+"""model-config = value[beta Si2b] = """+param[17]+""";
@@ -1352,7 +1421,7 @@ model-config = binning[BAO alpha-perp]     ={0.98:1.02}*50
 ## Maximum allowed radial dilation (increases the range that model needs to cover)
 dilmin = 0.01
 #dilmax = 2.5
-dilmax = 55.5
+dilmax = 100.
 
 ## Non-linear broadening with 1+f = (SigmaNL-par)/(SigmaNL-perp)
 
@@ -1363,13 +1432,14 @@ model-config = boxprior[SigmaNL-perp] @ (0,6);
 
 # Broadband distortion model
 #"""+str_corr+"""dist-add = rP,rT=0:2,-3:1
+#dist-add = rP,rT=0:2,-3:1
 #"""+str_corr3+"""dist-add = -2:0,0:4:2,0
 
 ### Data Options #############################################
 
 ## Data to analyze
-data = """+path_to_BAOFIT+"""
-dist-matrix-name = """+path_to_BAOFIT+"""
+data = """+path_to_data+"""
+dist-matrix-name = """+path_to_data+"""
 
 ## Data format
 data-format = comoving-cartesian
@@ -1433,6 +1503,7 @@ output-prefix = """ + path_to_BAOFIT + """.
 		get_param_from_file     = dic_send_BAOFIT['get_param_from_file']
 		dic_simu                = dic_send_BAOFIT['dic_simu']
 
+		path_to_distortion_matrix = self._path_to_txt_file_folder + self._prefix + '_distortionMatrix_2D_'+ self._middlefix + '.txt'
 		if ( (dic_simu is not None)):
 			raw_path_to_cov = dic_simu['path_to_simu'] + 'Results' + dic_simu['prefix'] + '/'
 			if (realisation_type=='Simu_stack'):
@@ -1442,14 +1513,27 @@ output-prefix = """ + path_to_BAOFIT + """.
 			path_to_BAOFIT = self._path_to_txt_file_folder + 'BaoFit_'+self._correlation+'__'+self._q1
 		elif (self._correlation=='q_f'):
 			param = numpy.asarray( [1.2,-0.351,0.9,0.,0.,3.6,0.962524,1.966,3.26,1.,1.,1.,1.,0.,0.,1.4,-0.01,1.4,-0.01,1.4,-0.01,1.4,-0.01] )
+			if (dic_simu is not None):
+				param[0] = 1.329723
+				param[1] = -0.400
+				param[5] = 3.554
+				param[8] = 0.
 			path_to_BAOFIT = self._path_to_txt_file_folder + 'BaoFit_'+self._correlation+'__'+self._f1+'__'+self._q1
 		elif (self._correlation=='f_f'):
 			param = numpy.asarray( [1.2,-0.351,3.8,0.,0.,3.6,0.962524,1.966,3.26,1.,1.,1.,1.,0.,0.,1.4,-0.01,1.4,-0.01,1.4,-0.01,1.4,-0.01] )
+			if (dic_simu is not None):
+				param[0] = 1.329723
+				param[1] = -0.400
+				param[8] = 0.
 			path_to_BAOFIT = self._path_to_txt_file_folder + 'BaoFit_'+self._correlation+'__'+self._f1
 
 		if (with_metals_templates):
 			path_to_BAOFIT += '__withMetalsTemplates'
-		path_to_BAOFIT += '/'
+		if (not dist_matrix):
+			path_to_BAOFIT += '__noDistortionMatrix'
+		prefix2 = ''
+		if (dic_simu is not None): prefix2 += dic_simu['prefix2']
+		path_to_BAOFIT += prefix2 + '/'
 		print '  path_to_BAOFIT = ', path_to_BAOFIT
 
 
@@ -1464,7 +1548,7 @@ output-prefix = """ + path_to_BAOFIT + """.
 			data  = numpy.loadtxt(path_to_BAOFIT+'save.pars')
 			param = data[:,1]
 
-		self.write_BAOFIT_ini_and_grid(param,dist_matrix, with_metals_templates)
+		self.write_BAOFIT_ini_and_grid(param,dist_matrix, with_metals_templates, prefix2)
 
 		if (saving_data):
 
@@ -1488,7 +1572,7 @@ output-prefix = """ + path_to_BAOFIT + """.
 			cutCorrelation = (correlation[:,1]!=0.)
 			numpy.savetxt( path_to_BAOFIT + 'data',zip(correlation[:,0][cutCorrelation],correlation[:,1][cutCorrelation]),fmt='%u %1.20e')
 			del correlation, indexMatrix, cutCorrelation
-
+			
 			### Save .cov
 			if (self._correlation=='q_q'):
 				if (dic_simu is not None):
@@ -1528,6 +1612,7 @@ output-prefix = """ + path_to_BAOFIT + """.
 				"""
 				cov = numpy.diag( numpy.diag(cov) )
 
+			#print cov[0,0], self._xi2D[0,0,2]*self._xi2D[0,0,2]
 			covarianceMatrix = numpy.zeros( shape=(self._nbBin2D*self._nbBin2D,3) )
 			indexMatrix1 = numpy.arange(self._nbBin2D*self._nbBin2D).reshape(self._nbBin2D,self._nbBin2D)/self._nbBin2D
 			indexMatrix2 = numpy.arange(self._nbBin2D*self._nbBin2D).reshape(self._nbBin2D,self._nbBin2D)%self._nbBin2D
@@ -1537,20 +1622,13 @@ output-prefix = """ + path_to_BAOFIT + """.
 			covarianceMatrix[:,1] = numpy.triu(indexMatrix2,k=0).flatten()
 			covarianceMatrix[:,2] = numpy.triu(cov,k=0).flatten()
 			cutCovarMatrix = (covarianceMatrix[:,2]!=0.)
-			'''
-			if (covarianceMatrix[:,2][cutCovarMatrix].size != int(self._nbBin2D*(self._nbBin2D+1.)/2.) ):
-				print '  xi_delta_QSO.py::prepareForBAOFIT()  size of covariance matrix is incorrect'
-				print '  size covariance matrix', cutCovarMatrix[:,2][cutCovarMatrix].size
-				print '  size it should have', self._nbBin2D*(self._nbBin2D+1.)/2.
-				return
-			'''
+
 			numpy.savetxt( path_to_BAOFIT + 'cov',zip(covarianceMatrix[:,0][cutCovarMatrix],covarianceMatrix[:,1][cutCovarMatrix],covarianceMatrix[:,2][cutCovarMatrix]),fmt='%u %u %1.20e')
 			del cov, covarianceMatrix, cutCovarMatrix
-
+			
 			### Save .dmat
 			if (dist_matrix):
 				print '  Saving .dmat'
-				path_to_distortion_matrix = self._path_to_txt_file_folder + self._prefix + '_distortionMatrix_2D_'+ self._middlefix + '.txt'
 				dmatData = numpy.loadtxt(path_to_distortion_matrix)
 				distortionMatrix = numpy.zeros( shape=(self._nbBin2D*self._nbBin2D,3) )
 				distortionMatrix[:,0] = indexMatrix1.flatten()
@@ -1574,6 +1652,71 @@ output-prefix = """ + path_to_BAOFIT + """.
 		print '\n\n'
 
 		return
+	def get_mapping_2D_to_1D(self):
+
+		### Constants
+		nb_random = 1000000
+
+		### to return
+		mapping_2D_to_1D = numpy.zeros( shape=(self._nbBinX2D,self._nbBinY2D,self._nbBin1D) )
+
+		for i in numpy.arange(0.,self._nbBinX2D):
+			for j in numpy.arange(0.,self._nbBinY2D):
+
+				### to get a line probability
+				rand = numpy.random.random(nb_random)
+				r_perp = self._minX2D + self._binSize*numpy.sqrt(i*i +rand*( 2.*i+1. ) )
+
+				### to get a flat probability
+				rand = numpy.random.random(nb_random)
+				r_paral = self._minY2D + self._binSize*(j + rand)
+
+				### Find bin of the wedge
+				r        = numpy.sqrt( r_perp*r_perp + r_paral*r_paral )
+				r_index  = (r/self._binSize).astype('int')
+
+				for k in numpy.arange(0,nb_random):
+					if (r[k]>=self._max1D): continue
+					mapping_2D_to_1D[i,j,r_index[k]] += 1.
+		mapping_2D_to_1D /= nb_random
+
+		return mapping_2D_to_1D
+	def get_mapping_2D_to_we(self):
+
+		### Constants
+		nb_random = 1000000
+
+		### Usefull values
+		mu_bin_size = 1./self._nbBinM
+
+		### to return
+		mapping_2D_to_we = numpy.zeros( shape=(self._nbBinX2D,self._nbBinY2D,self._nbBin1D,3) )
+
+		for i in numpy.arange(0.,self._nbBinX2D):
+			for j in numpy.arange(0.,self._nbBinY2D):
+
+				### to get a line probability
+				rand = numpy.random.random(nb_random)
+				r_perp = self._minX2D + self._binSize*numpy.sqrt(i*i +rand*( 2.*i+1. ) )
+
+				### to get a flat probability
+				rand = numpy.random.random(nb_random)
+				r_paral = self._minY2D + self._binSize*(j + rand)
+
+				### Find bin of the wedge
+				r        = numpy.sqrt( r_perp*r_perp + r_paral*r_paral )
+				r_index  = (r/self._binSize).astype('int')
+				mu       = numpy.abs(r_paral)/r
+				we_index = numpy.ones(nb_random)
+				we_index[ (mu>0.8) ]  = 0
+				we_index[ (mu<=0.5) ] = 2
+
+				for k in numpy.arange(0,nb_random):
+					if (r[k]>=self._max1D): continue
+					mapping_2D_to_we[i,j,r_index[k],we_index[k]] += 1.
+		mapping_2D_to_we /= nb_random
+
+		return mapping_2D_to_we
 	def plot_1d(self, x_power=0, other=[], title=True):
 
 		with_camb = False
@@ -1754,7 +1897,7 @@ output-prefix = """ + path_to_BAOFIT + """.
 		#yer[ xxx<=40. ] = 0.
 		#yer[ xxx>180. ] = 0.
 	
-		cut = (yer==0)
+		cut = (yer<=0.)
 		if (xxx[cut].size==xxx.size):
 			return
 		yyy[ cut ] = float('nan')
@@ -2059,8 +2202,18 @@ output-prefix = """ + path_to_BAOFIT + """.
 	
 		path = self._path_to_txt_file_folder + self._prefix + '_distortionMatrix_'+dim+'_'+ self._middlefix + '.txt'
 		matrix = numpy.loadtxt(path)
+
+		#print matrix[ (matrix!=0.) ].size
+		plt.hist( matrix[ matrix>=0.5 ], bins=100 )
+		plt.show()
+		plt.hist( matrix[ numpy.logical_and((matrix!=0.),matrix<=0.5) ], bins=100 )
+                plt.show()
+
+		### Blind the zero terms
+		matrix[ (matrix==0.) ] = numpy.float('nan')
+
 		myTools.plot2D(matrix)
-		myTools.plotCovar([matrix],['Distortion matrix'])
+		#myTools.plotCovar([matrix],['Distortion matrix'])
 
 		return
 	def plot_grid(self,index,minus=False):
@@ -2074,7 +2227,7 @@ output-prefix = """ + path_to_BAOFIT + """.
 
 		z_axis = [ '<s_{\perp}>','<s_{\parallel}>','<z_{pairs}>' ]
 		if (minus):
-			z_axis = [ '<s_{\perp}> - mean \, [\%]','<s_{\parallel}> - mean \, [\%]','<z_{pairs}> - mean \, [\%]' ]
+			z_axis = [ '(<s_{\perp}> - center)/center \, [\%]','(<s_{\parallel}> - center)/center \, [\%]','(<z_{pairs}> - mean)/mean \, [\%]' ]
 
 		origin='lower'
 		extent=[self._minX2D, self._maxX2D, self._minY2D, self._maxY2D]

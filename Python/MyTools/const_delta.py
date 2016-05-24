@@ -345,7 +345,7 @@ def find_dist_correlation_lines(meanZ,l1,l2):
 	'''
 	'''
 
-	verbose = True
+	verbose = False
 	
 	### Cosmology
 	cosmo = {'omega_M_0':omegaM0__, 'omega_lambda_0':omegaLambda0__, 'omega_k_0':0., 'h':h__}

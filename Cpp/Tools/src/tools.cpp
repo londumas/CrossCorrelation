@@ -44,9 +44,9 @@
 Tools::Tools(int argc, char** argv) {
 
 	//get_Ra_Dec_DLA();
-	look_DLA();
+	//look_DLA();
 	//get_delta_nicolas();
-	//get_Catalogue();
+	get_Catalogue();
 	//get_flux_vs_lambdaObs();
 	//get_weigted_covar_matrix();
 
@@ -512,8 +512,11 @@ void Tools::get_delta_nicolas(void) {
 
 }
 void Tools::get_Catalogue(void) {
+
+	std::cout << "\n\n" << std::endl;
+
 	/// Path to save
-	std::string pathToSave = "/home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/QSO_DR7_DR12_EBOSS_2016_01_08.fits";
+	std::string pathToSave = "/home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/QSO_DR7_DR12_EBOSS_2016_05_24.fits";
 	/// Number of catalogues
 	const unsigned int nbCat = 3;
 
@@ -523,7 +526,7 @@ void Tools::get_Catalogue(void) {
 	nameCat[0]   = "DR12";
 	pathToCat[0] = "/home/gpfs/manip/mnt/bao/hdumasde/Data/Catalogue/DR12Q_v2_10.fits";
 	nameCat[1]   = "EBOSS";
-	pathToCat[1] = "/home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/QSO_EBOSS_updated.fits";
+	pathToCat[1] = "/home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/QSO_EBOSS_updated_2016_05_24.fits";
 	nameCat[2]   = "DR7";
 	pathToCat[2] = "/home/gpfs/manip/mnt/bao/hdumasde/Data/Catalogue/knownquasarstar.060910.fits";
 
@@ -593,6 +596,7 @@ void Tools::get_Catalogue(void) {
 	for (unsigned int c=0; c<nbCat; c++) {
 		std::cout << "  " << c << " : " << ra[c].size() << std::endl;
 	}
+	std::cout << "\n" << std::endl;
 
 	/// Find re-observations inside own catalogues (Don't do for DR12Q)
 	for (unsigned int c=1; c<nbCat; c++) {
@@ -617,6 +621,7 @@ void Tools::get_Catalogue(void) {
 			}
 		}
 	}
+	std::cout << "\n" << std::endl;
 
 	/// Print number of re-observed
 	for (unsigned int c=0; c<nbCat; c++) {
@@ -628,6 +633,7 @@ void Tools::get_Catalogue(void) {
 		}
 		std::cout << "  Auto reobs " << c << " : " << n << std::endl;
 	}
+	std::cout << "\n" << std::endl;
 
 	/// Find re-observations
 	for (unsigned int c1=0; c1<nbCat; c1++) {
@@ -657,6 +663,7 @@ void Tools::get_Catalogue(void) {
 			}
 		}
 	}
+	std::cout << "\n" << std::endl;
 
 	/// Print number of re-observed
 	for (unsigned int c=0; c<nbCat; c++) {
@@ -668,7 +675,7 @@ void Tools::get_Catalogue(void) {
 		}
 		std::cout << "  Cross reobs " << c << " : " << n << std::endl;
 	}
-
+	std::cout << "\n" << std::endl;
 
 	/// Store the data
 	unsigned int nbFinal = 0;

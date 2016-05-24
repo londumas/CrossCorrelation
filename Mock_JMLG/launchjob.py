@@ -70,7 +70,7 @@ def main():
 		subprocess.call('mkdir ' +pathToFolder+'Results_no_projection/', shell=True)
 		subprocess.call('mkdir ' +pathToFolder+'Results_raw_from_JeanMarc/', shell=True)
 
-	for i in range(0,2):
+	for i in range(0,10):
 
 		path = pathToFolder + 'Box_00' + str(i) + '/'
 
@@ -98,7 +98,7 @@ def main():
 				subprocess.call('mkdir ' + path + 'Results_no_projection/', shell=True)
 				subprocess.call('mkdir ' + path + 'Results_raw_from_JeanMarc/', shell=True)
 
-			if (index_pass==1):
+			elif (index_pass==1):
 
 				'''
 				/home/gpfs/manip/mnt0607/bao/hdumasde/Program/LyAMockExpander/Expand.sh -i /home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/v1575/fits/spectra-7850-0.fits -o /home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/Box_000/Simu_000/Raw/ -columns loglam,flux,ivar,and_mask,mock_contpca,mock_F,mock_Fmet -JM -vac /home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/DR12Q_v2_10.fits -data /home/gpfs/manip/mnt0607/bao/Spectra/SpectraV5_8_guy/spectra -seed 0 -metals 2
@@ -107,11 +107,12 @@ def main():
 				command = '/home/gpfs/manip/mnt0607/bao/hdumasde/Program/LyAMockExpander/Expand.sh -i /home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/v1575/fits/spectra-785'+str(i)+'-'+str(j)+'.fits -o ' +path+ 'Raw/ -columns loglam,flux,ivar,and_mask,mock_contpca,mock_F,mock_Fmet -JM -vac /home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/DR12Q_v2_10.fits -data /home/gpfs/manip/mnt0607/bao/Spectra/SpectraV5_8_guy/spectra -metals 2 -seed ' + str(j)+ ' -seed_first_index ' + str(i)
 				command = "clubatch \"echo ; hostname ; "+ command + "\""
 				print command
+				subprocess.call("echo " + command, shell=True)
 				subprocess.call(command, shell=True)
 				myTools.isReadyForNewJobs(20, 1000,'echo')
 				time.sleep(60)
 
-			if (index_pass==2):
+			elif (index_pass==2):
 				if (i==0 and j==0):
 					#tbhduQSO    = create_fits_qso(sizeMax)
 					#tbhduQSO.writeto(path + 'Data/QSO_withRSD.fits', clobber=True)
@@ -134,7 +135,7 @@ def main():
 				command = "clubatch \"echo ; hostname ; "+ command + "\""
 				print command
 				subprocess.call(command, shell=True)
-				myTools.isReadyForNewJobs(25, 1000,'echo')
+				myTools.isReadyForNewJobs(5, 1000,'echo')
 				time.sleep(60)
 				
 
@@ -144,6 +145,7 @@ def main():
 				print path + 'Data/QSO_withRSD.fits'
 				cat = pyfits.open(path + 'Data/QSO_withRSD.fits')[1].data
 				nbQSO = cat.size
+				print '  nb of QSOs = ', nbQSO
 				"""
 				cat = pyfits.open(path + 'Data/QSO_withRSD.fits', memmap=True)[1].data
 				print '  nb of QSOs before = ', cat.size
@@ -155,23 +157,23 @@ def main():
 				"""
 				
 				### Remove useless lines in Forest
-				cat = pyfits.open(path + 'Data/delta.fits', memmap=True)[1].data
+				cat = pyfits.open(path + 'Data_no_metals/delta.fits', memmap=True)[1].data
 
-				print '  nb of QSOs before = ', cat.size
+				print '  nb of forests before = ', cat.size
 				cat = cat[ (cat['Z'] != 0.) ]
 				nbFor = cat.size
-				print '  nb of QSOs after  = ', nbFor
+				print '  nb of forests after  = ', nbFor
 				
 				if ( nbFor>nbFor__ ):
 					print nbFor-int(nbQSO*ratioForestToQSO__)
 					rand = numpy.random.choice(nbFor, nbFor-int(nbQSO*ratioForestToQSO__), replace=False)
 					cat['Z'][rand] = 0.
 				
-				print '  nb of QSOs before = ', cat.size
+				print '  nb of forests before = ', cat.size
 				cat = cat[ (cat['Z'] != 0.) ]
-				print '  nb of QSOs after  = ', cat.size
+				print '  nb of forests after  = ', cat.size
 				
-				pyfits.writeto(path + 'Data/delta.fits', cat, clobber=True)
+				pyfits.writeto(path + 'Data_no_metals/delta.fits', cat, clobber=True)
 				
 
 			'''
@@ -200,12 +202,12 @@ def sendCalculDelta():
 	subprocess.call(tmp_command, shell=True)
 
 
-	for i in range(0,1):
+	for i in range(0,10):
 
 		path = pathToFolder + 'Box_00' + str(i) + '/'
 
-		for j in range(0,1):
-		
+		for j in range(0,10):
+	
 			tmp_command = "echo " + str(i) + " " + str(j)
 			subprocess.call(tmp_command, shell=True)
 
@@ -216,10 +218,10 @@ def sendCalculDelta():
 				### Get the data to 'good' files
 				#####################
 				command = "/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/chain_annalys_delta/Get_delta/bin/main.exe " + str(i) + ' ' + str(j) + " 0 0 2 0"
-				command = "clubatch \"time ; hostname ; "+command + "\""
+				command = "clubatch \"echo ; hostname ; "+command + "\""
 				print command
 				subprocess.call(command, shell=True)
-				myTools.isReadyForNewJobs(10, 1000,'time')
+				myTools.isReadyForNewJobs(10, 1000,'echo')
                                 time.sleep(30)
 			
 
@@ -231,7 +233,7 @@ def sendCalculDelta():
 				last  = step
 				while (first <= nbSpectra):
 
-					tmp_command = "clubatch \"time ; hostname ; /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/chain_annalys_delta/Get_delta/bin/main.exe " + str(i) + " " + str(j) + " " + str(first) + " " + str(last) +" 2 1 \""
+					tmp_command = "clubatch \"echo ; hostname ; /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/chain_annalys_delta/Get_delta/bin/main.exe " + str(i) + " " + str(j) + " " + str(first) + " " + str(last) +" 2 1 \""
 					subprocess.call(tmp_command, shell=True)
 	
 					tmp_command = "echo " + tmp_command
@@ -242,16 +244,16 @@ def sendCalculDelta():
 					first = first + step
 					last  = last  + step
 
-					myTools.isReadyForNewJobs(100, 1000,'time')
+					myTools.isReadyForNewJobs(100, 1000,'echo')
 					time.sleep(0.2)
 			
 
 			if (index_pass==2):
 				command = "/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/chain_annalys_delta/Get_delta/bin/main.exe " + str(i) + ' ' + str(j) + " 0 0 2 2"
-				command = "clubatch \"time ; hostname ; "+command + "\""
+				command = "clubatch \"echo ; hostname ; "+command + "\""
 				print command
 				subprocess.call(command, shell=True)
-				myTools.isReadyForNewJobs(20, 1000,'time')
+				myTools.isReadyForNewJobs(20, 1000,'echo')
                                 time.sleep(30)
 
 			if (index_pass==3):

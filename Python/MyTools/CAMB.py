@@ -21,11 +21,11 @@ import const
 import myTools
 
 raw_dic = {
-	'z' : 2.25,
+	'z' : 0.,
 	'h_0' : 0.70,
 	'omega_matter_0' : 0.27,
 	'omega_lambda_0' : 0.73,
-	'source'         : 'CAMB'
+	'source'         : 'NOTHING'
 }
 
 class CAMB:
