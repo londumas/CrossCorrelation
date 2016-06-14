@@ -292,7 +292,7 @@ class AnnalyseBAOFIT(correlation_3D.Correlation3D):
 		print string
 
 		return
-	def plot_data_and_fit_1d(self,x_power,path_to_mapping_1D):
+	def get_data_and_fit_1d(self,path_to_mapping_1D):
 
 		### Load the mapping from 2D to 1D
 		mapping_2D_to_1D = numpy.load( path_to_mapping_1D )
@@ -323,52 +323,28 @@ class AnnalyseBAOFIT(correlation_3D.Correlation3D):
 		xi1D_data[:,0][cut] /= xi1D_data[:,2][cut]
 		xi1D_data[:,1][cut] /= xi1D_data[:,2][cut]
 		xi1D_data[:,2][cut]  = 1./numpy.sqrt(xi1D_data[:,2][cut])
-		coef = numpy.power(xi1D_data[:,0][cut],x_power)
-		xxx = xi1D_data[:,0][cut]
-		plt.errorbar(xi1D_data[:,0][cut], coef*xi1D_data[:,1][cut], yerr=coef*xi1D_data[:,2][cut], fmt='o', label=r'$'+self._name+'$', markersize=10,linewidth=2)
 		### Fit
 		cut = (xi1D_fit[:,2]>0.)
 		xi1D_fit[:,0][cut] /= xi1D_fit[:,2][cut]
 		xi1D_fit[:,1][cut] /= xi1D_fit[:,2][cut]
 		xi1D_fit[:,2][cut]  = 1./numpy.sqrt(xi1D_fit[:,2][cut])
-		coef = numpy.power(xi1D_fit[:,0][cut],x_power)
-		plt.errorbar(xi1D_fit[:,0][cut], coef*xi1D_fit[:,1][cut], label=r'$Fit$', color='red',linewidth=2)
 
-		if (x_power==0):
-			plt.ylabel(r'$'+self._label+' (|s|)$', fontsize=40)
-		if (x_power==1):
-			plt.ylabel(r'$|s|.'+self._label+' (|s|) \, [h^{-1}.Mpc]$', fontsize=40)
-		if (x_power==2):
-			plt.ylabel(r'$|s|^{2}.'+self._label+' (|s|) \, [(h^{-1}.Mpc)^{2}]$', fontsize=40)
-		
-		plt.title(r'$'+self._title+'$', fontsize=40)
-		plt.xlabel(r'$|s| \, [h^{-1}.Mpc]$', fontsize=40)
-		plt.xlim([ numpy.amin(xxx)-10., numpy.amax(xxx)+10. ])
-		myTools.deal_with_plot(False,False,True)
-		plt.show()
-		
-		return
-	def plot_data_and_fit_we(self,x_power,path_to_mapping):
-
-		if (self._correlation=='q_q' or self._correlation=='f_f'):
-			label = ['0.8 < \mu', '0.5 < \mu \leq 0.8', '\mu \leq 0.5']
-		elif (self._correlation=='q_f' or self._correlation=='f_f2'):
-			label = ['0.8 < |\mu|', '0.5 < |\mu| \leq 0.8', '|\mu| \leq 0.5']
-		color = ['blue', 'green', 'orange']
+		return xi1D_data, xi1D_fit
+	def get_data_and_fit_we(self,path_to_mapping):
 
 		### Load the mapping from 2D to we
 		mapping_2D_to_we = numpy.load( path_to_mapping )
 
 		### Fit
-		xi1D_data = numpy.zeros(shape=(self._nbBin1D,3,3))
-		xi1D_fit  = numpy.zeros(shape=(self._nbBin1D,3,3))
+		xi1D_data = numpy.zeros(shape=(self._nbBin1D,self._nb_wedges,3))
+		xi1D_fit  = numpy.zeros(shape=(self._nbBin1D,self._nb_wedges,3))
 		for i in numpy.arange(self._nbBinX2D):
 			for j in numpy.arange(self._nbBinY2D):
 
 				if (self._xi2D_fit[i,j,8]<=0.): continue
 				ivar = 1./( self._xi2D_fit[i,j,8]*self._xi2D_fit[i,j,8] )
 				for k in numpy.arange(self._nbBin1D):
-					for l in numpy.arange(3):
+					for l in numpy.arange(self._nb_wedges):
 
 						coef = mapping_2D_to_we[i,j,k,l]
 						if (coef==0.): continue
@@ -388,8 +364,52 @@ class AnnalyseBAOFIT(correlation_3D.Correlation3D):
 		xi1D_fit[:,:,0][cut] /= xi1D_fit[:,:,2][cut]
 		xi1D_fit[:,:,1][cut] /= xi1D_fit[:,:,2][cut]
 		xi1D_fit[:,:,2][cut]  = 1./numpy.sqrt(xi1D_fit[:,:,2][cut])
+
+		return xi1D_data, xi1D_fit
+	def plot_data_and_fit_1d(self,x_power,path_to_mapping_1D):
+
+		xi1D_data, xi1D_fit = self.get_data_and_fit_1d(path_to_mapping_1D)
+
+		### Data
+		cut = (xi1D_data[:,2]>0.)
+		coef = numpy.power(xi1D_data[:,0][cut],x_power)
+		xxx = xi1D_data[:,0][cut]
+		plt.errorbar(xi1D_data[:,0][cut], coef*xi1D_data[:,1][cut], yerr=coef*xi1D_data[:,2][cut], fmt='o', label=r'$'+self._name+'$', markersize=10,linewidth=2)
+		### Fit
+		cut = (xi1D_fit[:,2]>0.)
+		coef = numpy.power(xi1D_fit[:,0][cut],x_power)
+		plt.errorbar(xi1D_fit[:,0][cut], coef*xi1D_fit[:,1][cut], label=r'$Fit$', color='red',linewidth=2)
+
+		if (x_power==0):
+			plt.ylabel(r'$'+self._label+' (|s|)$', fontsize=40)
+		if (x_power==1):
+			plt.ylabel(r'$|s|.'+self._label+' (|s|) \, [h^{-1}.Mpc]$', fontsize=40)
+		if (x_power==2):
+			plt.ylabel(r'$|s|^{2}.'+self._label+' (|s|) \, [(h^{-1}.Mpc)^{2}]$', fontsize=40)
 		
-		for i in numpy.arange(0,3):
+		plt.title(r'$'+self._title+'$', fontsize=40)
+		plt.xlabel(r'$|s| \, [h^{-1}.Mpc]$', fontsize=40)
+		plt.xlim([ numpy.amin(xxx)-10., numpy.amax(xxx)+10. ])
+		myTools.deal_with_plot(False,False,True)
+		plt.show()
+		
+		return
+	def plot_data_and_fit_we(self,x_power,path_to_mapping):
+
+		color = ['blue', 'green', 'orange','cyan']
+
+		xi1D_data, xi1D_fit = self.get_data_and_fit_we(path_to_mapping)
+		'''
+		cut = (xi1D_data[:,:,2]>0.)
+		xi1D_data[:,:,0][cut] /= xi1D_data[:,:,2][cut]
+		xi1D_data[:,:,1][cut] /= xi1D_data[:,:,2][cut]
+		xi1D_data[:,:,2][cut]  = 1./numpy.sqrt(xi1D_data[:,:,2][cut])
+		cut = (xi1D_fit[:,:,2]>0.)
+		xi1D_fit[:,:,0][cut] /= xi1D_fit[:,:,2][cut]
+		xi1D_fit[:,:,1][cut] /= xi1D_fit[:,:,2][cut]
+		xi1D_fit[:,:,2][cut]  = 1./numpy.sqrt(xi1D_fit[:,:,2][cut])
+		'''
+		for i in numpy.arange(0,self._nb_wedges):
 		
 			cut = (self._xiWe[:,i,2]>0.)
 			if (self._xiWe[:,i,0][cut].size==0):
@@ -400,7 +420,7 @@ class AnnalyseBAOFIT(correlation_3D.Correlation3D):
 			yyy = xi1D_data[:,i,1][cut]
 			yer = xi1D_data[:,i,2][cut]
 			coef = numpy.power(xxx,x_power)
-			plt.errorbar(xxx, coef*yyy, yerr=coef*yer, fmt='o', label=r'$'+label[i]+'$', color=color[i], markersize=10,linewidth=2)
+			plt.errorbar(xxx, coef*yyy, yerr=coef*yer, fmt='o', label=r'$'+self._label_wedge[i]+'$', color=color[i], markersize=10,linewidth=2)
 
 			cut = (xi1D_fit[:,i,2]>0.)
 			xxxF = xi1D_fit[:,i,0][cut]

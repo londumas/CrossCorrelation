@@ -147,7 +147,7 @@ const double betaStart__ = 0.;
 const double maxAlpha__   = 100.;
 const double maxBeta__  =  0.6;
 const double maxCorrelation__ = 200.;
-const double isReobsFlag__ = -100.;
+const int isReobsFlag__ = 10000;
 const unsigned int sizeGridX__   = 2560;
 const unsigned int sizeGridY__   = 1920;
 const unsigned int sizeGridZ__   = 512;
@@ -159,6 +159,7 @@ const double sizeCell__         = 4.5*0.7;
 /*
 /// If LYB
 const std::string forest__      = "LYB";
+const std::string forestPath__  = "LYB";
 const double lambdaRFLine__     = 1025.72;
 const double lambdaRFMin__      = 800.;
 const double lambdaRFMax__      = 1020.;
@@ -168,12 +169,23 @@ const double alphaStart__       = 1.;
 
 /// If LYA
 const std::string forest__      = "LYA";
+const std::string forestPath__  = "LYA";
 const double lambdaRFLine__     = 1215.67;
 const double lambdaRFMin__      = 1040.;
 const double lambdaRFMax__      = 1200.;
 const unsigned int nbBinRFMax__ = 647;
 const double alphaStart__       = 1.3;
 
+/*
+/// If CIV in LYA forest
+const std::string forest__      = "CIV_in_LYA";
+const std::string forestPath__  = "LYA";
+const double lambdaRFLine__     = 1548.2049;
+const double lambdaRFMin__      = 1040.;
+const double lambdaRFMax__      = 1200.;
+const unsigned int nbBinRFMax__ = 647;
+const double alphaStart__       = 1.3;
+*/
 /*
 /// If SIIV
 const std::string forest__      = "SIIV";

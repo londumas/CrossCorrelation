@@ -83,7 +83,7 @@ const bool mocksColab__           = false;
 const bool mockJMC__              = false;
 const bool putReobsTogether__     = false;
 const bool noMetals__             = false;
-double isReobsFlag__ = -100.;
+int isReobsFlag__           = 10000;
 
 GetDelta::GetDelta(int argc, char** argv) {
 
@@ -120,12 +120,13 @@ GetDelta::GetDelta(int argc, char** argv) {
 		pathForest__   = "/home/gpfs/manip/mnt/bao/hdumasde/Data/";
 		pathForest__  += forest__;
 		pathToTxt__    = pathForest__;
-		pathForest__  += "/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits";  //_method1
-//		pathForest__  += "/FitsFile_DR12_Guy/DR12_reObs/DR12_reObs.fits";
+		pathForest__  += "/FitsFile_DR12_Guy_Margala_sky/DR12_primery/DR12_primery.fits";  //_method1
+//		pathForest__  += "/FitsFile_DR12_Guy_Margala/DR12_reObs/DR12_reObs.fits";
 //		pathForest__  += "/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits";
+//		pathForest__  += "/FitsFile_DR12_Guy_Margala/DR12_coAdd/DR12_coAdd.fits";  //_method1
 
-		pathToTxt__   += "/FitsFile_DR12_Guy/DR12_primery/histos/";  //_method1
-//		pathToTxt__   += "/FitsFile_DR12_Guy/DR12_reObs/histos/";
+		pathToTxt__   += "/FitsFile_DR12_Guy_Margala_sky/DR12_primery/histos/";  //_method1
+//		pathToTxt__   += "/FitsFile_DR12_Guy_Margala/DR12_reObs/histos/";
 //		pathToTxt__   += "/FitsFile_eBOSS_Guy/all_eBOSS_primery/histos/";
 
 //		pathForest__   = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/FitsFile_DR12_reOBS_eBOSS_Guy/DR12_primery/DR12_primery_reOBS_eBOSS.fits";
@@ -1047,7 +1048,7 @@ double ProbPixel(double cont,double flux, double sig, unsigned int idxPixel) {
 void GetDelta::initFitCont(void) {
 
 
-	std::cout << "\n\n\n  Initialisation of the continuum fit with minuit (method 2) \n\n" << std::endl;
+	std::cout << "\n\n\n  Initialisation of the continuum fit with minuit \n\n" << std::endl;
 
 	mygMinuit = new TMinuit(10);
 	mygMinuit->Clear();
@@ -1154,7 +1155,8 @@ void GetDelta::loadDataForest(std::string fitsnameSpec, unsigned int start, unsi
 
 		for (unsigned int j=0; j<nbBinRFMax__; j++) {
 
-			if (DELTA_WEIGHT[j]<=0. || NORM_FLUX_IVAR[j]<=0. || FLUX_DLA[j]<C_DLACORR || LAMBDA_OBS[j]<lambdaObsMin__ || LAMBDA_OBS[j]>=lambdaObsMax__) continue;
+			
+			if ( (DELTA_WEIGHT[j]<=0. && stepDefinition!=0) || NORM_FLUX_IVAR[j]<=0. || FLUX_DLA[j]<C_DLACORR || LAMBDA_OBS[j]<lambdaObsMin__ || LAMBDA_OBS[j]>=lambdaObsMax__) continue;
 			
 			//// Remove veto lines
 			bool isLine = false;
@@ -1177,18 +1179,16 @@ void GetDelta::loadDataForest(std::string fitsnameSpec, unsigned int start, unsi
 			v_tmp_17.push_back(FLUX_DLA[j]);
 				
 			if (!mockJMC__ && stepDefinition == 0) {
-				v_tmp_18.push_back(0.);
-				v_tmp_19.push_back(0.);
-				v_tmp_20.push_back(1.);
-				v_tmp_21.push_back(1.);
+				DELTA[j] = 0.;
+				DELTA_WEIGHT[j] = 1.;
+				TEMPLATE[j] = 1.;
 			}
-			else {
-				const double template2 = NORM_FLUX[j]/(DELTA[j]+1.);
-				v_tmp_18.push_back(DELTA[j]);
-				v_tmp_19.push_back(NORM_FLUX_IVAR[j]*template2*template2);
-				v_tmp_20.push_back(DELTA_WEIGHT[j]);
-				v_tmp_21.push_back(TEMPLATE[j]);
-			}
+			
+			const double template2 = NORM_FLUX[j]/(DELTA[j]+1.);
+			v_tmp_18.push_back(DELTA[j]);
+			v_tmp_19.push_back(NORM_FLUX_IVAR[j]*template2*template2);
+			v_tmp_20.push_back(DELTA_WEIGHT[j]);
+			v_tmp_21.push_back(TEMPLATE[j]);
 				
 			const double zi = LAMBDA_OBS[j]/lambdaRFLine__-1.;
 			v_tmp_zz.push_back(zi);
@@ -1412,6 +1412,7 @@ void GetDelta::updateDelta(std::string fitsnameSpec, unsigned int loopIdx, unsig
 	if (end == 0) nLines = nrows;
 
 	std::cout << "  number of loaded forest = " << nLines << std::endl;
+	std::cout << std::endl;
 
 	long long unsigned int nbForest = 0;
 	double meanDelta[3]  = {0.};
@@ -1496,7 +1497,19 @@ void GetDelta::updateDelta(std::string fitsnameSpec, unsigned int loopIdx, unsig
 			}
 		}
 
-		if (meanLambda[3]>=C_MIN_NB_PIXEL && !templateHasNegative && (alpha!=alphaStart__ || beta!=betaStart__) && (fabs(alpha)<maxAlpha__-0.5) && (fabs(beta)<maxBeta__-0.05) ) {
+		if (meanLambda[3]<C_MIN_NB_PIXEL || templateHasNegative || (fabs(alpha)>=maxAlpha__-0.5) || (fabs(beta)>=maxBeta__-0.05) || (stepDefinition>=2 && alpha==alphaStart__ && beta==betaStart__) ) {
+			if (v_fromFitsIndexToVectorIndex__[i]!=-1) {
+				std::cout << "  Not taken for some reason : " << i  << std::endl;
+                        	std::cout << "  nb pixel = " << meanLambda[3] << std::endl;
+				std::cout << "  template is negative " << templateHasNegative << std::endl;
+				std::cout << "  alpha = " << alpha << std::endl;
+				std::cout << "  beta = " <<  beta << std::endl;
+				std::cout << "  meanForestLambdaRF = " << meanForestLambdaRF << std::endl;
+				std::cout << "  v_fromFitsIndexToVectorIndex__[i] = " << v_fromFitsIndexToVectorIndex__[i] << std::endl;
+				std::cout  << std::endl;
+			}
+		}
+		else {
 			nbForest++;
 			meanDelta[0] += meanLambda[0];
 			meanDelta[1] += meanLambda[2];
@@ -1504,10 +1517,6 @@ void GetDelta::updateDelta(std::string fitsnameSpec, unsigned int loopIdx, unsig
 
 			//// If forest cutted before but taken now
 			if (v_fromFitsIndexToVectorIndex__[i]==-1) std::cout << "  Taken for some reason : " << i  << std::endl;
-		}
-		else if (v_fromFitsIndexToVectorIndex__[i]!=-1) {
-			std::cout << "  Not taken for some reason : " << i  << std::endl;
-			std::cout << meanLambda[3] << " " << templateHasNegative << " " << alpha << " " <<  beta << std::endl; 
 		}
 
 		//// Set the new value of 'meanForestLambdaRF' if there are some pixels
@@ -1548,7 +1557,7 @@ void GetDelta::setValuesAlphaBetaForest(std::string pathForest, std::string path
 	/// Get the list 
 	FILE *fp;
 	char path[PATH_MAX];
-	std::string command = "ls " + pathToTxt + "alphaAndBeta_LYA_*";
+	std::string command = "ls " + pathToTxt + "alphaAndBeta_"+forest__+"_*";
 	std::vector< std::string > listFiles;
 	fp = popen(command.c_str(), "r");
 	while (fgets(path, PATH_MAX, fp) != NULL) listFiles.push_back(path);
@@ -1832,7 +1841,7 @@ void GetDelta::putReobsTogether(std::string fitsnameSpec, unsigned int loopIdx) 
 				makeCoAdd(NbLambda, DELTA, LAMBDA_OBS, DELTA_IVAR, tmpNbLambda, tmpDELTA, tmpLAMBDA_OBS, tmpDELTA_IVAR);
 
 				//// Set a useless value to tell that it is a re-obs
-				fits_write_col(fitsptrSpec,TDOUBLE, 9,idx+1,1,1, &isReobsFlag__, &sta);
+				fits_write_col(fitsptrSpec,TINT, 7,idx+1,1,1, &isReobsFlag__, &sta);
 
 				nbReObs ++;
 			}

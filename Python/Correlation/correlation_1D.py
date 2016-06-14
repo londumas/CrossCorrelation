@@ -266,6 +266,7 @@ class Correlation_1D:
 			yyy_Camb = yyy_Camb[(xxx_Camb!=0.)]
 			xxx_Camb = xxx_Camb[(xxx_Camb!=0.)]
 		b = 0.15
+		#b = 0.05
 
 		'''
 		### Chi^{2}
@@ -306,24 +307,16 @@ class Correlation_1D:
 
 		cut_l = 0
 		cut_h = -1
+		list_corr_to_plot = numpy.append( [self],other )
 
-		print self._xi[0,1]
+		xMin = numpy.amin(self._xi[cut_l:cut_h,0])
+		xMax = numpy.amax(self._xi[cut_l:cut_h,0])
+		yMin = numpy.amin(self._xi[cut_l:cut_h,1])
+		yMax = numpy.amax(self._xi[cut_l:cut_h,1])
 
-		if (self._correlation == 'f_f2_lRF_devide'): 
-			xxx = 1./self._xi[cut_l:cut_h,0]
-		else:
-			xxx = self._xi[cut_l:cut_h,0]
-		yyy = self._xi[cut_l:cut_h,1]
-		yer = self._xi[cut_l:cut_h,2]
+		for el in list_corr_to_plot:
 
-		plt.errorbar(xxx, yyy, label=r'$'+self._name+'$', markersize=8,linewidth=2)
-
-		xMin = numpy.amin(xxx)
-		xMax = numpy.amax(xxx)
-		yMin = numpy.amin(yyy)
-		yMax = numpy.amax(yyy)
-
-		for el in other:
+			print el._name, el._xi[0,1]
 
 			if (el._correlation == 'f_f2_lRF_devide'): 
 				TMP_xxx = 1./el._xi[cut_l:cut_h,0]
@@ -331,8 +324,9 @@ class Correlation_1D:
 				TMP_xxx = el._xi[cut_l:cut_h,0]
 			TMP_yyy = el._xi[cut_l:cut_h,1]
 			TMP_yer = el._xi[cut_l:cut_h,2]
+			xxx = TMP_xxx
 
-			plt.errorbar(TMP_xxx, TMP_yyy, label=r'$'+el._name+'$', markersize=8,linewidth=2)
+			plt.errorbar(TMP_xxx, TMP_yer, label=r'$'+el._name+'$', markersize=8,linewidth=2)
 
 			xMin = min(xMin, numpy.amin(TMP_xxx) )
 			xMax = max(xMax, numpy.amax(TMP_xxx) )
@@ -435,19 +429,33 @@ dic_CAMB_corr = {
 
 list_corr = []
 
-"""
+
+### Data
+dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator_primery_sky/'
+dic_class['name'] = "Data"
+dic_class['correlation'] = "f_f_lRF"
+corr = Correlation_1D(dic_class)
+list_corr += [corr]
+#corr.plot_distortion_matrix()
+#dic_CAMB_corr['z'] = corr._meanZ
+#corr.fit_CAMB()
+#corr.fit_CAMB(True,dic_CAMB_corr)
+
+'''
 ### Data
 dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator/'
 dic_class['name'] = "Data"
-dic_class['correlation'] = "f_f_r"
+dic_class['correlation'] = "f_f_lRF"
 corr = Correlation_1D(dic_class)
 list_corr += [corr]
-corr.plot_distortion_matrix()
-dic_CAMB_corr['z'] = corr._meanZ
+#corr.plot_distortion_matrix()
+#dic_CAMB_corr['z'] = corr._meanZ
 #corr.fit_CAMB()
-corr.fit_CAMB(True,dic_CAMB_corr)
-"""
+#corr.fit_CAMB(True,dic_CAMB_corr)
+list_corr[0].plot(False,False,list_corr[1:])
+'''
 
+'''
 #
 dic_simu['path_to_simu'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/'
 dic_class['f1'] = 'LYA'
@@ -461,6 +469,7 @@ list_corr += [corr]
 corr.plot_distortion_matrix()
 dic_CAMB_corr['z'] = corr._meanZ
 corr.fit_CAMB(True,dic_CAMB_corr)
+'''
 
 """
 #
@@ -477,10 +486,10 @@ list_corr += [corr]
 
 
 
-
+"""
 #list_corr[0].plot(True,True)
 list_corr[0].plot(False,False,list_corr[1:])
-"""
+
 
 
 

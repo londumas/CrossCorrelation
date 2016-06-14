@@ -737,7 +737,7 @@ def testCosmo():
 #plot_spectra_i_want()
 #lookNotFittedSpectra()
 #distribSomething()
-meanDelta()
+#meanDelta()
 #distribPixelZ()
 #lookTemplate()
 #distribSpaceLambda()
@@ -746,8 +746,10 @@ meanDelta()
 #testCosmo()
 
 
-
-
+path     = '/home/gpfs/manip/mnt0607/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy_Margala/DR12_coAdd/DR12_coAdd.fits'
+cat = pyfits.open(path)[1].data
+	
+print cat['BIT']
 
 
 

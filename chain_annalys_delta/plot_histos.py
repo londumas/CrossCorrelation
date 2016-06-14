@@ -42,7 +42,8 @@ elif (forest__ == 'MGII'):
 ###
 #path = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/FitsFile_DR12_reOBS_eBOSS_Guy/DR12_primery/histos/"
 #path = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/FitsFile_DR12_reOBS_Guy/DR12_primery/histos/"
-path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest__+'/FitsFile_DR12_Guy/DR12_primery/histos/' ##_method1
+#path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest__+'/FitsFile_DR12_Guy_Margala/DR12_primery/histos/' ##_method1
+path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest__+'/FitsFile_DR12_Guy_Margala_sky/DR12_primery/histos/'
 #path = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_reObs/histos/"
 #path = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA//FitsFile_eBOSS_Guy/all_eBOSS_primery/histos/"
 rawPath = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/'
@@ -56,8 +57,14 @@ for i in range (0,chunckNb):
 			mockNumber = '_'+str(i)+'_'+str(j)
 
 
-		data = numpy.loadtxt(path+'hDeltaVsLambdaObs_LYA'+mockNumber+'.txt')
-		plt.errorbar(data[:,0]+shift__, data[:,1], label=r'$MockJM-mockExpander$')
+		data = numpy.loadtxt(path+'hDeltaVsLambdaObs_'+forest__+mockNumber+'.txt')
+		plt.errorbar(data[:,0]+shift__, data[:,1], label=r'$Guy + Margala$')
+		tmp_data = data[:,1]
+
+		data = numpy.loadtxt('/home/gpfs/manip/mnt/bao/hdumasde/Data/CIV/FitsFile_DR12_Guy_noCut_lambdaOBS/DR12_primery/histos/hDeltaVsLambdaObs_CIV.txt')
+		plt.errorbar(data[:,0]+shift__, data[:,1], label=r'$Guy$')
+
+		#plt.errorbar(data[:,0]+shift__, data[:,1]/tmp_data-1., label=r'$devided$')
 
 		data = numpy.loadtxt('/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Resources/PDF/hDeltaVsLambdaObs_LYA_JMC.txt')
 		plt.errorbar(data[:,1][ data[:,2]!=0. ], data[:,2][ data[:,2]!=0. ], label=r'$v1547$', color='red')

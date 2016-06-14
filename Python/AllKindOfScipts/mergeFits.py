@@ -28,13 +28,20 @@ warnings.filterwarnings("error")
 import myTools
 from const_delta import *
 
-all_t = ['/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits','/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_reObs/DR12_reObs.fits']
+raw_path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy_Margala/'
+all_t = [raw_path+'DR12_primery/DR12_primery.fits',raw_path+'DR12_reObs/DR12_reObs.fits']
+
 
 ### Get the FitsFile
 all_t_file  = []
 for el in all_t:
 	all_t_file.append( pyfits.open(el,  memmap=True) )
 	print el
+
+size_1 = all_t_file[0][1].data.size
+print size_1
+size_2 = all_t_file[1][1].data.size
+print size_2
 
 ### Get arrays of size of FitsFile
 all_t_nrows = []
@@ -62,14 +69,17 @@ for i in range(1, all_t_nrows.size ):
 		hdu.data[colname][first:last] = all_t_file[i][1].data[colname]
 
 cat_tbhdu = hdu.data
+cat_tbhdu['BIT'][size_1:] = 10000
+
 
 ## Map
-plt.plot(cat_tbhdu["RA"], cat_tbhdu["DEC"], linestyle="", marker="o")
-plt.show()
+#plt.plot(cat_tbhdu["RA"], cat_tbhdu["DEC"], linestyle="", marker="o")
+#plt.show()
+print cat_tbhdu['BIT']
 
 tbhdu = pyfits.BinTableHDU(data=cat_tbhdu)
 tbhdu.update()
-tbhdu.writeto('/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery_reObs/DR12_primery_reObs.fits', clobber=True)
+tbhdu.writeto(raw_path+'DR12_coAdd/DR12_primery_reObs.fits', clobber=True)
 
 
 

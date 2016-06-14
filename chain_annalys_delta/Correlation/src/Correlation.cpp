@@ -33,6 +33,7 @@
 #include "TFile.h"
 #include "fitsio.h"
 #include "TString.h"
+//#include "TRandom.h"
 
 #include "Correlation.h"
 #include "LymanAlphaForestRegion.h"
@@ -98,7 +99,9 @@ double distMinPixelDelta2__ = 0.;
 unsigned int idxCommand_[6] = {0};
 const std::string pathToMockJMC__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/";
 std::string pathToRaw__ = "";
-std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator/";  //_nicolasEstimator   //_method1
+//std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator_coAdd_2016_05_26/";  //_nicolasEstimator   //_method1
+//std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator_primery_sky/";
+std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator_2016_05_26/";
 std::string correlation_type__ = "NOTHING";
 
 
@@ -119,6 +122,7 @@ unsigned int seed_for_random_position__ = 42;
 const bool shuffleQSO     = false;
 const bool shuffleForest  = false;
 const bool randomQSO      = false;
+const bool randomQSOXYZ   = true;
 const bool randomForest   = false;
 const bool doBootstraps__ = false;
 
@@ -127,6 +131,8 @@ const bool doVetoLines__          = true;
 const bool nicolasEstimator__     = true;
 const bool doingCoAddSoRemoving__ = false;
 
+const bool replace_data_by_gaussian_random__ = true;
+const bool showRootHistos__      = false;
 const bool saveInRootFile__      = false;
 const bool cutNotFittedSpectra__ = true;
 
@@ -165,9 +171,11 @@ Correlation::Correlation(int argc, char **argv) {
 	nbQ2__      = 0;
 	if (!mocks && !mockJMC__) {
 		pathForest__  = "/home/gpfs/manip/mnt/bao/hdumasde/Data/";
-		pathForest__  += forest__;
-		pathForest__  += "/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits";  //_method1
-//		pathForest__  += "/FitsFile_DR12_Guy/DR12_reObs/DR12_reObs.fits";
+		pathForest__  += forestPath__;
+		pathForest__  += "/FitsFile_DR12_Guy_Margala/DR12_primery/DR12_primery.fits";  //_method1
+//		pathForest__  += "/FitsFile_DR12_Guy_Margala_sky/DR12_primery/DR12_primery.fits";
+//		pathForest__  += "/FitsFile_DR12_Guy_Margala/DR12_reObs/DR12_reObs.fits";
+//		pathForest__  += "/FitsFile_DR12_Guy_Margala/DR12_coAdd/DR12_coAdd.fits";
 //		pathForest__  += "/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits";
 //		pathForest__   = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/FitsFile_DR12_reOBS_eBOSS_Guy/DR12_primery/DR12_primery_reOBS_eBOSS.fits";
 //		pathForest__   = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/FitsFile_DR12_reOBS_Guy/DR12_primery/DR12_primery_reOBS.fits";
@@ -797,10 +805,13 @@ void Correlation::xi_1D_delta_delta_distortionMatrix(void) {
 				value5[idx] += w2*invSumWeight*w1*lambda_minus_mean_over_var1;
 				value6[idx] += w1*invSumWeight*w2*lambda_minus_mean_over_var2;
 				value7[idx] += w1*w2*lambda_minus_mean_over_var1*lambda_minus_mean_over_var2;
-				binIdx.push_back(idx);
-				fromBinsToPixels1.push_back(i1);
-				fromBinsToPixels2.push_back(i2);
 				binTouched[idx] = true;
+
+				if (i2<i1) {
+					binIdx.push_back(idx);
+					fromBinsToPixels1.push_back(i1);
+					fromBinsToPixels2.push_back(i2);
+				}
 
 				///// Fill array of weights
 				weight[idx] += w1*w2;
@@ -1156,12 +1167,60 @@ void Correlation::xi_A_delta_delta(unsigned int bootIdx/*=0*/) {
 
 	std::cout << "\n\n\n\n  ------ xi_A_delta_delta ------\n" << std::endl;
 
+        if (doBootstraps__)  std::cout << "  subsampling N° "     << bootIdx << std::endl;
+        if ( shuffleForest ) std::cout << "  shuffleForest seed " << bootIdx*10 << std::endl;
+        if ( shuffleQSO  )   std::cout << "  shuffleQSO seed    " << bootIdx*10 << std::endl;
+        if ( randomQSO )     std::cout << "  randomQSO seed     " << bootIdx*10 << std::endl;
+
 	///// Load forest
 	loadDataForest(pathForest__, bootIdx);
 	v_zz__.clear();
 	v_lRF__.clear();
 	v_lObs__.clear();
 	v_nb__.clear();
+
+	///// Needed to randomize the forests
+	if (shuffleForest) {
+
+		///// Vectors with index of forest
+		std::vector<unsigned int> randomIdx(nbForest_);
+		for (unsigned int i=0; i<nbForest_; i++) {
+			randomIdx[i] = i;
+		}
+
+		std::cout << "  Shuffle forest " << bootIdx << std::endl;
+		bool doLoop = true;
+		unsigned int nbLoop = 0;
+		std::srand (bootIdx*10);
+		while (doLoop) {
+			doLoop = false;
+			nbLoop ++;
+			std::cout << "  nbLoop = " << nbLoop << std::endl;
+			std::random_shuffle ( randomIdx.begin(), randomIdx.end() );
+			for (unsigned int i=0; i<nbForest_; i++) {
+				if (i==randomIdx[i]) {
+					std::cout << nbLoop << " " << i << std::endl;
+					doLoop = true;
+					break;
+				}
+			}
+		}
+
+		///// Copy data
+		std::vector<double> tmp_cosDe(v_CosDe__);
+		std::vector<double> tmp_SinDe(v_SinDe__);
+		std::vector<double> tmp_ra(v_ra__);
+		std::vector<double> tmp_de(v_de__);
+
+		///// Put the new data
+		for (unsigned int i=0; i<nbForest_; i++) {
+			const unsigned int ii = randomIdx[i];
+			v_CosDe__[i] = tmp_cosDe[ii];
+			v_SinDe__[i] = tmp_SinDe[ii];
+			v_ra__[i]    = tmp_ra[ii];
+			v_de__[i]    = tmp_de[ii];
+		}
+	}
 
 	///// Constants:
 	const double  max         = 200.;
@@ -1302,19 +1361,21 @@ void Correlation::xi_A_delta_delta(unsigned int bootIdx/*=0*/) {
 
 	std::cout << "\n  Saving\n" << std::endl;
 
+	//// Set the prefix of different forest
+	std::string prefix1 = forest__;
+
+	std::stringstream convert;
+	convert << bootIdx;
+	const std::string strBootIdx = convert.str();
 
 	//// Set the prefix for different type of runs
-	std::string prefix = forest__;
-	if (doBootstraps__) {
-
-		std::stringstream convert;
-		convert << bootIdx;
-		const std::string strBootIdx = convert.str();
-
-		prefix += "_subsampling_";
-		prefix += strBootIdx;
-	}
-	prefix += ".txt";
+	std::string prefix = "_";
+	if (doBootstraps__)  prefix += "subsampling";
+	if (shuffleForest) prefix += "shuffleForest";
+	if (shuffleQSO)    prefix += "shuffleQSO";
+	if (randomQSO)     prefix += "randomQSO";
+	prefix += "_";
+	prefix += strBootIdx;
 
 	std::ofstream fFile;
 	long double sumOne = 0.;
@@ -1324,7 +1385,9 @@ void Correlation::xi_A_delta_delta(unsigned int bootIdx/*=0*/) {
 	///// Save the 2D cross-correlation
 	std::string pathToSave = pathToSave__;
 	pathToSave += "xi_A_delta_delta_2D_";
-	pathToSave += prefix;
+	pathToSave += prefix1;
+	if (doBootstraps__ || shuffleForest || shuffleQSO || randomQSO) pathToSave += prefix;
+	pathToSave += ".txt";
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
 	fFile << std::scientific;
@@ -1361,7 +1424,9 @@ void Correlation::xi_A_delta_delta(unsigned int bootIdx/*=0*/) {
 	///// Mu
 	pathToSave = pathToSave__;
 	pathToSave += "xi_A_delta_delta_Mu_";
-	pathToSave += prefix;
+	pathToSave += prefix1;
+	if (doBootstraps__ || shuffleForest || shuffleQSO || randomQSO) pathToSave += prefix;
+	pathToSave += ".txt";
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
 	fFile << std::scientific;
@@ -1404,7 +1469,7 @@ void Correlation::xi_A_delta_delta(unsigned int bootIdx/*=0*/) {
 		// Save the list of pairs
 		pathToSave = pathToSave__;
 		pathToSave += "xi_A_delta_delta_list_pairs_";
-		pathToSave += forest__;
+		pathToSave += prefix1;
 		pathToSave += ".txt";
 		std::cout << "\n  " << pathToSave << std::endl;
 
@@ -2574,7 +2639,6 @@ void Correlation::xi_delta_QSO(unsigned int bootIdx/*=0*/) {
 	std::cout << "\n\n\n\n  ------ xi_delta_QSO ------\n" << std::endl;
 
 	if (doBootstraps__)  std::cout << "  subsampling N° "     << bootIdx << std::endl;
-	if ( shuffleForest || shuffleQSO || randomQSO ) std::cout << "  shuffleForest seed " << bootIdx*10 << std::endl;
 
 	///// QSO
 	loadDataQ1();
@@ -2600,6 +2664,21 @@ void Correlation::xi_delta_QSO(unsigned int bootIdx/*=0*/) {
 
 	const double maxPow2      = max*max;
 
+	if (shuffleForest || shuffleQSO || randomQSO || randomQSOXYZ) {
+		unsigned int seed = 0;
+		std::srand(42);
+		for (unsigned int i=0; i<10000; i++) {
+			const unsigned int tmp_seed = rand();
+			if (i == bootIdx) {
+				seed = tmp_seed;
+				break;
+			}
+		}
+		std::cout << "\n\n" << std::endl;
+		std::cout << "  seed = " << seed << std::endl;
+		std::srand(seed);
+	}
+
 	///// Needed to randomize the forests
 	if (shuffleForest) {
 
@@ -2612,7 +2691,6 @@ void Correlation::xi_delta_QSO(unsigned int bootIdx/*=0*/) {
 		std::cout << "  Shuffle forest " << bootIdx << std::endl;
 		bool doLoop = true;
 		unsigned int nbLoop = 0;
-		std::srand (bootIdx*10);
 		while (doLoop) {
 			doLoop = false;
 			nbLoop ++;
@@ -2648,13 +2726,12 @@ void Correlation::xi_delta_QSO(unsigned int bootIdx/*=0*/) {
 		///// Vectors with index of QSO
 		std::vector<unsigned int> randomIdx(nbQ1__);
 		for (unsigned int i=0; i<nbQ1__; i++) {
-		randomIdx[i] = i;
+			randomIdx[i] = i;
 		}
 
 		std::cout << "  Shuffle QSO " << bootIdx << std::endl;
 		bool doLoop = true;
 		unsigned int nbLoop = 0;
-		std::srand (bootIdx*10);
 		while (doLoop) {
 			doLoop = false;
 			nbLoop ++;
@@ -2676,11 +2753,15 @@ void Correlation::xi_delta_QSO(unsigned int bootIdx/*=0*/) {
 		for (unsigned int i=0; i<nbQ1__; i++) {
 			const unsigned int ii = randomIdx[i];
 			v_zzQ1__[i] = tmp_zz[ii];
-			v_rrQ1__[i]  = tmp_r[ii];
+			v_rrQ1__[i] = tmp_r[ii];
 		}
 	}
 	///// Needed to randomize the QSO
-	if (randomQSO) {
+	if (randomQSO || randomQSOXYZ) {
+
+		Cosmology* cosmo = new Cosmology(C_H, C_OMEGAM, C_OMEGAB);
+		TH1D* hConvertRedshDist = cosmo->createHistoConvertRedshDist(C_NBBINREDSH, C_ZEXTREMABINCONVERT0, C_ZEXTREMABINCONVERT1);
+		delete cosmo;
 
 		std::cout << "\n\n  Random QSO " << bootIdx << std::endl;
 
@@ -2689,15 +2770,18 @@ void Correlation::xi_delta_QSO(unsigned int bootIdx/*=0*/) {
 		double raMax = *std::max_element(v_raQ1__.begin(), v_raQ1__.end());
 		double deMin = *std::min_element(v_deQ1__.begin(), v_deQ1__.end());
 		double deMax = *std::max_element(v_deQ1__.begin(), v_deQ1__.end());
+		const double zzMin = *std::min_element(v_zzQ1__.begin(), v_zzQ1__.end());
+                const double zzMax = *std::max_element(v_zzQ1__.begin(), v_zzQ1__.end());
 		raMin = raMin*0.99;
 		raMax = std::min(raMax*1.01,2.*M_PI);
 		deMin = std::max(deMin*1.01,-M_PI);
 		deMax = std::min(deMax*1.01,M_PI);
-		std::cout << "  " << raMin << " " << raMax << " " << deMin << " " << deMax << std::endl;
-
-		std::srand (bootIdx*10);
+		std::cout << "  ra_min = " << raMin << " ra_max = " << raMax << std::endl;
+		std::cout << "  de_min = " << deMin << " de_max = " << deMax << std::endl;
+		std::cout << "  z_min  = " << zzMin << " z_max  = " << zzMax << std::endl;
 		const double coefRA = 1./(raMax-raMin);
 		const double coefDE = 1./(deMax-deMin);
+		const double coefzz = 1./(zzMax-zzMin);
 		for (unsigned int i=0; i<nbQ1__; i++) {
 			const double ra = (double)rand()/(double)(RAND_MAX*coefRA) +raMin;
 			const double de = (double)rand()/(double)(RAND_MAX*coefDE) +deMin;
@@ -2705,7 +2789,13 @@ void Correlation::xi_delta_QSO(unsigned int bootIdx/*=0*/) {
 			v_deQ1__[i]    = de;
 			v_CosDeQ1__[i] = cos(de);
 			v_SinDeQ1__[i] = sin(de);
+			if (randomQSOXYZ) {
+				const double zz = (double)rand()/(double)(RAND_MAX*coefzz) +zzMin;
+				v_zzQ1__[i] = zz;
+				v_rrQ1__[i] = hConvertRedshDist->Interpolate(zz);
+			}
 		}
+		delete hConvertRedshDist;
 	}
 
 	///// get an array for nb of pairs for the forest
@@ -2872,9 +2962,10 @@ void Correlation::xi_delta_QSO(unsigned int bootIdx/*=0*/) {
 	//// Set the prefix for different type of runs
 	std::string prefix = "_";
 	if (doBootstraps__)  prefix += "subsampling";
-	if (shuffleForest) prefix += "shuffleForest";
-	if (shuffleQSO)    prefix += "shuffleQSO";
-	if (randomQSO)     prefix += "randomQSO";
+	if (shuffleForest)   prefix += "shuffleForest";
+	if (shuffleQSO)      prefix += "shuffleQSO";
+	if (randomQSO)       prefix += "randomQSO";
+	if (randomQSOXYZ)    prefix += "randomQSOXYZ";
 	prefix += "_";
 	prefix += strBootIdx;
 
@@ -2889,7 +2980,7 @@ void Correlation::xi_delta_QSO(unsigned int bootIdx/*=0*/) {
 	pathToSave = pathToSave__;
 	pathToSave += "xi_delta_QSO_2D_";
 	pathToSave += prefix1;
-	if (doBootstraps__ || shuffleForest || shuffleQSO || randomQSO) pathToSave += prefix;
+	if (doBootstraps__ || shuffleForest || shuffleQSO || randomQSO || randomQSOXYZ) pathToSave += prefix;
 	pathToSave += ".txt";
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
@@ -2934,7 +3025,7 @@ void Correlation::xi_delta_QSO(unsigned int bootIdx/*=0*/) {
 	pathToSave = pathToSave__;
 	pathToSave += "xi_delta_QSO_Mu_";
 	pathToSave += prefix1;
-	if (doBootstraps__ || shuffleForest || shuffleQSO || randomQSO) pathToSave += prefix;
+	if (doBootstraps__ || shuffleForest || shuffleQSO || randomQSO || randomQSOXYZ) pathToSave += prefix;
 	pathToSave += ".txt";
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
@@ -2960,7 +3051,7 @@ void Correlation::xi_delta_QSO(unsigned int bootIdx/*=0*/) {
 	fFile.close();
 
 	
-	if (!doBootstraps__ && !shuffleForest && !shuffleQSO && !randomQSO) {
+	if (!doBootstraps__ && !shuffleForest && !shuffleQSO && !randomQSO && !randomQSOXYZ) {
 
 		std::vector< std::vector< double > > forests;
 		std::vector< double > tmp_forests_id;
@@ -7543,6 +7634,10 @@ void Correlation::loadDataQ2(void) {
 void Correlation::loadDataForest(std::string pathToFits,unsigned int bootIdx/*=0*/) {
 
 	std::cout << "\n\n  ------ load Data Forest ------" << std::endl;
+	if (replace_data_by_gaussian_random__) std::cout << "  Replacing data by random field" << std::endl;
+
+	//TRandom3* rand = new Trandom3();
+	//std::cout << rand->Gaus(0., 1. ); << std::endl;
 
 	//// Create the conversion table from redshift to distance
 	Cosmology* cosmo = new Cosmology(C_H, C_OMEGAM, C_OMEGAB);
@@ -7840,22 +7935,24 @@ void Correlation::loadDataForest(std::string pathToFits,unsigned int bootIdx/*=0
 		}
 	}
 
-	// TH1D
-	R_plot1D(h_meandelta,"<\\delta>");
-	R_plot1D(h_fluxDLA,"< f_{DLA} >");
-	R_plot1D(h_delta,"\\delta");
-	R_plot1D(h_delta_projected,"\\delta_{proj.}");
-	// TProfile
-	R_plot1D(tp_flux_vs_lambdaRF,"\\lambda_{R.F.}","flux");
-	R_plot1D(tp_flux_vs_lambdaOBS,"\\lambda_{Obs.}","flux");
-	R_plot1D(tp_delta_vs_lambdaRF,"\\lambda_{R.F.}","\\delta");
-	R_plot1D(tp_delta_vs_lambdaOBS,"\\lambda_{Obs.}","\\delta");
-	R_plot1D(tp_delta_vs_z,"z_{pixel}","\\delta");
-	R_plot1D(tp_delta_vs_r,"r_{pixel}","\\delta");
-	R_plot1D(tp_delta_projected_vs_lambdaRF,"\\lambda_{R.F.}","\\delta_{proj.}");
-	R_plot1D(tp_delta_projected_vs_lambdaOBS,"\\lambda_{Obs.}","\\delta_{proj.}");
-	R_plot1D(tp_delta_projected_vs_z,"z_{pixel}","\\delta_{proj.}");
-	R_plot1D(tp_delta_projected_vs_r,"r_{pixel}","\\delta_{proj.}");
+	if (showRootHistos__) {
+		// TH1D
+		R_plot1D(h_meandelta,"<\\delta>");
+		R_plot1D(h_fluxDLA,"< f_{DLA} >");
+		R_plot1D(h_delta,"\\delta");
+		R_plot1D(h_delta_projected,"\\delta_{proj.}");
+		// TProfile
+		R_plot1D(tp_flux_vs_lambdaRF,"\\lambda_{R.F.}","flux");
+		R_plot1D(tp_flux_vs_lambdaOBS,"\\lambda_{Obs.}","flux");
+		R_plot1D(tp_delta_vs_lambdaRF,"\\lambda_{R.F.}","\\delta");
+		R_plot1D(tp_delta_vs_lambdaOBS,"\\lambda_{Obs.}","\\delta");
+		R_plot1D(tp_delta_vs_z,"z_{pixel}","\\delta");
+		R_plot1D(tp_delta_vs_r,"r_{pixel}","\\delta");
+		R_plot1D(tp_delta_projected_vs_lambdaRF,"\\lambda_{R.F.}","\\delta_{proj.}");
+		R_plot1D(tp_delta_projected_vs_lambdaOBS,"\\lambda_{Obs.}","\\delta_{proj.}");
+		R_plot1D(tp_delta_projected_vs_z,"z_{pixel}","\\delta_{proj.}");
+		R_plot1D(tp_delta_projected_vs_r,"r_{pixel}","\\delta_{proj.}");
+	}
 	if (saveInRootFile__) {
 		storeFile->Write();
 		storeFile->Close();

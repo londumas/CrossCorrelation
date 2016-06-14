@@ -22,14 +22,14 @@ def main():
 		for j in range(0,1):
 
 			### for region
-			for k in range(0,80):
+			for k in range(0,1000):
 
 			### for metals 
 			#for k in [21,24,25,26,27]:
 				tmp_command = "echo \" \n ------ Start ------ \n \" " 
 				subprocess.call(tmp_command, shell=True)
 
-				tmp_command = "clubatch \"time ; hostname ; " + commandProd + ' 8 0 ' + str(k) + ' 0 ' + str(i) + " " + str(j) + "\""
+				tmp_command = "clubatch \"time ; hostname ; " + commandProd + ' 14 0 ' + str(k) + ' 0 ' + str(i) + " " + str(j) + "\""
 				subprocess.call(tmp_command, shell=True)
 
 				tmp_command = "echo " + tmp_command
@@ -37,7 +37,7 @@ def main():
 				tmp_command = "echo " + time.ctime()
 				subprocess.call(tmp_command, shell=True)
 
-				time.sleep(0.1)
+				time.sleep(60)
                 	        myTools.isReadyForNewJobs(200, 1000,'time')
 		#time.sleep(120)
 	

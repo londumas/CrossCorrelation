@@ -13,7 +13,7 @@ forest__ = 'LYA'
 #forest__ = 'CIV'
 #forest__ = 'MGII'
 
-takeNormaZone__ = False
+takeNormaZone__ = True
 
 
 

@@ -32,14 +32,14 @@ from const_delta import *
 
 
 location__     = 'ICLUST'   ### "HOME" or "ICLUST"
-pipeline__     = 'Guy'     ### "DR12" or 'Guy' or 'Margala' or "MOCK" or 'eBOSS'
+pipeline__     = 'Margala'     ### "DR12" or 'Guy' or 'Margala' or "MOCK" or 'eBOSS'
 reObs__        = False      ### False or True
 dataFitsType__ = 'spec'     ### What type of FITS file will we use: 'spPlate' or 'spec'
-
+FLUX_HDU       = 'SKY' #'MODEL' #'SKY' # 'FLUX'
 
 def make_all_Fits(iStart=0,iEnd=-1):
 
-	verbose = False
+	verbose = True
 
 	print forest__
 
@@ -55,7 +55,7 @@ def make_all_Fits(iStart=0,iEnd=-1):
 	data, plate_list = numpy.load('/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/chain_annalys_delta/Run/list_'+forest__+'.npy') #Get_Catalogue()
 
 	### Get the flux vs. lambda_Obs
-	removeSkyLines = scipy.loadtxt('../Resources/Calibration/calibration_flux_using_CIV_forest.txt')
+	removeSkyLines = scipy.loadtxt('/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Resources/Calibration/calibration_flux_using_CIV_forest.txt')
 	removeSkyLines = interpolate.interp1d(numpy.log10(3447.5+removeSkyLines[:,0]),removeSkyLines[:,1],bounds_error=False,fill_value=1)
 
 	sizeMax = data[:,0].size
@@ -112,13 +112,14 @@ def make_all_Fits(iStart=0,iEnd=-1):
 				### DR12
 				#cat = pyfits.open(pathToSpec + str(el['PLATE']) + "-" + str(el['MJD']) + "-" + str(el['FIBERID']).zfill(4) + ".fits", memmap=True)[1].data
 				### DR12 Guy
-				cat = pyfits.open(pathToSpec + str(el['PLATE']) + "/spec-" + str(el['PLATE']) + "-" + str(el['MJD']) + "-" + str(el['FIBERID']).zfill(4) + ".fits", memmap=True)[1].data
+				#cat = pyfits.open(pathToSpec + str(el['PLATE']) + "/spec-" + str(el['PLATE']) + "-" + str(el['MJD']) + "-" + str(el['FIBERID']).zfill(4) + ".fits", memmap=True)[1].data
 				### DR12 Margala
-				#cat = pyfits.open(pathToSpec + str(el['PLATE']) + "/corrected-spec-" + str(el['PLATE']) + "-" + str(el['MJD']) + "-" + str(el['FIBERID']).zfill(4) + ".fits", memmap=True)[1].data
+				cat = pyfits.open(pathToSpec + str(el['PLATE']) + "/corrected-spec-" + str(el['PLATE']) + "-" + str(el['MJD']) + "-" + str(el['FIBERID']).zfill(4) + ".fits", memmap=True)[1].data
 				### eBOSS
 				#cat = pyfits.open(pathToSpec + 'spPlate-' + str(el['PLATE']) + '-' + str(el['MJD']) + '.fits', memmap=True)
 				### mocks
 				#cat = pyfits.open(pathToSpec + str(el['PLATE']) + "/mock-" + str(el['PLATE']) + "-" + str(el['MJD']) + "-" + str(el['FIBERID']).zfill(4) + ".fits", memmap=True)[1].data
+				#print pathToSpec + str(el['PLATE']) + "/corrected-spec-" + str(el['PLATE']) + "-" + str(el['MJD']) + "-" + str(el['FIBERID']).zfill(4) + ".fits"
 			except Exception,error:
 				if (not verbose): continue
 				#tmp_string = pathToSpec + str(el['PLATE']) + "-" + str(el['MJD']) + "-" + str(el['FIBERID']).zfill(4) + ".fits"
@@ -143,29 +144,29 @@ def make_all_Fits(iStart=0,iEnd=-1):
 			############################## 
 			
 			### CCD and too many sky lines
-			cat = cat[ (numpy.logical_and( (cat["LOGLAM"]>=log10lambdaObsMin__) , (cat["LOGLAM"]<log10lambdaObsMax__) )) ]
+			#cat = cat[ (numpy.logical_and( (cat["LOGLAM"]>=log10lambdaObsMin__) , (cat["LOGLAM"]<log10lambdaObsMax__) )) ]
 			### Sky Lines
 			for lines in skyLines__:
 				cat = cat[ (numpy.logical_or( (cat["LOGLAM"]<=lines[0]) , (cat["LOGLAM"]>=lines[1]) )) ]
-			cat = cat[ numpy.logical_and( numpy.logical_and( (cat["IVAR"]>0.), (cat["AND_MASK"]<bit16__)), (numpy.isfinite(cat["FLUX"])) ) ]
-
-			### Get the devident coef to correct for sky residuals
-			coef = removeSkyLines(cat["LOGLAM"])
+			cat = cat[ numpy.logical_and( numpy.logical_and( (cat["IVAR"]>0.), (cat["AND_MASK"]<bit16__)), (numpy.isfinite(cat[FLUX_HDU])) ) ]
 
 			
-			plt.errorbar(cat["LOGLAM"],cat['FLUX'])
-			plt.errorbar(cat["LOGLAM"],cat['FLUX']/coef)
+			### Get the devident coef to correct for sky residuals
+			coef = removeSkyLines(cat["LOGLAM"])
+			'''
+			#plt.errorbar(cat["LOGLAM"],cat[FLUX_HDU])
+			plt.errorbar(cat["LOGLAM"],cat[FLUX_HDU]/coef)
 			plt.errorbar(cat["LOGLAM"],coef)
 			myTools.deal_with_plot(False,False,False)
 			plt.show()
-			
+			'''
 
-			cat['FLUX'] /= coef
+			cat[FLUX_HDU] /= coef
 			cat['IVAR'] *= coef*coef
 			
 			### Get the normalisation factor
 			try:
-				normFactor = numpy.mean( cat["FLUX"][ numpy.logical_and( (cat["LOGLAM"]>log10lambdaRFNormaMin__+tmp_logZ), (cat["LOGLAM"]<log10lambdaRFNormaMax__+tmp_logZ) ) ] )
+				normFactor = numpy.mean( cat[FLUX_HDU][ numpy.logical_and( (cat["LOGLAM"]>log10lambdaRFNormaMin__+tmp_logZ), (cat["LOGLAM"]<log10lambdaRFNormaMax__+tmp_logZ) ) ] )
 			except Exception,error:
 				if (verbose):
 					tmp_command = "echo  \"" + "  Error in: 'normFactor = numpy.mean',  z = " + str(el['Z_VI']) + ", idx = " + str(cat_tbhdu[ (cat_tbhdu['NORM_FACTOR']!=0.) ].size+iStart) + "\""
@@ -189,7 +190,7 @@ def make_all_Fits(iStart=0,iEnd=-1):
 			tmp_lenCat = cat.size
 			
 			### Store the data
-			el['FLUX'][:tmp_lenCat]       = cat["FLUX"]
+			el['FLUX'][:tmp_lenCat]       = cat[FLUX_HDU]
 			el['FLUX_IVAR'][:tmp_lenCat]  = cat["IVAR"]
 			el['LAMBDA_OBS'][:tmp_lenCat] = cat["LOGLAM"]
 
@@ -246,10 +247,9 @@ def make_all_Fits(iStart=0,iEnd=-1):
 
 def Merge_Files():
 	
-	path   = "/home/gpfs/manip/mnt/bao/hdumasde/Data/" + forest__ + "/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits"
-	folder = "/home/gpfs/manip/mnt/bao/hdumasde/Data/" + forest__ + "/FitsFile_DR12_Guy/DR12_primery/"
-	#path   = "/home/gpfs/manip/mnt/bao/hdumasde/MockV4/M3_0_0/000/mock.fits"
-	#folder = "/home/gpfs/manip/mnt/bao/hdumasde/MockV4/M3_0_0/000/"
+	path   = "/home/gpfs/manip/mnt/bao/hdumasde/Data/" + forest__ + "/FitsFile_DR12_Guy_Margala_sky/DR12_primery/DR12_primery.fits"
+	folder = "/home/gpfs/manip/mnt/bao/hdumasde/Data/" + forest__ + "/FitsFile_DR12_Guy_Margala_sky/DR12_primery/"
+
 	print path
 	print folder
 
@@ -258,6 +258,8 @@ def Merge_Files():
 			scheme = 'DR12_reObs_'
 		if (pipeline__=='Guy'):
 			scheme = 'DR12_Guy_'
+		if (pipeline__=='Margala'):
+			scheme = 'DR12_Guy_Margala_'
 		else:
 			scheme = 'allDR12_'
 	elif (pipeline__=='MOCK'):
@@ -399,39 +401,39 @@ def Merge_Files():
 	mean_lambdaRF_in_forest = numpy.sum(cut_noForestPixel*cat['LAMBDA_RF'],axis=1)/len_forest
 
 	### Create a FITS file with only the usefull data
-	plate                = pyfits.Column(name='PLATE',           format='J', array=cat['PLATE'] )
-	mjd                  = pyfits.Column(name='MJD',             format='J', array=cat['MJD'] )
-	fiber                = pyfits.Column(name='FIBERID',         format='J', array=cat['FIBERID'] )
+	plate               = pyfits.Column(name='PLATE',                 format='J', array=cat['PLATE'] )
+	mjd                 = pyfits.Column(name='MJD',                   format='J', array=cat['MJD'] )
+	fiber               = pyfits.Column(name='FIBERID',               format='J', array=cat['FIBERID'] )
 	
-	ra                   = pyfits.Column(name='RA',              format='D', array=cat['RA'],     unit='deg' )
-	de                   = pyfits.Column(name='DEC',             format='D', array=cat['DEC'],    unit='deg' )
-	zz                   = pyfits.Column(name='Z_VI',            format='D', array=cat['Z_VI'] )
-	nb                   = pyfits.Column(name='NB_PIXEL',        format='I', array=len_forest )
-	meanLambdaRF         = pyfits.Column(name='MEAN_FOREST_LAMBDA_RF', format='D', array=mean_lambdaRF_in_forest, unit='angstrom')
-	alpha1               = pyfits.Column(name='ALPHA_1',         format='D', array=numpy.ones(sizeMax) )
-	beta1                = pyfits.Column(name='BETA_1',          format='D', array=numpy.zeros(sizeMax) )
-	alpha2               = pyfits.Column(name='ALPHA_2',         format='D', array=alphaStart__*numpy.ones(sizeMax) )
-	beta2                = pyfits.Column(name='BETA_2',          format='D', array=numpy.zeros(sizeMax) )
+	ra                  = pyfits.Column(name='RA',                    format='D', array=cat['RA'], unit='degree')
+	de                  = pyfits.Column(name='DEC',                   format='D', array=cat['DEC'], unit='degree')
+	zz                  = pyfits.Column(name='Z',                     format='D', array=cat['Z_VI'], unit='0 (redshift)')
+	boolA               = pyfits.Column(name='BIT',                   format='I', array=numpy.zeros(sizeMax))
+	meanLambdaRF        = pyfits.Column(name='MEAN_FOREST_LAMBDA_RF', format='D', array=mean_lambdaRF_in_forest,             unit='angstrom')
+	alpha               = pyfits.Column(name='ALPHA',                 format='D', array=alphaStart__*numpy.ones(sizeMax), unit='0' )
+	beta                = pyfits.Column(name='BETA',                  format='D', array=numpy.zeros(sizeMax),             unit='1/angstrom' )
 
 	tmp_nbBinForest     = str(nbBinRFMax__)+'D'
 	lambdaForest        = pyfits.Column(name='LAMBDA_OBS',       format=tmp_nbBinForest, array=cat['LAMBDA_OBS'], unit='angstrom' )
-	lambdaRFForest      = pyfits.Column(name='LAMBDA_RF',        format=tmp_nbBinForest, array=cat['LAMBDA_RF'],  unit='angstrom' )
-	normFluxForest      = pyfits.Column(name='NORM_FLUX',        format=tmp_nbBinForest, array=cat['FLUX'] )
-	normFluxIvarForest  = pyfits.Column(name='NORM_FLUX_IVAR',   format=tmp_nbBinForest, array=cat['FLUX_IVAR'] )
-	fluxDLA             = pyfits.Column(name='FLUX_DLA',         format=tmp_nbBinForest, array=numpy.ones((sizeMax,nbBinRFMax__)) )
-	deltaForest         = pyfits.Column(name='DELTA',            format=tmp_nbBinForest, array=numpy.zeros((sizeMax,nbBinRFMax__)) )
-	deltaIvarForest     = pyfits.Column(name='DELTA_IVAR',       format=tmp_nbBinForest, array=numpy.zeros((sizeMax,nbBinRFMax__)) )
-	deltaWeight         = pyfits.Column(name='DELTA_WEIGHT',     format=tmp_nbBinForest, array=numpy.ones((sizeMax,nbBinRFMax__)) )
-	template            = pyfits.Column(name='TEMPLATE',         format=tmp_nbBinForest, array=numpy.ones((sizeMax,nbBinRFMax__)) )	
+	normFluxForest      = pyfits.Column(name='NORM_FLUX',        format=tmp_nbBinForest, array=cat['FLUX'], unit='0')
+	normFluxIvarForest  = pyfits.Column(name='NORM_FLUX_IVAR',   format=tmp_nbBinForest, array=cat['FLUX_IVAR'], unit='0')
+	fluxDLA             = pyfits.Column(name='FLUX_DLA',         format=tmp_nbBinForest, array=numpy.ones((sizeMax,nbBinRFMax__)), unit='0')
+	template            = pyfits.Column(name='TEMPLATE',         format=tmp_nbBinForest, array=numpy.ones((sizeMax,nbBinRFMax__)), unit='0')
+	deltaForest         = pyfits.Column(name='DELTA',            format=tmp_nbBinForest, array=numpy.zeros((sizeMax,nbBinRFMax__)), unit='0')
+	deltaWeight         = pyfits.Column(name='DELTA_WEIGHT',     format=tmp_nbBinForest, array=numpy.zeros((sizeMax,nbBinRFMax__)), unit='0')
 	
-	tbhdu = pyfits.BinTableHDU.from_columns([plate, mjd, fiber, ra, de, zz, nb, meanLambdaRF, alpha1, beta1, alpha2, beta2, lambdaForest, lambdaRFForest, normFluxForest, normFluxIvarForest, fluxDLA, deltaForest, deltaIvarForest, deltaWeight, template])
+	tbhdu = pyfits.BinTableHDU.from_columns([plate, mjd, fiber, ra, de, zz, boolA, meanLambdaRF, alpha, beta, lambdaForest, normFluxForest, normFluxIvarForest, fluxDLA, template, deltaForest, deltaWeight])
 	cat_tbhdu = tbhdu.data
 	tbhdu = pyfits.BinTableHDU(data=cat_tbhdu)
 
-	'''
-	## Map
+	
+	### Map
 	plt.plot(cat_tbhdu["RA"], cat_tbhdu["DEC"], linestyle="", marker="o")
 	plt.show()
+	### z distrib
+	plt.hist(cat_tbhdu['Z'],bins=100)
+	plt.show()
+	'''
 	###
 	from myTools import Get_TProfile
 	flux      = cat_tbhdu["NORM_FLUX"][ cat_tbhdu['NORM_FLUX_IVAR'] >0.]/alphaStart__
@@ -449,6 +451,7 @@ def Merge_Files():
 	plt.show()
 	'''
 	tbhdu.update()
+	print '\n  saving in:  ', path + '\n'
 	tbhdu.writeto(path, clobber=True)
 
 
@@ -519,7 +522,9 @@ def Get_Path_To_Save_New_Fits(iStart=0,iEnd=-1):
 	elif (pipeline__=='Guy'):
 		path = base + '_Guy/DR12_Guy' + endString
 	elif (pipeline__=='Margala'):
-		path = base + 'DR12_Margala' + endString
+		path = base + '_Guy_Margala/DR12_Guy_Margala' + endString
+		if (FLUX_HDU=='SKY'):
+			path = base + '_Guy_Margala_sky/DR12_Guy_Margala_Sky' + endString
 	elif (pipeline__=='eBOSS'):
 		path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/' + forest__ + '/FitsFile_eBOSS/eBOSS_' + endString
 	elif (pipeline__=='MOCK'):
@@ -720,5 +725,7 @@ if (len(sys.argv)>=5):
 #cat = Get_Catalogue()
 #numpy.save('list_'+forest__,cat)
 
-make_all_Fits(iStart,iEnd)
-#Merge_Files()
+#make_all_Fits(iStart,iEnd)
+Merge_Files()
+
+

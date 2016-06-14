@@ -225,22 +225,32 @@ class CorrelationLambda:
 		xi1D[:,2][cut] = numpy.sqrt( (tmp_save111[cut]/tmp_save555[cut] - xi1D[:,1][cut]*xi1D[:,1][cut])/tmp_save666[cut] )
 
 		return xiMu, xiWe, xi1D
-	def plot_1d(self, with_lines=False, verbose=False):
+	def plot_1d(self, with_lines=False, other=[], verbose=False):
 	
-		cut = (self._xi1D[:,2]>0.)
-		xxx = self._xi1D[:,0][cut]
-		yyy = self._xi1D[:,1][cut]
-		yer = self._xi1D[:,2][cut]
-		plt.errorbar(xxx, yyy, yerr=yer, fmt='o', label=r'$'+self._name+'$')
+		list_corr_to_plot = numpy.append( [self],other )
+		
+                xMin = numpy.amin(self._xi1D[:,0])
+                xMax = numpy.amax(self._xi1D[:,0])
+                yMin = numpy.amin(self._xi1D[:,1])
+                yMax = numpy.amax(self._xi1D[:,1])
+
+                for el in list_corr_to_plot:
+
+			cut = (el._xi1D[:,2]>0.)
+			xxx = el._xi1D[:,0][cut]
+			yyy = el._xi1D[:,1][cut]
+			yer = el._xi1D[:,2][cut]
+			plt.errorbar(xxx, yyy, yerr=yer, fmt='o', label=r'$'+el._name+'$')
+
+			xMin = min(xMin, numpy.amin(xxx) )
+                        xMax = max(xMax, numpy.amax(xxx) )
+                        yMin = min(yMin, numpy.amin(yyy) )
+                        yMax = max(yMax, numpy.amax(yyy) )
 
 		if (with_lines):
 
 			if (verbose): print ' ||  name_1 - name_2 || line || lambda_rf_1 || lamnda_rf_2 || '
 
-			xMin = numpy.min(xxx)
-			xMax = numpy.max(xxx)
-			yMin = numpy.min(yyy)
-			yMax = numpy.max(yyy)
 			yLi = [yMin,yMax]
 			nbLines1 = self._lines1.size
 
@@ -406,7 +416,7 @@ dic = {
 	'size_bin_calcul_theta': 1.e-04,
 	'correlation': 'q_f',
 	'path_to_txt_file_folder': 'NOTHING',
-	'f1': 'LYB',
+	'f1': 'LYA',
 	'f2': 'a',
 	'q': 'QSO',
 	'name' : 'Data'
@@ -438,9 +448,17 @@ dic['min_visual_z'] = -0.002
 dic['max_visual_z'] = 0.002
 '''
 
-dic['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator/'
+corr_list = []
+
+dic['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator_primery_sky/'
 a = CorrelationLambda(dic)
-a.plot_1d(True)
+corr_list += [a]
+
+#dic['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator_coAdd_2016_05_26/'
+#a = CorrelationLambda(dic)
+#corr_list += [a]
+
+a.plot_1d(False,corr_list[1:])
 a.plot_we()
 a.plot_mu()
 

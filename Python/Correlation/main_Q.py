@@ -35,6 +35,7 @@ dic_class = {
 	'size_bin_calcul_m': 0.02,
 	'index_multipole_max' : 4,
 	'remove_residuales' : '',
+	'nb_wedges' : 4,
 	'path_to_txt_file_folder': '',
 	'correlation': 'q_q',
 	'f1': 'LYA',
@@ -356,6 +357,10 @@ if (True):
 	dic_class['name'] = 'q-q'
 	dic_Q['path_to_cat']                 = raw+'Data/'+dic_Q['sufix']+'.fits'
 	aMB = annalyse_many_BAOFIT.AnnalyseManyBAOFIT(dic_class,None,dic_Q,dic_simu,False)
+	#aMB.print_list_parameter(8)
+	print
+	#aMB.print_list_parameter(9)
+	aMB.plot_scatter_hist_two_correlation(aMB,8,8)
 	'''
 	aMB.print_results_for_chi2()
 	aMB.print_results(0)

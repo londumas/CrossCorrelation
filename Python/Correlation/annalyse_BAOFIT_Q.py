@@ -306,25 +306,21 @@ class AnnalyseBAOFIT(correlation_3D_Q.Correlation3DQ):
 		return
 	def plot_data_and_fit_we(self,x_power,path_to_mapping):
 
-		if (self._correlation=='q_q' or self._correlation=='f_f'):
-			label = ['0.8 < \mu', '0.5 < \mu \leq 0.8', '\mu \leq 0.5']
-		elif (self._correlation=='q_f' or self._correlation=='f_f2'):
-			label = ['0.8 < |\mu|', '0.5 < |\mu| \leq 0.8', '|\mu| \leq 0.5']
 		color = ['blue', 'green', 'orange']
 
 		### Load the mapping from 2D to we
 		mapping_2D_to_we = numpy.load( path_to_mapping )
 
 		### Fit
-		xi1D_data = numpy.zeros(shape=(self._nbBin1D,3,3))
-		xi1D_fit  = numpy.zeros(shape=(self._nbBin1D,3,3))
+		xi1D_data = numpy.zeros(shape=(self._nbBin1D,self._nb_wedges,3))
+		xi1D_fit  = numpy.zeros(shape=(self._nbBin1D,self._nb_wedges,3))
 		for i in numpy.arange(self._nbBinX2D):
 			for j in numpy.arange(self._nbBinY2D):
 
 				if (self._xi2D_fit[i,j,8]<=0.): continue
 				ivar = 1./(self._xi2D_fit[i,j,8]*self._xi2D_fit[i,j,8])
 				for k in numpy.arange(self._nbBin1D):
-					for l in numpy.arange(3):
+					for l in numpy.arange(self._nb_wedges):
 
 						coef = mapping_2D_to_we[i,j,k,l]
 						if (coef==0.): continue
@@ -345,7 +341,7 @@ class AnnalyseBAOFIT(correlation_3D_Q.Correlation3DQ):
 		xi1D_fit[:,:,1][cut] /= xi1D_fit[:,:,2][cut]
 		xi1D_fit[:,:,2][cut]  = 1./numpy.sqrt(xi1D_fit[:,:,2][cut])
 		
-		for i in numpy.arange(0,3):
+		for i in numpy.arange(0,self._nb_wedges):
 		
 			cut = (self._xiWe[:,i,2]>0.)
 			if (self._xiWe[:,i,0][cut].size==0):
@@ -356,7 +352,7 @@ class AnnalyseBAOFIT(correlation_3D_Q.Correlation3DQ):
 			yyy = xi1D_data[:,i,1][cut]
 			yer = xi1D_data[:,i,2][cut]
 			coef = numpy.power(xxx,x_power)
-			plt.errorbar(xxx, coef*yyy, yerr=coef*yer, fmt='o', label=r'$'+label[i]+'$', color=color[i], markersize=10,linewidth=2)
+			plt.errorbar(xxx, coef*yyy, yerr=coef*yer, fmt='o', label=r'$'+self._label_wedge[i]+'$', color=color[i], markersize=10,linewidth=2)
 
 			cut = (xi1D_fit[:,i,2]>0.)
 			xxxF = xi1D_fit[:,i,0][cut]

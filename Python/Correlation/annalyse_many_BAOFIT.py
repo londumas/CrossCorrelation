@@ -80,7 +80,8 @@ class AnnalyseManyBAOFIT:
 						path_to_data = dic['path_to_txt_file_folder'] + 'BaoFit_'+dic['correlation']+'__'+dic['f1']
 					path_to_BAOFIT = path_to_data + dic_simu['prefix2']+'/bao2D.'
 					path_to_data += '/bao2D.'
-					try:
+					#try:
+					if (True):
 						nbParam, param, chi2 = self.read_fit_data_only_parameter(path_to_BAOFIT)
 						nb = i*10+j
 						if (i==0 and j==0):
@@ -90,10 +91,10 @@ class AnnalyseManyBAOFIT:
 						self._list_chi2[nb,:] = chi2
 
 						### Read redshift
-						self._redshift[nb] = numpy.mean( numpy.loadtxt(path_to_data+'grid')[:,3])
-					except:
-						print '  ERROR n°1: ', i, j
-						print path_to_BAOFIT
+						#self._redshift[nb] = numpy.mean( numpy.loadtxt(path_to_data+'grid')[:,3])
+					#except:
+					#	print '  ERROR n°1: ', i, j
+					#	print path_to_BAOFIT
 
 		if (load_correlation):
 			self._nbtot = len(self._listFit)
@@ -149,7 +150,7 @@ class AnnalyseManyBAOFIT:
 		list1D       = numpy.zeros( shape=(self._nbBin1D,self._nbtot) )
 		list2D       = numpy.zeros( shape=(self._nbBin2D,self._nbtot) )
 		listMu       = numpy.zeros( shape=(self._nbBin1D*self._nbBinM,self._nbtot) )
-		listWe       = numpy.zeros( shape=(self._nbBin1D,3,self._nbtot) )
+		listWe       = numpy.zeros( shape=(self._nbBin1D,self._nb_wedges,self._nbtot) )
 		listMultipol = numpy.zeros( shape=(self._nbBin1D,5,self._nbtot) )
 
 		pathToSave = self._path_to_simu + 'Results/'
@@ -183,7 +184,7 @@ class AnnalyseManyBAOFIT:
 		list1D       = numpy.zeros( shape=(self._nbBin1D,self._nbtot) )
 		list2D       = numpy.zeros( shape=(self._nbBin2D,self._nbtot) )
 		listMu       = numpy.zeros( shape=(self._nbBin1D*self._nbBinM,self._nbtot) )
-		listWe       = numpy.zeros( shape=(self._nbBin1D,3,self._nbtot) )
+		listWe       = numpy.zeros( shape=(self._nbBin1D,self._nb_wedges,self._nbtot) )
 		listMultipol = numpy.zeros( shape=(self._nbBin1D,5,self._nbtot) )
 
 		return
@@ -194,7 +195,7 @@ class AnnalyseManyBAOFIT:
 		path = raw_path + 'list_We.npy'
 		listWe = numpy.load(path)
 		nbTot = listWe[0,0,:].size
-		for i in numpy.arange(3):
+		for i in numpy.arange(self._nb_wedges):
 			self._mean_data._xiWe[:,i,1] = numpy.mean(listWe[:,i,:],axis=1)
 			self._mean_data._xiWe[:,i,2] = numpy.sqrt( numpy.diag(numpy.cov( listWe[:,i,:] ))/nbTot)
 		### mu
@@ -216,6 +217,14 @@ class AnnalyseManyBAOFIT:
 			self._mean_data._xiMul[:,i,1] = numpy.mean(listMultipol[:,i,:],axis=1)
 			self._mean_data._xiMul[:,i,2] = numpy.sqrt( numpy.diag(numpy.cov( listMultipol[:,i,:] ))/nbTot)
 
+		return
+	def print_list_parameter(self,index):
+
+		for i in numpy.arange(self._param[:,index,0].size):
+
+                        yyy = self._param[i,index,0]
+                        yer = self._param[i,index,1]
+			print i, yyy, yer
 		return
 	def print_results(self,index, other=[]):
 
@@ -641,6 +650,159 @@ class AnnalyseManyBAOFIT:
 			axHisty.legend(fontsize=20, numpoints=2,ncol=1)
 
 			nb += 1
+
+		plt.show()
+
+		return
+	def plot_scatter_hist_two_correlation(self,other,index_1, index_2):
+
+		print self._listFit[0]._par_name[index_1], " x " , other._listFit[0]._par_name[index_2]
+		### Constants
+		nb_bins = 10
+		color = ['blue', 'red', 'green', 'cyan', 'orange', 'black']
+
+		nullfmt = NullFormatter() # no labels
+		
+		# definitions for the axes
+		left, width = 0.1, 0.65
+		bottom, height = 0.1, 0.65
+		bottom_h = left_h = left + width + 0.02
+		
+		rect_scatter = [left, bottom, width, height]
+		rect_histx = [left, bottom_h, width, 0.2]
+		rect_histy = [left_h, bottom, 0.2, height]
+		
+		# start with a rectangular Figure
+		plt.figure(1, figsize=(8, 8))
+		
+		###
+		axScatter = plt.axes(rect_scatter)
+		plt.xlabel(r'$'+self._listFit[0]._par_name[index_1]+'$')
+		plt.ylabel(r'$'+other._listFit[0]._par_name[index_2]+'$')
+		plt.rc('font', **{'size':'40'})
+		plt.tick_params(axis='both', which='major', labelsize=40)
+		plt.grid(True, which='both')
+		plt.linewidth = 40
+		###
+		axHistx = plt.axes(rect_histx)
+		plt.rc('font', **{'size':'40'})
+		plt.tick_params(axis='both', which='major', labelsize=40)
+		plt.grid(True, which='both')
+		plt.linewidth = 40
+		###
+		axHisty = plt.axes(rect_histy)
+		plt.rc('font', **{'size':'40'})
+		plt.tick_params(axis='both', which='major', labelsize=40)
+		plt.grid(True, which='both')
+		plt.linewidth = 40
+
+		# no labels
+		axHistx.xaxis.set_major_formatter(nullfmt)
+		axHisty.yaxis.set_major_formatter(nullfmt)		
+
+
+		nb = 0
+		max_hist_x = 0.
+		max_hist_y = 0.
+
+		### xxx
+		x     = self._param[:,index_1,0][ (self._param[:,index_1,1]>0.) ]
+		x_err = self._param[:,index_1,1][ (self._param[:,index_1,1]>0.) ]
+		weights = numpy.ones(x_err.size) #numpy.power(x_err,-2.)
+		mean_x = numpy.average(x, weights=weights)
+		### yyy
+		y     = other._param[:,index_2,0][ (other._param[:,index_2,1]>0.) ]
+		y_err = other._param[:,index_2,1][ (other._param[:,index_2,1]>0.) ]
+		weights = numpy.ones(y_err.size) #numpy.power(y_err,-2.)
+		mean_y = numpy.average(y, weights=weights)
+
+		print '  Correlation coef = ', numpy.corrcoef(x,y)[1,0]
+
+		# the scatter plot:
+		axScatter.errorbar(x, y, fmt='o',linewidth=2, markersize=10, color=color[nb],alpha=0.6)
+
+		# now determine nice limits by hand:
+		limit = numpy.zeros(4)
+		mean  = numpy.zeros(2)
+		mean[0]  = numpy.mean(x)
+		limit[0] = numpy.min(x)
+		limit[1] = numpy.max(x)
+		mean[1]  = numpy.mean(y)
+		limit[2] = numpy.min(y)
+		limit[3] = numpy.max(y)
+
+		limit_for_hist = numpy.array(limit)
+
+		
+		for i in [0,2]:
+			if ( limit_for_hist[i]<0. ): limit_for_hist[i]*= 1.001
+			elif ( limit_for_hist[i]>0. ): limit_for_hist[i]*= 0.999
+		for i in [1,3]:
+			if ( limit_for_hist[i]<0. ): limit_for_hist[i]*= 0.999
+			elif ( limit_for_hist[i]>0. ): limit_for_hist[i]*= 1.001
+		
+
+		###
+		bins = numpy.arange( limit_for_hist[0],limit_for_hist[1]+(limit_for_hist[1]-limit_for_hist[0])/nb_bins, (limit_for_hist[1]-limit_for_hist[0])/nb_bins )
+		a, b, c = axHistx.hist(x, bins=bins, histtype='step',linewidth=2, color=color[nb],alpha=0.6)
+		max_hist_x = numpy.max( [numpy.max(a), max_hist_x])
+
+		###
+		bins = numpy.arange( limit_for_hist[2],limit_for_hist[3]+(limit_for_hist[3]-limit_for_hist[2])/nb_bins, (limit_for_hist[3]-limit_for_hist[2])/nb_bins )
+		a, b, c = axHisty.hist(y, bins=bins, orientation='horizontal', histtype='step',linewidth=2, color=color[nb],alpha=0.6)
+		max_hist_y = numpy.max( [numpy.max(a), max_hist_y])
+
+		# now determine nice limits by hand:
+		for i in [0,2]:
+			limit[i] -= (mean[i/2]-limit[i])*0.1
+		for i in [1,3]:
+			limit[i] += (limit[i]-mean[i/2])*0.1
+
+		if (nb==0):
+			full_limit = numpy.array(limit)
+		else:
+			for i in [0,2]:
+				full_limit[i] = numpy.min( [full_limit[i],limit[i]] )
+			for i in [1,3]:
+				full_limit[i] = numpy.max( [full_limit[i],limit[i]] )
+
+		### Set mean line in histogram
+
+		### xxx
+		x       = self._param[:,index_1,0][ (self._param[:,index_1,1]>0.) ]
+		x_err   = self._param[:,index_1,1][ (self._param[:,index_1,1]>0.) ]
+		weights = numpy.ones(x_err.size) #numpy.power(x_err,-2.)
+		mean_x  = numpy.average(x, weights=weights)
+		err_x   = numpy.sqrt( numpy.average((x-mean_x)**2, weights=weights)/x.size) 
+		### yyy
+		y     = other._param[:,index_2,0][ (other._param[:,index_2,1]>0.) ]
+		y_err = other._param[:,index_2,1][ (other._param[:,index_2,1]>0.) ]
+		weights = numpy.ones(y_err.size) #numpy.power(y_err,-2.)
+		mean_y  = numpy.average(y, weights=weights)
+		err_y   = numpy.sqrt( numpy.average((y-mean_y)**2, weights=weights)/x.size) 
+
+		### scatter
+		axScatter.set_xlim( [full_limit[0],full_limit[1]] )
+		axScatter.set_ylim( [full_limit[2],full_limit[3]] )
+		axScatter.plot( [mean_x,mean_x], [full_limit[2],full_limit[3]],color=color[nb], linestyle='dashed',linewidth=2,alpha=0.6)
+		axScatter.plot( [full_limit[0],full_limit[1]], [mean_y,mean_y],color=color[nb], linestyle='dashed',linewidth=2,alpha=0.6)
+		### xxx
+		axHistx.set_xlim( [full_limit[0],full_limit[1]] )
+		axHistx.set_ylim([0.,1.1*max_hist_x])
+		val = myTools.format_number_with_precision(mean_x,err_x)
+		err = myTools.format_number_with_precision(err_x,err_x)
+		label = self._name+' \, <'+self._listFit[0]._par_name[index_1]+"> = "+val+" \pm" +err
+		axHistx.plot( [mean_x,mean_x], [0.,1.1*max_hist_x],color=color[nb], linestyle='dashed',linewidth=2, label=r'$'+label+'$',alpha=0.6)
+		axHistx.legend(fontsize=20, numpoints=2,ncol=1)
+		
+		### yyy
+		axHisty.set_ylim( [full_limit[2],full_limit[3]] )
+		axHisty.set_xlim([0.,1.1*max_hist_y])
+		val = myTools.format_number_with_precision(mean_y,err_y)
+		err = myTools.format_number_with_precision(err_y,err_y)
+		label = other._name+' \, <'+other._listFit[0]._par_name[index_2]+"> = "+val+" \pm" +err
+		axHisty.plot( [0.,1.1*max_hist_y], [mean_y,mean_y],color=color[nb], linestyle='dashed',linewidth=2, label=r'$'+label+'$',alpha=0.6)
+		axHisty.legend(fontsize=20, numpoints=2,ncol=1)
 
 		plt.show()
 

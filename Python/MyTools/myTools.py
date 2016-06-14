@@ -387,7 +387,7 @@ def fitAGaussian(data, bins, p0=[1,0.,1.], log=False):
 	#ax.grid(True, which='both')
 	#ax.legend(fontsize=30, frameon=False, numpoints=1,ncol=2)
 	
-	textstr = '$\mu=%.2f$\n$\sigma=%.2f$'%(coeff[1],coeff[2])
+	textstr = '$\mu=%.3f$\n$\sigma=%.3f$'%(coeff[1],coeff[2])
 	props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
 	ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=30, verticalalignment='top', bbox=props)
 

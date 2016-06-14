@@ -14,7 +14,7 @@ from iminuit import Minuit
 
 
 nbBin = 100
-path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_primery_reObs_CoAdded/xi_delta_QSO_theta_LYA_QSO.txt'
+path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator_coAdd_2016_05_26/xi_delta_QSO_theta_LYA_QSO.txt'
 data = numpy.loadtxt(path)
 
 xi = numpy.zeros( shape=(nbBin,3) )

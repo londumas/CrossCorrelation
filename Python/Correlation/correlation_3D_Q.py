@@ -51,7 +51,7 @@ class Correlation3DQ(correlation_3D.Correlation3D):
 		### Set arrays
 		xi2D = numpy.zeros(shape=(self._nbBinX2D,self._nbBinY2D,3))
 		xiMu = numpy.zeros(shape=(self._nbBin1D,self._nbBinM,4))
-		xiWe = numpy.zeros(shape=(self._nbBin1D,3,3))
+		xiWe = numpy.zeros(shape=(self._nbBin1D,self._nb_wedges,3))
 		xi1D = numpy.zeros(shape=(self._nbBin1D,3))
 
 		int_binSize = int(self._binSize)
@@ -253,7 +253,7 @@ class Correlation3DQ(correlation_3D.Correlation3D):
 		pathToSave = dic_simu['path_to_simu'] + 'Results'+dic_simu['prefix']+'/' + self._prefix + '_result_'
 
 		listMu       = numpy.zeros( shape=(self._nbBin1D*self._nbBinM,nb_realisation) )
-		listWe       = numpy.zeros( shape=(self._nbBin1D,3,nb_realisation) )
+		listWe       = numpy.zeros( shape=(self._nbBin1D,self._nb_wedges,nb_realisation) )
 		list1D       = numpy.zeros( shape=(self._nbBin1D,nb_realisation) )
 		list2D       = numpy.zeros( shape=(self._nbBin2D,nb_realisation) )
 		listMultipol = numpy.zeros( shape=(self._nbBin1D,self._nb_multipole_max,nb_realisation) )
