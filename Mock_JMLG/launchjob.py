@@ -69,6 +69,7 @@ def main():
 		subprocess.call('mkdir ' +pathToFolder+'Results_no_metals/', shell=True)
 		subprocess.call('mkdir ' +pathToFolder+'Results_no_projection/', shell=True)
 		subprocess.call('mkdir ' +pathToFolder+'Results_raw_from_JeanMarc/', shell=True)
+		subprocess.call('mkdir ' +pathToFolder+'Results_delta_gaussian/', shell=True)
 
 	for i in range(0,10):
 
@@ -97,6 +98,7 @@ def main():
 				subprocess.call('mkdir ' + path + 'Results_no_metals/', shell=True)
 				subprocess.call('mkdir ' + path + 'Results_no_projection/', shell=True)
 				subprocess.call('mkdir ' + path + 'Results_raw_from_JeanMarc/', shell=True)
+				subprocess.call('mkdir ' + path + 'Results_delta_gaussian/', shell=True)
 
 			elif (index_pass==1):
 

@@ -26,7 +26,8 @@ if (forest__ == 'LYB'):
 elif (forest__ == 'LYA'):
 	lambdaRFMin__      = 1040.
 	lambdaRFMax__      = 1200.
-	shift__            = 3500.5
+	shift__            = 3500. #3447.5
+	
 elif (forest__ == 'SIIV'):
 	lambdaRFMin__      = 1286.
 	lambdaRFMax__      = 1380.
@@ -42,8 +43,8 @@ elif (forest__ == 'MGII'):
 ###
 #path = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/FitsFile_DR12_reOBS_eBOSS_Guy/DR12_primery/histos/"
 #path = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/FitsFile_DR12_reOBS_Guy/DR12_primery/histos/"
-#path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest__+'/FitsFile_DR12_Guy_Margala/DR12_primery/histos/' ##_method1
-path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest__+'/FitsFile_DR12_Guy_Margala_sky/DR12_primery/histos/'
+path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest__+'/FitsFile_DR12_Guy_Margala/DR12_primery/histos/' ##_method1
+#path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest__+'/FitsFile_DR14/DR14_primery/histos/'
 #path = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_reObs/histos/"
 #path = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA//FitsFile_eBOSS_Guy/all_eBOSS_primery/histos/"
 rawPath = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/'
@@ -58,18 +59,21 @@ for i in range (0,chunckNb):
 
 
 		data = numpy.loadtxt(path+'hDeltaVsLambdaObs_'+forest__+mockNumber+'.txt')
-		plt.errorbar(data[:,0]+shift__, data[:,1], label=r'$Guy + Margala$')
+		plt.errorbar(data[:,0]+shift__, data[:,1], label=r'$DR14$')
 		tmp_data = data[:,1]
 
-		data = numpy.loadtxt('/home/gpfs/manip/mnt/bao/hdumasde/Data/CIV/FitsFile_DR12_Guy_noCut_lambdaOBS/DR12_primery/histos/hDeltaVsLambdaObs_CIV.txt')
-		plt.errorbar(data[:,0]+shift__, data[:,1], label=r'$Guy$')
+		data = numpy.loadtxt('/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy_Margala/DR12_primery/histos/hDeltaVsLambdaObs_LYA.txt')
+                plt.errorbar(data[:,0]+shift__, data[:,1], label=r'$DR12$')
+
+		data = numpy.loadtxt('/home/gpfs/manip/mnt/bao/hdumasde/Data/CIV/FitsFile_DR14/DR14_primery/histos/hDeltaVsLambdaObs_CIV.txt')
+		plt.errorbar(data[:,0]+shift__, data[:,1], label=r'$DR14: CIV \, forest \, for \, calibration $')
 
 		#plt.errorbar(data[:,0]+shift__, data[:,1]/tmp_data-1., label=r'$devided$')
 
-		data = numpy.loadtxt('/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Resources/PDF/hDeltaVsLambdaObs_LYA_JMC.txt')
-		plt.errorbar(data[:,1][ data[:,2]!=0. ], data[:,2][ data[:,2]!=0. ], label=r'$v1547$', color='red')
-		data = numpy.loadtxt('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/v1575_hDeltaVsLambdaObs_LYA_JMC.txt')
-		plt.errorbar(data[:,1][ data[:,2]!=0. ], data[:,2][ data[:,2]!=0. ], label=r'$v1575$', color='orange')
+		#data = numpy.loadtxt('/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Resources/PDF/hDeltaVsLambdaObs_LYA_JMC.txt')
+		#plt.errorbar(data[:,1][ data[:,2]!=0. ], data[:,2][ data[:,2]!=0. ], label=r'$v1547$', color='red')
+		#data = numpy.loadtxt('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/v1575_hDeltaVsLambdaObs_LYA_JMC.txt')
+		#plt.errorbar(data[:,1][ data[:,2]!=0. ], data[:,2][ data[:,2]!=0. ], label=r'$v1575$', color='orange')
 
 
 		'''

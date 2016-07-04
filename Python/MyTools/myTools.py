@@ -497,16 +497,9 @@ def plotCovar(covList, covNameList,nbBinX=50,nbBinY=100,correlation='q_f'):
 	print '  nbBin = ', nbBin
 	print '  nbBin2D__ = ', nbBin2D__
 	
-	corList      = [numpy.zeros(shape=(nbBin,nbBin))]*nbCov
+	corList      = [ getCorrelationMatrix(el) for el in covList ]
 	diagList     = [numpy.diagonal(covList[i]) for i in range(0,nbCov)]
 	diagSqrtList = [numpy.sqrt(diagList[i]) for i in range(0,nbCov)]
-
-	for i in range(0,nbCov):
-		for j in range(0,nbBin):
-			for k in range(0,nbBin):
-				corList[i][j][k] = covList[i][j][k]/(diagSqrtList[i][j]*diagSqrtList[i][k])
-	
-		corList[i] = numpy.nan_to_num(corList[i])
 	
 	### Correlation
 	###################################################
@@ -719,11 +712,12 @@ def plotOnSpectra_spec(plate,mjd,fiber,z=0.,template=None):
 
 	
 	### Constants
-	pathToSpec = '/home/gpfs/manip/mnt0607/bao/Spectra/SpectraV5_8_guy/spectra/'
+	#pathToSpec = '/home/gpfs/manip/mnt0607/bao/Spectra/SpectraV5_8_guy/spectra/'
+	pathToSpec = '/home/gpfs/manip/mnt0607/bao/Spectra/SpectraV5_10_0/'
 	pathToCat  = '/home/gpfs/manip/mnt/bao/hdumasde/Data/Catalogue/DR12Q_v2_10.fits'
 	sizeBitsQSO = const_delta.bitsQSO__['NAME'].size
 
-	if (z!=0.):
+	if (z==0.):
 		cat = pyfits.open(pathToCat, memmap=True)[1].data
 		cat = cat[ numpy.logical_and(numpy.logical_and( cat['PLATE'] ==  plate, cat['MJD'] == mjd, ), cat['FIBERID'] == fiber) ]	
 		cat = cat[0]
@@ -770,7 +764,7 @@ def plotOnSpectra_spec(plate,mjd,fiber,z=0.,template=None):
 	plt.plot( cat['LOGLAM'], cat['FLUX'],label=r'$Data$',color='blue', markersize=8,linewidth=2)
 	#if (template is not None): plt.plot( template[0]*(1.+z),template[1],label=r'$Quasar \, continuum$',color='red', markersize=8,linewidth=4)
 
-	
+	'''
 	line = 1215.67*(1.+z)
 	yLi = [numpy.min(cat['FLUX'])*1.1,2.*numpy.max(cat['FLUX'])]
 	line = 1909*(1.+z)
@@ -783,7 +777,7 @@ def plotOnSpectra_spec(plate,mjd,fiber,z=0.,template=None):
 	plt.plot([line,line],yLi,color='green',markersize=8,linewidth=4,label=r'$Lyman-\alpha$')
 	line = 1025.72*(1.+z)
         plt.plot([line,line],yLi,color='pink',markersize=8,linewidth=4,label=r'$Lyman-\beta$')
-	
+	'''
 
 	#plt.text(line, numpy.max(cat['FLUX'])*1.1, r'$Lyman-\alpha$', rotation='vertical', fontsize=30)
 

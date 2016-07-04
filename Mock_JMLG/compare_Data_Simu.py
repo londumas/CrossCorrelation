@@ -484,9 +484,9 @@ def comparePlot():
 	new_tick_locations = numpy.append( numpy.arange(3600., 7235., 800.), [7235.] )
 	def tick_function(X):
 		V = X/1215.67-1.
-		return ["%.2f" % z for z in V]
+		return ['$%.2f$' % z for z in V]
 	def tick_function1(X):
-		return ["%.0f" % z for z in X]
+		return ['$%.0f$' % z for z in X]
 	ax1.set_xticks(new_tick_locations)
 	ax1.set_xticklabels(tick_function1(new_tick_locations))
 	ax2.set_xlim(ax1.get_xlim())

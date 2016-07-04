@@ -244,7 +244,7 @@ def meanDelta():
 		lambdaRFMin__      = 1570.
 		lambdaRFMax__      = 2790.
 
-	path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest+'/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits'
+	path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest+'/FitsFile_DR14/DR14_primery/DR14_primery.fits'
 	#path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Data/LYA/DR12_Nicolas/delta.fits'
 	#path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_reObs/DR12_reObs.fits'
 	#path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits'
@@ -252,8 +252,7 @@ def meanDelta():
 	#path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_second_generation/Box_000/Simu_000/Data/delta.fits'
 
 	cat = pyfits.open(path, memmap=True)[1].data
-
-	cat = cat[ cat['MJD']==56334 ]
+	cat= cat[(cat['Z']>5.)]
 
 	cat = cat[ numpy.logical_and( numpy.logical_and(  numpy.logical_and( cat['ALPHA']!=alphaStart__, cat['BETA']!=0.),  numpy.abs(cat['ALPHA'])<=99.5 ), numpy.abs(cat['BETA'])<=0.55 ) ]
 	#cat = cat[ numpy.logical_or( numpy.logical_or(  numpy.logical_or( cat['ALPHA']==alphaStart__, cat['BETA']==0.),  numpy.abs(cat['ALPHA'])>=99.5 ), numpy.abs(cat['BETA'])>=0.55 ) ]
@@ -326,7 +325,7 @@ def meanDelta():
 	#meanSNR = meanSNR[ meanDLA!=1. ]
 	#meanDelta = meanDelta[ meanDLA!=1. ]
 
-	'''
+	"""
 	### \alpha vs. <flux>
 	xxx = meanFlux
 	yyy = cat['ALPHA']
@@ -352,7 +351,7 @@ def meanDelta():
 	
 	
 	### \chi^{2}/NDF
-	plt.hist(cat['ALPHA_1'],bins=1000)
+	plt.hist(cat['ALPHA'],bins=1000)
 	plt.xlabel(r'$\chi^{2}/N.D.F.$', fontsize=40)
 	plt.ylabel(r'$\#$', fontsize=40)
 	myTools.deal_with_plot(False,False,True)
@@ -378,29 +377,29 @@ def meanDelta():
 	
 	
 	### |<delta>| vs. chi^2/NDF
-	plt.errorbar(cat['ALPHA_1'],numpy.abs(meanDelta),fmt='o')
+	plt.errorbar(cat['ALPHA'],numpy.abs(meanDelta),fmt='o')
 	plt.xlabel(r'$\chi^{2}/NDF$', fontsize=40)
 	plt.ylabel(r'$|< \delta >|$', fontsize=40)
 	myTools.deal_with_plot(False,False,True)
 	plt.show()
 	### <SNR> vs. chi^2/NDF
-	plt.errorbar(cat['ALPHA_1'],meanSNR,fmt='o')
+	plt.errorbar(cat['ALPHA'],meanSNR,fmt='o')
 	plt.xlabel(r'$\chi^{2}/NDF$', fontsize=40)
 	plt.ylabel(r'$< SNR >$', fontsize=40)
 	myTools.deal_with_plot(False,False,True)
 	plt.show()
 	### z vs. chi^2
-	plt.errorbar(cat['ALPHA_1'],cat['Z_VI'],fmt='o')
+	plt.errorbar(cat['ALPHA'],cat['Z'],fmt='o')
 	plt.xlabel(r'$\chi^{2}/NDF$', fontsize=40)
 	plt.ylabel(r'$z$', fontsize=40)
 	myTools.deal_with_plot(False,False,True)
 	plt.show()
 	### |<delta>| vs. nbPixel
-	plt.errorbar(cat['NB_PIXEL'],numpy.abs(meanDelta),fmt='o')
-	plt.xlabel(r'$nb \, pixel$', fontsize=40)
-	plt.ylabel(r'$|< \delta >|$', fontsize=40)
-	myTools.deal_with_plot(False,False,True)
-	plt.show()
+	#plt.errorbar(cat['NB_PIXEL'],numpy.abs(meanDelta),fmt='o')
+	#plt.xlabel(r'$nb \, pixel$', fontsize=40)
+	#plt.ylabel(r'$|< \delta >|$', fontsize=40)
+	#myTools.deal_with_plot(False,False,True)
+	#plt.show()
 	### alpha vs. |<delta>|
 	plt.errorbar(numpy.abs(meanDelta),cat['ALPHA'],fmt='o')
 	plt.xlabel(r'$|< \delta >|$', fontsize=40)
@@ -426,19 +425,19 @@ def meanDelta():
 	myTools.deal_with_plot(False,False,True)
 	plt.show()
 	### alpha vs. Z
-	plt.errorbar(cat['Z_VI'],cat['ALPHA'],fmt='o')
+	plt.errorbar(cat['Z'],cat['ALPHA'],fmt='o')
 	plt.xlabel(r'$Z$', fontsize=40)
 	plt.ylabel(r'$alpha$', fontsize=40)
 	myTools.deal_with_plot(False,False,True)
 	plt.show()
 	### beta vs. Z
-	plt.errorbar(cat['Z_VI'],cat['BETA'],fmt='o')
+	plt.errorbar(cat['Z'],cat['BETA'],fmt='o')
 	plt.xlabel(r'$Z$', fontsize=40)
 	plt.ylabel(r'$beta$', fontsize=40)
 	myTools.deal_with_plot(False,False,True)
 	plt.show()
 	### |<delta>| vs. z
-	plt.errorbar(cat['Z_VI'],numpy.abs(meanDelta),fmt='o')
+	plt.errorbar(cat['Z'],numpy.abs(meanDelta),fmt='o')
 	plt.xlabel(r'$z$', fontsize=40)
 	plt.ylabel(r'$|< \delta >|$', fontsize=40)
 	myTools.deal_with_plot(False,False,True)
@@ -451,11 +450,11 @@ def meanDelta():
 	plt.ylabel(r'$p \, (\%)$', fontsize=40)
 	myTools.deal_with_plot(True,True,True)
 	plt.show()
-	'''
+	"""
 	
-	cat = cat[ meanSNR>30. ]
-	meanDelta = meanDelta[ meanSNR>30. ]
-	meanSNR = meanSNR[ meanSNR>30. ]
+	#cat = cat[ meanSNR>60. ]
+	#meanDelta = meanDelta[ meanSNR>60. ]
+	#meanSNR = meanSNR[ meanSNR>60. ]
 	#cat = cat[ numpy.abs(meanDelta)>0.5 ]
 	#meanDelta = meanDelta[ numpy.abs(meanDelta)>0.5 ]
 	#meanSNR = meanSNR[ numpy.abs(meanDelta)>0.5 ]
@@ -468,12 +467,14 @@ def meanDelta():
 		el = cat[i]
 		cut = el['DELTA_WEIGHT']>0.
 		lamRF = el['LAMBDA_OBS']/(1.+el['Z'])
-		cut = numpy.logical_and( numpy.logical_and( el['DELTA_WEIGHT']>0., lamRF>=1040. ), lamRF<=1200.)
+		cut = numpy.logical_and( numpy.logical_and( el['DELTA_WEIGHT']>0., lamRF>=lambdaRFMin__ ), lamRF<=lambdaRFMax__)
 		template = (el['ALPHA']+el['BETA']*(lamRF[cut]-el['MEAN_FOREST_LAMBDA_RF']))*el['TEMPLATE'][cut]
 
-		if (template[ template<=0. ].size!=0):
+		#if (template[ template<=0. ].size!=0):
 			#print template[ template<=0. ]
-			continue
+		#	continue
+
+		
 		if (template[ numpy.logical_and( lamRF[cut]>=lambdaRFMin__,lamRF[cut]<lambdaRFMax__) ].size<50):
 			continue
 			
@@ -494,13 +495,14 @@ def meanDelta():
 		plt.plot(lamRF[cut],template*el['FLUX_DLA'][cut],label=r'$Quasar \, continuum$',color='red', markersize=8,linewidth=4)
 		#plt.plot(lamRF[cut],el['NORM_FLUX'][cut]/(el['DELTA'][cut]+1.),label=r'$QSO \, continuum$',color='red')
 
-		myTools.deal_with_plot(False,False,True)
+		#myTools.deal_with_plot(False,False,True)
 		plt.xlabel(r'$\lambda_{R.F.} \, [\AA]$', fontsize=40)
 		plt.ylabel(r'$\phi(\lambda_{R.F.})$', fontsize=40)
-		plt.legend(fontsize=40, numpoints=1,ncol=1)
+		#plt.legend(fontsize=40, numpoints=1,ncol=1)
 		plt.xlim( [lambdaRFMin__,lambdaRFMax__] )
-		plt.ylim( [numpy.min(el['NORM_FLUX'][cut])*1.01,numpy.max(template*el['FLUX_DLA'][cut])*1.1] )
+		#plt.ylim( [numpy.min(el['NORM_FLUX'][cut])*1.01,numpy.max(template*el['FLUX_DLA'][cut])*1.1] )
 		plt.show()
+		
 
 	return
 
@@ -737,7 +739,7 @@ def testCosmo():
 #plot_spectra_i_want()
 #lookNotFittedSpectra()
 #distribSomething()
-#meanDelta()
+meanDelta()
 #distribPixelZ()
 #lookTemplate()
 #distribSpaceLambda()
@@ -746,10 +748,10 @@ def testCosmo():
 #testCosmo()
 
 
-path     = '/home/gpfs/manip/mnt0607/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy_Margala/DR12_coAdd/DR12_coAdd.fits'
-cat = pyfits.open(path)[1].data
+#path     = '/home/gpfs/manip/mnt0607/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy_Margala/DR12_coAdd/DR12_coAdd.fits'
+#cat = pyfits.open(path)[1].data
 	
-print cat['BIT']
+#print cat['BIT']
 
 
 

@@ -120,13 +120,13 @@ GetDelta::GetDelta(int argc, char** argv) {
 		pathForest__   = "/home/gpfs/manip/mnt/bao/hdumasde/Data/";
 		pathForest__  += forest__;
 		pathToTxt__    = pathForest__;
-		pathForest__  += "/FitsFile_DR12_Guy_Margala_sky/DR12_primery/DR12_primery.fits";  //_method1
-//		pathForest__  += "/FitsFile_DR12_Guy_Margala/DR12_reObs/DR12_reObs.fits";
+//		pathForest__  += "/FitsFile_DR14/DR14_primery/DR14_primery.fits";  //_method1
+		pathForest__  += "/FitsFile_DR12_Guy_Margala/DR12_primery/DR12_primery.fits";
 //		pathForest__  += "/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits";
 //		pathForest__  += "/FitsFile_DR12_Guy_Margala/DR12_coAdd/DR12_coAdd.fits";  //_method1
 
-		pathToTxt__   += "/FitsFile_DR12_Guy_Margala_sky/DR12_primery/histos/";  //_method1
-//		pathToTxt__   += "/FitsFile_DR12_Guy_Margala/DR12_reObs/histos/";
+//		pathToTxt__   += "/FitsFile_DR14/DR14_primery/histos/";  //_method1
+		pathToTxt__   += "/FitsFile_DR12_Guy_Margala/DR12_primery/histos/";
 //		pathToTxt__   += "/FitsFile_eBOSS_Guy/all_eBOSS_primery/histos/";
 
 //		pathForest__   = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/FitsFile_DR12_reOBS_eBOSS_Guy/DR12_primery/DR12_primery_reOBS_eBOSS.fits";
@@ -206,7 +206,6 @@ GetDelta::GetDelta(int argc, char** argv) {
 		unsigned int end   = atoi( endFit.c_str() );
 
 		std::cout << "  " << start << " " << end << std::endl;
-		
 		loadDataForest(pathForest__,start,end);
 		if (end==0) end = v_alpha__.size();
 		if (v_zz__.size()>=0) fitForests(start,end);
@@ -333,9 +332,18 @@ void GetDelta::defineHistos() {
 	hFluxPDF__->SetTitle("Flux PDF: method 2");
 	std::string pathToPDF = pathToPDF__;
 	pathToPDF += "FluxPDF_mocksJMC.txt";
+	//pathToPDF += "FluxPDF_mocksAuto_from_Nicolas.txt";
 	ifstream filePDF(pathToPDF.c_str());
 
-/*
+
+	for (unsigned int i=0; i<nbBinsFlux__; i++) {
+		for (unsigned int j=0; j<nbBinsRedshift__; j++) {
+			double pdf = 0.;
+			filePDF>>pdf;
+			hFluxPDF__->SetBinContent(i+1,j+1,pdf);
+		}
+	}
+	/*
 	for (unsigned int j=0; j<46; j++){
 		for (unsigned int i=0; i<100; i++){
 			double pdf = 0.;
@@ -344,20 +352,13 @@ void GetDelta::defineHistos() {
 		}
 	}
 	// last rows
-	for (unsigned int j=46; j<50; j++){
+	for (unsigned int j=46; j<nbBinsRedshift__; j++){
 		for (unsigned int i=0; i<100; i++){
 			const double pdf = hFluxPDF__->GetBinContent(i+1,45+1);
 			hFluxPDF__->SetBinContent(i+1,j+1,pdf);
 		}
-	}
-*/
-	for (unsigned int i=0; i<nbBinsFlux__; i++){
-		for (unsigned int j=0; j<nbBinsRedshift__; j++){
-			double pdf = 0.;
-			filePDF>>pdf;
-			hFluxPDF__->SetBinContent(i+1,j+1,pdf);
-		}
-	}
+	}*/
+
 
 	if (stepAnnalyse==1) {
 		initFitCont();
@@ -1500,7 +1501,7 @@ void GetDelta::updateDelta(std::string fitsnameSpec, unsigned int loopIdx, unsig
 		if (meanLambda[3]<C_MIN_NB_PIXEL || templateHasNegative || (fabs(alpha)>=maxAlpha__-0.5) || (fabs(beta)>=maxBeta__-0.05) || (stepDefinition>=2 && alpha==alphaStart__ && beta==betaStart__) ) {
 			if (v_fromFitsIndexToVectorIndex__[i]!=-1) {
 				std::cout << "  Not taken for some reason : " << i  << std::endl;
-                        	std::cout << "  nb pixel = " << meanLambda[3] << std::endl;
+                        	std::cout << "  nb pixel = " << int(meanLambda[3]) << std::endl;
 				std::cout << "  template is negative " << templateHasNegative << std::endl;
 				std::cout << "  alpha = " << alpha << std::endl;
 				std::cout << "  beta = " <<  beta << std::endl;

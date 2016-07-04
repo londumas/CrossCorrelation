@@ -37,7 +37,7 @@ Cosmology::Cosmology(double h, double omegaM, double omegaB) {
 	omegaM__ = omegaM;
 	omegaB__ = omegaB;
 	omegaL__ = 1.-omegaM__;
-
+	
 	dChidz__ = NULL;
 	hConvertRedshDist__ = NULL;
 }

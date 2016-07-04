@@ -125,6 +125,7 @@ class Correlation
 		void xi_delta_QSO_distortionMatrix_1D(void);
 		void xi_delta_QSO_Metals_Models(double lambdaFrMetal, std::string lambdaFrMetalName);
 		void xi_delta_QSO_Wick(unsigned int diagramIdx);
+		void xi_delta_QSO_Wick_1D(unsigned int diagramIdx);
 		//
 		void xi_QSO_QSO(unsigned int bootIdx=0);
 		void xi_Q1_Q2(void);
@@ -198,6 +199,7 @@ const double alphaStart__       = 1.;
 /*
 /// If CIV
 const std::string forest__      = "CIV";
+const std::string forestPath__  = "CIV";
 const double lambdaRFLine__     = 1548.2049;
 const double lambdaRFMin__      = 1410.;
 const double lambdaRFMax__      = 1530.;
@@ -257,7 +259,7 @@ const double lambdaRFLineDelta2__  = 1548.2049;
 const double lambdaRFMinDelta2__   = 1410.;
 const double lambdaRFMaxDelta2__   = 1530.;
 const unsigned int nbBinRFMaxDelta2__ = 373;
-const std::string pathDelta2__ = "/home/gpfs/manip/mnt/bao/hdumasde/Data/CIV/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits";
+const std::string pathDelta2__ = "/home/gpfs/manip/mnt/bao/hdumasde/Data/CIV/FitsFile_DR14/DR14_primery/DR14_primery.fits";
 const double alphaStart2__       = 1.;
 
 /*

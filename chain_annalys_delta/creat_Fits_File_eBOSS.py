@@ -544,12 +544,21 @@ def Get_Catalogue():
 		print "  We keep Z > " + str(minRedshift__) + "  , the size is      : ", cat.size
 		cat = cat[ cat[redShiftKey]<=maxRedshift__]
 		print "  We keep Z <= " + str(maxRedshift__) + "  , the size is      : ", cat.size
+
 		cat = cat[ cat['CLASS'] == 'QSO' ]
 		print '  We keep CLASS == QSO, the size is      : ', cat.size
+
 		cat = cat[ cat['ZWARNING'] == 0 ]
 		print '  We keep ZWARNING == 0, the size is      : ', cat.size
+
 		cat = cat[ cat['Z_ERR'] > 0 ]
 		print '  We keep Z_ERR > 0, the size is      : ', cat.size
+
+		cat = cat[ cat['THING_ID'] > 0 ]
+		print '  We keep THING_ID > 0, the size is      : ', cat.size
+
+		cat = cat[ cat['SPECPRIMARY'] ==1 ]
+		print '  We keep SPECPRIMARY == 1, the size is      : ', cat.size
 
 
 		### BOSS_TARGET1

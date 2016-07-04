@@ -64,18 +64,66 @@ raw_index_parameter_f = {
 	'pixel-scale'                 : 11
 }
 
+
+### For pyLyA
+raw_index_parameter_pyLyA_auto = {
+	'bias_lya*(1+beta_lya)'         : 0,
+	'beta'         : 1,
+	'alpha_paral'  : 2, 
+	'alpha_perp'   : 3,
+	'alpha'        : 4,
+	'Lpar_auto'    : 5,
+	'SigmaNL-perp' : 6,
+	'1+f'          : 7,
+}
+raw_name_parameter_pyLyA_auto = numpy.asarray(['b_{f} \cdot (1+\\beta_{f})','\\beta_{f}','\\alpha_{\parallel}','\\alpha_{\perp}','\\alpha','Lpar-auto','SigmaNL-perp','1+f'])
+raw_index_parameter_pyLyA_cross = {
+        'bias_lya*(1+beta_lya)'         : 0,
+        'beta'         : 1,
+        'alpha_paral'  : 2,
+        'alpha_perp'   : 3,
+        'alpha'        : 4,
+        'b_{2}'        : 5,
+        'growth_factor_qso' : 6,
+        'drp'          : 7,
+	'Lpar_cross'   : 8,
+	'a' : 9,
+        'a' : 10,
+        'a' : 11,
+        'a' : 12,
+        'a' : 13,
+        'a' : 14,
+        'a' : 15,
+}
+raw_name_parameter_pyLyA_cross = numpy.asarray(['b_{f} \cdot (1+\\beta_{f})','\\beta_{f}','\\alpha_{\parallel}','\\alpha_{\perp}','\\alpha','b_{q}','g_{q}','drp','Lpar-auto','a','a','a','a','a','a','a'])
+'''
+raw_name_parameter_pyLyA_auto = {
+	'bias'         : 'b_{f}',
+	'beta'         : '\\beta_{f}',
+	'alpha_paral'  : '\\alpha_{\parallel}', 
+	'alpha_perp'   : '\\alpha_{\perp}',
+	'alpha'        : '\\alpha',
+	'Lpar_auto'    : 'Lpar_auto',
+	'SigmaNL_perp' : 'SigmaNL-perp',
+	'1+f'          : '1+f',
+}
+'''
 class AnnalyseBAOFIT(correlation_3D.Correlation3D):
 
-	def __init__(self, dic=None, index_parameter=None, path_to_BAOFIT=None):
+	def __init__(self, dic=None, dic_simu=None, index_parameter=None, path_to_BAOFIT=None, isPyLyA=False):
 
 		correlation_3D.Correlation3D.__init__(self,dic)
+
+		self._isPyLyA = isPyLyA
 
 		### index of parameters
 		if (index_parameter is None):
 			if (self._correlation=='q_f'):
 				self._index_parameter = copy.deepcopy(raw_index_parameter)
+				if self._isPyLyA: self._index_parameter = copy.deepcopy(raw_index_parameter_pyLyA_cross)
 			elif (self._correlation=='f_f'):
 				self._index_parameter = copy.deepcopy(raw_index_parameter_f)
+				if self._isPyLyA: self._index_parameter = copy.deepcopy(raw_index_parameter_pyLyA_auto)
 		else:
 			self._index_parameter = copy.deepcopy(index_parameter)
 
@@ -84,6 +132,7 @@ class AnnalyseBAOFIT(correlation_3D.Correlation3D):
 				self._path_to_BAOFIT = self._path_to_txt_file_folder + 'BaoFit_'+self._correlation+'__'+self._q1 + '/bao2D.'
 			elif (self._correlation=='q_f'):
 				self._path_to_BAOFIT = self._path_to_txt_file_folder + 'BaoFit_'+self._correlation+'__'+self._f1+'__'+self._q1 + '/bao2D.'
+				if (self._isPyLyA): self._path_to_BAOFIT = self._path_to_txt_file_folder + 'pyLyA'+dic_simu['prefix2']+'/cross_alone.'
 			elif (self._correlation=='f_f'):
 				self._path_to_BAOFIT = self._path_to_txt_file_folder + 'BaoFit_'+self._correlation+'__'+self._f1 + '/bao2D.'
 		else:
@@ -94,14 +143,17 @@ class AnnalyseBAOFIT(correlation_3D.Correlation3D):
 		### Set attributes set after
 		if (self._correlation=='q_f'):
 			self._par_name       = copy.deepcopy(par_name)
+			if self._isPyLyA: self._par_name = copy.deepcopy(raw_name_parameter_pyLyA_cross)
 		elif (self._correlation=='f_f'):
-			self._par_name       = copy.deepcopy(par_name_f)
+			self._par_name = copy.deepcopy(par_name_f)
+			if self._isPyLyA: self._par_name = copy.deepcopy(raw_name_parameter_pyLyA_auto)
 		self._xi2D_fit       = None
 		self._nbParam        = None
 		self._param          = None
 		self._chi2           = None
 		self._chi2_scan      = None
 		self._chi2_scan_edge = None
+		self._minos          = None
 
 		### Get BAOFIT results
 		self.read_fit_data()
@@ -111,9 +163,20 @@ class AnnalyseBAOFIT(correlation_3D.Correlation3D):
 	def read_fit_data(self):
 
 		### String names
-		residuals = 'residuals.dat'
-		param     = 'save.pars'
-		chi2      = 'fit.chisq'	
+		if not self._isPyLyA:
+			residuals = 'residuals.dat'
+			param     = 'save.pars'
+			chi2      = 'fit.chisq'
+		else:
+			if (self._correlation=='q_q'):
+				prefix = 'autoQSO'
+			elif (self._correlation=='q_f'):
+				prefix = 'cross'
+			elif (self._correlation=='f_f'):
+				prefix = 'auto'
+			residuals = prefix+'_all_residuals.dat'
+			param     = 'save.pars'
+			chi2      = prefix+'_fit.chisq'
 		
 		### Get data and fit
 		self._xi2D_fit = numpy.zeros(shape=(self._nbBinX2D,self._nbBinY2D,9))
@@ -125,9 +188,15 @@ class AnnalyseBAOFIT(correlation_3D.Correlation3D):
 			iy = i/self._nbBinX2D
 			self._xi2D_fit[ix,iy,:] = el[1:]
 
-	
+		
 		### Get the parameters of the fit
-		data    = numpy.loadtxt(self._path_to_BAOFIT+param)
+		#data    = numpy.loadtxt(self._path_to_BAOFIT+param)
+		
+		if not self._isPyLyA:
+			data    = numpy.loadtxt(self._path_to_BAOFIT+param)
+		else:
+			data    = numpy.loadtxt(self._path_to_BAOFIT+param,usecols=(0,2,3))
+		
 		self._nbParam = data[:,1].size
 		self._param   = numpy.zeros( shape=(self._nbParam,2) )
 		self._param[:,0] = data[:,1]
@@ -136,6 +205,16 @@ class AnnalyseBAOFIT(correlation_3D.Correlation3D):
 		### Get the parameters of the fit
 		data = numpy.loadtxt(self._path_to_BAOFIT+chi2)
 		self._chi2 = data
+
+		### Read minos value
+		self._minos = numpy.zeros(shape=(2,3))
+		try:
+			data = numpy.loadtxt(self._path_to_BAOFIT+'minos_save.pars',skiprows=1,usecols=(1,2,5))
+			self._minos[:,0] = data[:,2]
+			self._minos[:,1] = data[:,0]
+			self._minos[:,2] = data[:,1]
+		except:
+			print '  No minos errors'
 	
 		return
 	def read_chi2_scan(self, sizeX=100, sizeY=100):
@@ -366,7 +445,7 @@ class AnnalyseBAOFIT(correlation_3D.Correlation3D):
 		xi1D_fit[:,:,2][cut]  = 1./numpy.sqrt(xi1D_fit[:,:,2][cut])
 
 		return xi1D_data, xi1D_fit
-	def plot_data_and_fit_1d(self,x_power,path_to_mapping_1D):
+	def plot_data_and_fit_1d(self,x_power,path_to_mapping_1D,title=True):
 
 		xi1D_data, xi1D_fit = self.get_data_and_fit_1d(path_to_mapping_1D)
 
@@ -381,20 +460,59 @@ class AnnalyseBAOFIT(correlation_3D.Correlation3D):
 		plt.errorbar(xi1D_fit[:,0][cut], coef*xi1D_fit[:,1][cut], label=r'$Fit$', color='red',linewidth=2)
 
 		if (x_power==0):
-			plt.ylabel(r'$'+self._label+' (|s|)$', fontsize=40)
+			plt.ylabel(r'$'+self._label+' (r)$', fontsize=40)
 		if (x_power==1):
-			plt.ylabel(r'$|s|.'+self._label+' (|s|) \, [h^{-1}.Mpc]$', fontsize=40)
+			plt.ylabel(r'$r \cdot '+self._label+' (r) \, [\\rm{h}^{-1} \, \\rm{Mpc}]$', fontsize=40)
 		if (x_power==2):
-			plt.ylabel(r'$|s|^{2}.'+self._label+' (|s|) \, [(h^{-1}.Mpc)^{2}]$', fontsize=40)
+			plt.ylabel(r'$r^{2} \cdot '+self._label+' (r) \, [(\\rm{h}^{-1} \, \\rm{Mpc})^{2}]$', fontsize=40)
 		
-		plt.title(r'$'+self._title+'$', fontsize=40)
-		plt.xlabel(r'$|s| \, [h^{-1}.Mpc]$', fontsize=40)
+		if (title): plt.title(r'$'+self._title+'$', fontsize=40)
+		plt.xlabel(r'$r \, [\rm{h}^{-1} \, \rm{Mpc}]$', fontsize=40)
 		plt.xlim([ numpy.amin(xxx)-10., numpy.amax(xxx)+10. ])
 		myTools.deal_with_plot(False,False,True)
+		plt.legend(fontsize=40, numpoints=1,ncol=1,loc=0)
 		plt.show()
 		
 		return
-	def plot_data_and_fit_we(self,x_power,path_to_mapping):
+	def plot_data_and_fit_we(self,we_index, x_power,path_to_mapping,title=True):
+
+		xi1D_data, xi1D_fit = self.get_data_and_fit_we(path_to_mapping)
+
+		cut = (self._xiWe[:,we_index,2]>0.)
+		if (self._xiWe[:,we_index,0][cut].size==0):
+			return
+		
+		cut = (xi1D_data[:,we_index,2]>0.)
+		xxx = xi1D_data[:,we_index,0][cut]
+		yyy = xi1D_data[:,we_index,1][cut]
+		yer = xi1D_data[:,we_index,2][cut]
+		coef = numpy.power(xxx,x_power)
+		plt.errorbar(xxx, coef*yyy, yerr=coef*yer, fmt='o', label=r'$'+self._label_wedge[we_index]+'$', color='red', markersize=10,linewidth=2)
+
+		cut = (xi1D_fit[:,we_index,2]>0.)
+		xxxF = xi1D_fit[:,we_index,0][cut]
+		yyyF = xi1D_fit[:,we_index,1][cut]
+		yerF = xi1D_fit[:,we_index,2][cut]
+		coefF = numpy.power(xxxF,x_power)
+		plt.errorbar(xxxF, coefF*yyyF, color='blue',linewidth=2)
+
+		if (x_power==0):
+			plt.ylabel(r'$'+self._label+' (r)$', fontsize=40)
+		if (x_power==1):
+			plt.ylabel(r'$r \cdot '+self._label+' (r) \, [\\rm{h}^{-1} \, \\rm{Mpc}]$', fontsize=40)
+		if (x_power==2):
+			plt.ylabel(r'$r^{2} \cdot '+self._label+' (r) \, [(\\rm{h}^{-1} \, \\rm{Mpc})^{2}]$', fontsize=40)
+		
+		if (title): plt.title(r'$'+self._title+'$', fontsize=40)
+		plt.xlabel(r'$r \, [\rm{h}^{-1} \, \rm{Mpc}]$', fontsize=40)
+		plt.xlim([ numpy.amin(xxx)-10., numpy.amax(xxx)+10. ])
+		myTools.deal_with_plot(False,False,False)
+		plt.legend(fontsize=40, numpoints=1,ncol=1,loc=0)
+		plt.show()
+
+		
+		return
+	def plot_data_and_fit_we_all(self,x_power,path_to_mapping):
 
 		color = ['blue', 'green', 'orange','cyan']
 
@@ -455,7 +573,7 @@ class AnnalyseBAOFIT(correlation_3D.Correlation3D):
 
 		if (xi2D is None):
 			print '  annalyseBAOFIT::plot_2d::  xi2D==None'
-			return
+			xi2D = self._xi2D
 		if (label is None):
 			label = self._label
 
@@ -484,20 +602,20 @@ class AnnalyseBAOFIT(correlation_3D.Correlation3D):
 		cbar = plt.colorbar()
 	
 		if (x_power==0):
-			cbar.set_label(r'$'+label+'(\, \overrightarrow{s} \,)$',size=40)
+			cbar.set_label(r'$'+label+'(r_{\parallel},r_{\perp})$',size=40)
 		if (x_power==1):
-			cbar.set_label(r'$|s|.'+label+'(\, \overrightarrow{s} \,) \, [h^{-1}.Mpc]$',size=40)
+			cbar.set_label(r'$r \cdot '+label+'(r_{\parallel},r_{\perp}) \, [\\rm{h}^{-1} \, \\rm{Mpc}]$',size=40)
 		if (x_power==2):
-			cbar.set_label(r'$|s|^{2}.'+label+'(\, \overrightarrow{s} \,) \, [(h^{-1}.Mpc)^{2}]$',size=40)
+			cbar.set_label(r'$r^{2} \cdot '+label+'(r_{\parallel},r_{\perp}) \, [(\\rm{h}^{-1} \, \\rm{Mpc})^{2}]$',size=40)
 	
 		#plt.plot( [0.,200.],[0.,4*200.],color='white',linewidth=2 )
 		#plt.plot( [0.,200.],[0.,-4*200.],color='white',linewidth=2 )
 		#plt.plot( [0.,200.],[0.,200.],color='white',linewidth=2 )
 		#plt.plot( [0.,200.],[0.,-200.],color='white',linewidth=2 )
 	
-		plt.title(r'$'+self._title+'$', fontsize=40)
-		plt.xlabel(r'$s_{\perp} \, [h^{-1} Mpc]$', fontsize=40)
-		plt.ylabel(r'$s_{\parallel} \, [h^{-1} Mpc]$', fontsize=40)
+		#plt.title(r'$'+self._title+'$', fontsize=40)
+		plt.xlabel(r'$r_{\perp} \, [\rm{h}^{-1} \, \rm{Mpc}]$', fontsize=40)
+		plt.ylabel(r'$r_{\parallel} \, [\rm{h}^{-1} \, \rm{Mpc}]$', fontsize=40)
 		plt.grid(True)
 		cbar.formatter.set_powerlimits((0, 0))
 		cbar.update_ticks()
@@ -512,7 +630,7 @@ class AnnalyseBAOFIT(correlation_3D.Correlation3D):
 		xi2D[:,:,0] = self._xi2D_fit[:,:,3]
 		xi2D[:,:,1] = self._xi2D_fit[:,:,6]
 		xi2D[:,:,2] = self._xi2D_fit[:,:,8]
-		self.plot_given_2d(x_power, xi2D, self._label+'_{fit}')
+		self.plot_given_2d(x_power, xi2D, self._label)
 
 		return
 	def plot_slice_fit_2d(self,sliceX=None,sliceY=None, other=[]):
@@ -555,7 +673,7 @@ class AnnalyseBAOFIT(correlation_3D.Correlation3D):
 			yyy = yyy[cut]
 			yer = yer[cut]
 			if (xxx.size==0): return
-			plt.errorbar(xxx, yyy, yerr=yer, fmt='o', markersize=10,linewidth=2)
+			plt.errorbar(xxx, yyy, yerr=yer, fmt='o', markersize=10,linewidth=2,color='blue')
 
 			if (fit):
 				cut = (yer2>0.)
@@ -565,12 +683,12 @@ class AnnalyseBAOFIT(correlation_3D.Correlation3D):
 				if (xxx2.size!=0): plt.errorbar(xxx2, yyy2, linewidth=2,color='red')
 		
 		if (sliceX is not None):
-			plt.xlabel(r'$s_{\parallel} \, [h^{-1} Mpc]$', fontsize=40)
-			plt.title(r'$<s_{\perp}> = %.2f \, Mpc.h^{-1}$' % mean)
+			plt.xlabel(r'$r_{\parallel} \, [\rm{h}^{-1} \, \rm{Mpc}]$', fontsize=40)
+			plt.title(r'$\overline{r}_{\perp} = %.2f \, [\rm{h}^{-1} \, \rm{Mpc}]$' % mean)
 		else:
-			plt.xlabel(r'$s_{\perp} \, [h^{-1} Mpc]$', fontsize=40)
-			plt.title(r'$<s_{\parallel}> = %.2f \, Mpc.h^{-1}$' % mean)
-		plt.ylabel(r'$'+self._label+'(\, \overrightarrow{s} \,)$',fontsize=40)	
+			plt.xlabel(r'$r_{\perp} \, [\rm{h}^{-1} \, \rm{Mpc}]$', fontsize=40)
+			plt.title(r'$\overline{r}_{\parallel} = %.2f \, [\rm{h}^{-1} \, \rm{Mpc}]$' % mean)
+		plt.ylabel(r'$'+self._label+'(r_{\parallel},r_{\perp})$',fontsize=40)	
                 myTools.deal_with_plot(False,False,False)
                 plt.show()
 
@@ -580,10 +698,15 @@ class AnnalyseBAOFIT(correlation_3D.Correlation3D):
 		self.plot_given_2d(x_power, self.get_residuals(), self._label+'_{residuals}')
 
 		return
-	def plot_histo_residuals(self, nbBins=100):
+	def plot_histo_residuals(self, nbBins=100,rmin=None, rmax=None):
 
 		xi2D = self.get_residuals()
+		xxx  = (xi2D[:,:,0][ (xi2D[:,:,2]>0.) ]).flatten()
 		yyy  = (xi2D[:,:,1][ (xi2D[:,:,2]>0.) ]).flatten()
+		if not rmin is None:
+			yyy = yyy[(xxx>=rmin)]
+		if not rmax is None:
+			yyy = yyy[(xxx<=rmax)]
 	
 		fig = plt.figure()
 		ax = fig.add_subplot(111)

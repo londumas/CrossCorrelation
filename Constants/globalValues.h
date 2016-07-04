@@ -84,11 +84,22 @@ const std::string absorberName__[29] = {
 #define C_ZEXTREMABINCONVERT0 0.
 #define C_ZEXTREMABINCONVERT1 12.
 
+
+/// Fiducial for mocks
+#define C_PATHTOCAMB "Resources/CAMB/CAMB_0/camb.txt"
 #define C_H 0.70 // (100 km/s/Mpc)^-1
 #define C_OMEGAM 0.27
 #define C_OMEGAB 0.0463
 
 
+/// Fiducial for data : Plank
+/*
+//#define C_PATHTOCAMB "Resources/CAMB_Plank_2015/camb.txt"
+#define C_PATHTOCAMB "Resources/CAMB_Plank_2015/camb_with_top_hat_07.txt"
+#define C_H 0.6731 // (100 km/s/Mpc)^-1
+#define C_OMEGAM 0.3145695148634867
+#define C_OMEGAB 0.04904388591262052
+*/
 
 #endif
 

@@ -97,8 +97,8 @@ class Correlation_1D:
 		### Correlation type
 		self._correlation = dic['correlation']
 		if (self._correlation=='f_f_r'):
-			self._xTitle = '|s| \, [h^{-1}.Mpc]'
-			self._yTitle = '\\xi (|s|)'
+			self._xTitle = 's \, [\\rm{h}^{-1} \, \\rm{Mpc}]'
+			self._yTitle = '\\xi_{\\rm{1d}} (s)'
 			self._title = '\delta_{'+self._f1+'}'
 			self._prefix = 'xi_1D_delta_delta'
 			self._middlefix = self._f1
@@ -106,7 +106,7 @@ class Correlation_1D:
 			self._name_line2 = self._name_line1
 		elif (self._correlation=='f_f_lRF'):
 			self._xTitle = '\Delta \lambda_{R.F.} \, [\AA]'
-			self._yTitle = '\\xi(\Delta \lambda_{R.F.})'
+			self._yTitle = '\\xi_{\\rm{1d}}(\Delta \lambda_{R.F.})'
 			self._title = '\delta_{'+self._f1+'}'
 			self._prefix = 'xi_1DlRF_delta_delta'
 			self._middlefix = self._f1
@@ -114,7 +114,7 @@ class Correlation_1D:
 			self._name_line2 = self._name_line1
 		elif (self._correlation=='f_f_lRF_devide'):
 			self._xTitle = '\lambda_{1}/\lambda_{2}'
-			self._yTitle = '\\xi(\lambda_{1}/\lambda_{2})'
+			self._yTitle = '\\xi_{\\rm{1d}}(\lambda_{1}/\lambda_{2})'
 			self._title = '\delta_{'+self._f1+'}'
 			self._prefix = 'xi_1DlRFDevide_delta_delta'
 			self._middlefix = self._f1
@@ -122,19 +122,19 @@ class Correlation_1D:
 			self._name_line2 = self._name_line1
 		elif (self._correlation=='f_f2_r'):
 			self._xTitle = '|s| \, [h^{-1}.Mpc]'
-			self._yTitle = '\\xi (|s|)'
+			self._yTitle = '\\xi^{\\rm{1d}} (|s|)'
 			self._title = '\delta_{'+self._f1+'} \, - \, \delta_{'+self._f2+'}'
 			self._prefix = 'xi_1D_delta_delta2'
 			self._middlefix = self._f1 + '_' + self._f2
 		elif (self._correlation=='f_f2_lRF'):
 			self._xTitle = '\Delta \lambda_{R.F.} \, [\AA]'
-			self._yTitle = '\\xi(\Delta \lambda_{R.F.})'
+			self._yTitle = '\\xi^{\\rm{1d}}(\Delta \lambda_{R.F.})'
 			self._title = '\delta_{'+self._f1+'} \, - \, \delta_{'+self._f2+'}'
 			self._prefix = 'xi_1DlRF_delta_delta2'
 			self._middlefix = self._f1 + '_' + self._f2
 		elif (self._correlation=='f_f2_lRF_devide'):
 			self._xTitle = '\lambda_{1}/\lambda_{2}'
-			self._yTitle = '\\xi(\lambda_{1}/\lambda_{2})'
+			self._yTitle = '\\xi^{\\rm{1d}}(\lambda_{1}/\lambda_{2})'
 			self._title = '\delta_{'+self._f1+'} \, - \, \delta_{'+self._f2+'}'
 			self._prefix = 'xi_1DlRFDevide_delta_delta2'
 			self._middlefix = self._f1 + '_' + self._f2
@@ -171,13 +171,12 @@ class Correlation_1D:
 		xi[:,1] = data[:,0][cut]/data[:,4][cut]
 		xi[:,2] = numpy.sqrt( (data[:,1][cut]/data[:,4][cut] -xi[:,1]**2. )/data[:,5][cut]  )
 		
-
 		if (init):
 			self._nbBin = nbBin
 			self._meanZ = numpy.sum(data[:,3][cut])/numpy.sum(data[:,4][cut])
 			self._grid           = numpy.zeros( shape=(self._nbBin,2) )
-			self._grid[:,0][cut] = data[:,2][cut]/data[:,4][cut]
-			self._grid[:,1][cut] = data[:,3][cut]/data[:,4][cut]
+			self._grid[:,0] = data[:,2][cut]/data[:,4][cut]
+			self._grid[:,1] = data[:,3][cut]/data[:,4][cut]
 
 			if (verbose__): 
 				print "  ||              ||                ||              ||"
@@ -326,7 +325,7 @@ class Correlation_1D:
 			TMP_yer = el._xi[cut_l:cut_h,2]
 			xxx = TMP_xxx
 
-			plt.errorbar(TMP_xxx, TMP_yer, label=r'$'+el._name+'$', markersize=8,linewidth=2)
+			plt.errorbar(TMP_xxx, TMP_yyy, yerr=TMP_yer, label=r'$'+el._name+'$', markersize=8,linewidth=2)
 
 			xMin = min(xMin, numpy.amin(TMP_xxx) )
 			xMax = max(xMax, numpy.amax(TMP_xxx) )
@@ -405,6 +404,9 @@ correlationType:
 	- 'f_f2_lRF'
 	- 'f_f2_lRF_devide'
 """
+
+
+
 dic_class = {
 	'correlation': 'f_f_lRF_devide',
 	'path_to_txt_file_folder': 'NONE',
@@ -431,21 +433,22 @@ list_corr = []
 
 
 ### Data
-dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator_primery_sky/'
+dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/Box_000/Simu_000/Results_delta_gaussian/'
 dic_class['name'] = "Data"
-dic_class['correlation'] = "f_f_lRF"
+dic_class['correlation'] = "f_f_lRF_devide"
 corr = Correlation_1D(dic_class)
 list_corr += [corr]
+
 #corr.plot_distortion_matrix()
 #dic_CAMB_corr['z'] = corr._meanZ
 #corr.fit_CAMB()
 #corr.fit_CAMB(True,dic_CAMB_corr)
+list_corr[0].plot(False,False)
 
-'''
 ### Data
-dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator/'
+dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator_2016_05_26_PlankCosmo/'
 dic_class['name'] = "Data"
-dic_class['correlation'] = "f_f_lRF"
+dic_class['correlation'] = "f_f_lRF_devide"
 corr = Correlation_1D(dic_class)
 list_corr += [corr]
 #corr.plot_distortion_matrix()
@@ -453,7 +456,7 @@ list_corr += [corr]
 #corr.fit_CAMB()
 #corr.fit_CAMB(True,dic_CAMB_corr)
 list_corr[0].plot(False,False,list_corr[1:])
-'''
+
 
 '''
 #
@@ -487,8 +490,8 @@ list_corr += [corr]
 
 
 """
-#list_corr[0].plot(True,True)
-list_corr[0].plot(False,False,list_corr[1:])
+#list_corr[0].plot(False,False)
+#list_corr[0].plot(False,False,list_corr[1:])
 
 
 

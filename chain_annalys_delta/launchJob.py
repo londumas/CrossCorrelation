@@ -44,7 +44,7 @@ step = 5000
 
 #### DR12 + eBOSS
 #################
-nbSpectra = 300000
+nbSpectra = 600000
 
 ##
 #nbSpectra = 200000

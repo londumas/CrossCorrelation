@@ -32,14 +32,14 @@ from const_delta import *
 
 
 location__     = 'ICLUST'   ### "HOME" or "ICLUST"
-pipeline__     = 'Margala'     ### "DR12" or 'Guy' or 'Margala' or "MOCK" or 'eBOSS'
+pipeline__     = 'DR14'     ### "DR12" or 'Guy' or 'Margala' or "MOCK" or 'eBOSS'
 reObs__        = False      ### False or True
 dataFitsType__ = 'spec'     ### What type of FITS file will we use: 'spPlate' or 'spec'
-FLUX_HDU       = 'SKY' #'MODEL' #'SKY' # 'FLUX'
+FLUX_HDU       = 'FLUX' #'MODEL' #'SKY' # 'FLUX'
 
 def make_all_Fits(iStart=0,iEnd=-1):
 
-	verbose = True
+	verbose = False
 
 	print forest__
 
@@ -52,10 +52,12 @@ def make_all_Fits(iStart=0,iEnd=-1):
 	pathToSpec = Get_Path_To_Fits()
 	
 	### Get the catalogue
-	data, plate_list = numpy.load('/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/chain_annalys_delta/Run/list_'+forest__+'.npy') #Get_Catalogue()
+	#data, plate_list = numpy.load('/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/chain_annalys_delta/Run/list_'+forest__+'.npy') #Get_Catalogue()
+	data, plate_list = numpy.load('/home/gpfs/manip/mnt0607/bao/Spectra/SpectraV5_10_0/list_'+forest__+'.npy')
 
 	### Get the flux vs. lambda_Obs
-	removeSkyLines = scipy.loadtxt('/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Resources/Calibration/calibration_flux_using_CIV_forest.txt')
+	#removeSkyLines = scipy.loadtxt('/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Resources/Calibration/calibration_flux_using_CIV_forest.txt')
+	removeSkyLines = scipy.loadtxt('/home/gpfs/manip/mnt/bao/hdumasde/Data/CIV/FitsFile_DR14/DR14_primery_for_calib/histos/hDeltaVsLambdaObs_CIV.txt')
 	removeSkyLines = interpolate.interp1d(numpy.log10(3447.5+removeSkyLines[:,0]),removeSkyLines[:,1],bounds_error=False,fill_value=1)
 
 	sizeMax = data[:,0].size
@@ -107,21 +109,21 @@ def make_all_Fits(iStart=0,iEnd=-1):
 
 		### Read and write in the FITS file
 		for el in cat_tbhdu:
-	
+
 			try:
 				### DR12
 				#cat = pyfits.open(pathToSpec + str(el['PLATE']) + "-" + str(el['MJD']) + "-" + str(el['FIBERID']).zfill(4) + ".fits", memmap=True)[1].data
 				### DR12 Guy
-				#cat = pyfits.open(pathToSpec + str(el['PLATE']) + "/spec-" + str(el['PLATE']) + "-" + str(el['MJD']) + "-" + str(el['FIBERID']).zfill(4) + ".fits", memmap=True)[1].data
+				cat = pyfits.open(pathToSpec + str(el['PLATE']) + "/spec-" + str(el['PLATE']) + "-" + str(el['MJD']) + "-" + str(el['FIBERID']).zfill(4) + ".fits", memmap=True)[1].data
 				### DR12 Margala
-				cat = pyfits.open(pathToSpec + str(el['PLATE']) + "/corrected-spec-" + str(el['PLATE']) + "-" + str(el['MJD']) + "-" + str(el['FIBERID']).zfill(4) + ".fits", memmap=True)[1].data
+				#cat = pyfits.open(pathToSpec + str(el['PLATE']) + "/corrected-spec-" + str(el['PLATE']) + "-" + str(el['MJD']) + "-" + str(el['FIBERID']).zfill(4) + ".fits", memmap=True)[1].data
 				### eBOSS
 				#cat = pyfits.open(pathToSpec + 'spPlate-' + str(el['PLATE']) + '-' + str(el['MJD']) + '.fits', memmap=True)
 				### mocks
 				#cat = pyfits.open(pathToSpec + str(el['PLATE']) + "/mock-" + str(el['PLATE']) + "-" + str(el['MJD']) + "-" + str(el['FIBERID']).zfill(4) + ".fits", memmap=True)[1].data
 				#print pathToSpec + str(el['PLATE']) + "/corrected-spec-" + str(el['PLATE']) + "-" + str(el['MJD']) + "-" + str(el['FIBERID']).zfill(4) + ".fits"
 			except Exception,error:
-				if (not verbose): continue
+				#if (not verbose): continue
 				#tmp_string = pathToSpec + str(el['PLATE']) + "-" + str(el['MJD']) + "-" + str(el['FIBERID']).zfill(4) + ".fits"
 				tmp_string = pathToSpec + str(el['PLATE']) + "/spec-" + str(el['PLATE']) + "-" + str(el['MJD']) + "-" + str(el['FIBERID']).zfill(4) + ".fits"
 				#tmp_string = pathToSpec + str(el['PLATE']) + "/corrected-spec-" + str(el['PLATE']) + "-" + str(el['MJD']) + "-" + str(el['FIBERID']).zfill(4) + ".fits"
@@ -132,38 +134,39 @@ def make_all_Fits(iStart=0,iEnd=-1):
 				subprocess.call(tmp_command, shell=True)
 				tmp_command = "echo  \"  " + str(error)  + "\n\""
 				subprocess.call(tmp_command, shell=True)
+				continue
 
 			### Get where to cut for lambda_RF_Norma
 			tmp_logZ = numpy.log10(1.+el['Z_VI'])
 
 			### See if there are pixels
 			cutForest = numpy.logical_and( (cat["LOGLAM"]>=log10lambdaRFTemplateMin__+tmp_logZ) , (cat["LOGLAM"]<log10lambdaRFTemplateMax__+tmp_logZ) )
-			if (cat[cutForest].size<=nbBinRFMin__): continue
+			if (cat[cutForest].size<=nbBinRFMin__):
+				#print ' cut nb pixel 1 = ', cat[cutForest].size
+				continue
 				
 			### Apply cuts for bad pixels
 			############################## 
 			
 			### CCD and too many sky lines
-			#cat = cat[ (numpy.logical_and( (cat["LOGLAM"]>=log10lambdaObsMin__) , (cat["LOGLAM"]<log10lambdaObsMax__) )) ]
+			cat = cat[ (numpy.logical_and( (cat["LOGLAM"]>=log10lambdaObsMin__) , (cat["LOGLAM"]<log10lambdaObsMax__) )) ]
 			### Sky Lines
 			for lines in skyLines__:
 				cat = cat[ (numpy.logical_or( (cat["LOGLAM"]<=lines[0]) , (cat["LOGLAM"]>=lines[1]) )) ]
 			cat = cat[ numpy.logical_and( numpy.logical_and( (cat["IVAR"]>0.), (cat["AND_MASK"]<bit16__)), (numpy.isfinite(cat[FLUX_HDU])) ) ]
 
-			
+			cutForest = numpy.logical_and( (cat["LOGLAM"]>=log10lambdaRFTemplateMin__+tmp_logZ) , (cat["LOGLAM"]<log10lambdaRFTemplateMax__+tmp_logZ) )
+                        if (cat[cutForest].size<=nbBinRFMin__):
+				#print ' cut nb pixel 2 = ', cat[cutForest].size
+				continue		
+	
 			### Get the devident coef to correct for sky residuals
-			coef = removeSkyLines(cat["LOGLAM"])
-			'''
-			#plt.errorbar(cat["LOGLAM"],cat[FLUX_HDU])
-			plt.errorbar(cat["LOGLAM"],cat[FLUX_HDU]/coef)
-			plt.errorbar(cat["LOGLAM"],coef)
-			myTools.deal_with_plot(False,False,False)
-			plt.show()
-			'''
-
+			
+			coef = removeSkyLines(cat["LOGLAM"])			
 			cat[FLUX_HDU] /= coef
 			cat['IVAR'] *= coef*coef
 			
+
 			### Get the normalisation factor
 			try:
 				normFactor = numpy.mean( cat[FLUX_HDU][ numpy.logical_and( (cat["LOGLAM"]>log10lambdaRFNormaMin__+tmp_logZ), (cat["LOGLAM"]<log10lambdaRFNormaMax__+tmp_logZ) ) ] )
@@ -180,7 +183,14 @@ def make_all_Fits(iStart=0,iEnd=-1):
 						tmp_command = "echo  \"  Keep it still  \n\""
 						subprocess.call(tmp_command, shell=True)
 					normFactor = 1.
-			
+			'''
+			plt.errorbar(numpy.power(10.,cat["LOGLAM"])/(1.+el['Z_VI']),cat[FLUX_HDU])
+                        plt.errorbar(numpy.power(10.,cat["LOGLAM"])/(1.+el['Z_VI']),coef)
+                        #plt.errorbar(numpy.power(10.,cat["LOGLAM"])/(1.+el['Z_VI']),cat[FLUX_HDU])
+                        myTools.deal_with_plot(False,False,False)
+                        plt.show()
+			'''
+
 			el['NORM_FACTOR'] = normFactor
 		
 			### Apply cuts to keep only the forest
@@ -247,8 +257,8 @@ def make_all_Fits(iStart=0,iEnd=-1):
 
 def Merge_Files():
 	
-	path   = "/home/gpfs/manip/mnt/bao/hdumasde/Data/" + forest__ + "/FitsFile_DR12_Guy_Margala_sky/DR12_primery/DR12_primery.fits"
-	folder = "/home/gpfs/manip/mnt/bao/hdumasde/Data/" + forest__ + "/FitsFile_DR12_Guy_Margala_sky/DR12_primery/"
+	path   = "/home/gpfs/manip/mnt/bao/hdumasde/Data/" + forest__ + "/FitsFile_DR14/DR14_primery/DR14_primery.fits"
+	folder = "/home/gpfs/manip/mnt/bao/hdumasde/Data/" + forest__ + "/FitsFile_DR14/DR14_primery/"
 
 	print path
 	print folder
@@ -264,6 +274,8 @@ def Merge_Files():
 			scheme = 'allDR12_'
 	elif (pipeline__=='MOCK'):
 		scheme = "Mock__DR11_"
+	elif (pipeline__=="DR14"):
+		scheme = 'DR14_'
 	lenScheme = len(scheme)
 	
 	### Get the list of files
@@ -333,9 +345,12 @@ def Merge_Files():
 		cut_noForestPixel  = numpy.logical_and( numpy.logical_and( (cat['LAMBDA_RF']>=lambdaRFMin__) , (cat['LAMBDA_RF']<lambdaRFMax__) ), cat['FLUX_IVAR']>0.).astype(int)
         	len_forest         = numpy.sum(cut_noForestPixel,axis=1)
 		meanFluxInForest   = numpy.sum(cut_noForestPixel*cat['FLUX'],axis=1)/len_forest
+		
 
 		### Find the coef between <z> vs. norma_zone
-		cut_badFlux = numpy.logical_and( numpy.logical_and( cat['NORM_FACTOR']!=1.,meanFluxInForest>0.), cat['NORM_FACTOR']>0.)
+		print cat['NORM_FACTOR'][(meanFluxInForest>10000.)].size
+		cat['NORM_FACTOR'][(meanFluxInForest>10000.)] = -10.
+		cut_badFlux = numpy.logical_and( meanFluxInForest<10000., numpy.logical_and( numpy.logical_and( cat['NORM_FACTOR']!=1.,meanFluxInForest>0.), cat['NORM_FACTOR']>0.))
 		#coef = numpy.mean( cat['NORM_FACTOR'][cut_badFlux]/meanFluxInForest[cut_badFlux] )
 
 		xxx = meanFluxInForest[cut_badFlux]
@@ -495,6 +510,8 @@ def Get_Path_To_Fits():
 			path = "/home/gpfs/manip/mnt0607/bao/MockV4/M3_0_" + str(chunckNb__) + '/' + str(simulNb__).zfill(3) + '/'
 	elif (pipeline__ == 'eBOSS'):
 			path = "/home/gpfs/manip/mnt0607/bao/Spectra/SpectraV5_8_0/"
+	elif (pipeline__ == 'DR14'):
+		path = "/home/gpfs/manip/mnt0607/bao/Spectra/SpectraV5_10_0/"
 	
 	print '  Path to specFiles = ', path	
 	return path			
@@ -529,7 +546,9 @@ def Get_Path_To_Save_New_Fits(iStart=0,iEnd=-1):
 		path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/' + forest__ + '/FitsFile_eBOSS/eBOSS_' + endString
 	elif (pipeline__=='MOCK'):
 		path = "/home/gpfs/manip/mnt/bao/hdumasde/MockV4/M3_0_" + str(chunckNb__) + '/' + str(simulNb__).zfill(3) +'/Mock__DR11' + endString
-		
+	elif (pipeline__ == 'DR14'):
+		path = path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/' + forest__ + '/FitsFile_DR14/DR14' + endString
+
 	print '  Path where to save production fits file = ', path
 	return path
 def Get_Catalogue():

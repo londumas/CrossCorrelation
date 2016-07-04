@@ -59,6 +59,9 @@ class CAMB:
 		elif (self._source=='CAMB_Mocks_me'):
 			path_to_pk = '/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Mock_JMLG/Produce_CAMB/DR9LyaMocks_matterpower.dat'
 			self._xi0,self._xi2,self._xi4 = self.get_xi_0_2_4_from_pk(path_to_pk,[0,1],True)
+		elif (self._source=='CAMB_Plank_2015'):
+			path_to_pk = '/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Resources/CAMB_Plank_2015/PlanckDR12_matterpower.dat'
+                        self._xi0,self._xi2,self._xi4 = self.get_xi_0_2_4_from_pk(path_to_pk,[0,1],True)
 		elif (self._source=='CHRISTOPHE'):
 			path_to_pk = '/home/gpfs/manip/mnt0607/bao/cmv/Helion/ginit3d_67_0p0_7859_ntpk.txt'
 			self._xi0,self._xi2,self._xi4 = self.get_xi_0_2_4_from_pk(path_to_pk,[0,3],False)
@@ -89,6 +92,8 @@ class CAMB:
 
 		f = cp.fgrowth(self._z,self._omega_matter_0)
 		print '  The growth factor is : f = ', f
+		print cp.fgrowth(0,self._omega_matter_0)
+		a = cp.fgrowth(2.3,self._omega_matter_0)
 
 		data = numpy.loadtxt(path_to_pk)
 		k  = numpy.zeros( data[:,1].size+1 )
@@ -100,8 +105,9 @@ class CAMB:
 		else:
 			k = data[:,index[0]]/self._h_0
 			pk = data[:,index[1]]*numpy.power(self._h_0,3.)*f*f
+		pk /= a*a
 
-		pk *= numpy.power(self.window_spherical(k,4.5*0.7),2.)
+		#pk *= numpy.power(self.window_spherical(k,0.7),2.)
 
 		r2,cric2 = self.xi_from_pk(k,pk)
 		index_of_bin_greeter_than_half_max = numpy.arange(r2.size)[ r2>numpy.max(r2)/2. ][0]
@@ -293,7 +299,8 @@ camb.plot_1d(0)
 camb.plot_1d(1)
 camb.plot_1d(2)
 '''
-"""
+
+'''
 dic = {
 	'z' : 0.,
 	'h_0' : 0.70,
@@ -301,7 +308,20 @@ dic = {
 	'omega_lambda_0' : 0.73,
 	'source'         : 'CAMB_Mocks_me'
 }
+'''
+
+"""
+omegam = 0.3145695148634867
+omega_lambda_0 = 1.-omegam
+dic = {
+        'z' : 0.,
+        'h_0' : 0.6731,
+        'omega_matter_0' : omegam,
+        'omega_lambda_0' : omega_lambda_0,
+        'source'         : 'CAMB_Plank_2015'
+}
 camb  = [ CAMB(dic) ]
+
 
 for x_power in [0,1,2]:
 	for el in camb:
@@ -311,36 +331,36 @@ for x_power in [0,1,2]:
 		coef = numpy.power(xxx,x_power)
 		plt.errorbar(xxx,coef*yyy, markersize=10,linewidth=5, alpha=0.6)
 
-		'''
+		
 		xxx = el._xi2[:,0]
 		yyy = el._xi2[:,1]
 		coef = numpy.power(xxx,x_power)
-		plt.errorbar(xxx,coef*yyy,fmt='o', markersize=10,linewidth=2, marker='o',alpha=0.6)
+		plt.errorbar(xxx,coef*yyy, markersize=10,linewidth=5, alpha=0.6)
 
 		xxx = el._xi4[:,0]
 		yyy = el._xi4[:,1]
 		coef = numpy.power(xxx,x_power)
-		plt.errorbar(xxx,coef*yyy,fmt='o', markersize=10,linewidth=2, marker='o',alpha=0.6)
-		'''
+		plt.errorbar(xxx,coef*yyy, markersize=10,linewidth=5, alpha=0.6)
+		
 
 	plt.xlim([ numpy.amin(xxx)-10., 200.+10. ])
 	if (x_power==0):
-		plt.ylabel(r'$ \\xi (|s|)$', fontsize=40)
+		plt.ylabel(r'$ \\xi (r)$', fontsize=40)
 	if (x_power==1):
-		plt.ylabel(r'$|s| \cdot \\xi (|s|) \, [$h$^{-1}$Mpc$]$', fontsize=40)
+		plt.ylabel(r'$r \cdot \\xi (r) \, [\rm{h}^{-1} \, \rm{Mpc}]$', fontsize=40)
 	if (x_power==2):
-		plt.ylabel(r'$|s|^{2} \cdot \\xi (|s|) \, [($h$^{-1}$Mpc$)^{2}]$', fontsize=40)
-	plt.xlabel(r'$|s| \, [$h$^{-1}$Mpc$]$', fontsize=40)
+		plt.ylabel(r'$r^{2} \cdot \\xi (r) \, [(\rm{h}^{-1} \, \rm{Mpc})^{2}]$', fontsize=40)
+	plt.xlabel(r'$r \, [\rm{h}^{-1} \, \rm{Mpc}]$', fontsize=40)
 	plt.legend(fontsize=30, numpoints=1,ncol=2, loc=2)
 	plt.xlim([ numpy.amin(xxx)-10., 200.+10. ])
 
 	myTools.deal_with_plot(False,False,False)
 	plt.show()
-"""
+
 #camb[0].save_in_one_file('/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Resources/CAMB/CAMB_0/camb.txt')
+camb[0].save_in_one_file('/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Resources/CAMB_Plank_2015/camb_with_top_hat_07.txt')
 
-
-
+"""
 
 
 

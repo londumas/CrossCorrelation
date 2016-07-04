@@ -11,6 +11,7 @@ import numpy
 import matplotlib.pyplot as plt
 from matplotlib.ticker import NullFormatter
 import copy
+import subprocess
 
 ### Perso lib
 import myTools
@@ -21,11 +22,12 @@ import annalyse_BAOFIT_Q
 
 class AnnalyseManyBAOFIT:
 
-	def __init__(self, dic=None, index_parameter=None, dic_Q=None, dic_simu=None, load_correlation=True):
+	def __init__(self, dic=None, index_parameter=None, dic_Q=None, dic_simu=None, load_correlation=True, isPyLyA=False):
 
 		if (dic_simu==None):
 			dic_simu = correlation_3D.raw_dic_simu
 
+		self._isPyLyA      = isPyLyA
 		self._nbBox        = dic_simu['nb_box']
 		self._nbSimu       = dic_simu['nb_simu']
 		self._nbtot        = self._nbBox*self._nbSimu
@@ -33,10 +35,11 @@ class AnnalyseManyBAOFIT:
 		self._name         = dic['name']
 		self._param        = None
 		self._list_chi2    = None
+		self._minos        = None
 		self._redshift     = numpy.zeros( self._nbtot )
-
-		if (dic is None):
-			dic = correlation_3D.raw_dic_class
+		self._dic          = dic
+		if (self._dic is None):
+			self._dic = correlation_3D.raw_dic_class
 		
 		### Get all the fits
 		self._listFit = []
@@ -55,9 +58,11 @@ class AnnalyseManyBAOFIT:
 						else:
 							if (dic['correlation']=='q_f'):
 								path_to_BAOFIT = dic['path_to_txt_file_folder'] + 'BaoFit_'+dic['correlation']+'__'+dic['f1']+'__'+dic['q1']+dic_simu['prefix2']+'/bao2D.'
+								if (self._isPyLyA): path_to_BAOFIT = dic['path_to_txt_file_folder'] + 'pyLyA'+dic_simu['prefix2']+'/cross_alone.'
 							elif (dic['correlation']=='f_f'):
 								path_to_BAOFIT = dic['path_to_txt_file_folder'] + 'BaoFit_'+dic['correlation']+'__'+dic['f1']+dic_simu['prefix2']+'/bao2D.'
-							self._listFit += [annalyse_BAOFIT.AnnalyseBAOFIT(dic, index_parameter, path_to_BAOFIT)]
+								if (self._isPyLyA): path_to_BAOFIT = dic['path_to_txt_file_folder'] + 'pyLyA'+dic_simu['prefix2']+'/auto_alone.'
+							self._listFit += [annalyse_BAOFIT.AnnalyseBAOFIT(dic=dic, dic_simu=dic_simu, index_parameter=index_parameter, path_to_BAOFIT=path_to_BAOFIT, isPyLyA=self._isPyLyA)]
 
 						if (load_correlation):
 							### Get all the resulted parameters
@@ -74,27 +79,40 @@ class AnnalyseManyBAOFIT:
 
 					if (dic['correlation']=='q_q'):
 						path_to_data = dic['path_to_txt_file_folder'] + 'BaoFit_'+dic['correlation']+'__'+dic['q1']
+						path_to_BAOFIT = path_to_data + dic_simu['prefix2']+'/bao2D.'
 					elif (dic['correlation']=='q_f'):
 						path_to_data = dic['path_to_txt_file_folder'] + 'BaoFit_'+dic['correlation']+'__'+dic['f1']+'__'+dic['q1']
+						path_to_BAOFIT = path_to_data + dic_simu['prefix2']+'/bao2D.'
+						if (self._isPyLyA): path_to_BAOFIT = dic['path_to_txt_file_folder'] + 'pyLyA'+dic_simu['prefix2']+'/cross_alone.'
 					elif (dic['correlation']=='f_f'):
 						path_to_data = dic['path_to_txt_file_folder'] + 'BaoFit_'+dic['correlation']+'__'+dic['f1']
-					path_to_BAOFIT = path_to_data + dic_simu['prefix2']+'/bao2D.'
+						path_to_BAOFIT = path_to_data + dic_simu['prefix2']+'/bao2D.'
+						if (self._isPyLyA): path_to_BAOFIT = dic['path_to_txt_file_folder'] + 'pyLyA'+dic_simu['prefix2']+'/auto_alone.'
 					path_to_data += '/bao2D.'
-					#try:
-					if (True):
-						nbParam, param, chi2 = self.read_fit_data_only_parameter(path_to_BAOFIT)
+					try:
+					#if (True):
+						nbParam, param, chi2, minos = self.read_fit_data_only_parameter(path_to_BAOFIT)
 						nb = i*10+j
 						if (i==0 and j==0):
-							self._param = numpy.zeros( shape=(self._nbtot,nbParam,2) )
+							self._param     = numpy.zeros( shape=(self._nbtot,nbParam,2) )
 							self._list_chi2 = numpy.zeros( shape=(self._nbtot,4) )
-						self._param[nb,:,:] = param
+							self._minos     = numpy.zeros( shape=(self._nbtot,2,3) )
+						self._param[nb,:,:]   = param
 						self._list_chi2[nb,:] = chi2
+						self._minos[nb,:]     = minos
 
 						### Read redshift
 						#self._redshift[nb] = numpy.mean( numpy.loadtxt(path_to_data+'grid')[:,3])
-					#except:
-					#	print '  ERROR n°1: ', i, j
-					#	print path_to_BAOFIT
+					except:
+						print '  ERROR n°1: ', i, j
+						#print path_to_BAOFIT
+						#command = 'clubatch \" time ; python /home/gpfs/manip/mnt0607/bao/hdumasde/Program/pyLyA/bin/fit --config_file /home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/Box_00'+str(i)+'/Simu_00'+str(j)+'/Results_no_metals/pyLyA/cross_alone.ini \"'
+						#command = 'clubatch \" time ; python /home/gpfs/manip/mnt0607/bao/hdumasde/Program/pyLyA/bin/fit --config_file /home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/Box_00'+str(i)+'/Simu_00'+str(j)+'/Results/pyLyA/cross_alone.ini \"'
+						#command = 'ls /home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/Box_00'+str(i)+'/Simu_00'+str(j)+'/Results/pyLyA_withMetalsTemplates/ '
+						#subprocess.call(command, shell=True)
+						#command = 'clubatch \" time ; python /home/gpfs/manip/mnt0607/bao/hdumasde/Program/pyLyA/bin/fit --config_file /home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/Box_00'+str(i)+'/Simu_00'+str(j)+'/Results/pyLyA_withMetalsTemplates/cross_alone.ini \"'
+						#print command
+						#subprocess.call(command, shell=True)
 
 		if (load_correlation):
 			self._nbtot = len(self._listFit)
@@ -126,15 +144,31 @@ class AnnalyseManyBAOFIT:
 	def read_fit_data_only_parameter(self, path_to_BAOFIT):
 
 		### String names
-		param       = 'save.pars'
-		param_covar = 'save.pcov'
-		chi2        = 'fit.chisq'
+		if not self._isPyLyA:
+			residuals = 'residuals.dat'
+			param     = 'save.pars'
+			chi2      = 'fit.chisq'
+		else:
+			if (self._dic['correlation']=='q_q'):
+				prefix = 'autoQSO'
+			elif (self._dic['correlation']=='q_f'):
+				prefix = 'cross'
+			elif (self._dic['correlation']=='f_f'):
+				prefix = 'auto'
+			residuals = prefix+'_all_residuals.dat'
+			param     = 'save.pars'
+			chi2      = prefix+'_fit.chisq'
 
 		### Get the parameters covariance of the fit
 		#data    = numpy.loadtxt(path_to_BAOFIT+param_covar)
 
 		### Get the parameters of the fit
-		data    = numpy.loadtxt(path_to_BAOFIT+param)
+		#data    = numpy.loadtxt(self._path_to_BAOFIT+param)
+		if not self._isPyLyA:
+			data    = numpy.loadtxt(path_to_BAOFIT+param)
+		else:
+			data    = numpy.loadtxt(path_to_BAOFIT+param,usecols=(0,2,3))
+
 		nbParam = data[:,1].size
 		param   = numpy.zeros( shape=(nbParam,2) )
 		param[:,0] = data[:,1]
@@ -144,7 +178,17 @@ class AnnalyseManyBAOFIT:
 		data = numpy.loadtxt(path_to_BAOFIT+chi2)
 		chi2 = data
 
-		return nbParam, param, chi2
+		### Read minos value
+		minos = numpy.zeros(shape=(2,3))
+		try:
+			data = numpy.loadtxt(path_to_BAOFIT+'minos_save.pars',skiprows=1,usecols=(1,2,5))
+			minos[:,0] = data[:,2]
+			minos[:,1] = data[:,0]
+			minos[:,2] = data[:,1]
+		except:
+			print '  No minos errors', 
+
+		return nbParam, param, chi2, minos
 	def save_list_realisation(self):
 
 		list1D       = numpy.zeros( shape=(self._nbBin1D,self._nbtot) )
@@ -326,7 +370,7 @@ class AnnalyseManyBAOFIT:
 			myTools.deal_with_plot(False,False,True)
 			plt.legend(fontsize=20, numpoints=2,ncol=1)
 			plt.show()
-
+		'''
 		### correlation with redshift
 		nb = 0
 		for el in list_of_fit:
@@ -339,7 +383,7 @@ class AnnalyseManyBAOFIT:
 		myTools.deal_with_plot(False,False,True)
 		plt.legend(fontsize=20, numpoints=2,ncol=1)
 		plt.show()
-		
+		'''
 
 		return
 	def print_results_for_chi2(self,other=[]):
@@ -422,6 +466,58 @@ class AnnalyseManyBAOFIT:
 			nb += 1
 		plt.xlabel(r'$<z>$')
 		plt.ylabel(r'$\chi^{2} \, ('+str(int(el._list_chi2[0,1]))+'-'+str(int(el._list_chi2[0,2]))+')$')
+		myTools.deal_with_plot(False,False,True)
+		plt.legend(fontsize=20, numpoints=2,ncol=1)
+		plt.show()
+		
+
+		return
+	def print_poll_plots(self,index, other=[]):
+
+		list_of_fit = numpy.append( [self],other )
+		color = ['blue', 'red', 'green', 'cyan', 'orange', 'black']	
+
+		### mock index evolution
+		nb = 0
+		for el in list_of_fit:
+			xxx = numpy.arange(el._nbtot)
+			yyy = el._minos[:,index,0]
+			yer = [ numpy.abs(el._minos[:,index,1]),el._minos[:,index,2] ]
+			print yer
+			plt.errorbar(xxx, yyy, yerr=yer, marker='o', markersize=10,linewidth=2, label=r'$'+el._name+'$',alpha=0.6, color=color[nb])
+			nb += 1
+		plt.xlabel(r'$simulation \, index$')
+		plt.ylabel(r'$'+self._listFit[0]._par_name[index]+'$')
+		plt.xlim([-1, el._nbtot+1])
+		myTools.deal_with_plot(False,False,True)
+		plt.legend(fontsize=20, numpoints=2,ncol=1)
+		plt.show()
+
+		### histogram of poll plot
+		nb = 0
+		max_hist = 0.
+		for el in list_of_fit:
+
+			yyy = el._minos[:,index,0]
+			yer = numpy.abs(el._minos[:,index,1])
+			yer[yyy-1.>0.] = el._minos[:,index,2][yyy-1.>0.]
+			cut = numpy.abs(el._minos[:,index,1])>0.
+			yyy = yyy[cut]
+			yer = yer[cut]
+
+			www   = numpy.power(yer, -2.)
+			mmy   = numpy.average(yyy, weights=www)
+			yyy   = (yyy-1.)/yer
+			sigma = numpy.average((yyy)**2, weights=www)
+
+			label   = el._name+" \, : \, \sigma = %1.2f" % ( sigma )
+			a, b, c = plt.hist(yyy,bins=10,linewidth=2, histtype='step',alpha=0.6, color=color[nb], label=r'$'+label+'$')
+			max_hist = numpy.max( [numpy.max(a), max_hist])
+			nb += 1
+
+		plt.ylim([0.,1.2*max_hist])
+		plt.xlabel(r'$('+self._listFit[0]._par_name[index]+' - <'+self._listFit[0]._par_name[index]+'>)/\sigma$')
+		plt.ylabel(r'$\#$')
 		myTools.deal_with_plot(False,False,True)
 		plt.legend(fontsize=20, numpoints=2,ncol=1)
 		plt.show()
@@ -543,14 +639,20 @@ class AnnalyseManyBAOFIT:
 
 			### xxx
 			x     = el._param[:,index_1,0][ (el._param[:,index_1,1]>0.) ]
+			if (x.size==0): return
 			x_err = el._param[:,index_1,1][ (el._param[:,index_1,1]>0.) ]
 			weights = numpy.ones(x_err.size) #numpy.power(x_err,-2.)
 			mean_x = numpy.average(x, weights=weights)
 			### yyy
 			y     = el._param[:,index_2,0][ (el._param[:,index_2,1]>0.) ]
+			if (y.size==0): return
 			y_err = el._param[:,index_2,1][ (el._param[:,index_2,1]>0.) ]
 			weights = numpy.ones(y_err.size) #numpy.power(y_err,-2.)
 			mean_y = numpy.average(y, weights=weights)
+			if (x.size==0 or y.size==0 or x.size!=y.size):
+				print ' ERROR ! x.size==0 or y.size==0 or x.size!=y.size'
+				plt.clf()
+				return
 
 			# the scatter plot:
 			axScatter.errorbar(x, y, fmt='o',linewidth=2, markersize=10, color=color[nb],alpha=0.6)

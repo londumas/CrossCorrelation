@@ -362,14 +362,27 @@ def remove_empty_cell_in_cat(cat_path):
 	cat = cat[ (cut) ]
 	print '  nb of QSOs after  = ', cat.size
 	nbQSO = cat.size
+
+	plt.errorbar(cat['RA'],cat['DEC'],fmt='o')
+	plt.show()
+	plt.hist(cat['Z'][ (cat['Z']>=0.01) ],bins=1000)
+	plt.show()
 	
 	pyfits.writeto(cat_path, cat, clobber=True)
 	
 	return
 
+
+a = "/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Resources/PDF/DF_3e-4.fits"
+cat = pyfits.open(a, memmap=True)[1].data
+
+print cat['DABS'][0]
+myTools.plot2D(numpy.log10(cat['DABS'][0]))
+
+"""
 ### Create a catalogue:
-cat_path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/QSO_DR7_DR12_EBOSS_2016_05_24.fits'
-sizeMax  = 2000000
+cat_path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/QSO_DR7_DR12_V5_10_0.fits'
+sizeMax  = 5000000
 #create_fits_qso(cat_path, sizeMax)
 remove_empty_cell_in_cat(cat_path)
 
@@ -377,6 +390,7 @@ remove_empty_cell_in_cat(cat_path)
 
 #getQsoCatalogueEBOSS()
 #main()
+"""
 
 '''
 path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/'

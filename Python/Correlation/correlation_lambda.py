@@ -188,7 +188,7 @@ class CorrelationLambda:
 			tmp_save4[idY][iX] += save4[i]
 			tmp_save5[idY][iX] += save5[i]
 			tmp_save6[idY][iX] += save6[i]
-			'''
+			
 			if (iY>2): continue
 			
 			tmp_save00[iX][idY] += save0[i]
@@ -198,7 +198,7 @@ class CorrelationLambda:
 			tmp_save44[iX][idY] += save4[i]
 			tmp_save55[iX][idY] += save5[i]
 			tmp_save66[iX][idY] += save6[i]
-			'''
+			
 			### for xi1D
 			tmp_save000[iX] += save0[i]
 			tmp_save111[iX] += save1[i]
@@ -417,20 +417,20 @@ dic = {
 	'correlation': 'q_f',
 	'path_to_txt_file_folder': 'NOTHING',
 	'f1': 'LYA',
-	'f2': 'a',
-	'q': 'QSO',
+	'f2': 'CIV',
+	'q': 'QSO_DR7_DR12_V5_10_0',
 	'name' : 'Data'
 }
 
 
 ### For q_f
-
+'''
 dic['min_l1_over_l2'] = 0.40
 dic['max_l1_over_l2'] = 2.30
 dic['correlation']    = 'q_f'
 dic['min_visual_z'] = -0.04
 dic['max_visual_z'] = 0.04
-
+'''
 ### For f_f
 '''
 dic['min_l1_over_l2'] = 1.
@@ -440,17 +440,17 @@ dic['min_visual_z'] = -0.002
 dic['max_visual_z'] = 0.002
 '''
 ### For f_f2
-'''
+
 dic['min_l1_over_l2'] = 0.89
 dic['max_l1_over_l2'] = 1.11
 dic['correlation']    = 'f_f2'
 dic['min_visual_z'] = -0.002
 dic['max_visual_z'] = 0.002
-'''
+
 
 corr_list = []
 
-dic['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator_primery_sky/'
+dic['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR14/'
 a = CorrelationLambda(dic)
 corr_list += [a]
 

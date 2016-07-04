@@ -34,6 +34,12 @@ import matplotlib.pyplot as plt
 i = sys.argv[1]
 j = sys.argv[2]
 
+"""
+for i in range(4490534, 4490634):
+	command = 'qdel ' + str(i)
+	print command
+	subprocess.call(command, shell=True)
+"""
 
 def plotOne():
 
@@ -61,42 +67,47 @@ def plotOne():
 		'path_to_simu' : '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/',
 		'nb_box' : 10,
 		'nb_simu' : 10,
-		'prefix' : '_raw_from_JeanMarc', #'_no_metals', #
+		'prefix' : '', #
 		'prefix2'   : '', #'_sigmaNL_0_pixelSize_3_15', #'_fit_from_10_to_180_sigmaNL_0_pixelSize_3_15', #'_fit_from_10_to_180'
 	}
 	dic_send_BAOFIT = {
-		'realisation_type'        : 'subsampling', #'Simu_stack',#'subsampling', #'Simu_stack', #'subsampling', #
+		'realisation_type'        : 'Simu_stack', #'subsampling', #'Simu_stack', #'subsampling', #
 		#'correlation_matrix_path' : '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/Results_raw_from_JeanMarc/xi_A_delta_delta_LYA_result_cor_2D_from_fit.npy',
 		#'correlation_matrix_path' : '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/Results/xi_A_delta_delta_LYA_result_cor_2D_from_fit.npy',
 		#'correlation_matrix_path' : '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/Results_raw_from_JeanMarc/xi_delta_QSO_LYA_QSO_result_cor_2D_from_fit.npy',
 		#'correlation_matrix_path' : '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/Results/xi_delta_QSO_LYA_QSO_result_cor_2D_from_fit.npy',
-		#'correlation_matrix_path' : '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/Results_no_metals/xi_delta_QSO_LYA_QSO_result_cor_2D_from_fit.npy',
-		'correlation_matrix_path' : '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator_coAdd_2016_05_26/xi_delta_QSO_LYA_QSO_subsampling_cor_2D_from_fit.npy',
-		'saving_data'             : False,
+		'correlation_matrix_path' : '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/Results_no_metals/xi_delta_QSO_LYA_QSO_result_cor_2D_from_fit.npy',
+		#'correlation_matrix_path' : '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator_2016_05_26_PlankCosmo/xi_delta_QSO_LYA_QSO_subsampling_cor_2D_from_fit.npy',
+		'saving_data'             : True,
 		'scan'                    : False,
 		'toyMC'                   : 0,
 		'dist_matrix'             : True,
 		'only_diagonal'           : False,
 		'with_metals_templates'   : True,
 		'get_param_from_file'     : False,
-		'dic_simu'                : None, #dic_simu #None, #dic_simu
-		'prefix'                  : '_fit_up_to_300'
+		'dic_simu'                : dic_simu, #None, #dic_simu
+		'prefix'                  : ''
 	}
-	#dic_class['path_to_txt_file_folder'] = dic_simu['path_to_simu'] + 'Box_00'+str(i)+'/Simu_00'+str(j)+'/Results'+dic_simu['prefix']+'/'
+	dic_class['path_to_txt_file_folder'] = dic_simu['path_to_simu'] + 'Box_00'+str(i)+'/Simu_00'+str(j)+'/Results'+dic_simu['prefix']+'/'
 	#print dic_class['path_to_txt_file_folder']
-	dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator_2016_05_26/'
-	#dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator_coAdd_2016_05_26/'
-	#dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator_primery_sky/'
+	#dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator_2016_05_26_PlankCosmo/'
+	##dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator_coAdd_2016_05_26/'
+	#dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR14/'
 	print dic_class['path_to_txt_file_folder']
 	corr = correlation_3D.Correlation3D(dic_class)
-	#corr.save_list_realisation_simulation(dic_class, dic_simu)
+	#corr.write_metal_model(False)
+	#corr.send_BAOFIT(dic_send_BAOFIT)
+	corr.send_pyLyA(with_metals_templates=True,prefix2='_rmin10')
+	#corr.save_list_realisation_simulation(dic_class, dic_simu,True)
 	#corr.set_values_on_mean_simulation_or_realisation_type(dic_simu)
+	#corr.send_BAOFIT(dic_send_BAOFIT)
 	#corr.set_values_on_mean_simulation_or_realisation_type(None,'shuffleForest')
         #corr.set_values_on_mean_simulation_or_realisation_type(None,'shuffleQSO')
         #corr.set_values_on_mean_simulation_or_realisation_type(None,'randomQSO')
-	corr.set_values_on_mean_simulation_or_realisation_type(None,'randomQSOXYZ')
+	#corr.set_values_on_mean_simulation_or_realisation_type(None,'randomQSOXYZ')
 	#corr.save_mean_realisation_simulation_correlation_matrix(dic_simu)
 	#corr.write_metal_model(False)
+	#corr.write_metal_model_mean_simulation(dic_class, dic_simu)
 	#corr.read_data_from_BAOFIT_data_file('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/TESTS/Nicolas_Correlation/xcf_dr12_v5_8_guy_c2_baseline_projected')
 
 	### Mapping from 2D to wedge
@@ -130,21 +141,28 @@ def plotOne():
 	print path_to_save
 	myTools.save_fited_cor_from_cov(path_to_load, path_to_save,50,50,'f_f')
 	'''	
-	
+	'''
 	#path_to_load = dic_simu['path_to_simu']+'Results' + dic_simu['prefix'] + '/xi_delta_QSO_LYA_QSO_result_cov_2D.npy'
         #path_to_save = dic_simu['path_to_simu']+'Results' + dic_simu['prefix'] + '/xi_delta_QSO_LYA_QSO_result_cor_2D_from_fit'
-	path_to_load = dic_class['path_to_txt_file_folder']+'/xi_delta_QSO_LYA_QSO_randomQSOXYZ_cov_1D.npy'
-        path_to_save = dic_class['path_to_txt_file_folder']+'/xi_delta_QSO_LYA_QSO_randomQSOXYZ_cor_1D_from_fit'
+	path_to_load = dic_class['path_to_txt_file_folder']+'/xi_delta_QSO_LYA_QSO_subsampling_cov_1D.npy'
+        path_to_save = dic_class['path_to_txt_file_folder']+'/xi_delta_QSO_LYA_QSO_subsampling_cor_1D_from_fit'
         print path_to_load
         print path_to_save
         myTools.save_fited_cor_from_cov(path_to_load, path_to_save,50,100,'q_f')
-	path_to_load = dic_class['path_to_txt_file_folder']+'/xi_delta_QSO_LYA_QSO_randomQSOXYZ_cov_2D.npy'
-        path_to_save = dic_class['path_to_txt_file_folder']+'/xi_delta_QSO_LYA_QSO_randomQSOXYZ_cor_2D_from_fit'
+	path_to_load = dic_class['path_to_txt_file_folder']+'/xi_delta_QSO_LYA_QSO_subsampling_cov_2D.npy'
+        path_to_save = dic_class['path_to_txt_file_folder']+'/xi_delta_QSO_LYA_QSO_subsampling_cor_2D_from_fit'
         print path_to_load
         print path_to_save
         myTools.save_fited_cor_from_cov(path_to_load, path_to_save,50,100,'q_f')
+	'''
 	
-	
+	### Wick decomposition
+	#corr.plot_Wick_calculation('1')
+	#corr.plot_Wick_calculation('12')
+	#corr.plot_Wick_calculation('2D',['1_withDelta','12_withDelta'],['T1','T12'])
+	#corr.plot_Wick_calculation(['1','12'],['T1','T12'])
+	#corr.plot_Wick_calculation(['1_withDelta'],['T1'])
+
 	print corr._meanZ
 	dic_CAMB_corr = {
 	'z' : corr._meanZ,
@@ -231,7 +249,7 @@ def plotOne():
         #corr.set_values_on_mean_simulation_or_realisation_type(None,'shuffleForest')
         #corr.set_values_on_mean_simulation_or_realisation_type(None,'shuffleQSO')
 	#corr.set_values_on_mean_simulation_or_realisation_type(None,'randomQSO')
-        corr.set_values_on_mean_simulation_or_realisation_type(None,'randomQSOXYZ')
+        #corr.set_values_on_mean_simulation_or_realisation_type(None,'randomQSOXYZ')
 
 	#corr.plot_cov_cor_matrix('subsampling','1D')
 	### Fit
@@ -283,20 +301,22 @@ def plotOne():
 	#	corr.plot_slice_2d(None,ii)
 	
 
-	"""
-	plt.hist(corr._xi2D[:,:,1].flatten(),bins=30)
-	plt.show()
-	plt.hist(corr._xi2D[:,:,1].flatten()/corr._xi2D[:,:,2].flatten(),bins=30)
-        plt.show()
+	
+	#plt.hist(corr._xi2D[:,:,1].flatten(),bins=30)
+	#plt.show()
+	#plt.hist(corr._xi2D[:,:,1].flatten()/corr._xi2D[:,:,2].flatten(),bins=30)
+        #plt.show()
 	corr.plot_1d(0)
 	corr.plot_1d(1)
 	corr.plot_1d(2)
-	corr.plot_we(0)
-	corr.plot_we(1)
-	corr.plot_we(2)
+	for ii in range(0,4):
+		for jj in range(0,3):
+			corr.plot_we(ii,jj)
+	for ii in range(0,3):
+		corr.plot_we_all(ii)
 
-	corr._xi2D[:,:,1] /= corr._xi2D[:,:,2]	
-	corr._xiMu[:,:,2] /= corr._xiMu[:,:,3]
+	#corr._xi2D[:,:,1] /= corr._xi2D[:,:,2]	
+	#corr._xiMu[:,:,2] /= corr._xiMu[:,:,3]
 	corr.plot_2d(0)
 	corr.plot_2d(1)
 	corr.plot_2d(2)
@@ -322,7 +342,7 @@ def plotOne():
 	
 	#path = dic_class['path_to_txt_file_folder']
 	#corr.plot_cov_cor_matrix_different_method(['shuffleForest','shuffleQSO','randomQSO','subsampling'],'We')
-
+	"""
 	return
 def plotMany():
 
@@ -503,7 +523,9 @@ def plotBosseBOSS():
 	return
 ### BAOFIT + Many simulations
 def BAOFIT_Many_simulations():
-	
+
+	isPyLyA = True
+
 	dic_class = {
 		'minXi': 0.,
 		'maxXi': 200.,
@@ -527,12 +549,12 @@ def BAOFIT_Many_simulations():
 		'path_to_simu' : '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/',
 		'nb_box' : 10,
 		'nb_simu' : 10,
-		'prefix' : '_raw_from_JeanMarc',
-		'prefix2'   : ''
+		'prefix' : '', #'_no_metals', #'_raw_from_JeanMarc', #
+		'prefix2'   : '_withMetalsTemplates_rmin10', #'_withMetalsTemplates', #'_withMetalsTemplates_rmin10', #
 	}
 
 	### First is raw
-	aMB = annalyse_many_BAOFIT.AnnalyseManyBAOFIT(dic_class,None,None,dic_simu,False)
+	aMB = annalyse_many_BAOFIT.AnnalyseManyBAOFIT(dic=dic_class, index_parameter=None, dic_Q=None, dic_simu=dic_simu, load_correlation=False, isPyLyA=isPyLyA)
 
 	
 	### Second is other
@@ -548,6 +570,22 @@ def BAOFIT_Many_simulations():
 	
 	### If f_f
 	if (dic_class['correlation']=='f_f'):
+
+		if (isPyLyA==True):
+			#aMB.print_results_for_chi2()
+			
+			aMB.plot_scatter_hist(0,1)
+			aMB.plot_scatter_hist(0,2)
+			aMB.plot_scatter_hist(0,3)
+			aMB.plot_scatter_hist(1,2)
+			aMB.plot_scatter_hist(1,3)
+			aMB.plot_scatter_hist(2,3)
+			
+			aMB.print_results(0)
+			aMB.print_results(1)
+			aMB.print_results(2)
+			aMB.print_results(3)
+			aMB.print_results(5)
 
 		aMB.print_list_parameter(8)
 		print
@@ -569,12 +607,36 @@ def BAOFIT_Many_simulations():
 	### If q_f
 	elif (dic_class['correlation']=='q_f'):
 
-		aMB.print_list_parameter(11)
+		aMB.print_poll_plots(0)
+		aMB.print_poll_plots(1)
+
+		#aMB.print_list_parameter(11)
 		print
-		aMB.print_list_parameter(12)
+		#aMB.print_list_parameter(12)
 
-		aMB.print_results_for_chi2(other)
+		#aMB.print_results_for_chi2(other)
 
+		if (isPyLyA==True):
+                        #aMB.print_results_for_chi2()
+
+			'''
+			aMB.plot_scatter_hist(1,5)
+                        aMB.plot_scatter_hist(2,3)
+                        aMB.plot_scatter_hist(2,7)
+                        aMB.plot_scatter_hist(3,7)
+			#aMB.print_results(9)
+                        #aMB.print_results(11)
+                        #aMB.print_results(13)
+                        #aMB.print_results(15)
+			'''
+			for i in range(15):
+				for j in range(i+1,15):
+					aMB.plot_scatter_hist(i,j)
+                        aMB.print_results(1)
+                        aMB.print_results(2)
+                        aMB.print_results(3)
+                        aMB.print_results(5)
+                        aMB.print_results(7)
 		
 		aMB.plot_scatter_hist(1,0,other)
 		aMB.plot_scatter_hist(1,4,other)
@@ -609,10 +671,11 @@ def BAOFIT_Many_simulations():
 	return
 def BAOFIT_One_fit_data():
 
-	prefix2 = '__withMetalsTemplates'
+	prefix2 = ''
+	prefix2 = '_withMetalsTemplates_rmin10'
 	#prefix2 += '_fiducial'
 	#prefix2 += '_fit_down_to_10'
-	prefix2 += '_fit_up_to_300'
+	#prefix2 += '_fit_up_to_300'
 	
 	dic_class = {
 		'minXi': 0.,
@@ -633,18 +696,20 @@ def BAOFIT_One_fit_data():
 		'q2': '',
 		'name' : 'NOTHING'
 	}
-	dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator_coAdd_2016_05_26/'
+	dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator_2016_05_26_PlankCosmo/'
 
 	if (dic_class['correlation']=='q_f'):
 		path_to_BAOFIT     = dic_class['path_to_txt_file_folder'] + 'BaoFit_q_f__LYA__QSO'+prefix2+'/bao2D.'
+		path_to_BAOFIT     = dic_class['path_to_txt_file_folder'] + '/pyLyA'+prefix2+'/cross_alone.'
 		path_to_mapping_we =  '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/Results_raw_from_JeanMarc/xi_delta_QSO_LYA_QSO_result_mapping_2D_to_we_with_4_wedges.npy'
 		path_to_mapping_1D =  '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/Results_raw_from_JeanMarc/xi_delta_QSO_LYA_QSO_result_mapping_2D_to_1D.npy'
 	elif (dic_class['correlation']=='f_f'):
 		path_to_BAOFIT     = dic_class['path_to_txt_file_folder'] + 'BaoFit_f_f__LYA'+prefix2+'/bao2D.'
+
 		path_to_mapping_we = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/Results_raw_from_JeanMarc/xi_A_delta_delta_LYA_result_mapping_2D_to_we_with_4_wedges.npy'
 		path_to_mapping_1D = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/Results_raw_from_JeanMarc/xi_A_delta_delta_LYA_result_mapping_2D_to_1D.npy'
 
-	corr = annalyse_BAOFIT.AnnalyseBAOFIT(dic_class, None, path_to_BAOFIT)
+	corr = annalyse_BAOFIT.AnnalyseBAOFIT(dic=dic_class,dic_simu=None, index_parameter=None, path_to_BAOFIT=path_to_BAOFIT, isPyLyA=True)
 
 	'''
 	for i in numpy.arange(0,50):
@@ -654,13 +719,13 @@ def BAOFIT_One_fit_data():
 	corr.print_results()
 	'''
 	
-	corr.print_results()
+	#corr.print_results()
 	corr.plot_data_and_fit_1d(0,path_to_mapping_1D)
 	corr.plot_data_and_fit_1d(1,path_to_mapping_1D)
 	corr.plot_data_and_fit_1d(2,path_to_mapping_1D)
-	corr.plot_data_and_fit_we(0,path_to_mapping_we)
-	corr.plot_data_and_fit_we(1,path_to_mapping_we)
-	corr.plot_data_and_fit_we(2,path_to_mapping_we)
+	#corr.plot_data_and_fit_we(0,path_to_mapping_we)
+	#corr.plot_data_and_fit_we(1,path_to_mapping_we)
+	#corr.plot_data_and_fit_we(2,path_to_mapping_we)
 	
 	corr.plot_fit_2d(0)
 	corr.plot_fit_2d(1)
@@ -668,7 +733,7 @@ def BAOFIT_One_fit_data():
 	corr.plot_residuals_2d(0)
 	corr.plot_residuals_2d(1)
 	corr.plot_residuals_2d(2)
-	corr.plot_histo_residuals()
+	corr.plot_histo_residuals(nbBins=100,rmin=10, rmax=180)
 
 	return
 def BAOFIT_One_fit_simulation():
@@ -687,7 +752,7 @@ def BAOFIT_One_fit_simulation():
 			'remove_residuales' : 'lambda_OBS',
 			'index_multipole_max' : 4,
 			'path_to_txt_file_folder': '',
-			'correlation': 'q_f',
+			'correlation': 'f_f',
 			'f1': 'LYA',
 			'f2': '',
 			'q1': 'QSO',
@@ -698,8 +763,8 @@ def BAOFIT_One_fit_simulation():
 			'path_to_simu' : '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/',
 			'nb_box' : 10,
 			'nb_simu' : 10,
-			'prefix' : '', #'_raw_from_JeanMarc',
-			'prefix2'   : '__withMetalsTemplates' #'__noDistortionMatrix_sigmaNL_0_pixelSize_3_15', #'__noDistortionMatrix_fit_from_10_to_180'
+			'prefix' : '_raw_from_JeanMarc',
+			'prefix2'   : '' #'__noDistortionMatrix_sigmaNL_0_pixelSize_3_15', #'__noDistortionMatrix_fit_from_10_to_180'
 	}
 	dic_class['path_to_txt_file_folder'] = dic_simu['path_to_simu'] + 'Box_000/Simu_000/Results'+dic_simu['prefix']+'/'
 	path_to_BAOFIT = None
@@ -715,16 +780,17 @@ def BAOFIT_One_fit_simulation():
 		path_to_mapping_we = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/Results_raw_from_JeanMarc/xi_A_delta_delta_LYA_result_mapping_2D_to_we_with_4_wedges.npy'
 		path_to_mapping_1D = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/Results_raw_from_JeanMarc/xi_A_delta_delta_LYA_result_mapping_2D_to_1D.npy'
 	
-	corr = annalyse_BAOFIT.AnnalyseBAOFIT(dic_class, None, path_to_BAOFIT)
-	corr.set_values_on_mean_simulation(dic_simu)
+	path_to_BAOFIT = dic_class['path_to_txt_file_folder'] +'pyLyA/auto_alone.'
+	corr = annalyse_BAOFIT.AnnalyseBAOFIT(dic_class, None, path_to_BAOFIT,isPyLyA=True)
+	#corr.set_values_on_mean_simulation(dic_simu)
 	
 	#corr.print_results()
 	corr.plot_data_and_fit_1d(0,path_to_mapping_1D)
 	corr.plot_data_and_fit_1d(1,path_to_mapping_1D)
 	corr.plot_data_and_fit_1d(2,path_to_mapping_1D)
-	corr.plot_data_and_fit_we(0,path_to_mapping_we)
-	corr.plot_data_and_fit_we(1,path_to_mapping_we)
-	corr.plot_data_and_fit_we(2,path_to_mapping_we)
+	corr.plot_data_and_fit_we(0,2,path_to_mapping_we)
+	corr.plot_data_and_fit_we(1,2,path_to_mapping_we)
+	corr.plot_data_and_fit_we(2,2,path_to_mapping_we)
 	
 	corr.plot_fit_2d(0)
 	corr.plot_fit_2d(1)
@@ -782,17 +848,132 @@ def BAOFIT_Compare_simulations():
         corr_q_f.plot_scatter_hist_two_correlation(corr_f_f,12,9)
 
 	return
+def BAOFIT_Compare_simulations_pyLya():
+
+	isPyLyA = True
+	
+	dic_class = {
+		'minXi': 0.,
+		'maxXi': 200.,
+		'nbBin': 50,
+		'nbBinM': 25,
+		'nb_Sub_Sampling': 80,
+		'size_bin_calcul_s': 1.,
+		'size_bin_calcul_m': 0.02,
+		'nb_wedges'          : 4,
+		'correlation': 'q_f',
+		'remove_residuales' : 'lambda_OBS',
+		'index_multipole_max' : 4,
+		'path_to_txt_file_folder': '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/',
+		'f1': 'LYA',
+		'f2': '',
+		'q1': 'QSO',
+		'q2': '',
+		'name' : 'q-f \, raw'
+	}
+	dic_simu = {
+		'path_to_simu' : '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/',
+		'nb_box' : 10,
+		'nb_simu' : 10,
+		'prefix' : '_raw_from_JeanMarc',
+		'prefix2'   : '' #'_withMetalsTemplates_rmin10', #'_withMetalsTemplates', #'_withMetalsTemplates_rmin10', #
+	}
+
+	### First is raw
+	aMB = annalyse_many_BAOFIT.AnnalyseManyBAOFIT(dic_class,None,None,dic_simu,False,isPyLyA=isPyLyA)
+
+	### Second is other
+	other = []
+	dic_class['name']  = 'q-f \, cooked \, no \, metals'
+	dic_simu['prefix'] = '_no_metals'
+	dic_simu['prefix2'] = ''
+	other += [ annalyse_many_BAOFIT.AnnalyseManyBAOFIT(dic_class,None,None,dic_simu,False,isPyLyA=isPyLyA) ]
+
+	aMB.plot_scatter_hist(1,5,other=other)
+	aMB.plot_scatter_hist(2,3,other=other)
+	
+
+	return
+def plot_compare_some_correlations():
+
+	dic_class = {
+		'minXi': 0.,
+		'maxXi': 200.,
+		'nbBin': 50,
+		'nbBinM': 25,
+		'nb_Sub_Sampling': 80,
+		'size_bin_calcul_s': 1.,
+		'size_bin_calcul_m': 0.02,
+                'nb_wedges'               : 3,
+		'remove_residuales' : 'lambda_OBS',
+		'index_multipole_max' : 4,
+		'path_to_txt_file_folder': '',
+		'correlation': 'q_f',
+		'f1': 'LYA',
+		'f2': '',
+		'q1': 'QSO',
+		'q2': '',
+		'name' : 'LYA - QSO'
+	}
+
+	### nb pairs LYA = 
+	### nb pairs CIV = 
+        dic_class['name'] = 'CAMB'
+	dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator_2016_05_26_PlankCosmo/' 
+        corr_1 = correlation_3D.Correlation3D(dic_class)
+	#corr_1.save_list_realisation('subsampling', 80)
+	#corr_1.set_error_on_covar_matrix('subsampling')
+
+	### Correlation 2
+	### nb pairs LYA = 2.660747916700000e+10
+	### nb pairs CIV = 
+	dic_class['q1'] = 'QSO'
+        dic_class['name'] = 'CAMB+topHat'
+	dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator_2016_05_26_PlankCosmo_with_PDF_nicolas/'
+	corr_2 = correlation_3D.Correlation3D(dic_class)
+	#corr_2.save_list_realisation('subsampling', 80)
+	#corr_2.set_error_on_covar_matrix('subsampling')
+	
+	xiMu, xiWe, xi1D, xi2D = corr_1.read_metal_model('SiIII(1207)')
+	corr_1._xi2D = xi2D[:,:,:,2]
+
+	xiMu, xiWe, xi1D, xi2D = corr_2.read_metal_model('SiIII(1207)')
+	corr_2._xi2D = xi2D[:,:,:,2]
+	
+	corr_1.plot_slice_2d(0,None,[corr_2])
+	corr_1.plot_slice_2d(1,None,[corr_2])
+
+	"""
+	print numpy.mean( corr_2._xi2D[:,:,2].flatten()/corr_1._xi2D[:,:,2].flatten() )
+	plt.plot( corr_2._xi2D[:,:,2].flatten()/corr_1._xi2D[:,:,2].flatten(),alpha=0.7,linewidth=2)
+	plt.legend(fontsize=30, numpoints=1,ncol=2, loc=2)
+	plt.xlabel(r'$bin \, index$', fontsize=40)
+	plt.ylabel(r'$\sigma_{DR14} / \sigma_{DR12}$', fontsize=40)
+	myTools.deal_with_plot(False,False,True)
+	plt.show()
+	
+	corr_2.plot_we(0,2,[corr_1],True)
+	corr_2.plot_1d(0,[corr_1],False)
+	corr_2.plot_1d(1,[corr_1],False)
+	corr_2.plot_1d(2,[corr_1],False)
+	### Wedge
+	for i in range(0,4):
+		for j in range(0,3):
+			corr_2.plot_we(i,j,[corr_1],True)
+	"""
+
+	return
 
 
-
-
-plotBosseBOSS()
-#plotOne()
+#plot_compare_some_correlations()
+#plotBosseBOSS()
+plotOne()
 #plotMany()
 #BAOFIT_One_fit_data()
 #BAOFIT_One_fit_simulation()
 #BAOFIT_Many_simulations()
 #BAOFIT_Compare_simulations()
+#BAOFIT_Compare_simulations_pyLya()
 
 ### Send parameter scan
 '''
