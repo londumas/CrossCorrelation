@@ -204,6 +204,7 @@ class Correlation_1D:
 				dic_class['path_to_txt_file_folder'] = raw + 'Results' + dic_simu['prefix'] + '/'
 
 				try:
+					print dic_class['path_to_txt_file_folder']
 					corr = Correlation_1D(dic_class)
 					list1D[:,nb]     = corr._xi[:,1]
 					listGrid[:,0,nb] = corr._grid[:,0]
@@ -418,8 +419,8 @@ dic_class = {
 dic_simu = {
 	'path_to_simu' : '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/',
 	'nb_box' : 10,
-	'nb_simu' : 10,
-	'prefix' : ''
+	'nb_simu' : 1,
+	'prefix' : '_delta_gaussian'
 }
 dic_CAMB_corr = {
 	'z' : 0.,
@@ -431,12 +432,14 @@ dic_CAMB_corr = {
 
 list_corr = []
 
-
+'''
 ### Data
 dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/Box_000/Simu_000/Results_delta_gaussian/'
 dic_class['name'] = "Data"
-dic_class['correlation'] = "f_f_lRF_devide"
+dic_class['correlation'] = "f_f_r"
 corr = Correlation_1D(dic_class)
+corr.save_list_realisation_simulation(dic_class, dic_simu)
+corr.set_values_on_mean_simulation(dic_simu)
 list_corr += [corr]
 
 #corr.plot_distortion_matrix()
@@ -456,7 +459,7 @@ list_corr += [corr]
 #corr.fit_CAMB()
 #corr.fit_CAMB(True,dic_CAMB_corr)
 list_corr[0].plot(False,False,list_corr[1:])
-
+'''
 
 '''
 #

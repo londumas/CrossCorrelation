@@ -15,32 +15,34 @@ def main():
 
 	
 	### For mocks
-	'''
+	
 	### mock catalogue
-	for i in range(0,1):
+	for i in range(0,10):
 		### mock catalogue
-		for j in range(0,1):
+		for j in range(0,10):
 
 			### for region
-			for k in range(0,80):
+			for k in range(0,1):
 
 			### for metals 
 			#for k in [21,24,25,26,27]:
 				tmp_command = "echo \" \n ------ Start ------ \n \" " 
 				subprocess.call(tmp_command, shell=True)
 
-				tmp_command = "clubatch \"time ; hostname ; " + commandProd + ' 14 19 ' + str(k) + ' 0 ' + str(i) + " " + str(j) + "\""
+				tmp_command = "clubatch \"time ; hostname ; " + commandProd + ' 27 0 ' + str(k) + ' 0 ' + str(i) + " " + str(j) + "\""
 				subprocess.call(tmp_command, shell=True)
+				tmp_command = "clubatch \"time ; hostname ; " + commandProd + ' 24 0 ' + str(k) + ' 0 ' + str(i) + " " + str(j) + "\""
+                                subprocess.call(tmp_command, shell=True)
 
 				tmp_command = "echo " + tmp_command
 				subprocess.call(tmp_command, shell=True)
 				tmp_command = "echo " + time.ctime()
 				subprocess.call(tmp_command, shell=True)
 
-				time.sleep(0.1)
+				time.sleep(60)
                 	        myTools.isReadyForNewJobs(200, 1000,'time')
 		#time.sleep(120)
-	'''
+	
 	
 	'''
 	for i in range(0,29):
@@ -78,7 +80,7 @@ def main():
 		myTools.isReadyForNewJobs(100, 430,'time')
 	'''
 
-	
+	'''
 	for i in range(0,10):
 		for j in range(0,10):
 			### Get the data to 'good' files
@@ -86,9 +88,9 @@ def main():
 			command = "clubatch \" time  ; hostname ; python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/main.py " + str(i) + ' ' + str(j) + "\""
 			print command
 			subprocess.call(command, shell=True)
-			time.sleep(0.3)
-		time.sleep(80.)
-	
+			time.sleep(0.1)
+		time.sleep(0.1)
+	'''
 
 	'''
 	for i in range(0,10000):

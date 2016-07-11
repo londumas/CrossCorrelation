@@ -56,7 +56,7 @@ def plotOne():
 		'index_multipole_max' : 4,
 		'remove_residuales' : 'lambda_OBS',
 		'path_to_txt_file_folder': '',
-		'correlation': 'q_f',
+		'correlation': 'f_f',
 		'f1': 'LYA',
 		'f2': '',
 		'q1': 'QSO',
@@ -67,11 +67,11 @@ def plotOne():
 		'path_to_simu' : '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/',
 		'nb_box' : 10,
 		'nb_simu' : 10,
-		'prefix' : '', #
+		'prefix' : '_delta_gaussian', #
 		'prefix2'   : '', #'_sigmaNL_0_pixelSize_3_15', #'_fit_from_10_to_180_sigmaNL_0_pixelSize_3_15', #'_fit_from_10_to_180'
 	}
 	dic_send_BAOFIT = {
-		'realisation_type'        : 'Simu_stack', #'subsampling', #'Simu_stack', #'subsampling', #
+		'realisation_type'        : 'Simu_stack', #'subsampling', #
 		#'correlation_matrix_path' : '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/Results_raw_from_JeanMarc/xi_A_delta_delta_LYA_result_cor_2D_from_fit.npy',
 		#'correlation_matrix_path' : '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/Results/xi_A_delta_delta_LYA_result_cor_2D_from_fit.npy',
 		#'correlation_matrix_path' : '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/Results_raw_from_JeanMarc/xi_delta_QSO_LYA_QSO_result_cor_2D_from_fit.npy',
@@ -83,7 +83,7 @@ def plotOne():
 		'toyMC'                   : 0,
 		'dist_matrix'             : True,
 		'only_diagonal'           : False,
-		'with_metals_templates'   : True,
+		'with_metals_templates'   : False,
 		'get_param_from_file'     : False,
 		'dic_simu'                : dic_simu, #None, #dic_simu
 		'prefix'                  : ''
@@ -97,10 +97,11 @@ def plotOne():
 	corr = correlation_3D.Correlation3D(dic_class)
 	#corr.write_metal_model(False)
 	#corr.send_BAOFIT(dic_send_BAOFIT)
-	corr.send_pyLyA(with_metals_templates=True,prefix2='_rmin10')
-	#corr.save_list_realisation_simulation(dic_class, dic_simu,True)
-	#corr.set_values_on_mean_simulation_or_realisation_type(dic_simu)
+	#corr.send_pyLyA(with_metals_templates=False,prefix2='_rmin10')
+	corr.save_list_realisation_simulation(dic_class, dic_simu,False)
+	corr.set_values_on_mean_simulation_or_realisation_type(dic_simu)
 	#corr.send_BAOFIT(dic_send_BAOFIT)
+	#corr.send_pyLyA(with_metals_templates=False,prefix2='_rmin10')
 	#corr.set_values_on_mean_simulation_or_realisation_type(None,'shuffleForest')
         #corr.set_values_on_mean_simulation_or_realisation_type(None,'shuffleQSO')
         #corr.set_values_on_mean_simulation_or_realisation_type(None,'randomQSO')
@@ -258,10 +259,7 @@ def plotOne():
 	#corr.send_BAOFIT(dic_send_BAOFIT)
 
 	"""
-	print corr._meanZ
-	corr.plot_grid(0,True)
-	corr.plot_grid(1,True)
-	corr.plot_grid(2,True)
+
 		
 
 	
@@ -302,6 +300,14 @@ def plotOne():
 	
 
 	
+	for ii in numpy.arange(0,50):
+		corr.plot_slice_2d(ii)
+	
+	print corr._meanZ
+	corr.plot_grid(0,True)
+	corr.plot_grid(1,True)
+	corr.plot_grid(2,True)
+
 	#plt.hist(corr._xi2D[:,:,1].flatten(),bins=30)
 	#plt.show()
 	#plt.hist(corr._xi2D[:,:,1].flatten()/corr._xi2D[:,:,2].flatten(),bins=30)
@@ -314,9 +320,10 @@ def plotOne():
 			corr.plot_we(ii,jj)
 	for ii in range(0,3):
 		corr.plot_we_all(ii)
-
+	"""
 	#corr._xi2D[:,:,1] /= corr._xi2D[:,:,2]	
 	#corr._xiMu[:,:,2] /= corr._xiMu[:,:,3]
+	corr.plot_slice_2d(0)
 	corr.plot_2d(0)
 	corr.plot_2d(1)
 	corr.plot_2d(2)
@@ -342,7 +349,7 @@ def plotOne():
 	
 	#path = dic_class['path_to_txt_file_folder']
 	#corr.plot_cov_cor_matrix_different_method(['shuffleForest','shuffleQSO','randomQSO','subsampling'],'We')
-	"""
+	
 	return
 def plotMany():
 
@@ -963,7 +970,132 @@ def plot_compare_some_correlations():
 	"""
 
 	return
+def plot_compare_errors_correlations():
 
+	dic_class = {
+		'minXi': 0.,
+		'maxXi': 200.,
+		'nbBin': 50,
+		'nbBinM': 25,
+		'nb_Sub_Sampling': 80,
+		'size_bin_calcul_s': 1.,
+		'size_bin_calcul_m': 0.02,
+                'nb_wedges'               : 3,
+		'remove_residuales' : 'lambda_OBS',
+		'index_multipole_max' : 4,
+		'path_to_txt_file_folder': '',
+		'correlation': 'q_f',
+		'f1': 'LYA',
+		'f2': '',
+		'q1': 'QSO',
+		'q2': '',
+		'name' : 'LYA - QSO'
+	}
+	dic_simu = {
+		'path_to_simu' : '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/',
+		'nb_box' : 10,
+		'nb_simu' : 10,
+		'prefix' : '', #
+		'prefix2'   : '',
+	}
+
+	### Data
+        dic_class['name'] = 'Data'
+	dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator_2016_05_26_PlankCosmo/' 
+        corr_1 = correlation_3D.Correlation3D(dic_class)
+	corr_1.set_error_on_covar_matrix('subsampling')
+	xxx = numpy.arange(5000)
+	error_data = corr_1._xi2D[:,:,2].flatten()
+	plt.plot(xxx,corr_1._xi2D[:,:,2].flatten()/error_data,label='data subSampling',linewidth=2,alpha=0.7)
+
+	### Raw
+	dic_class['name'] = 'Raw'
+	dic_simu['prefix'] = '_raw_from_JeanMarc'
+	dic_class['path_to_txt_file_folder'] = dic_simu['path_to_simu'] + 'Box_00'+str(i)+'/Simu_00'+str(j)+'/Results'+dic_simu['prefix']+'/'
+        corr_2 = correlation_3D.Correlation3D(dic_class) 
+	corr_2.set_values_on_mean_simulation_or_realisation_type(dic_simu)
+	plt.plot(xxx,10.*corr_2._xi2D[:,:,2].flatten()/error_data,label='Var of 100 raw mocks',linewidth=2,alpha=0.7)
+
+	### Cooked
+	for a in range(1):
+		for b in range(10):
+			dic_class['name'] = 'Cooked'
+			dic_simu['prefix'] = ''
+			dic_class['path_to_txt_file_folder'] = dic_simu['path_to_simu'] + 'Box_00'+str(a)+'/Simu_00'+str(b)+'/Results'+dic_simu['prefix']+'/'
+        		corr_3 = correlation_3D.Correlation3D(dic_class)
+			corr_3.set_error_on_covar_matrix('subsampling')
+			if (a==0 and b==0): error = corr_3._xi2D[:,:,2]
+			else: error += corr_3._xi2D[:,:,2]
+	plt.plot(xxx,error.flatten()/10./error_data,label='One cooked mock subsampling',linewidth=2,alpha=0.7)
+
+	corr_3.set_values_on_mean_simulation_or_realisation_type(dic_simu)
+	plt.plot(xxx,10.*corr_3._xi2D[:,:,2].flatten()/error_data,label='Var of 100 cooked mocks',linewidth=2,alpha=0.7)
+
+	plt.legend(fontsize=40, numpoints=1,ncol=1, loc=0)
+	plt.xlabel('bin index')
+	plt.ylabel('error / error data')
+	plt.grid(True, which='both')
+	plt.rc('font', **{'size':'40'})
+	plt.tick_params(axis='both', which='major', labelsize=40)
+	plt.linewidth = 40
+	plt.show()
+
+	return
+def plot_compare_nb_correlations():
+
+	dic_class = {
+		'minXi': 0.,
+		'maxXi': 200.,
+		'nbBin': 50,
+		'nbBinM': 25,
+		'nb_Sub_Sampling': 80,
+		'size_bin_calcul_s': 1.,
+		'size_bin_calcul_m': 0.02,
+                'nb_wedges'               : 3,
+		'remove_residuales' : 'lambda_OBS',
+		'index_multipole_max' : 4,
+		'path_to_txt_file_folder': '',
+		'correlation': 'q_f',
+		'f1': 'LYA',
+		'f2': '',
+		'q1': 'QSO',
+		'q2': '',
+		'name' : 'LYA - QSO'
+	}
+	dic_simu = {
+		'path_to_simu' : '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/',
+		'nb_box' : 10,
+		'nb_simu' : 10,
+		'prefix' : '', #
+		'prefix2'   : '',
+	}
+
+	### Data
+        dic_class['name'] = 'Data'
+	dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator_2016_05_26_PlankCosmo/' 
+        corr_1 = correlation_3D.Correlation3D(dic_class)
+	xxx = numpy.arange(5000)
+	error_data = corr_1._xi2D[:,:,2].flatten()
+	plt.plot(xxx,corr_1._xi2D[:,:,2].flatten()/error_data,label='data subSampling',linewidth=2,alpha=0.7)
+
+	### Cooked
+	dic_class['name'] = 'Cooked'
+	dic_simu['prefix'] = ''
+	dic_class['path_to_txt_file_folder'] = dic_simu['path_to_simu'] + 'Box_00'+str(i)+'/Simu_00'+str(j)+'/Results'+dic_simu['prefix']+'/'
+        corr_3 = correlation_3D.Correlation3D(dic_class)
+	plt.plot(xxx,corr_3._xi2D[:,:,2].flatten()/error_data,label='One cooked mock',linewidth=2,alpha=0.7)
+
+	plt.legend(fontsize=40, numpoints=1,ncol=1, loc=0)
+	plt.xlabel('bin index')
+	#plt.ylabel('variance (similar to Wick T0)')
+	plt.ylabel('nb pairs / nb pairs data')
+	plt.grid(True, which='both')
+	plt.rc('font', **{'size':'40'})
+	plt.tick_params(axis='both', which='major', labelsize=40)
+	plt.linewidth = 40
+	plt.show()
+
+	return
 
 #plot_compare_some_correlations()
 #plotBosseBOSS()
@@ -974,6 +1106,9 @@ plotOne()
 #BAOFIT_Many_simulations()
 #BAOFIT_Compare_simulations()
 #BAOFIT_Compare_simulations_pyLya()
+#plot_compare_errors_correlations()
+#plot_compare_nb_correlations()
+
 
 ### Send parameter scan
 '''

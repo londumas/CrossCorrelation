@@ -582,11 +582,20 @@ class AnnalyseBAOFIT(correlation_3D.Correlation3D):
 		if (self._correlation=='q_f' or self._correlation=='f_f2'):
 			origin='upper'
 			extent=[self._minX2D, self._maxX2D, self._maxY2D, self._minY2D]
-	
+
 		xxx = numpy.transpose(xi2D[:,:,0])
+		mu  = self._xi2D_grid[:,:,1]/numpy.sqrt((numpy.power(self._xi2D_grid[:,:,0],2.)+numpy.power(self._xi2D_grid[:,:,1],2.)))
+		mu = numpy.transpose(mu)
 		yyy = numpy.transpose(xi2D[:,:,1])
 		yer = numpy.transpose(xi2D[:,:,2])
-	
+
+		"""
+		yyy[ xxx<10.] = float('nan')
+		yyy[ xxx>180.] = float('nan')
+		yyy[ numpy.abs(mu)>1.] = float('nan')
+		yyy[ numpy.abs(mu)<0.96] = float('nan')
+		"""
+
 		cut = (yer==0)
 		if (xxx[cut].size==xxx.size):
 			return
@@ -604,15 +613,26 @@ class AnnalyseBAOFIT(correlation_3D.Correlation3D):
 		if (x_power==0):
 			cbar.set_label(r'$'+label+'(r_{\parallel},r_{\perp})$',size=40)
 		if (x_power==1):
-			cbar.set_label(r'$r \cdot '+label+'(r_{\parallel},r_{\perp}) \, [\\rm{h}^{-1} \, \\rm{Mpc}]$',size=40)
+			cbar.set_label(r'$r \cdot '+label+'(r_{\parallel},r_{\perp})$',size=40)
 		if (x_power==2):
-			cbar.set_label(r'$r^{2} \cdot '+label+'(r_{\parallel},r_{\perp}) \, [(\\rm{h}^{-1} \, \\rm{Mpc})^{2}]$',size=40)
+			cbar.set_label(r'$r^{2} \cdot '+label+'(r_{\parallel},r_{\perp})$',size=40)
 	
-		#plt.plot( [0.,200.],[0.,4*200.],color='white',linewidth=2 )
-		#plt.plot( [0.,200.],[0.,-4*200.],color='white',linewidth=2 )
-		#plt.plot( [0.,200.],[0.,200.],color='white',linewidth=2 )
-		#plt.plot( [0.,200.],[0.,-200.],color='white',linewidth=2 )
-	
+		'''
+		plt.plot( [0.,200.],[0.,4*200.],color='white',linewidth=2 )
+		plt.plot( [0.,200.],[0.,-4*200.],color='white',linewidth=2 )
+		plt.plot( [0.,200.],[0.,200.],color='white',linewidth=2 )
+		plt.plot( [0.,200.],[0.,-200.],color='white',linewidth=2 )
+		plt.xlim( [0.,200.] )
+		plt.ylim( [-200.,200.] )
+		a = [0.96,0.8,0.5]
+		
+		for i in a:
+			plt.plot( [0.,200.],[0.,200./numpy.tan(numpy.arccos(i))],color='white',linewidth=2 )
+			plt.plot( [0.,200.],[0.,-200./numpy.tan(numpy.arccos(i))],color='white',linewidth=2 )
+		plt.xlim( [0.,200.] )
+		plt.ylim( [-200.,200.] )
+		'''
+
 		#plt.title(r'$'+self._title+'$', fontsize=40)
 		plt.xlabel(r'$r_{\perp} \, [\rm{h}^{-1} \, \rm{Mpc}]$', fontsize=40)
 		plt.ylabel(r'$r_{\parallel} \, [\rm{h}^{-1} \, \rm{Mpc}]$', fontsize=40)
@@ -635,11 +655,12 @@ class AnnalyseBAOFIT(correlation_3D.Correlation3D):
 		return
 	def plot_slice_fit_2d(self,sliceX=None,sliceY=None, other=[]):
 
+		color = ['blue', 'red', 'green', 'cyan', 'orange', 'black']	
+
 		list_corr = [self] + other
 		i = 0
 		fit = True
 		for el in list_corr:
-			i += 1
 
 			if (sliceX is not None):
 				mean = numpy.mean(self._xi2D_grid[sliceX,:,0])
@@ -673,14 +694,15 @@ class AnnalyseBAOFIT(correlation_3D.Correlation3D):
 			yyy = yyy[cut]
 			yer = yer[cut]
 			if (xxx.size==0): return
-			plt.errorbar(xxx, yyy, yerr=yer, fmt='o', markersize=10,linewidth=2,color='blue')
+			plt.errorbar(xxx, yyy, yerr=yer, fmt='o', markersize=10,linewidth=2,color=color[i])
 
 			if (fit):
 				cut = (yer2>0.)
 				xxx2 = xxx2[cut]
 				yyy2 = yyy2[cut]
 				yer2 = yer2[cut]
-				if (xxx2.size!=0): plt.errorbar(xxx2, yyy2, linewidth=2,color='red')
+				if (xxx2.size!=0): plt.errorbar(xxx2, yyy2, linewidth=2,color=color[i],linestyle='--')
+			i += 1
 		
 		if (sliceX is not None):
 			plt.xlabel(r'$r_{\parallel} \, [\rm{h}^{-1} \, \rm{Mpc}]$', fontsize=40)

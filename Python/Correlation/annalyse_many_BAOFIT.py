@@ -96,7 +96,7 @@ class AnnalyseManyBAOFIT:
 						if (i==0 and j==0):
 							self._param     = numpy.zeros( shape=(self._nbtot,nbParam,2) )
 							self._list_chi2 = numpy.zeros( shape=(self._nbtot,4) )
-							self._minos     = numpy.zeros( shape=(self._nbtot,2,3) )
+							self._minos     = numpy.zeros( shape=(self._nbtot,2,4) )
 						self._param[nb,:,:]   = param
 						self._list_chi2[nb,:] = chi2
 						self._minos[nb,:]     = minos
@@ -179,12 +179,13 @@ class AnnalyseManyBAOFIT:
 		chi2 = data
 
 		### Read minos value
-		minos = numpy.zeros(shape=(2,3))
+		minos = numpy.zeros(shape=(2,4))
 		try:
-			data = numpy.loadtxt(path_to_BAOFIT+'minos_save.pars',skiprows=1,usecols=(1,2,5))
-			minos[:,0] = data[:,2]
-			minos[:,1] = data[:,0]
-			minos[:,2] = data[:,1]
+			data = numpy.loadtxt(path_to_BAOFIT+'minos_save.pars',skiprows=1,usecols=(5,1,2,3,4,6))
+			minos[:,0] = data[:,0]
+			minos[:,1] = data[:,1]
+			minos[:,2] = data[:,2]
+			minos[:,3] = data[:,3]*data[:,4]*data[:,5]
 		except:
 			print '  No minos errors', 
 
@@ -482,9 +483,31 @@ class AnnalyseManyBAOFIT:
 		for el in list_of_fit:
 			xxx = numpy.arange(el._nbtot)
 			yyy = el._minos[:,index,0]
-			yer = [ numpy.abs(el._minos[:,index,1]),el._minos[:,index,2] ]
-			print yer
+			yer1 = el._minos[:,index,1]
+			yer2 = el._minos[:,index,2]
+			yyy[(el._minos[:,index,3]==0.)] = 0.
+			yer1[(el._minos[:,index,3]==0.)] = 0.
+			yer2[(el._minos[:,index,3]==0.)] = 0.
+			yer = [ numpy.abs(yer1),yer2 ]
 			plt.errorbar(xxx, yyy, yerr=yer, marker='o', markersize=10,linewidth=2, label=r'$'+el._name+'$',alpha=0.6, color=color[nb])
+			nb += 1
+		plt.xlabel(r'$simulation \, index$')
+		plt.ylabel(r'$'+self._listFit[0]._par_name[index]+'$')
+		plt.xlim([-1, el._nbtot+1])
+		myTools.deal_with_plot(False,False,True)
+		plt.legend(fontsize=20, numpoints=2,ncol=1)
+		plt.show()
+
+		### mock index evolution for poll
+		nb = 0
+		for el in list_of_fit:
+			xxx = numpy.arange(el._nbtot)
+			yyy = el._minos[:,index,0]
+			yer = numpy.abs(el._minos[:,index,1])
+			yer[yyy-1.>0.] = el._minos[:,index,2][yyy-1.>0.]
+			yer[(el._minos[:,index,3]==0.)] = 0.
+			yyy   = (yyy-1.)/yer
+			plt.errorbar(xxx[(yer!=0.)], yyy[(yer!=0.)], marker='o', markersize=10,linewidth=2, label=r'$'+el._name+'$',alpha=0.6, color=color[nb])
 			nb += 1
 		plt.xlabel(r'$simulation \, index$')
 		plt.ylabel(r'$'+self._listFit[0]._par_name[index]+'$')
@@ -501,6 +524,7 @@ class AnnalyseManyBAOFIT:
 			yyy = el._minos[:,index,0]
 			yer = numpy.abs(el._minos[:,index,1])
 			yer[yyy-1.>0.] = el._minos[:,index,2][yyy-1.>0.]
+
 			cut = numpy.abs(el._minos[:,index,1])>0.
 			yyy = yyy[cut]
 			yer = yer[cut]
@@ -638,21 +662,24 @@ class AnnalyseManyBAOFIT:
 		for el in list_of_fit:
 
 			### xxx
-			x     = el._param[:,index_1,0][ (el._param[:,index_1,1]>0.) ]
+			cut = numpy.logical_and(el._param[:,index_1,1]>0., el._param[:,index_2,1]>0.)
+			#cut = numpy.logical_and(el._minos[:,1,3]>0., numpy.logical_and(el._minos[:,0,3]>0.,numpy.logical_and(el._param[:,index_1,1]>0., el._param[:,index_2,1]>0.)))
+			x     = el._param[:,index_1,0][cut]
 			if (x.size==0): return
-			x_err = el._param[:,index_1,1][ (el._param[:,index_1,1]>0.) ]
+			x_err = el._param[:,index_1,1][cut]
 			weights = numpy.ones(x_err.size) #numpy.power(x_err,-2.)
 			mean_x = numpy.average(x, weights=weights)
 			### yyy
-			y     = el._param[:,index_2,0][ (el._param[:,index_2,1]>0.) ]
+			y     = el._param[:,index_2,0][cut]
 			if (y.size==0): return
-			y_err = el._param[:,index_2,1][ (el._param[:,index_2,1]>0.) ]
+			y_err = el._param[:,index_2,1][cut]
 			weights = numpy.ones(y_err.size) #numpy.power(y_err,-2.)
 			mean_y = numpy.average(y, weights=weights)
 			if (x.size==0 or y.size==0 or x.size!=y.size):
 				print ' ERROR ! x.size==0 or y.size==0 or x.size!=y.size'
 				plt.clf()
 				return
+			else: print ' size is = ', x.size
 
 			# the scatter plot:
 			axScatter.errorbar(x, y, fmt='o',linewidth=2, markersize=10, color=color[nb],alpha=0.6)
@@ -716,14 +743,16 @@ class AnnalyseManyBAOFIT:
 		for el in list_of_fit:
 
 			### xxx
-			x       = el._param[:,index_1,0][ (el._param[:,index_1,1]>0.) ]
-			x_err   = el._param[:,index_1,1][ (el._param[:,index_1,1]>0.) ]
+			cut = numpy.logical_and(el._param[:,index_1,1]>0., el._param[:,index_2,1]>0.)
+			#cut = numpy.logical_and(el._minos[:,1,3]>0., numpy.logical_and(el._minos[:,0,3]>0.,numpy.logical_and(el._param[:,index_1,1]>0., el._param[:,index_2,1]>0.)))
+			x       = el._param[:,index_1,0][cut]
+			x_err   = el._param[:,index_1,1][cut]
 			weights = numpy.ones(x_err.size) #numpy.power(x_err,-2.)
 			mean_x  = numpy.average(x, weights=weights)
 			err_x   = numpy.sqrt( numpy.average((x-mean_x)**2, weights=weights)/x.size) 
 			### yyy
-			y     = el._param[:,index_2,0][ (el._param[:,index_2,1]>0.) ]
-			y_err = el._param[:,index_2,1][ (el._param[:,index_2,1]>0.) ]
+			y     = el._param[:,index_2,0][cut]
+			y_err = el._param[:,index_2,1][cut]
 			weights = numpy.ones(y_err.size) #numpy.power(y_err,-2.)
 			mean_y  = numpy.average(y, weights=weights)
 			err_y   = numpy.sqrt( numpy.average((y-mean_y)**2, weights=weights)/x.size) 

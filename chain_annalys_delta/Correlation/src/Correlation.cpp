@@ -259,7 +259,7 @@ Correlation::Correlation(int argc, char **argv) {
 			pathToRaw__ += ".fits";
 		}
 		else if (mock_version==4) {
-			pathToRaw__ = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/fits/spectra-785";
+			pathToRaw__ = "/home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/v1575delta/fits/spectra-785";
 			pathToRaw__ += argv[5];
 			pathToRaw__ += "-";
 			pathToRaw__ += argv[6];
@@ -346,6 +346,7 @@ void Correlation::xi_1D_delta_delta(void) {
 
 	if (mocks_raw) loadDataForest_Raw();
 	else loadDataForest(pathForest__);
+	if (nbForest_==0.) return;
 
 	if (mocksNoNoiseNoCont || mocks_raw) {
 		removeFalseCorrelations();
@@ -466,6 +467,7 @@ void Correlation::xi_1DlRF_delta_delta(void) {
 
 	if (mocks_raw) loadDataForest_Raw();
 	else loadDataForest(pathForest__);
+	if (nbForest_==0.) return;
 
 	if (mocksNoNoiseNoCont || mocks_raw) {
 		removeFalseCorrelations();
@@ -583,6 +585,7 @@ void Correlation::xi_1DlRFDevide_delta_delta(void) {
 
 	if (mocks_raw) loadDataForest_Raw();
 	else loadDataForest(pathForest__);
+	if (nbForest_==0.) return;
 
 	if (mocksNoNoiseNoCont || mocks_raw) {
 		removeFalseCorrelations();
@@ -701,6 +704,7 @@ void Correlation::xi_1D_delta_delta_distortionMatrix(void) {
 
 	if (mocks_raw) loadDataForest_Raw();
 	else loadDataForest(pathForest__);
+	if (nbForest_==0.) return;
 
 	if (mocksNoNoiseNoCont || mocks_raw) {
 		removeFalseCorrelations();
@@ -941,6 +945,8 @@ void Correlation::xi_1D_delta_delta2(void) {
 
 	///// Forest 1
 	loadDataForest(pathForest__);
+	if (nbForest_==0.) return;
+
 	v_CosDe__.clear();
 	v_SinDe__.clear();
 	v_idx__.clear();
@@ -949,6 +955,8 @@ void Correlation::xi_1D_delta_delta2(void) {
 	v_nb__.clear();
 	///// Forest 2
 	loadDataDelta2();
+	if (v_raDelta2__.size()==0.) return;
+
 	v_CosDeDelta2__.clear();
 	v_SinDeDelta2__.clear();
 	v_lRFDelta2__.clear();
@@ -1056,6 +1064,8 @@ void Correlation::xi_1DlRFDevide_delta_delta2(void) {
 
 	///// Forest 1
 	loadDataForest(pathForest__);
+	if (nbForest_==0.) return;
+
 	v_CosDe__.clear();
 	v_SinDe__.clear();
 	v_idx__.clear();
@@ -1064,6 +1074,8 @@ void Correlation::xi_1DlRFDevide_delta_delta2(void) {
 	v_nb__.clear();
 	///// Forest 2
 	loadDataDelta2();
+	if (v_raDelta2__.size()==0.) return;
+
 	v_CosDeDelta2__.clear();
 	v_SinDeDelta2__.clear();
 	v_rDelta2__.clear();
@@ -1188,6 +1200,8 @@ void Correlation::xi_A_delta_delta(unsigned int bootIdx/*=0*/) {
 
 	///// Load forest
 	loadDataForest(pathForest__, bootIdx);
+	if (nbForest_==0.) return;
+
 	v_zz__.clear();
 	v_lRF__.clear();
 	v_lObs__.clear();
@@ -1522,6 +1536,8 @@ void Correlation::xi_A_delta_delta_lambda(void) {
 
 	///// Load forest
 	loadDataForest(pathForest__);
+	if (nbForest_==0.) return;
+
 	v_zz__.clear();
 	v_r__.clear();
 	v_idx__.clear();
@@ -1655,6 +1671,7 @@ void Correlation::xi_A_delta_delta_distortionMatrix(void) {
 
 	///// Forest
 	loadDataForest(pathForest__);
+	if (nbForest_==0.) return;
 
 	///// Empty useless vectors
 	v_zz__.clear();
@@ -1942,6 +1959,7 @@ void Correlation::xi_A_delta_delta_Metals_Models(double lambdaRFMetal1, std::str
 
 	///// Load forest
 	loadDataForest(pathForest__);
+	if (nbForest_==0.) return;
 
 	//// Create the conversion table from redshift to distance
 	Cosmology* cosmo = new Cosmology(C_H, C_OMEGAM, C_OMEGAB);
@@ -2203,6 +2221,8 @@ void Correlation::xi_A_delta_delta2( unsigned int bootIdx/*=0*/ ) {
 
 	///// Forest 1
 	loadDataForest(pathForest__, bootIdx);
+	if (nbForest_==0.) return;
+
 	if (doBootstraps__) removeFalseCorrelations();
 	v_idx__.clear();
 	v_lRF__.clear();
@@ -2505,6 +2525,8 @@ void Correlation::xi_A_delta_delta2_lambda(void) {
 
 	///// Load forest 1
 	loadDataForest(pathForest__);
+	if (nbForest_==0.) return;
+
 	v_r__.clear();
 	v_idx__.clear();
 	v_lRF__.clear();
@@ -2659,6 +2681,8 @@ void Correlation::xi_delta_QSO(unsigned int bootIdx/*=0*/) {
 	if (nbQ1__==0) return;
 	///// Forest
 	loadDataForest(pathForest__,bootIdx);
+	if (nbForest_==0.) return;
+
 	if (doingCoAddSoRemoving__) removeFalseCorrelations();
 
 	///// Empty useless vectors
@@ -3147,11 +3171,15 @@ void Correlation::xi_delta_QSO_theta(unsigned int bootIdx/*=0*/) {
 
 	///// QSO
 	loadDataQ1();
+	if (v_zzQ1__.size()==0.) return;
+
 	v_zzQ1__.clear();
 	v_rrQ1__.clear();
 	v_nb__.clear();
 	///// Forest
 	loadDataForest(pathForest__,bootIdx);
+	if (nbForest_==0.) return;
+
 	v_zz__.clear();
 	v_r__.clear();
 	v_z__.clear();
@@ -3262,6 +3290,8 @@ void Correlation::xi_delta_QSO_lambda(unsigned int bootIdx/*=0*/) {
 	if (nbQ1__==0) return;
 	///// Forest
 	loadDataForest(pathForest__,bootIdx);
+	if (nbForest_==0.) return;
+
 	if (doBootstraps__) removeFalseCorrelations();
 	v_zz__.clear();
 	v_r__.clear();
@@ -3416,6 +3446,7 @@ void Correlation::xi_delta_QSO_distortionMatrix(void) {
 	if (nbQ1__==0) return;
 	///// Forest
 	loadDataForest(pathForest__);
+	if (nbForest_==0.) return;
 
 	///// Empty useless vectors
 	v_zz__.clear();
@@ -3643,6 +3674,7 @@ void Correlation::xi_delta_QSO_distortionMatrix_1D(void) {
 	if (nbQ1__==0) return;
 	///// Forest
 	loadDataForest(pathForest__);
+	if (nbForest_==0.) return;
 
 	///// Empty useless vectors
 	v_zz__.clear();
@@ -3867,6 +3899,7 @@ void Correlation::xi_delta_QSO_Metals_Models(double lambdaFrMetal, std::string l
 	if (nbQ1__==0) return;
 	//// Forest
 	loadDataForest(pathForest__);
+	if (nbForest_==0.) return;
 
 	//// Create the conversion table from redshift to distance
 	Cosmology* cosmo = new Cosmology(C_H, C_OMEGAM, C_OMEGAB);
@@ -4182,6 +4215,7 @@ void Correlation::xi_delta_QSO_Wick(unsigned int diagramIdx) {
 	if (nbQ1__==0) return;
 	///// Forest
 	loadDataForest(pathForest__);
+	if (nbForest_==0.) return;
 
 	///// Empty useless vectors
 	v_zz__.clear();
@@ -4452,6 +4486,7 @@ void Correlation::xi_delta_QSO_Wick_1D(unsigned int diagramIdx) {
 	if (nbQ1__==0) return;
 	///// Forest
 	loadDataForest(pathForest__);
+	if (nbForest_==0.) return;
 
 	///// Empty useless vectors
 	v_zz__.clear();
@@ -5207,6 +5242,8 @@ void Correlation::xi_A_delta_delta_MockJMc(unsigned int bootIdx/*=0*/) {
 
 	if (mocks_raw) loadDataForest_Raw();
 	else loadDataForest(pathForest__, bootIdx);
+	if (nbForest_==0.) return;
+
 	if (mocksNoNoiseNoCont || mocks_raw) {
 		removeFalseCorrelations();
 	}
@@ -5521,6 +5558,7 @@ void Correlation::xi_A_delta_delta_MockJMc_distortionMatrix(void) {
 
 	///// Forest
 	loadDataForest(pathForest__);
+	if (nbForest_==0.) return;
 
 	///// Empty useless vectors
 	v_CosDe__.clear();
@@ -5840,6 +5878,7 @@ void Correlation::xi_A_delta_delta_Metals_Models_MockJMc(double lambdaRFMetal1, 
 	///// Load forest
 	if (mocks_raw) loadDataForest_Raw();
 	else loadDataForest(pathForest__);
+	if (nbForest_==0.) return;
 
 	//// Create the conversion table from redshift to distance
 	Cosmology* cosmo = new Cosmology(C_H, C_OMEGAM, C_OMEGAB);
@@ -6135,6 +6174,8 @@ void Correlation::xi_delta_QSO_MockJMc(unsigned int bootIdx/*=0*/) {
 	//// Forest
 	if (mocks_raw) loadDataForest_Raw(bootIdx);
 	else loadDataForest(pathForest__,bootIdx);
+	if (nbForest_==0.) return;
+
 	if (mocksNoNoiseNoCont || mocks_raw ) removeFalseCorrelations();
 	v_CosDe__.clear();
 	v_SinDe__.clear();
@@ -6533,6 +6574,7 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix(void) {
 	//// Forest
 	if (mocks_raw) loadDataForest_Raw();
 	else loadDataForest(pathForest__);
+	if (nbForest_==0.) return;
 
 	//// Empty useless vectors
 	v_CosDe__.clear();
@@ -6788,6 +6830,7 @@ void Correlation::xi_delta_QSO_MockJMc_distortionMatrix_1D(void) {
 	//// Forest
 	if (mocks_raw) loadDataForest_Raw();
 	else loadDataForest(pathForest__);
+	if (nbForest_==0.) return;
 
 	//// Empty useless vectors
 	v_CosDe__.clear();
@@ -7040,6 +7083,7 @@ void Correlation::xi_delta_QSO_Metals_Models_MockJMc(double lambdaFrMetal, std::
 	//// Forest
 	if (mocks_raw) loadDataForest_Raw();
 	else loadDataForest(pathForest__);
+	if (nbForest_==0.) return;
 
 	//// Create the conversion table from redshift to distance
 	Cosmology* cosmo = new Cosmology(C_H, C_OMEGAM, C_OMEGAB);

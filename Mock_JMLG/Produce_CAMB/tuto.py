@@ -5,7 +5,12 @@
 #
 #  /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/Correlation/correlation_1D.py
 #
-
+"""
+		f1 = cp.fgrowth(self.zref,0.27)
+		f2 = cp.fgrowth(z,0.27)
+		ff = (f2/f1)**2.
+*ff
+"""
 
 ### Python lib
 import cosmolopy

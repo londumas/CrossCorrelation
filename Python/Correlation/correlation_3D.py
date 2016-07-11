@@ -139,6 +139,7 @@ class Correlation3D:
 		self._minX2D   = self._min1D
 		self._maxX2D   = self._max1D
 		self._nbBinX2D = self._nbBin1D
+		self._binSizeX2D = (self._maxX2D-self._minX2D)/self._nbBinX2D
 		### 2D (Y)
 		self._minY2D   = self._min1D
 		self._maxY2D   = self._max1D
@@ -149,6 +150,7 @@ class Correlation3D:
 			self._nbBinY2D *= 2
 			self._nbBinY2D_calcul *= 2
 		self._nbBin2D  = self._nbBinX2D*self._nbBinY2D
+		self._binSizeY2D = (self._maxY2D-self._minY2D)/self._nbBinY2D
 		
 		### Mu
 		self._minM = 0.
@@ -219,7 +221,7 @@ class Correlation3D:
 		xiWe = numpy.zeros(shape=(self._nbBin1D,self._nb_wedges,3))
 		xi1D = numpy.zeros(shape=(self._nbBin1D,3))
 		
-		int_binSize = int(self._binSize)
+		int_binSize_R = int(self._binSize)
 	
 		if (selection==0 or selection==1):
 			### Mu
@@ -277,8 +279,11 @@ class Correlation3D:
 				iY = i%self._nbBinM_calcul
 	
 				### for mu
-				idX = iX/int_binSize
+				idX = iX/int_binSize_R
 				idY = iY/binSizeY
+				if (idX>=self._nbBin1D):
+					print '  OUT OF BOUNDS'
+					continue
 	
 				tmp_save0[idX][idY] += save0[i]
 				tmp_save1[idX][idY] += save1[i]
@@ -358,7 +363,9 @@ class Correlation3D:
 			if (init):
 				if (verbose__): print "  ||  |s| < %u                       ||  %1.4e  ||  %1.4e    ||  %1.4e  ||" % (int(self._max1D), numpy.sum(tmp_save666), numpy.sum(tmp_save555), numpy.sum(data[:,4])/numpy.sum(data[:,5]))
 			
-	
+		int_binSize_X = int(self._binSizeX2D)
+		int_binSize_Y = int(self._binSizeY2D)
+
 		if (selection==0 or selection==2):
 			### 2D
 			data = numpy.loadtxt(path2D)
@@ -392,9 +399,15 @@ class Correlation3D:
 				iX = i/self._nbBinY2D_calcul
 				iY = i%self._nbBinY2D_calcul
 	
-				idX = iX/int_binSize
-				idY = iY/int_binSize
-	
+				idX = iX/int_binSize_X
+				idY = iY/int_binSize_Y
+				if (idX>=self._nbBinX2D):
+					print '  OUT OF BOUNDS'
+					continue
+				if (idY>=self._nbBinY2D):
+					print '  OUT OF BOUNDS'
+					continue
+
 				tmp_save0[idX][idY] += save0[i]
 				tmp_save1[idX][idY] += save1[i]
 				tmp_save2[idX][idY] += save2[i]
@@ -1500,7 +1513,7 @@ class Correlation3D:
 [PARAMETER]
 
 ### String
-model_prefix  = /home/gpfs/manip/mnt0607/bao/hdumasde/Program/pyLyA/models/DR9LyaMocks/DR9LyaMocks
+model         = /home/gpfs/manip/mnt0607/bao/hdumasde/Program/pyLyA/models/DR9LyaMocks/DR9LyaMocks.fits
 metal_prefix  = """ +data+"""
 data_auto     = """ +data_auto+"""
 data_cross    = """ +data_cross+"""
@@ -1511,19 +1524,13 @@ metals        = """ +metals+"""
 fix           = """ +fix+"""
 free          = """ +free+"""
 
-### Bool
-hcds  = False
-uv    = False
-debug = False
-
 ### General
 bias_lya*(1+beta_lya) = -0.39536
-beta_lya          = 1.4152731707
+beta_lya          = 1.352
 ap                = 1.
 at                = 1.
 rmin              = 10.
 rmax              = 180.
-zref              = 2.25
 ell_max           = 6
 
 ### Auto-correlation
@@ -1533,15 +1540,17 @@ SigmaNL_perp      = 0.
 1+f               = 1.
 
 ## Cross-correlation
-bias_qso          = 3.8
+bias_qso          = 3.125
 growth_factor_qso = 0.962524
 drp               = 0.
 Lpar_cross        = 9.
 
-### LSS
+### LLS
 bias_lls          = -0.01
 beta_lls          = 0.6
 L0_lls            = 20
+
+### UV
 bias_gamma        = 0.13
 bias_prim         = -0.6666666666666666
 kappa0            = 300.
@@ -1579,8 +1588,8 @@ qso_metal_boost   = 1.
 		'''
 
 		### Send the fit
-		#command = '/home/gpfs/manip/mnt0607/bao/hdumasde/Program/pyLyA/bin/fit --config_file ' + config_file+'ini --minos ap at'
-		command = '/home/gpfs/manip/mnt0607/bao/hdumasde/Program/pyLyA/bin/fit --config_file ' + config_file+'fit.config --minos ap at --verbose'
+		command = '/home/gpfs/manip/mnt0607/bao/hdumasde/Program/pyLyA/bin/fit -c ' + config_file+'ini --verbose --ap 1. --at 1.'
+		#command = '/home/gpfs/manip/mnt0607/bao/hdumasde/Program/pyLyA/bin/fit -c ' + config_file+'fit.config --verbose --ap 1. --at 1.'
 		print command
 		subprocess.call(command, shell=True)
 
@@ -1921,9 +1930,11 @@ output-prefix = """ + path_to_BAOFIT + """.
 			### Save .dmat
 			if (dist_matrix):
 				print '  Saving .dmat'
-				if ( (dic_simu is not None) and realisation_type=='Simu_stack' ):
+				if (dic_simu['prefix']=='_raw_from_JeanMarc' or dic_simu['prefix']=='_delta_gaussian'):
+					dmatData = numpy.eye(self._nbBin2D)
+				elif ( (dic_simu is not None) and realisation_type=='Simu_stack' ):
+					print '  LOAD DMAT FROM: ', path_to_distortion_matrix
 					dmatData = numpy.load(path_to_distortion_matrix)
-				elif ((dic_simu is not None) and dic_simu['prefix']=='_raw_from_JeanMarc'): dmatData = numpy.eye(self._nbBin2D)
 				else:
 					dmatData = numpy.loadtxt(path_to_distortion_matrix)
 				indexMatrix1 = numpy.arange(self._nbBin2D*self._nbBin2D).reshape(self._nbBin2D,self._nbBin2D)/self._nbBin2D
@@ -2231,11 +2242,11 @@ output-prefix = """ + path_to_BAOFIT + """.
 		cbar = plt.colorbar()
 	
 		if (x_power==0):
-			cbar.set_label(r'$'+self._label+'(\, \overrightarrow{s} \,)$',size=40)
+			cbar.set_label(r'$'+self._label+'(\, r_{\parallel},r_{\perp} \,)$',size=40)
 		if (x_power==1):
-			cbar.set_label(r'$|s|.'+self._label+'(\, \overrightarrow{s} \,) \, [\rm{h}^{-1} \, \rm{Mpc}]$',size=40)
+			cbar.set_label(r'$|r|.'+self._label+'(\, r_{\parallel},r_{\perp} \,)$',size=40)
 		if (x_power==2):
-			cbar.set_label(r'$|s|^{2}.'+self._label+'(\, \overrightarrow{s} \,) \, [(\rm{h}^{-1} \, \rm{Mpc})^{2}]$',size=40)
+			cbar.set_label(r'$|r|^{2}.'+self._label+'(\, r_{\parallel},r_{\perp} \,)$',size=40)
 	
 		'''
 		plt.plot( [0.,200.],[0.,4*200.],color='white',linewidth=2 )
@@ -2247,8 +2258,8 @@ output-prefix = """ + path_to_BAOFIT + """.
 		'''
 
 		#plt.title(r'$'+self._title+'$', fontsize=40)
-		plt.xlabel(r'$s_{\perp} \, [\rm{h}^{-1} \, \rm{Mpc}]$', fontsize=40)
-		plt.ylabel(r'$s_{\parallel} \, [\rm{h}^{-1} \, \rm{Mpc}]$', fontsize=40)
+		plt.xlabel(r'$r_{\perp} \, [\rm{h}^{-1} \, \rm{Mpc}]$', fontsize=40)
+		plt.ylabel(r'$r_{\parallel} \, [\rm{h}^{-1} \, \rm{Mpc}]$', fontsize=40)
 		plt.grid(True)
 		cbar.formatter.set_powerlimits((0, 0))
 		cbar.update_ticks()
@@ -2437,7 +2448,7 @@ output-prefix = """ + path_to_BAOFIT + """.
 			yyy = self._xiMul[:,i,1][cut]
 			yer = self._xiMul[:,i,2][cut]
 			coef    = numpy.power(xxx,x_power)
-			plt.errorbar(xxx, coef*yyy, yerr=coef*yer, fmt='o', markersize=10,linewidth=2, label=r'$Data \, \xi_{'+str(i)+'}$', alpha=0.6)
+			plt.errorbar(xxx, coef*yyy, yerr=coef*yer, fmt='o', markersize=10,linewidth=2, label=r'$\xi_{'+str(i)+'}$', alpha=0.6)
 
 			for el in other:
 				cut = (el._xiMul[:,i,2]>0.)
@@ -2452,12 +2463,12 @@ output-prefix = """ + path_to_BAOFIT + """.
 	
 		plt.title(r'$'+self._title+'$', fontsize=40)
 		if (x_power==0):
-			plt.ylabel(r'$'+self._label+' (|s|)$', fontsize=40)
+			plt.ylabel(r'$'+self._label+' (|r|)$', fontsize=40)
 		if (x_power==1):
-			plt.ylabel(r'$|s|.'+self._label+' (|s|) \, [\rm{h}^{-1} \, \rm{Mpc}]$', fontsize=40)
+			plt.ylabel(r'$|r|.'+self._label+' (|r|)$', fontsize=40)
 		if (x_power==2):
-			plt.ylabel(r'$|s|^{2}.'+self._label+' (|s|) \, [(\rm{h}^{-1} \, \rm{Mpc})^{2}]$', fontsize=40)
-		plt.xlabel(r'$|s| \, [\rm{h}^{-1} \, \rm{Mpc}]$', fontsize=40)
+			plt.ylabel(r'$|r|^{2}.'+self._label+' (|r|)$', fontsize=40)
+		plt.xlabel(r'$|r| \, [\rm{h}^{-1} \, \rm{Mpc}]$', fontsize=40)
 		plt.xlim([ numpy.amin(xxx)-10., numpy.amax(xxx)+10. ])
 		myTools.deal_with_plot(False,False,True)
 		plt.show()
