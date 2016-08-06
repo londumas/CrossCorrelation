@@ -56,27 +56,27 @@ def plotOne():
 		'index_multipole_max' : 4,
 		'remove_residuales' : 'lambda_OBS',
 		'path_to_txt_file_folder': '',
-		'correlation': 'f_f',
+		'correlation': 'q_f',
 		'f1': 'LYA',
 		'f2': '',
 		'q1': 'QSO',
 		'q2': '',
-		'name' : 'NOTHING'
+		'name' : 'LYA \, forest \, vs. \, CIV \, absorber'
 	}
 	dic_simu = {
 		'path_to_simu' : '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/',
 		'nb_box' : 10,
 		'nb_simu' : 10,
-		'prefix' : '_delta_gaussian', #
+		'prefix' : '_only_LR_noRand_noRSD', #
 		'prefix2'   : '', #'_sigmaNL_0_pixelSize_3_15', #'_fit_from_10_to_180_sigmaNL_0_pixelSize_3_15', #'_fit_from_10_to_180'
 	}
 	dic_send_BAOFIT = {
 		'realisation_type'        : 'Simu_stack', #'subsampling', #
 		#'correlation_matrix_path' : '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/Results_raw_from_JeanMarc/xi_A_delta_delta_LYA_result_cor_2D_from_fit.npy',
 		#'correlation_matrix_path' : '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/Results/xi_A_delta_delta_LYA_result_cor_2D_from_fit.npy',
-		#'correlation_matrix_path' : '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/Results_raw_from_JeanMarc/xi_delta_QSO_LYA_QSO_result_cor_2D_from_fit.npy',
+		'correlation_matrix_path' : '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/Results_raw_from_JeanMarc/xi_delta_QSO_LYA_QSO_result_cor_2D_from_fit.npy',
 		#'correlation_matrix_path' : '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/Results/xi_delta_QSO_LYA_QSO_result_cor_2D_from_fit.npy',
-		'correlation_matrix_path' : '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/Results_no_metals/xi_delta_QSO_LYA_QSO_result_cor_2D_from_fit.npy',
+		#'correlation_matrix_path' : '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/Results_no_metals/xi_delta_QSO_LYA_QSO_result_cor_2D_from_fit.npy',
 		#'correlation_matrix_path' : '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator_2016_05_26_PlankCosmo/xi_delta_QSO_LYA_QSO_subsampling_cor_2D_from_fit.npy',
 		'saving_data'             : True,
 		'scan'                    : False,
@@ -88,9 +88,9 @@ def plotOne():
 		'dic_simu'                : dic_simu, #None, #dic_simu
 		'prefix'                  : ''
 	}
-	dic_class['path_to_txt_file_folder'] = dic_simu['path_to_simu'] + 'Box_00'+str(i)+'/Simu_00'+str(j)+'/Results'+dic_simu['prefix']+'/'
+	#dic_class['path_to_txt_file_folder'] = dic_simu['path_to_simu'] + 'Box_00'+str(i)+'/Simu_00'+str(j)+'/Results'+dic_simu['prefix']+'/'
 	#print dic_class['path_to_txt_file_folder']
-	#dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator_2016_05_26_PlankCosmo/'
+	dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator_2016_05_26/' #_PlankCosmo/'
 	##dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator_coAdd_2016_05_26/'
 	#dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR14/'
 	print dic_class['path_to_txt_file_folder']
@@ -98,8 +98,8 @@ def plotOne():
 	#corr.write_metal_model(False)
 	#corr.send_BAOFIT(dic_send_BAOFIT)
 	#corr.send_pyLyA(with_metals_templates=False,prefix2='_rmin10')
-	corr.save_list_realisation_simulation(dic_class, dic_simu,False)
-	corr.set_values_on_mean_simulation_or_realisation_type(dic_simu)
+	#corr.save_list_realisation_simulation(dic_class, dic_simu,False)
+	#corr.set_values_on_mean_simulation_or_realisation_type(dic_simu)
 	#corr.send_BAOFIT(dic_send_BAOFIT)
 	#corr.send_pyLyA(with_metals_templates=False,prefix2='_rmin10')
 	#corr.set_values_on_mean_simulation_or_realisation_type(None,'shuffleForest')
@@ -307,11 +307,12 @@ def plotOne():
 	corr.plot_grid(0,True)
 	corr.plot_grid(1,True)
 	corr.plot_grid(2,True)
-
+	"""
 	#plt.hist(corr._xi2D[:,:,1].flatten(),bins=30)
 	#plt.show()
 	#plt.hist(corr._xi2D[:,:,1].flatten()/corr._xi2D[:,:,2].flatten(),bins=30)
         #plt.show()
+	
 	corr.plot_1d(0)
 	corr.plot_1d(1)
 	corr.plot_1d(2)
@@ -320,10 +321,11 @@ def plotOne():
 			corr.plot_we(ii,jj)
 	for ii in range(0,3):
 		corr.plot_we_all(ii)
-	"""
-	#corr._xi2D[:,:,1] /= corr._xi2D[:,:,2]	
-	#corr._xiMu[:,:,2] /= corr._xiMu[:,:,3]
+	
+	corr._xi2D[:,:,1] /= corr._xi2D[:,:,2]	
+	corr._xiMu[:,:,2] /= corr._xiMu[:,:,3]
 	corr.plot_slice_2d(0)
+	
 	corr.plot_2d(0)
 	corr.plot_2d(1)
 	corr.plot_2d(2)

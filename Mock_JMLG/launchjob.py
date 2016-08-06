@@ -70,6 +70,9 @@ def main():
 		subprocess.call('mkdir ' +pathToFolder+'Results_no_projection/', shell=True)
 		subprocess.call('mkdir ' +pathToFolder+'Results_raw_from_JeanMarc/', shell=True)
 		subprocess.call('mkdir ' +pathToFolder+'Results_delta_gaussian/', shell=True)
+                subprocess.call('mkdir ' +pathToFolder+'Results_only_LR/', shell=True)
+                subprocess.call('mkdir ' +pathToFolder+'Results_only_LR_noRand/', shell=True)
+		subprocess.call('mkdir ' +pathToFolder+'Results_only_LR_noRand_noRSD/', shell=True)
 
 	for i in range(0,10):
 
@@ -99,6 +102,9 @@ def main():
 				subprocess.call('mkdir ' + path + 'Results_no_projection/', shell=True)
 				subprocess.call('mkdir ' + path + 'Results_raw_from_JeanMarc/', shell=True)
 				subprocess.call('mkdir ' + path + 'Results_delta_gaussian/', shell=True)
+				subprocess.call('mkdir ' + path + 'Results_only_LR/', shell=True)
+				subprocess.call('mkdir ' + path + 'Results_only_LR_noRand/', shell=True)
+				subprocess.call('mkdir ' + path + 'Results_only_LR_noRand_noRSD/', shell=True)
 
 			elif (index_pass==1):
 
@@ -116,18 +122,18 @@ def main():
 
 			elif (index_pass==2):
 				if (i==0 and j==0):
-					#tbhduQSO    = create_fits_qso(sizeMax)
-					#tbhduQSO.writeto(path + 'Data/QSO_withRSD.fits', clobber=True)
-					tbhduForest = create_fits_forest(sizeMaxForest)
-					tbhduForest.writeto(path + 'Data/delta.fits', clobber=True)
+					tbhduQSO    = create_fits_qso(sizeMax)
+					tbhduQSO.writeto(path + 'Data/QSO_noRSD.fits', clobber=True)
+					#tbhduForest = create_fits_forest(sizeMaxForest)
+					#tbhduForest.writeto(path + 'Data/delta.fits', clobber=True)
 					#tbhduForest.writeto(path + 'Data_no_metals/delta.fits', clobber=True)
 				else:
-					command = 'cp ' + pathToFolder + 'Box_000/Simu_000/Data/delta.fits ' + path + 'Data/delta.fits'
-					subprocess.call(command, shell=True)
+					#command = 'cp ' + pathToFolder + 'Box_000/Simu_000/Data/delta.fits ' + path + 'Data/delta.fits'
+					#subprocess.call(command, shell=True)
 					#command = 'cp ' + pathToFolder + 'Box_000/Simu_000/Data/delta.fits ' + path + 'Data_no_metals/delta.fits'
 					#subprocess.call(command, shell=True)
-					#command = 'cp ' + pathToFolder + 'Box_000/Simu_000/Data/QSO_withRSD.fits ' + path + 'Data/QSO_withRSD.fits'
-					#subprocess.call(command, shell=True)
+					command = 'cp ' + pathToFolder + 'Box_000/Simu_000/Data/QSO_noRSD.fits ' + path + 'Data/QSO_noRSD.fits'
+					subprocess.call(command, shell=True)
 
 					#myTools.isReadyForNewJobs(10, 430,'cp')
 					#time.sleep(30)
@@ -137,27 +143,28 @@ def main():
 				command = "clubatch \"echo ; hostname ; "+ command + "\""
 				print command
 				subprocess.call(command, shell=True)
-				myTools.isReadyForNewJobs(5, 1000,'echo')
-				time.sleep(60)
+				myTools.isReadyForNewJobs(10, 1000,'echo')
+				time.sleep(10)
 				
 
 			elif (index_pass==4):
 
-				
+				'''
 				print path + 'Data/QSO_withRSD.fits'
 				cat = pyfits.open(path + 'Data/QSO_withRSD.fits')[1].data
 				nbQSO = cat.size
 				print '  nb of QSOs = ', nbQSO
-				"""
-				cat = pyfits.open(path + 'Data/QSO_withRSD.fits', memmap=True)[1].data
+				'''
+				cat = pyfits.open(path + 'Data/QSO_noRSD.fits', memmap=True)[1].data
 				print '  nb of QSOs before = ', cat.size
 				cat = cat[ (cat['Z'] != 0.) ]
 				print '  nb of QSOs after  = ', cat.size
 				nbQSO = cat.size
 
-				pyfits.writeto(path + 'Data/QSO_withRSD.fits', cat, clobber=True)
-				"""
+				pyfits.writeto(path + 'Data/QSO_noRSD.fits', cat, clobber=True)
 				
+				
+				"""
 				### Remove useless lines in Forest
 				cat = pyfits.open(path + 'Data_no_metals/delta.fits', memmap=True)[1].data
 
@@ -176,7 +183,7 @@ def main():
 				print '  nb of forests after  = ', cat.size
 				
 				pyfits.writeto(path + 'Data_no_metals/delta.fits', cat, clobber=True)
-				
+				"""
 
 			'''
 			### Get the data to 'good' files

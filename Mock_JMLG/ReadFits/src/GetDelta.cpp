@@ -60,8 +60,8 @@ const bool doVetoLines__ = true;
 GetDelta::GetDelta(int argc, char** argv) {
 
 	isTest__   = false;
-	withRSD__  = true;
-	noMetals__ = true;
+	withRSD__  = false;
+	noMetals__ = false;
 
 	std::cout << std::scientific;
 	std::cout.precision(std::numeric_limits<double>::digits10);
@@ -104,12 +104,12 @@ GetDelta::GetDelta(int argc, char** argv) {
 	std::cout << "\n"   << std::endl;
 
 	/// QSO
-	//GetQSO();
+	GetQSO();
 
 	std::cout << "\n"   << std::endl;
 
 	/// Delta
-	GetData();
+	//GetData();
 
 	if (findPDF__) {
 

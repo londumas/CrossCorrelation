@@ -103,24 +103,25 @@ const std::string pathToMockJMC__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_
 std::string pathToRaw__ = "";
 //std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator_coAdd_2016_05_26/";  //_nicolasEstimator   //_method1
 //std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator_primery_sky/";
-//std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator_2016_05_26/";
-std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator_2016_05_26_PlankCosmo_with_PDF_nicolas/";
+std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator_2016_05_26_PlankCosmo/";
+//std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator_2016_05_26_PlankCosmo_with_PDF_nicolas/";
 //std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR14/";
 std::string correlation_type__ = "NOTHING";
 
 
 ///// Type of data
 const bool mocks              = false;
-const bool mockJMC__          = true;
+const bool mockJMC__          = false;
 const bool mockBox__          = false;
 //// Attributes of data
  // versin=0 for old version, version=1 for mockExpander, version=2 for files from Jean-Marc
-const unsigned int mock_version = 4;
-const bool mocks_raw          = true;
+const unsigned int mock_version = 5;
+const bool mocks_raw          = false;
 const bool meanOver3pixels__  = false;
 const bool mocksNoNoiseNoCont = false;
 const bool noMetals__         = false;
-const double randomPositionOfQSOInCellNotBeforeCorrelation__ = true;
+const bool withRSD__          = true;
+const bool randomPositionOfQSOInCellNotBeforeCorrelation__ = false;
 unsigned int seed_for_random_position__ = 42;
 //// Flags for covariance matrix estimation
 const bool shuffleQSO     = false;
@@ -169,7 +170,7 @@ Correlation::Correlation(int argc, char **argv) {
 	}
 
 	///// Set the number of forest to work on
-	nbForest_   = 0;
+	nbForest_   = 10000;
 	nbForest2__ = 0;
 	nbQ1__      = 0;
 	nbQ2__      = 0;
@@ -223,7 +224,8 @@ Correlation::Correlation(int argc, char **argv) {
 		pathToRaw__   = pathForest__;
 
 		pathQ1__ = pathForest__;
-		pathQ1__ += "Data/QSO_withRSD.fits";
+		if (withRSD__) pathQ1__ += "Data/QSO_withRSD.fits";
+		else pathQ1__ += "Data/QSO_noRSD.fits";
 
 		if (noMetals__) pathForest__ += "Data_no_metals/delta.fits";
 		else            pathForest__ += "Data/delta.fits";
@@ -234,6 +236,13 @@ Correlation::Correlation(int argc, char **argv) {
 			if (mock_version==2) pathToSave__ += "_raw_from_JeanMarc/";
 			if (mock_version==3) pathToSave__ += "_Flux_Notemplate_WithMetals_WithNoise_WithSpectroResolution/";
 			if (mock_version==4) pathToSave__ += "_delta_gaussian/";
+			if (mock_version==5) {
+				if (randomPositionOfQSOInCellNotBeforeCorrelation__) pathToSave__ += "_only_LR/";
+				else {
+					if (withRSD__) pathToSave__ += "_only_LR_noRand/";
+					else pathToSave__ += "_only_LR_noRand_noRSD/";
+				}
+			}
 		}
 		else {
 			if (!nicolasEstimator__) pathToSave__ += "_no_projection/";
@@ -265,6 +274,13 @@ Correlation::Correlation(int argc, char **argv) {
 			pathToRaw__ += argv[6];
 			pathToRaw__ += ".fits";
 		}
+		else if (mock_version==5) {
+			pathToRaw__ = " /home/gpfs/manip/mnt0607/bao/jmlg/QSOlyaMocks/v1652/fits/spectra-785";
+			pathToRaw__ += argv[5];
+			pathToRaw__ += "-";
+			pathToRaw__ += argv[6];
+			pathToRaw__ += ".fits";
+		}
 	}
 
 	///// Command at the end
@@ -282,48 +298,56 @@ Correlation::Correlation(int argc, char **argv) {
 
 
 	/// Set the type of correlation
-	if (command == 14 || command == 26)      correlation_type__ = "q_q";
-	else if (command == 8  || command == 23) correlation_type__ = "f_f";
-	else if (command == 12 )                  correlation_type__ = "f_f2";
+	if (command == 400 || command == 507)       correlation_type__ = "q_q";
+	else if (command == 200  || command == 500) correlation_type__ = "f_f";
+	else if (command == 204 )                   correlation_type__ = "f_f2";
 
 
 	//
-	if      (command == 0) xi_1D_delta_delta();
-	else if (command == 1) xi_1DlRF_delta_delta();
-	else if (command == 2) xi_1DlRFDevide_delta_delta();
-	else if (command == 3) xi_1D_delta_delta_distortionMatrix();
-	else if (command == 4) xi_1DlRF_delta_delta_distortionMatrix();
-	else if (command == 5) xi_1DlRFDevide_delta_delta_distortionMatrix();
-	else if (command == 6) xi_1D_delta_delta2();
-	else if (command == 7) xi_1DlRFDevide_delta_delta2();
+	if      (command == 100) xi_1D_delta_delta();
+	else if (command == 101) xi_1DlRF_delta_delta();
+	else if (command == 102) xi_1DlRFDevide_delta_delta();
+	else if (command == 103) xi_1DlObs_2D_delta_delta();
+	else if (command == 104) xi_1D_delta_delta_distortionMatrix();
+	else if (command == 105) xi_1DlRF_delta_delta_distortionMatrix();
+	else if (command == 106) xi_1DlRFDevide_delta_delta_distortionMatrix();
+	else if (command == 107) xi_1D_delta_delta2();
+	else if (command == 108) xi_1DlRFDevide_delta_delta2();
 	//
-	else if (command == 8)  xi_A_delta_delta(idxCommand_[2]);
-	else if (command == 9)  xi_A_delta_delta_lambda();
-	else if (command == 10) xi_A_delta_delta_distortionMatrix();
-	else if (command == 11) xi_A_delta_delta_Metals_Models(absorber__[idxCommand_[1]],absorberName__[idxCommand_[1]],absorber__[idxCommand_[2]],absorberName__[idxCommand_[2]]);
-	else if (command == 12) xi_A_delta_delta2( idxCommand_[2] );
-	else if (command == 13) xi_A_delta_delta2_lambda();
+	else if (command == 200) xi_A_delta_delta(idxCommand_[2]);
+	else if (command == 201) xi_A_delta_delta_lambda();
+	else if (command == 202) xi_A_delta_delta_distortionMatrix();
+	else if (command == 203) xi_A_delta_delta_Metals_Models(absorber__[idxCommand_[1]],absorberName__[idxCommand_[1]],absorber__[idxCommand_[2]],absorberName__[idxCommand_[2]]);
+	else if (command == 204) xi_A_delta_delta2( idxCommand_[2] );
+	else if (command == 205) xi_A_delta_delta2_lambda();
 	//
-	else if (command == 14) xi_delta_QSO(idxCommand_[2]);
-	else if (command == 15) xi_delta_QSO_theta(idxCommand_[2]);
-	else if (command == 16) xi_delta_QSO_lambda(idxCommand_[2]);
-	else if (command == 17) xi_delta_QSO_distortionMatrix();
-	else if (command == 18) xi_delta_QSO_distortionMatrix_1D();
-	else if (command == 19) xi_delta_QSO_Metals_Models(absorber__[idxCommand_[2]],absorberName__[idxCommand_[2]]);
-	else if (command == 20) xi_delta_QSO_Wick(idxCommand_[3]);
-	else if (command == 21) xi_delta_QSO_Wick_1D(idxCommand_[3]);
+	else if (command == 300) xi_delta_QSO(idxCommand_[2]);
+	else if (command == 301) xi_delta_QSO_theta(idxCommand_[2]);
+	else if (command == 302) xi_delta_QSO_lambda(idxCommand_[2]);
+	else if (command == 303) xi_delta_QSO_distortionMatrix();
+	else if (command == 304) xi_delta_QSO_distortionMatrix_1D();
+	else if (command == 305) xi_delta_QSO_Metals_Models(absorber__[idxCommand_[2]],absorberName__[idxCommand_[2]]);
+	else if (command == 306) xi_delta_QSO_Wick_T1();
+	else if (command == 307) xi_delta_QSO_Wick_T12();
+	else if (command == 308) xi_delta_QSO_Wick_T123();
+	else if (command == 309) xi_delta_QSO_Wick_T1234();
+	else if (command == 310) xi_delta_QSO_Wick_T1_with_wi1D_array();
+	else if (command == 311) xi_delta_QSO_Wick_T12_with_wi1D_array();
+	else if (command == 312) xi_delta_QSO_Wick_T123_with_wi1D_array();
+	else if (command == 313) xi_delta_QSO_Wick_T1234_with_wi1D_array();
+	else if (command == 314) xi_delta_QSO_Wick_1D(idxCommand_[3]);
 	//
-	else if (command == 22) xi_QSO_QSO(idxCommand_[2]);
-	else if (command == 23) xi_Q1_Q2();
+	else if (command == 400) xi_QSO_QSO(idxCommand_[2]);
+	else if (command == 401) xi_Q1_Q2();
 	//
-	else if (command == 24) xi_A_delta_delta_MockJMc(idxCommand_[2]);
-	else if (command == 25) xi_A_delta_delta_MockJMc_distortionMatrix();
-	else if (command == 26) xi_A_delta_delta_Metals_Models_MockJMc(absorber__[idxCommand_[1]],absorberName__[idxCommand_[1]],absorber__[idxCommand_[2]],absorberName__[idxCommand_[2]]);
-	else if (command == 27) xi_delta_QSO_MockJMc(idxCommand_[2]);
-	else if (command == 28) xi_delta_QSO_MockJMc_distortionMatrix();
-	else if (command == 29) xi_delta_QSO_MockJMc_distortionMatrix_1D();
-	else if (command == 30) xi_delta_QSO_Metals_Models_MockJMc(absorber__[idxCommand_[2]],absorberName__[idxCommand_[2]]);
-	else if (command == 31) xi_QSO_QSO_MockJMc(idxCommand_[2]);
+	else if (command == 500) xi_A_delta_delta_MockJMc(idxCommand_[2]);
+	else if (command == 501) xi_A_delta_delta_MockJMc_distortionMatrix();
+	else if (command == 502) xi_A_delta_delta_Metals_Models_MockJMc(absorber__[idxCommand_[1]],absorberName__[idxCommand_[1]],absorber__[idxCommand_[2]],absorberName__[idxCommand_[2]]);
+	else if (command == 503) xi_delta_QSO_MockJMc(idxCommand_[2]);
+	else if (command == 504) xi_delta_QSO_MockJMc_distortionMatrix();
+	else if (command == 505) xi_delta_QSO_MockJMc_distortionMatrix_1D();
+	else if (command == 506) xi_delta_QSO_Metals_Models_MockJMc(absorber__[idxCommand_[2]],absorberName__[idxCommand_[2]]);
+	else if (command == 507) xi_QSO_QSO_MockJMc(idxCommand_[2]);
 
 
 	std::cout << "\n\n\n\n" << std::endl;
@@ -695,6 +719,105 @@ void Correlation::xi_1DlRFDevide_delta_delta(void) {
 
 	std::cout << "  < z >           = " << sumZZZ/sumWeg << std::endl;
 	std::cout << "  Number of pairs = " << sumOne << std::endl;
+
+	return;
+}
+void Correlation::xi_1DlObs_2D_delta_delta(void) {
+
+	std::cout << "\n\n\n\n  ------ xi_1DlObs_2D_delta_delta ------\n" << std::endl;
+
+	if (mocks_raw) loadDataForest_Raw();
+	else loadDataForest(pathForest__);
+	if (nbForest_==0.) return;
+
+	if (mocksNoNoiseNoCont || mocks_raw) {
+		removeFalseCorrelations();
+	}
+	v_ra__.clear();
+	v_de__.clear();
+	v_CosDe__.clear();
+	v_SinDe__.clear();
+	v_zz__.clear();
+	v_idx__.clear();
+	v_r__.clear();
+	v_lRF__.clear();
+	v_nb__.clear();
+
+
+	///// Constants:
+	const unsigned int nbBins  = int(lambdaObsMax__-lambdaObsMin__)+1;
+	double*** data = new double**[nbBins];
+	for (unsigned int i=0; i<nbBins; i++) {
+		data[i] = new double*[nbBins];
+		for (unsigned int j=0; j<nbBins; j++) {
+			data[i][j] = new double[2];
+			for (unsigned int k=0; k<2; k++) {
+				data[i][j][k] = 0.;
+			}
+		}
+	}
+
+	std::cout << "\n  Starting\n" << std::endl;
+	
+	for (unsigned int f=0; f<nbForest_; f++) {
+
+		const unsigned int nb = v_nbPixelDelta1__[f];
+
+		for (unsigned int i1=0; i1<nb; i1++) {
+
+			const double d1 = v_d__[f][i1];
+			const double w1 = v_w__[f][i1];
+			const unsigned int bin_index_1 = 1+int(v_lObs__[f][i1]-lambdaObsMin__);
+
+			const double w1w1 = w1*w1;
+			const double d1d1 = d1*d1;
+
+			///// Compute the xi1D
+			data[bin_index_1][bin_index_1][0] += w1w1*d1d1;
+			data[bin_index_1][bin_index_1][1] += w1w1;
+
+			for (unsigned int i2=0; i2<i1; i2++) {
+
+				const double w1w2  = w1*v_w__[f][i2];
+				const double d1d2  = d1*v_d__[f][i2];
+				const unsigned int bin_index_2 = int(v_lObs__[f][i2]-lambdaObsMin__);
+
+				///// Compute the xi1D
+				data[bin_index_1][bin_index_2][0] += w1w2*d1d2;
+				data[bin_index_1][bin_index_2][1] += w1w2;
+			}
+		}
+	}
+
+	///// Set the values of upper diagonal
+	for (unsigned int i=0; i<nbBins; i++) {
+		for (unsigned int j=0; j<i; j++) {
+			data[j][i][0] = data[i][j][0];
+			data[j][i][1] = data[i][j][1];
+		}
+	}
+
+	std::cout << "\n  Saving\n" << std::endl;
+
+	std::ofstream fFile;
+	std::string pathToSave = pathToSave__;
+	pathToSave += "xi_1DlObs_2D_delta_delta_";
+	pathToSave += forest__;
+	pathToSave += ".txt";
+	std::cout << "\n  pathToSave = " << pathToSave << std::endl;
+	fFile.open(pathToSave.c_str());
+	fFile << std::scientific;
+	fFile.precision(std::numeric_limits<double>::digits10);
+
+	///// Set the values of data
+	for (unsigned int i=0; i<nbBins; i++) {
+		for (unsigned int j=0; j<nbBins; j++) {
+			if (data[i][j][1]>0.) data[i][j][0] /= data[i][j][1];
+			fFile << data[i][j][0] << " ";
+		}
+		fFile << std::endl;
+	}
+	fFile.close();
 
 	return;
 }
@@ -4168,20 +4291,14 @@ void Correlation::xi_delta_QSO_Metals_Models(double lambdaFrMetal, std::string l
 
 	return;
 }
-void Correlation::xi_delta_QSO_Wick(unsigned int diagramIdx) {
+void Correlation::xi_delta_QSO_Wick_T1(void) {
 
-	
-	//// Convert the diagram index to string
-	std::stringstream convert;
-	convert << diagramIdx;
-	std::string strConvert = convert.str();
-
-	std::cout << "\n\n\n\n  ------ xi_delta_QSO_Wick ------\n" << std::endl;
+	std::cout << "\n\n\n\n  ------ xi_delta_QSO_Wick_T1 ------\n" << std::endl;
 
 
 	//// ------------------------------------------------------------------
 	//// Load correlation delta-delta same forest
-	std::string pathToFile = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator_2016_05_26/xi_1D_delta_delta_LYA.txt";
+	std::string pathToFile = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator_2016_05_26_PlankCosmo/xi_1D_delta_delta_LYA.txt";
 	std::ifstream fileData(pathToFile.c_str());
 
 	std::vector<double> tmp_xidd1D;
@@ -4207,6 +4324,263 @@ void Correlation::xi_delta_QSO_Wick(unsigned int diagramIdx) {
 		xidd1D[i] = tmp_xidd1D[i];
 	}
 	tmp_xidd1D.clear();
+	const double xidd1D_0 = xidd1D[0];
+	//// ------------------------------------------------------------------
+	
+
+	///// QSO
+	loadDataQ1();
+	if (nbQ1__==0) return;
+	///// Forest
+	loadDataForest(pathForest__);
+	if (nbForest_==0.) return;
+
+	///// Empty useless vectors
+	v_zz__.clear();
+	v_lRF__.clear();
+	v_lObs__.clear();
+	v_nb__.clear();
+
+	//// Constants:
+	const double max                  = 200.;
+	const unsigned int nbBin          = 50;
+	const unsigned int nbBinX         = nbBin;
+	const unsigned int nbBinY         = 2*nbBin;
+	static const unsigned int nbBin2D = nbBinX*nbBinY;
+	const double fromValToIdx         = nbBin/max;
+	const double maxPow2              = max*max;
+
+	//// Array with the covariance
+	double nb[nbBin2D];
+	double weight[nbBin2D];
+	double** cov    = new double*[nbBin2D];
+	double** nb_all = new double*[nbBin2D];
+	double** we_all = new double*[nbBin2D];
+	for (unsigned int i=0; i<nbBin2D; i++) {
+		nb[i]     = 0.;
+		weight[i] = 0.;
+		cov[i]    = new double[nbBin2D];
+		nb_all[i] = new double[nbBin2D];
+		we_all[i] = new double[nbBin2D];
+		for (unsigned int j=0; j<nbBin2D; j++) {
+			cov[i][j]    = 0.;
+			nb_all[i][j] = 0.;
+			we_all[i][j] = 0.;
+		}
+	}
+
+
+	for (unsigned int f=0; f<nbForest_; f++) {
+	
+		///// Get number of pixels in forest
+		const unsigned int nbPixel = v_nbPixelDelta1__[f];
+		const double firstPixel    = v_r__[f][0];
+		const double lastPixel     = v_r__[f][nbPixel-1];
+		const double cosDe         = v_CosDe__[f];
+		const double sinDe         = v_SinDe__[f];
+		const double ra            = v_ra__[f];
+		const double dec           = v_de__[f];
+
+		for (unsigned int q=0; q<nbQ1__; q++) {
+
+			///// Remove the correlation qso-ownForest
+			if (fabs(ra-v_raQ1__[q])<C_AUTOCORRCRIT && fabs(dec-v_deQ1__[q])<C_AUTOCORRCRIT ) continue;
+
+			///// Angle between the two directions of the qso and the lya
+			const double cosTheta = cosDe*v_CosDeQ1__[q]*cos(ra-v_raQ1__[q]) + sinDe*v_SinDeQ1__[q];
+
+			///// reject QSO with a distance too large
+			const double distTransQsoLyaPow2 = v_rrQ1__[q]*v_rrQ1__[q]*(1.-cosTheta*cosTheta);
+			if (distTransQsoLyaPow2 >= maxPow2) continue;
+
+			///// Parrallel distance between the qso and the lya
+			const double distParalQsoLya = v_rrQ1__[q]*cosTheta;
+
+			///// Distance between the qso and the first pixel
+			const double distParalQsoFirstPixel = firstPixel - distParalQsoLya;
+			if ( distParalQsoFirstPixel >= max) continue;
+
+			///// Distance between the qso and the last pixel
+			const double distParalQsoLastPixel = lastPixel - distParalQsoLya;
+			if ( distParalQsoLastPixel <= -max) continue;
+
+			///// Transvers distance between the qso and the lya
+			const double distTransQsoLya = sqrt(distTransQsoLyaPow2);
+			const unsigned int rPerpBinIdx = int( distTransQsoLya*fromValToIdx );
+
+			///// 'true' if first pixel of forest is further than the QSO
+			const bool infPosBool = (distParalQsoFirstPixel > 0.);
+			///// 'true' if last pixel of forest is lower than the QSO
+			const bool supPosBool = (distParalQsoLastPixel < 0.);
+
+			///// Loops over all pixels of the forest
+			for (unsigned int i=0; i<nbPixel; i++) {
+
+				unsigned int ii = i;
+				if (supPosBool) ii = nbPixel-1-i;
+	
+				const double distP = v_r__[f][ii] - distParalQsoLya;				
+
+				///// Look at the position of the Lya forest regarding the qso
+				if (fabs(distP) >= max) {
+					if (infPosBool || supPosBool) break;
+					else continue;
+				}
+
+				const double w = v_w__[f][ii];
+				///// Fill the histogramm of xi(r_{perp}, r_{paral}
+				const unsigned int globalBin = rPerpBinIdx*nbBinY+int( (distP+max)*fromValToIdx );
+
+				cov[globalBin][globalBin] += w*w*xidd1D_0;
+				//cov[globalBin][globalBin] += w*w*v_d__[f][ii]*v_d__[f][ii];
+				nb[globalBin] ++;
+				weight[globalBin] += w;
+				nb_all[globalBin][globalBin] ++;
+                        	we_all[globalBin][globalBin] += w*w;
+			}
+		}
+	}
+
+
+	const std::string diagram = "T1_xithXi1D";
+	//const std::string diagram = "T1_withDelta";
+
+	std::cout << "\n  Saving\n" << std::endl;
+	std::ofstream fFile;
+
+	///// Save the 2D cross-correlation 
+	std::string pathToSave = pathToSave__;
+	pathToSave += "xi_delta_QSO_2D_Wick";
+	pathToSave += "_";
+	pathToSave += diagram;
+	pathToSave += "_";
+	pathToSave += forest__;
+	pathToSave += "_";
+	pathToSave += QSO__;
+	pathToSave += ".txt";
+	std::cout << "\n  " << pathToSave << std::endl;
+	fFile.open(pathToSave.c_str());
+	fFile << std::scientific;
+	fFile.precision(std::numeric_limits<double>::digits10);
+	
+	///// Set the values of data
+	for (unsigned int i=0; i<nbBin2D; i++) {
+		for (unsigned int j=0; j<nbBin2D; j++) {
+			if (nb[i]>1. && nb[j]>1.) cov[i][j] /= weight[i]*weight[j];
+			fFile << cov[i][j] << " ";
+		}
+		fFile << std::endl;
+	}
+	fFile.close();
+
+	///// Save the number 
+	pathToSave = pathToSave__;
+        pathToSave += "xi_delta_QSO_2D_Wick";
+	pathToSave += "_";
+	pathToSave += diagram;
+	pathToSave += "_number_";
+        pathToSave += forest__;
+        pathToSave += "_";
+        pathToSave += QSO__;
+        pathToSave += ".txt";
+        std::cout << "\n  " << pathToSave << std::endl;
+        fFile.open(pathToSave.c_str());
+        fFile << std::scientific;
+        fFile.precision(std::numeric_limits<double>::digits10);
+
+	for (unsigned int i=0; i<nbBin2D; i++) {
+                for (unsigned int j=0; j<nbBin2D; j++) {
+			if (nb[i]>1. && nb[j]>1.)  nb_all[i][j] /= nb[i]*nb[j];
+                        fFile << nb_all[i][j] << " ";
+                }
+                fFile << std::endl;
+        }
+        fFile.close();
+
+
+	///// Save the weight
+	pathToSave = pathToSave__;
+        pathToSave += "xi_delta_QSO_2D_Wick";
+	pathToSave += "_";
+	pathToSave += diagram;
+	pathToSave += "_weight_";
+        pathToSave += forest__;
+        pathToSave += "_";
+        pathToSave += QSO__;
+        pathToSave += ".txt";
+        std::cout << "\n  " << pathToSave << std::endl;
+        fFile.open(pathToSave.c_str());
+        fFile << std::scientific;
+        fFile.precision(std::numeric_limits<double>::digits10);
+
+        for (unsigned int i=0; i<nbBin2D; i++) {
+                for (unsigned int j=0; j<nbBin2D; j++) {
+			if (nb[i]>1. && nb[j]>1.) we_all[i][j] /= weight[i]*weight[j];
+                        fFile << we_all[i][j] << " ";
+                }
+                fFile << std::endl;
+        }
+        fFile.close();
+
+	
+	///// Save the number for the correlation
+	pathToSave = pathToSave__;
+        pathToSave += "xi_delta_QSO_2D_Wick";
+	pathToSave += "_";
+	pathToSave += diagram;
+	pathToSave += "_numberCorr_";
+        pathToSave += forest__;
+        pathToSave += "_";
+        pathToSave += QSO__;
+        pathToSave += ".txt";
+        std::cout << "\n  " << pathToSave << std::endl;
+        fFile.open(pathToSave.c_str());
+        fFile << std::scientific;
+        fFile.precision(std::numeric_limits<double>::digits10);
+
+	for (unsigned int i=0; i<nbBin2D; i++) {
+                fFile << nb[i] << " ";
+                fFile << std::endl;
+        }
+        fFile.close();
+
+
+	return;
+}
+void Correlation::xi_delta_QSO_Wick_T12(void) {
+
+	std::cout << "\n\n\n\n  ------ xi_delta_QSO_Wick_T12 ------\n" << std::endl;
+
+
+	//// ------------------------------------------------------------------
+	//// Load correlation delta-delta same forest
+	std::string pathToFile = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator_2016_05_26_PlankCosmo/xi_1D_delta_delta_LYA.txt";
+	std::ifstream fileData(pathToFile.c_str());
+
+	std::vector<double> tmp_xidd1D;
+
+	long double save0 = 0.;
+	long double save1 = 0.;
+	long double save2 = 0.;
+	long double save3 = 0.;
+	long double save4 = 0.;
+	long double save5 = 0.;
+
+	while (fileData) {
+		fileData>>save0>>save1>>save2>>save3>>save4>>save5;
+		if (fileData==0) break;
+		if (save5==0.) continue;
+		tmp_xidd1D.push_back(save0/save4);
+	}
+	fileData.close();
+
+	std::cout << "  size xi_delta_delta_1D = " << tmp_xidd1D.size() << std::endl;
+	double xidd1D[tmp_xidd1D.size()];
+	for (unsigned int i=0; i<tmp_xidd1D.size(); i++) {
+		xidd1D[i] = tmp_xidd1D[i];
+	}
+	tmp_xidd1D.clear();
+	//const double xidd1D_0 = xidd1D[0];
 	//// ------------------------------------------------------------------
 	
 
@@ -4317,19 +4691,15 @@ void Correlation::xi_delta_QSO_Wick(unsigned int diagramIdx) {
 				///// Fill the histogramm of xi(r_{perp}, r_{paral}
 				const unsigned int globalBin = rPerpBinIdx*nbBinY+int( (distP+max)*fromValToIdx );
 
-				cov[globalBin][globalBin] += w*w*xidd1D[0];
-				//cov[globalBin][globalBin] += w*w*v_d__[f][ii]*v_d__[f][ii];
 				nb[globalBin] ++;
 				weight[globalBin] += w;
-				nb_all[globalBin][globalBin] ++;
-                        	we_all[globalBin][globalBin] += w*w;
 
-				//// For T1 + T2
+				//// For T2
 				vect_pair_bin.push_back(globalBin);
 				vect_pixel_index.push_back(ii);
 			}
 
-			
+
 			//// Calculate the covariance
 			const unsigned int nbPairs = vect_pair_bin.size();
 			
@@ -4338,41 +4708,45 @@ void Correlation::xi_delta_QSO_Wick(unsigned int diagramIdx) {
 				const unsigned int global_bin_1  = vect_pair_bin[i];
 				const unsigned int pixel_index_1 = vect_pixel_index[i];
 				const double www1 = v_w__[f][pixel_index_1];
-				const double rrr1 = v_w__[f][pixel_index_1];
+				//const double rrr1 = v_r__[f][pixel_index_1];
 				const double ddd1 = v_d__[f][pixel_index_1];
 
 				//// Covariance
 				for (unsigned int j=0; j<nbPairs; j++) {
-					if (i==j) continue;
 
 					const unsigned int global_bin_2  = vect_pair_bin[j];
 					const unsigned int pixel_index_2 = vect_pixel_index[j];
 					const double www2 = v_w__[f][pixel_index_2];
-					const double rrr2 = v_w__[f][pixel_index_2];
+					//const double rrr2 = v_r__[f][pixel_index_2];
 					const double ddd2 = v_d__[f][pixel_index_2];
-					const unsigned int idx_corr_1D = 1 + int(fabs(rrr1-rrr2));
-					
-					cov[global_bin_1][global_bin_2] += www1*www2*xidd1D[idx_corr_1D];
-					//cov[global_bin_1][global_bin_2] += www1*www2*ddd1*ddd2;
+					//unsigned int idx_corr_1D = 0;
+					//if (pixel_index_1!=pixel_index_2) idx_corr_1D = 1 + int(fabs(rrr1-rrr2));
+
+					//cov[global_bin_1][global_bin_2] += www1*www2*xidd1D[idx_corr_1D];
+					cov[global_bin_1][global_bin_2] += www1*www2*ddd1*ddd2;
 					nb_all[global_bin_1][global_bin_2] ++;
 					we_all[global_bin_1][global_bin_2] += www1*www2;
 				}
 			}
+
 		}
 	}
 
 
 
 
+	//const std::string diagram = "T12_xithXi1D";
+	const std::string diagram = "T12_withDelta";
 
-	std::cout << "\n  Saving\n" << std::endl;	
-
+	std::cout << "\n  Saving\n" << std::endl;
 	std::ofstream fFile;
 
 	///// Save the 2D cross-correlation 
 	std::string pathToSave = pathToSave__;
 	pathToSave += "xi_delta_QSO_2D_Wick";
-	pathToSave += "_T12_"; // T12  // T1234  // T124 //withDelta
+	pathToSave += "_";
+	pathToSave += diagram;
+	pathToSave += "_";
 	pathToSave += forest__;
 	pathToSave += "_";
 	pathToSave += QSO__;
@@ -4395,7 +4769,9 @@ void Correlation::xi_delta_QSO_Wick(unsigned int diagramIdx) {
 	///// Save the number 
 	pathToSave = pathToSave__;
         pathToSave += "xi_delta_QSO_2D_Wick";
-        pathToSave += "_T12_number_"; // T12  // T1234  // T124
+	pathToSave += "_";
+	pathToSave += diagram;
+	pathToSave += "_number_";
         pathToSave += forest__;
         pathToSave += "_";
         pathToSave += QSO__;
@@ -4418,7 +4794,9 @@ void Correlation::xi_delta_QSO_Wick(unsigned int diagramIdx) {
 	///// Save the weight
 	pathToSave = pathToSave__;
         pathToSave += "xi_delta_QSO_2D_Wick";
-        pathToSave += "_T12_weight_"; // T12  // T1234  // T124
+	pathToSave += "_";
+	pathToSave += diagram;
+	pathToSave += "_weight_";
         pathToSave += forest__;
         pathToSave += "_";
         pathToSave += QSO__;
@@ -4436,6 +4814,1782 @@ void Correlation::xi_delta_QSO_Wick(unsigned int diagramIdx) {
                 fFile << std::endl;
         }
         fFile.close();
+
+	
+	///// Save the number for the correlation
+	pathToSave = pathToSave__;
+        pathToSave += "xi_delta_QSO_2D_Wick";
+	pathToSave += "_";
+	pathToSave += diagram;
+	pathToSave += "_numberCorr_";
+        pathToSave += forest__;
+        pathToSave += "_";
+        pathToSave += QSO__;
+        pathToSave += ".txt";
+        std::cout << "\n  " << pathToSave << std::endl;
+        fFile.open(pathToSave.c_str());
+        fFile << std::scientific;
+        fFile.precision(std::numeric_limits<double>::digits10);
+
+	for (unsigned int i=0; i<nbBin2D; i++) {
+                fFile << nb[i] << " ";
+                fFile << std::endl;
+        }
+        fFile.close();
+
+
+	return;
+}
+void Correlation::xi_delta_QSO_Wick_T123(void) {
+
+	std::cout << "\n\n\n\n  ------ xi_delta_QSO_Wick_T123 ------\n" << std::endl;
+
+
+	//// ------------------------------------------------------------------
+	//// Load correlation delta-delta same forest
+	std::string pathToFile = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator_2016_05_26_PlankCosmo/xi_1D_delta_delta_LYA.txt";
+	std::ifstream fileData(pathToFile.c_str());
+
+	std::vector<double> tmp_xidd1D;
+
+	long double save0 = 0.;
+	long double save1 = 0.;
+	long double save2 = 0.;
+	long double save3 = 0.;
+	long double save4 = 0.;
+	long double save5 = 0.;
+
+	while (fileData) {
+		fileData>>save0>>save1>>save2>>save3>>save4>>save5;
+		if (fileData==0) break;
+		if (save5==0.) continue;
+		tmp_xidd1D.push_back(save0/save4);
+	}
+	fileData.close();
+
+	std::cout << "  size xi_delta_delta_1D = " << tmp_xidd1D.size() << std::endl;
+	double xidd1D[tmp_xidd1D.size()];
+	for (unsigned int i=0; i<tmp_xidd1D.size(); i++) {
+		xidd1D[i] = tmp_xidd1D[i];
+	}
+	tmp_xidd1D.clear();
+	//const double xidd1D_0 = xidd1D[0];
+	//// ------------------------------------------------------------------
+	
+
+	///// QSO
+	loadDataQ1();
+	if (nbQ1__==0) return;
+	///// Forest
+	loadDataForest(pathForest__);
+	if (nbForest_==0.) return;
+
+	///// Empty useless vectors
+	v_zz__.clear();
+	v_lRF__.clear();
+	v_lObs__.clear();
+	v_nb__.clear();
+
+	//// Constants:
+	const double max                  = 200.;
+	const unsigned int nbBin          = 50;
+	const unsigned int nbBinX         = nbBin;
+	const unsigned int nbBinY         = 2*nbBin;
+	static const unsigned int nbBin2D = nbBinX*nbBinY;
+	const double fromValToIdx         = nbBin/max;
+	const double maxPow2              = max*max;
+
+	//// Array with the covariance
+	double nb[nbBin2D];
+	double weight[nbBin2D];
+	double** cov    = new double*[nbBin2D];
+	double** nb_all = new double*[nbBin2D];
+	double** we_all = new double*[nbBin2D];
+	for (unsigned int i=0; i<nbBin2D; i++) {
+		nb[i]     = 0.;
+		weight[i] = 0.;
+		cov[i]    = new double[nbBin2D];
+		nb_all[i] = new double[nbBin2D];
+		we_all[i] = new double[nbBin2D];
+		for (unsigned int j=0; j<nbBin2D; j++) {
+			cov[i][j]    = 0.;
+			nb_all[i][j] = 0.;
+			we_all[i][j] = 0.;
+		}
+	}
+
+
+	for (unsigned int f=0; f<nbForest_; f++) {
+	
+		///// Get number of pixels in forest
+		const unsigned int nbPixel = v_nbPixelDelta1__[f];
+		const double firstPixel    = v_r__[f][0];
+		const double lastPixel     = v_r__[f][nbPixel-1];
+		const double cosDe         = v_CosDe__[f];
+		const double sinDe         = v_SinDe__[f];
+		const double ra            = v_ra__[f];
+		const double dec           = v_de__[f];
+
+		//// For T1 + T2 + T3 + T4
+		std::vector<unsigned int> vect_pair_bin;
+		std::vector<unsigned int> vect_pixel_index;
+		std::vector<unsigned int> vect_QSO_index;
+
+		for (unsigned int q=0; q<nbQ1__; q++) {
+
+			///// Remove the correlation qso-ownForest
+			if (fabs(ra-v_raQ1__[q])<C_AUTOCORRCRIT && fabs(dec-v_deQ1__[q])<C_AUTOCORRCRIT ) continue;
+
+			///// Angle between the two directions of the qso and the lya
+			const double cosTheta = cosDe*v_CosDeQ1__[q]*cos(ra-v_raQ1__[q]) + sinDe*v_SinDeQ1__[q];
+
+			///// reject QSO with a distance too large
+			const double distTransQsoLyaPow2 = v_rrQ1__[q]*v_rrQ1__[q]*(1.-cosTheta*cosTheta);
+			if (distTransQsoLyaPow2 >= maxPow2) continue;
+
+			///// Parrallel distance between the qso and the lya
+			const double distParalQsoLya = v_rrQ1__[q]*cosTheta;
+
+			///// Distance between the qso and the first pixel
+			const double distParalQsoFirstPixel = firstPixel - distParalQsoLya;
+			if ( distParalQsoFirstPixel >= max) continue;
+
+			///// Distance between the qso and the last pixel
+			const double distParalQsoLastPixel = lastPixel - distParalQsoLya;
+			if ( distParalQsoLastPixel <= -max) continue;
+
+			///// Transvers distance between the qso and the lya
+			const double distTransQsoLya = sqrt(distTransQsoLyaPow2);
+			const unsigned int rPerpBinIdx = int( distTransQsoLya*fromValToIdx );
+
+			///// 'true' if first pixel of forest is further than the QSO
+			const bool infPosBool = (distParalQsoFirstPixel > 0.);
+			///// 'true' if last pixel of forest is lower than the QSO
+			const bool supPosBool = (distParalQsoLastPixel < 0.);
+
+			///// Loops over all pixels of the forest
+			for (unsigned int i=0; i<nbPixel; i++) {
+
+				unsigned int ii = i;
+				if (supPosBool) ii = nbPixel-1-i;
+	
+				const double distP = v_r__[f][ii] - distParalQsoLya;				
+
+				///// Look at the position of the Lya forest regarding the qso
+				if (fabs(distP) >= max) {
+					if (infPosBool || supPosBool) break;
+					else continue;
+				}
+
+				const double w = v_w__[f][ii];
+				///// Fill the histogramm of xi(r_{perp}, r_{paral}
+				const unsigned int globalBin = rPerpBinIdx*nbBinY+int( (distP+max)*fromValToIdx );
+
+				nb[globalBin] ++;
+				weight[globalBin] += w;
+
+				//// For T3
+				vect_pair_bin.push_back(globalBin);
+				vect_pixel_index.push_back(ii);
+				vect_QSO_index.push_back(q);
+			}
+		}
+
+		//// Calculate the covariance
+		const unsigned int nbPairs = vect_pair_bin.size();
+std::cout << f << " " << nbPairs << std::endl;
+
+		for (unsigned int i=0; i<nbPairs; i++) {
+
+			const unsigned int global_bin_1  = vect_pair_bin[i];
+			const unsigned int pixel_index_1 = vect_pixel_index[i];
+			const unsigned int QSO_index_1   = vect_QSO_index[i];
+			const double www1 = v_w__[f][pixel_index_1];
+			const double rrr1 = v_r__[f][pixel_index_1];
+			//const double ddd1 = v_d__[f][pixel_index_1];
+
+			//// Covariance
+			for (unsigned int j=0; j<nbPairs; j++) {
+			//const unsigned int j=i; { //Get only T1
+				const unsigned int global_bin_2  = vect_pair_bin[j];
+				const unsigned int pixel_index_2 = vect_pixel_index[j];
+				const unsigned int QSO_index_2   = vect_QSO_index[j];
+				if (i==j) continue; //remove T1
+				if (pixel_index_1!=pixel_index_2 && QSO_index_1==QSO_index_2) continue;  // remove T2
+				//if (pixel_index_1==pixel_index_2 && QSO_index_1!=QSO_index_2) continue;  // remove T3
+				if (pixel_index_1!=pixel_index_2 && QSO_index_1!=QSO_index_2) continue;  // remove T4
+
+				const double www2 = v_w__[f][pixel_index_2];
+				const double rrr2 = v_r__[f][pixel_index_2];
+				//const double ddd2 = v_d__[f][pixel_index_2];
+				unsigned int idx_corr_1D = 0;
+				if (pixel_index_1!=pixel_index_2) idx_corr_1D = 1 + int(fabs(rrr1-rrr2));
+
+				cov[global_bin_1][global_bin_2] += www1*www2*xidd1D[idx_corr_1D];
+				//cov[global_bin_1][global_bin_2] += www1*www2*ddd1*ddd2;
+				nb_all[global_bin_1][global_bin_2] ++;
+				we_all[global_bin_1][global_bin_2] += www1*www2;
+			}
+		}
+
+	}
+
+
+
+
+	//const std::string diagram = "T123_xithXi1D";
+	//const std::string diagram = "T123_withDelta";
+	const std::string diagram = "T3_alone_xithXi1D";
+	//const std::string diagram = "T123_withDelta";
+
+	std::cout << "\n  Saving\n" << std::endl;
+	std::ofstream fFile;
+
+	///// Save the 2D cross-correlation 
+	std::string pathToSave = pathToSave__;
+	pathToSave += "xi_delta_QSO_2D_Wick";
+	pathToSave += "_";
+	pathToSave += diagram;
+	pathToSave += "_";
+	pathToSave += forest__;
+	pathToSave += "_";
+	pathToSave += QSO__;
+	pathToSave += ".txt";
+	std::cout << "\n  " << pathToSave << std::endl;
+	fFile.open(pathToSave.c_str());
+	fFile << std::scientific;
+	fFile.precision(std::numeric_limits<double>::digits10);
+	
+	///// Set the values of data
+	for (unsigned int i=0; i<nbBin2D; i++) {
+		for (unsigned int j=0; j<nbBin2D; j++) {
+			if (nb[i]>1. && nb[j]>1.) cov[i][j] /= weight[i]*weight[j];
+			fFile << cov[i][j] << " ";
+		}
+		fFile << std::endl;
+	}
+	fFile.close();
+
+	///// Save the number 
+	pathToSave = pathToSave__;
+        pathToSave += "xi_delta_QSO_2D_Wick";
+	pathToSave += "_";
+	pathToSave += diagram;
+	pathToSave += "_number_";
+        pathToSave += forest__;
+        pathToSave += "_";
+        pathToSave += QSO__;
+        pathToSave += ".txt";
+        std::cout << "\n  " << pathToSave << std::endl;
+        fFile.open(pathToSave.c_str());
+        fFile << std::scientific;
+        fFile.precision(std::numeric_limits<double>::digits10);
+
+	for (unsigned int i=0; i<nbBin2D; i++) {
+                for (unsigned int j=0; j<nbBin2D; j++) {
+			if (nb[i]>1. && nb[j]>1.)  nb_all[i][j] /= nb[i]*nb[j];
+                        fFile << nb_all[i][j] << " ";
+                }
+                fFile << std::endl;
+        }
+        fFile.close();
+
+
+	///// Save the weight
+	pathToSave = pathToSave__;
+        pathToSave += "xi_delta_QSO_2D_Wick";
+	pathToSave += "_";
+	pathToSave += diagram;
+	pathToSave += "_weight_";
+        pathToSave += forest__;
+        pathToSave += "_";
+        pathToSave += QSO__;
+        pathToSave += ".txt";
+        std::cout << "\n  " << pathToSave << std::endl;
+        fFile.open(pathToSave.c_str());
+        fFile << std::scientific;
+        fFile.precision(std::numeric_limits<double>::digits10);
+
+        for (unsigned int i=0; i<nbBin2D; i++) {
+                for (unsigned int j=0; j<nbBin2D; j++) {
+			if (nb[i]>1. && nb[j]>1.) we_all[i][j] /= weight[i]*weight[j];
+                        fFile << we_all[i][j] << " ";
+                }
+                fFile << std::endl;
+        }
+        fFile.close();
+
+	
+	///// Save the number for the correlation
+	pathToSave = pathToSave__;
+        pathToSave += "xi_delta_QSO_2D_Wick";
+	pathToSave += "_";
+	pathToSave += diagram;
+	pathToSave += "_numberCorr_";
+        pathToSave += forest__;
+        pathToSave += "_";
+        pathToSave += QSO__;
+        pathToSave += ".txt";
+        std::cout << "\n  " << pathToSave << std::endl;
+        fFile.open(pathToSave.c_str());
+        fFile << std::scientific;
+        fFile.precision(std::numeric_limits<double>::digits10);
+
+	for (unsigned int i=0; i<nbBin2D; i++) {
+                fFile << nb[i] << " ";
+                fFile << std::endl;
+        }
+        fFile.close();
+
+
+	return;
+}
+void Correlation::xi_delta_QSO_Wick_T1234(void) {
+
+	std::cout << "\n\n\n\n  ------ xi_delta_QSO_Wick_T1234 ------\n" << std::endl;
+
+
+	//// ------------------------------------------------------------------
+	//// Load correlation delta-delta same forest
+	std::string pathToFile = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator_2016_05_26_PlankCosmo/xi_1D_delta_delta_LYA.txt";
+	std::ifstream fileData(pathToFile.c_str());
+
+	std::vector<double> tmp_xidd1D;
+
+	long double save0 = 0.;
+	long double save1 = 0.;
+	long double save2 = 0.;
+	long double save3 = 0.;
+	long double save4 = 0.;
+	long double save5 = 0.;
+
+	while (fileData) {
+		fileData>>save0>>save1>>save2>>save3>>save4>>save5;
+		if (fileData==0) break;
+		if (save5==0.) continue;
+		tmp_xidd1D.push_back(save0/save4);
+	}
+	fileData.close();
+
+	std::cout << "  size xi_delta_delta_1D = " << tmp_xidd1D.size() << std::endl;
+	double xidd1D[tmp_xidd1D.size()];
+	for (unsigned int i=0; i<tmp_xidd1D.size(); i++) {
+		xidd1D[i] = tmp_xidd1D[i];
+	}
+	tmp_xidd1D.clear();
+	//const double xidd1D_0 = xidd1D[0];
+	//// ------------------------------------------------------------------
+	
+
+	///// QSO
+	loadDataQ1();
+	if (nbQ1__==0) return;
+	///// Forest
+	loadDataForest(pathForest__);
+	if (nbForest_==0.) return;
+
+	///// Empty useless vectors
+	v_zz__.clear();
+	v_lRF__.clear();
+	v_lObs__.clear();
+	v_nb__.clear();
+
+	//// Constants:
+	const double max                  = 200.;
+	const unsigned int nbBin          = 50;
+	const unsigned int nbBinX         = nbBin;
+	const unsigned int nbBinY         = 2*nbBin;
+	static const unsigned int nbBin2D = nbBinX*nbBinY;
+	const double fromValToIdx         = nbBin/max;
+	const double maxPow2              = max*max;
+
+	//// Array with the covariance
+	double nb[nbBin2D];
+	double weight[nbBin2D];
+	double** cov    = new double*[nbBin2D];
+	double** nb_all = new double*[nbBin2D];
+	double** we_all = new double*[nbBin2D];
+	for (unsigned int i=0; i<nbBin2D; i++) {
+		nb[i]     = 0.;
+		weight[i] = 0.;
+		cov[i]    = new double[nbBin2D];
+		nb_all[i] = new double[nbBin2D];
+		we_all[i] = new double[nbBin2D];
+		for (unsigned int j=0; j<nbBin2D; j++) {
+			cov[i][j]    = 0.;
+			nb_all[i][j] = 0.;
+			we_all[i][j] = 0.;
+		}
+	}
+
+
+	for (unsigned int f=0; f<nbForest_; f++) {
+	
+		///// Get number of pixels in forest
+		const unsigned int nbPixel = v_nbPixelDelta1__[f];
+		const double firstPixel    = v_r__[f][0];
+		const double lastPixel     = v_r__[f][nbPixel-1];
+		const double cosDe         = v_CosDe__[f];
+		const double sinDe         = v_SinDe__[f];
+		const double ra            = v_ra__[f];
+		const double dec           = v_de__[f];
+
+		//// For T1 + T2 + T3 + T4
+		std::vector<unsigned int> vect_pair_bin;
+		std::vector<unsigned int> vect_pixel_index;
+
+		for (unsigned int q=0; q<nbQ1__; q++) {
+
+			///// Remove the correlation qso-ownForest
+			if (fabs(ra-v_raQ1__[q])<C_AUTOCORRCRIT && fabs(dec-v_deQ1__[q])<C_AUTOCORRCRIT ) continue;
+
+			///// Angle between the two directions of the qso and the lya
+			const double cosTheta = cosDe*v_CosDeQ1__[q]*cos(ra-v_raQ1__[q]) + sinDe*v_SinDeQ1__[q];
+
+			///// reject QSO with a distance too large
+			const double distTransQsoLyaPow2 = v_rrQ1__[q]*v_rrQ1__[q]*(1.-cosTheta*cosTheta);
+			if (distTransQsoLyaPow2 >= maxPow2) continue;
+
+			///// Parrallel distance between the qso and the lya
+			const double distParalQsoLya = v_rrQ1__[q]*cosTheta;
+
+			///// Distance between the qso and the first pixel
+			const double distParalQsoFirstPixel = firstPixel - distParalQsoLya;
+			if ( distParalQsoFirstPixel >= max) continue;
+
+			///// Distance between the qso and the last pixel
+			const double distParalQsoLastPixel = lastPixel - distParalQsoLya;
+			if ( distParalQsoLastPixel <= -max) continue;
+
+			///// Transvers distance between the qso and the lya
+			const double distTransQsoLya = sqrt(distTransQsoLyaPow2);
+			const unsigned int rPerpBinIdx = int( distTransQsoLya*fromValToIdx );
+
+			///// 'true' if first pixel of forest is further than the QSO
+			const bool infPosBool = (distParalQsoFirstPixel > 0.);
+			///// 'true' if last pixel of forest is lower than the QSO
+			const bool supPosBool = (distParalQsoLastPixel < 0.);
+
+			///// Loops over all pixels of the forest
+			for (unsigned int i=0; i<nbPixel; i++) {
+
+				unsigned int ii = i;
+				if (supPosBool) ii = nbPixel-1-i;
+	
+				const double distP = v_r__[f][ii] - distParalQsoLya;				
+
+				///// Look at the position of the Lya forest regarding the qso
+				if (fabs(distP) >= max) {
+					if (infPosBool || supPosBool) break;
+					else continue;
+				}
+
+				const double w = v_w__[f][ii];
+				///// Fill the histogramm of xi(r_{perp}, r_{paral}
+				const unsigned int globalBin = rPerpBinIdx*nbBinY+int( (distP+max)*fromValToIdx );
+
+				nb[globalBin] ++;
+				weight[globalBin] += w;
+
+				//// For T3
+				vect_pair_bin.push_back(globalBin);
+				vect_pixel_index.push_back(ii);
+			}
+		}
+
+		//// Calculate the covariance
+		const unsigned int nbPairs = vect_pair_bin.size();
+std::cout << f << " " << nbPairs << std::endl;
+
+		for (unsigned int i=0; i<nbPairs; i++) {
+
+			const unsigned int global_bin_1  = vect_pair_bin[i];
+			const unsigned int pixel_index_1 = vect_pixel_index[i];
+			const double www1 = v_w__[f][pixel_index_1];
+			const double rrr1 = v_r__[f][pixel_index_1];
+			//const double ddd1 = v_d__[f][pixel_index_1];
+
+			//// Covariance
+			for (unsigned int j=0; j<nbPairs; j++) {
+
+				const unsigned int global_bin_2  = vect_pair_bin[j];
+				const unsigned int pixel_index_2 = vect_pixel_index[j];
+				const double www2 = v_w__[f][pixel_index_2];
+				const double rrr2 = v_r__[f][pixel_index_2];
+				//const double ddd2 = v_d__[f][pixel_index_2];
+				unsigned int idx_corr_1D = 0;
+				if (pixel_index_1!=pixel_index_2) idx_corr_1D = 1 + int(fabs(rrr1-rrr2));
+
+				cov[global_bin_1][global_bin_2] += www1*www2*xidd1D[idx_corr_1D];
+				//cov[global_bin_1][global_bin_2] += www1*www2*ddd1*ddd2;
+				nb_all[global_bin_1][global_bin_2] ++;
+				we_all[global_bin_1][global_bin_2] += www1*www2;
+			}
+		}
+
+	}
+
+
+
+
+	const std::string diagram = "T1234_xithXi1D";
+	//const std::string diagram = "T1234_withDelta";
+
+	std::cout << "\n  Saving\n" << std::endl;
+	std::ofstream fFile;
+
+	///// Save the 2D cross-correlation 
+	std::string pathToSave = pathToSave__;
+	pathToSave += "xi_delta_QSO_2D_Wick";
+	pathToSave += "_";
+	pathToSave += diagram;
+	pathToSave += "_";
+	pathToSave += forest__;
+	pathToSave += "_";
+	pathToSave += QSO__;
+	pathToSave += ".txt";
+	std::cout << "\n  " << pathToSave << std::endl;
+	fFile.open(pathToSave.c_str());
+	fFile << std::scientific;
+	fFile.precision(std::numeric_limits<double>::digits10);
+	
+	///// Set the values of data
+	for (unsigned int i=0; i<nbBin2D; i++) {
+		for (unsigned int j=0; j<nbBin2D; j++) {
+			if (nb[i]>1. && nb[j]>1.) cov[i][j] /= weight[i]*weight[j];
+			fFile << cov[i][j] << " ";
+		}
+		fFile << std::endl;
+	}
+	fFile.close();
+
+	///// Save the number 
+	pathToSave = pathToSave__;
+        pathToSave += "xi_delta_QSO_2D_Wick";
+	pathToSave += "_";
+	pathToSave += diagram;
+	pathToSave += "_number_";
+        pathToSave += forest__;
+        pathToSave += "_";
+        pathToSave += QSO__;
+        pathToSave += ".txt";
+        std::cout << "\n  " << pathToSave << std::endl;
+        fFile.open(pathToSave.c_str());
+        fFile << std::scientific;
+        fFile.precision(std::numeric_limits<double>::digits10);
+
+	for (unsigned int i=0; i<nbBin2D; i++) {
+                for (unsigned int j=0; j<nbBin2D; j++) {
+			if (nb[i]>1. && nb[j]>1.)  nb_all[i][j] /= nb[i]*nb[j];
+                        fFile << nb_all[i][j] << " ";
+                }
+                fFile << std::endl;
+        }
+        fFile.close();
+
+
+	///// Save the weight
+	pathToSave = pathToSave__;
+        pathToSave += "xi_delta_QSO_2D_Wick";
+	pathToSave += "_";
+	pathToSave += diagram;
+	pathToSave += "_weight_";
+        pathToSave += forest__;
+        pathToSave += "_";
+        pathToSave += QSO__;
+        pathToSave += ".txt";
+        std::cout << "\n  " << pathToSave << std::endl;
+        fFile.open(pathToSave.c_str());
+        fFile << std::scientific;
+        fFile.precision(std::numeric_limits<double>::digits10);
+
+        for (unsigned int i=0; i<nbBin2D; i++) {
+                for (unsigned int j=0; j<nbBin2D; j++) {
+			if (nb[i]>1. && nb[j]>1.) we_all[i][j] /= weight[i]*weight[j];
+                        fFile << we_all[i][j] << " ";
+                }
+                fFile << std::endl;
+        }
+        fFile.close();
+
+	
+	///// Save the number for the correlation
+	pathToSave = pathToSave__;
+        pathToSave += "xi_delta_QSO_2D_Wick";
+	pathToSave += "_";
+	pathToSave += diagram;
+	pathToSave += "_numberCorr_";
+        pathToSave += forest__;
+        pathToSave += "_";
+        pathToSave += QSO__;
+        pathToSave += ".txt";
+        std::cout << "\n  " << pathToSave << std::endl;
+        fFile.open(pathToSave.c_str());
+        fFile << std::scientific;
+        fFile.precision(std::numeric_limits<double>::digits10);
+
+	for (unsigned int i=0; i<nbBin2D; i++) {
+                fFile << nb[i] << " ";
+                fFile << std::endl;
+        }
+        fFile.close();
+
+
+	return;
+}
+void Correlation::xi_delta_QSO_Wick_T1_with_wi1D_array(void) {
+
+	std::cout << "\n\n\n\n  ------ xi_delta_QSO_Wick_T1_with_wi1D_array ------\n" << std::endl;
+
+
+	//// ------------------------------------------------------------------
+	//// Load correlation delta-delta same forest
+	std::string pathToFile = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator_2016_05_26_PlankCosmo/xi_1DlObs_2D_delta_delta_LYA.txt";
+	std::ifstream fileData(pathToFile.c_str());
+
+	const unsigned int nbBins_xi1D  = int(lambdaObsMax__-lambdaObsMin__)+1;
+	double** xidd1D = new double*[nbBins_xi1D];
+	for (unsigned int i=0; i<nbBins_xi1D; i++) {
+		xidd1D[i] = new double[nbBins_xi1D];
+		for (unsigned int j=0; j<nbBins_xi1D; j++) {
+			long double data=0.;
+			fileData>>data;
+			xidd1D[i][j] = data;
+		}
+	}
+	fileData.close();
+
+	///// QSO
+	loadDataQ1();
+	if (nbQ1__==0) return;
+	///// Forest
+	loadDataForest(pathForest__);
+	if (nbForest_==0.) return;
+
+	///// Empty useless vectors
+	v_zz__.clear();
+	v_lRF__.clear();
+	v_nb__.clear();
+
+	//// Constants:
+	const double max                  = 200.;
+	const unsigned int nbBin          = 50;
+	const unsigned int nbBinX         = nbBin;
+	const unsigned int nbBinY         = 2*nbBin;
+	static const unsigned int nbBin2D = nbBinX*nbBinY;
+	const double fromValToIdx         = nbBin/max;
+	const double maxPow2              = max*max;
+
+	//// Array with the covariance
+	double nb[nbBin2D];
+	double weight[nbBin2D];
+	double** cov    = new double*[nbBin2D];
+	double** nb_all = new double*[nbBin2D];
+	double** we_all = new double*[nbBin2D];
+	for (unsigned int i=0; i<nbBin2D; i++) {
+		nb[i]     = 0.;
+		weight[i] = 0.;
+		cov[i]    = new double[nbBin2D];
+		nb_all[i] = new double[nbBin2D];
+		we_all[i] = new double[nbBin2D];
+		for (unsigned int j=0; j<nbBin2D; j++) {
+			cov[i][j]    = 0.;
+			nb_all[i][j] = 0.;
+			we_all[i][j] = 0.;
+		}
+	}
+
+
+	for (unsigned int f=0; f<nbForest_; f++) {
+	
+		///// Get number of pixels in forest
+		const unsigned int nbPixel = v_nbPixelDelta1__[f];
+		const double firstPixel    = v_r__[f][0];
+		const double lastPixel     = v_r__[f][nbPixel-1];
+		const double cosDe         = v_CosDe__[f];
+		const double sinDe         = v_SinDe__[f];
+		const double ra            = v_ra__[f];
+		const double dec           = v_de__[f];
+
+		for (unsigned int q=0; q<nbQ1__; q++) {
+
+			///// Remove the correlation qso-ownForest
+			if (fabs(ra-v_raQ1__[q])<C_AUTOCORRCRIT && fabs(dec-v_deQ1__[q])<C_AUTOCORRCRIT ) continue;
+
+			///// Angle between the two directions of the qso and the lya
+			const double cosTheta = cosDe*v_CosDeQ1__[q]*cos(ra-v_raQ1__[q]) + sinDe*v_SinDeQ1__[q];
+
+			///// reject QSO with a distance too large
+			const double distTransQsoLyaPow2 = v_rrQ1__[q]*v_rrQ1__[q]*(1.-cosTheta*cosTheta);
+			if (distTransQsoLyaPow2 >= maxPow2) continue;
+
+			///// Parrallel distance between the qso and the lya
+			const double distParalQsoLya = v_rrQ1__[q]*cosTheta;
+
+			///// Distance between the qso and the first pixel
+			const double distParalQsoFirstPixel = firstPixel - distParalQsoLya;
+			if ( distParalQsoFirstPixel >= max) continue;
+
+			///// Distance between the qso and the last pixel
+			const double distParalQsoLastPixel = lastPixel - distParalQsoLya;
+			if ( distParalQsoLastPixel <= -max) continue;
+
+			///// Transvers distance between the qso and the lya
+			const double distTransQsoLya = sqrt(distTransQsoLyaPow2);
+			const unsigned int rPerpBinIdx = int( distTransQsoLya*fromValToIdx );
+
+			///// 'true' if first pixel of forest is further than the QSO
+			const bool infPosBool = (distParalQsoFirstPixel > 0.);
+			///// 'true' if last pixel of forest is lower than the QSO
+			const bool supPosBool = (distParalQsoLastPixel < 0.);
+
+			///// Loops over all pixels of the forest
+			for (unsigned int i=0; i<nbPixel; i++) {
+
+				unsigned int ii = i;
+				if (supPosBool) ii = nbPixel-1-i;
+	
+				const double distP = v_r__[f][ii] - distParalQsoLya;				
+
+				///// Look at the position of the Lya forest regarding the qso
+				if (fabs(distP) >= max) {
+					if (infPosBool || supPosBool) break;
+					else continue;
+				}
+
+				const double w = v_w__[f][ii];
+				///// Fill the histogramm of xi(r_{perp}, r_{paral}
+				const unsigned int globalBin = rPerpBinIdx*nbBinY+int( (distP+max)*fromValToIdx );
+
+				nb[globalBin] ++;
+				weight[globalBin] += w;
+
+				const unsigned int pixel_lObs_index_1 = 1+int(v_lObs__[f][ii]-lambdaObsMin__);
+				cov[globalBin][globalBin] += w*w*xidd1D[pixel_lObs_index_1][pixel_lObs_index_1];
+				nb_all[globalBin][globalBin] ++;
+                        	we_all[globalBin][globalBin] += w*w;
+			}
+		}
+	}
+
+
+	const std::string diagram = "T1_with_wi1D_array";
+
+	std::cout << "\n  Saving\n" << std::endl;
+	std::ofstream fFile;
+
+	///// Save the 2D cross-correlation 
+	std::string pathToSave = pathToSave__;
+	pathToSave += "xi_delta_QSO_2D_Wick";
+	pathToSave += "_";
+	pathToSave += diagram;
+	pathToSave += "_";
+	pathToSave += forest__;
+	pathToSave += "_";
+	pathToSave += QSO__;
+	pathToSave += ".txt";
+	std::cout << "\n  " << pathToSave << std::endl;
+	fFile.open(pathToSave.c_str());
+	fFile << std::scientific;
+	fFile.precision(std::numeric_limits<double>::digits10);
+	
+	///// Set the values of data
+	for (unsigned int i=0; i<nbBin2D; i++) {
+		for (unsigned int j=0; j<nbBin2D; j++) {
+			if (nb[i]>1. && nb[j]>1.) cov[i][j] /= weight[i]*weight[j];
+			fFile << cov[i][j] << " ";
+		}
+		fFile << std::endl;
+	}
+	fFile.close();
+
+	///// Save the number 
+	pathToSave = pathToSave__;
+        pathToSave += "xi_delta_QSO_2D_Wick";
+	pathToSave += "_";
+	pathToSave += diagram;
+	pathToSave += "_number_";
+        pathToSave += forest__;
+        pathToSave += "_";
+        pathToSave += QSO__;
+        pathToSave += ".txt";
+        std::cout << "\n  " << pathToSave << std::endl;
+        fFile.open(pathToSave.c_str());
+        fFile << std::scientific;
+        fFile.precision(std::numeric_limits<double>::digits10);
+
+	for (unsigned int i=0; i<nbBin2D; i++) {
+                for (unsigned int j=0; j<nbBin2D; j++) {
+			if (nb[i]>1. && nb[j]>1.)  nb_all[i][j] /= nb[i]*nb[j];
+                        fFile << nb_all[i][j] << " ";
+                }
+                fFile << std::endl;
+        }
+        fFile.close();
+
+
+	///// Save the weight
+	pathToSave = pathToSave__;
+        pathToSave += "xi_delta_QSO_2D_Wick";
+	pathToSave += "_";
+	pathToSave += diagram;
+	pathToSave += "_weight_";
+        pathToSave += forest__;
+        pathToSave += "_";
+        pathToSave += QSO__;
+        pathToSave += ".txt";
+        std::cout << "\n  " << pathToSave << std::endl;
+        fFile.open(pathToSave.c_str());
+        fFile << std::scientific;
+        fFile.precision(std::numeric_limits<double>::digits10);
+
+        for (unsigned int i=0; i<nbBin2D; i++) {
+                for (unsigned int j=0; j<nbBin2D; j++) {
+			if (nb[i]>1. && nb[j]>1.) we_all[i][j] /= weight[i]*weight[j];
+                        fFile << we_all[i][j] << " ";
+                }
+                fFile << std::endl;
+        }
+        fFile.close();
+
+	
+	///// Save the number for the correlation
+	pathToSave = pathToSave__;
+        pathToSave += "xi_delta_QSO_2D_Wick";
+	pathToSave += "_";
+	pathToSave += diagram;
+	pathToSave += "_numberCorr_";
+        pathToSave += forest__;
+        pathToSave += "_";
+        pathToSave += QSO__;
+        pathToSave += ".txt";
+        std::cout << "\n  " << pathToSave << std::endl;
+        fFile.open(pathToSave.c_str());
+        fFile << std::scientific;
+        fFile.precision(std::numeric_limits<double>::digits10);
+
+	for (unsigned int i=0; i<nbBin2D; i++) {
+                fFile << nb[i] << " ";
+                fFile << std::endl;
+        }
+        fFile.close();
+
+	///// Save the number for the correlation
+	pathToSave = pathToSave__;
+        pathToSave += "xi_delta_QSO_2D_Wick";
+	pathToSave += "_";
+	pathToSave += diagram;
+	pathToSave += "_weightCorr_";
+        pathToSave += forest__;
+        pathToSave += "_";
+        pathToSave += QSO__;
+        pathToSave += ".txt";
+        std::cout << "\n  " << pathToSave << std::endl;
+        fFile.open(pathToSave.c_str());
+        fFile << std::scientific;
+        fFile.precision(std::numeric_limits<double>::digits10);
+
+	for (unsigned int i=0; i<nbBin2D; i++) {
+                fFile << weight[i] << " ";
+                fFile << std::endl;
+        }
+        fFile.close();
+
+
+	return;
+}
+void Correlation::xi_delta_QSO_Wick_T12_with_wi1D_array(void) {
+
+	std::cout << "\n\n\n\n  ------ xi_delta_QSO_Wick_T12_with_wi1D_array ------\n" << std::endl;
+
+
+	//// ------------------------------------------------------------------
+	//// Load correlation delta-delta same forest
+	std::string pathToFile = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator_2016_05_26_PlankCosmo/xi_1DlObs_2D_delta_delta_LYA.txt";
+	std::ifstream fileData(pathToFile.c_str());
+
+	const unsigned int nbBins_xi1D  = int(lambdaObsMax__-lambdaObsMin__)+1;
+	double** xidd1D = new double*[nbBins_xi1D];
+	for (unsigned int i=0; i<nbBins_xi1D; i++) {
+		xidd1D[i] = new double[nbBins_xi1D];
+		for (unsigned int j=0; j<nbBins_xi1D; j++) {
+			long double data=0.;
+			fileData>>data;
+			xidd1D[i][j] = data;
+		}
+	}
+	fileData.close();
+
+	///// QSO
+	loadDataQ1();
+	if (nbQ1__==0) return;
+	///// Forest
+	loadDataForest(pathForest__);
+	if (nbForest_==0.) return;
+
+	///// Empty useless vectors
+	v_zz__.clear();
+	v_lRF__.clear();
+	v_nb__.clear();
+
+	//// Constants:
+	const double max                  = 200.;
+	const unsigned int nbBin          = 50;
+	const unsigned int nbBinX         = nbBin;
+	const unsigned int nbBinY         = 2*nbBin;
+	static const unsigned int nbBin2D = nbBinX*nbBinY;
+	const double fromValToIdx         = nbBin/max;
+	const double maxPow2              = max*max;
+
+	//// Array with the covariance
+	double nb[nbBin2D];
+	double weight[nbBin2D];
+	double** cov    = new double*[nbBin2D];
+	double** nb_all = new double*[nbBin2D];
+	double** we_all = new double*[nbBin2D];
+	for (unsigned int i=0; i<nbBin2D; i++) {
+		nb[i]     = 0.;
+		weight[i] = 0.;
+		cov[i]    = new double[nbBin2D];
+		nb_all[i] = new double[nbBin2D];
+		we_all[i] = new double[nbBin2D];
+		for (unsigned int j=0; j<nbBin2D; j++) {
+			cov[i][j]    = 0.;
+			nb_all[i][j] = 0.;
+			we_all[i][j] = 0.;
+		}
+	}
+
+
+	for (unsigned int f=0; f<nbForest_; f++) {
+	
+		///// Get number of pixels in forest
+		const unsigned int nbPixel = v_nbPixelDelta1__[f];
+		const double firstPixel    = v_r__[f][0];
+		const double lastPixel     = v_r__[f][nbPixel-1];
+		const double cosDe         = v_CosDe__[f];
+		const double sinDe         = v_SinDe__[f];
+		const double ra            = v_ra__[f];
+		const double dec           = v_de__[f];
+
+		for (unsigned int q=0; q<nbQ1__; q++) {
+
+			//// For T1 + T2 + T3 + T4
+			std::vector<unsigned int> vect_pair_bin;
+			std::vector<unsigned int> vect_pixel_index;
+
+			///// Remove the correlation qso-ownForest
+			if (fabs(ra-v_raQ1__[q])<C_AUTOCORRCRIT && fabs(dec-v_deQ1__[q])<C_AUTOCORRCRIT ) continue;
+
+			///// Angle between the two directions of the qso and the lya
+			const double cosTheta = cosDe*v_CosDeQ1__[q]*cos(ra-v_raQ1__[q]) + sinDe*v_SinDeQ1__[q];
+
+			///// reject QSO with a distance too large
+			const double distTransQsoLyaPow2 = v_rrQ1__[q]*v_rrQ1__[q]*(1.-cosTheta*cosTheta);
+			if (distTransQsoLyaPow2 >= maxPow2) continue;
+
+			///// Parrallel distance between the qso and the lya
+			const double distParalQsoLya = v_rrQ1__[q]*cosTheta;
+
+			///// Distance between the qso and the first pixel
+			const double distParalQsoFirstPixel = firstPixel - distParalQsoLya;
+			if ( distParalQsoFirstPixel >= max) continue;
+
+			///// Distance between the qso and the last pixel
+			const double distParalQsoLastPixel = lastPixel - distParalQsoLya;
+			if ( distParalQsoLastPixel <= -max) continue;
+
+			///// Transvers distance between the qso and the lya
+			const double distTransQsoLya = sqrt(distTransQsoLyaPow2);
+			const unsigned int rPerpBinIdx = int( distTransQsoLya*fromValToIdx );
+
+			///// 'true' if first pixel of forest is further than the QSO
+			const bool infPosBool = (distParalQsoFirstPixel > 0.);
+			///// 'true' if last pixel of forest is lower than the QSO
+			const bool supPosBool = (distParalQsoLastPixel < 0.);
+
+			///// Loops over all pixels of the forest
+			for (unsigned int i=0; i<nbPixel; i++) {
+
+				unsigned int ii = i;
+				if (supPosBool) ii = nbPixel-1-i;
+	
+				const double distP = v_r__[f][ii] - distParalQsoLya;				
+
+				///// Look at the position of the Lya forest regarding the qso
+				if (fabs(distP) >= max) {
+					if (infPosBool || supPosBool) break;
+					else continue;
+				}
+
+				const double w = v_w__[f][ii];
+				///// Fill the histogramm of xi(r_{perp}, r_{paral}
+				const unsigned int globalBin = rPerpBinIdx*nbBinY+int( (distP+max)*fromValToIdx );
+
+				nb[globalBin] ++;
+				weight[globalBin] += w;
+				
+				const unsigned int pixel_lObs_index_1 = 1+int(v_lObs__[f][ii]-lambdaObsMin__);
+				cov[globalBin][globalBin]    += w*w*xidd1D[pixel_lObs_index_1][pixel_lObs_index_1];
+				nb_all[globalBin][globalBin] ++;
+                        	we_all[globalBin][globalBin] += w*w;
+
+				//// For T2
+				vect_pair_bin.push_back(globalBin);
+				vect_pixel_index.push_back(ii);
+			}
+
+			//// Calculate the covariance
+			const unsigned int nbPairs = vect_pair_bin.size();
+			
+			for (unsigned int i=0; i<nbPairs; i++) {
+
+				const unsigned int global_bin_1  = vect_pair_bin[i];
+				const unsigned int pixel_index_1 = vect_pixel_index[i];
+				const double www1 = v_w__[f][pixel_index_1];
+				const unsigned int pixel_lObs_index_1 = int(v_lObs__[f][pixel_index_1]-lambdaObsMin__);
+
+				//// Covariance
+				for (unsigned int j=0; j<nbPairs; j++) {
+					if (i==j) continue;
+
+					const unsigned int global_bin_2  = vect_pair_bin[j];
+					const unsigned int pixel_index_2 = vect_pixel_index[j];
+					const double www2 = v_w__[f][pixel_index_2];
+					unsigned int pixel_lObs_index_2 = int(v_lObs__[f][pixel_index_2]-lambdaObsMin__);
+
+					if (v_lObs__[f][pixel_index_1]>v_lObs__[f][pixel_index_2]) {
+						cov[global_bin_1][global_bin_2] += www1*www2*xidd1D[pixel_lObs_index_1+1][pixel_lObs_index_2];
+					}
+					else cov[global_bin_1][global_bin_2] += www1*www2*xidd1D[pixel_lObs_index_2+1][pixel_lObs_index_1];
+					nb_all[global_bin_1][global_bin_2] ++;
+					we_all[global_bin_1][global_bin_2] += www1*www2;
+				}
+			}
+
+		}
+	}
+
+
+	const std::string diagram = "T12_with_wi1D_array";
+
+	std::cout << "\n  Saving\n" << std::endl;
+	std::ofstream fFile;
+
+	///// Save the 2D cross-correlation 
+	std::string pathToSave = pathToSave__;
+	pathToSave += "xi_delta_QSO_2D_Wick";
+	pathToSave += "_";
+	pathToSave += diagram;
+	pathToSave += "_";
+	pathToSave += forest__;
+	pathToSave += "_";
+	pathToSave += QSO__;
+	pathToSave += ".txt";
+	std::cout << "\n  " << pathToSave << std::endl;
+	fFile.open(pathToSave.c_str());
+	fFile << std::scientific;
+	fFile.precision(std::numeric_limits<double>::digits10);
+	
+	///// Set the values of data
+	for (unsigned int i=0; i<nbBin2D; i++) {
+		for (unsigned int j=0; j<nbBin2D; j++) {
+			if (nb[i]>1. && nb[j]>1.) cov[i][j] /= weight[i]*weight[j];
+			fFile << cov[i][j] << " ";
+		}
+		fFile << std::endl;
+	}
+	fFile.close();
+
+	///// Save the number 
+	pathToSave = pathToSave__;
+        pathToSave += "xi_delta_QSO_2D_Wick";
+	pathToSave += "_";
+	pathToSave += diagram;
+	pathToSave += "_number_";
+        pathToSave += forest__;
+        pathToSave += "_";
+        pathToSave += QSO__;
+        pathToSave += ".txt";
+        std::cout << "\n  " << pathToSave << std::endl;
+        fFile.open(pathToSave.c_str());
+        fFile << std::scientific;
+        fFile.precision(std::numeric_limits<double>::digits10);
+
+	for (unsigned int i=0; i<nbBin2D; i++) {
+                for (unsigned int j=0; j<nbBin2D; j++) {
+			if (nb[i]>1. && nb[j]>1.)  nb_all[i][j] /= nb[i]*nb[j];
+                        fFile << nb_all[i][j] << " ";
+                }
+                fFile << std::endl;
+        }
+        fFile.close();
+
+
+	///// Save the weight
+	pathToSave = pathToSave__;
+        pathToSave += "xi_delta_QSO_2D_Wick";
+	pathToSave += "_";
+	pathToSave += diagram;
+	pathToSave += "_weight_";
+        pathToSave += forest__;
+        pathToSave += "_";
+        pathToSave += QSO__;
+        pathToSave += ".txt";
+        std::cout << "\n  " << pathToSave << std::endl;
+        fFile.open(pathToSave.c_str());
+        fFile << std::scientific;
+        fFile.precision(std::numeric_limits<double>::digits10);
+
+        for (unsigned int i=0; i<nbBin2D; i++) {
+                for (unsigned int j=0; j<nbBin2D; j++) {
+			if (nb[i]>1. && nb[j]>1.) we_all[i][j] /= weight[i]*weight[j];
+                        fFile << we_all[i][j] << " ";
+                }
+                fFile << std::endl;
+        }
+        fFile.close();
+
+	
+	///// Save the number for the correlation
+	pathToSave = pathToSave__;
+        pathToSave += "xi_delta_QSO_2D_Wick";
+	pathToSave += "_";
+	pathToSave += diagram;
+	pathToSave += "_numberCorr_";
+        pathToSave += forest__;
+        pathToSave += "_";
+        pathToSave += QSO__;
+        pathToSave += ".txt";
+        std::cout << "\n  " << pathToSave << std::endl;
+        fFile.open(pathToSave.c_str());
+        fFile << std::scientific;
+        fFile.precision(std::numeric_limits<double>::digits10);
+
+	for (unsigned int i=0; i<nbBin2D; i++) {
+                fFile << nb[i] << " ";
+                fFile << std::endl;
+        }
+        fFile.close();
+
+	///// Save the number for the correlation
+	pathToSave = pathToSave__;
+        pathToSave += "xi_delta_QSO_2D_Wick";
+	pathToSave += "_";
+	pathToSave += diagram;
+	pathToSave += "_weightCorr_";
+        pathToSave += forest__;
+        pathToSave += "_";
+        pathToSave += QSO__;
+        pathToSave += ".txt";
+        std::cout << "\n  " << pathToSave << std::endl;
+        fFile.open(pathToSave.c_str());
+        fFile << std::scientific;
+        fFile.precision(std::numeric_limits<double>::digits10);
+
+	for (unsigned int i=0; i<nbBin2D; i++) {
+                fFile << weight[i] << " ";
+                fFile << std::endl;
+        }
+        fFile.close();
+
+
+	return;
+}
+void Correlation::xi_delta_QSO_Wick_T123_with_wi1D_array(void) {
+
+	std::cout << "\n\n\n\n  ------ xi_delta_QSO_Wick_T123_with_wi1D_array ------\n" << std::endl;
+
+
+	//// ------------------------------------------------------------------
+	//// Load correlation delta-delta same forest
+	std::string pathToFile = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator_2016_05_26_PlankCosmo/xi_1DlObs_2D_delta_delta_LYA.txt";
+	std::ifstream fileData(pathToFile.c_str());
+
+	const unsigned int nbBins_xi1D  = int(lambdaObsMax__-lambdaObsMin__)+1;
+	double** xidd1D = new double*[nbBins_xi1D];
+	for (unsigned int i=0; i<nbBins_xi1D; i++) {
+		xidd1D[i] = new double[nbBins_xi1D];
+		for (unsigned int j=0; j<nbBins_xi1D; j++) {
+			long double data=0.;
+			fileData>>data;
+			xidd1D[i][j] = data;
+		}
+	}
+	fileData.close();
+
+	///// QSO
+	loadDataQ1();
+	if (nbQ1__==0) return;
+	///// Forest
+	loadDataForest(pathForest__);
+	if (nbForest_==0.) return;
+
+	///// Empty useless vectors
+	v_zz__.clear();
+	v_lRF__.clear();
+	v_nb__.clear();
+
+	//// Constants:
+	const double max                  = 200.;
+	const unsigned int nbBin          = 50;
+	const unsigned int nbBinX         = nbBin;
+	const unsigned int nbBinY         = 2*nbBin;
+	static const unsigned int nbBin2D = nbBinX*nbBinY;
+	const double fromValToIdx         = nbBin/max;
+	const double maxPow2              = max*max;
+
+	//// Array with the covariance
+	double nb[nbBin2D];
+	double weight[nbBin2D];
+	double** cov    = new double*[nbBin2D];
+	double** nb_all = new double*[nbBin2D];
+	double** we_all = new double*[nbBin2D];
+	for (unsigned int i=0; i<nbBin2D; i++) {
+		nb[i]     = 0.;
+		weight[i] = 0.;
+		cov[i]    = new double[nbBin2D];
+		nb_all[i] = new double[nbBin2D];
+		we_all[i] = new double[nbBin2D];
+		for (unsigned int j=0; j<nbBin2D; j++) {
+			cov[i][j]    = 0.;
+			nb_all[i][j] = 0.;
+			we_all[i][j] = 0.;
+		}
+	}
+
+
+	for (unsigned int f=0; f<nbForest_; f++) {
+	
+		///// Get number of pixels in forest
+		const unsigned int nbPixel = v_nbPixelDelta1__[f];
+		const double firstPixel    = v_r__[f][0];
+		const double lastPixel     = v_r__[f][nbPixel-1];
+		const double cosDe         = v_CosDe__[f];
+		const double sinDe         = v_SinDe__[f];
+		const double ra            = v_ra__[f];
+		const double dec           = v_de__[f];
+
+		//// For T1 + T2 + T3 + T4
+		std::vector<unsigned int> vect_pair_bin;
+		std::vector<unsigned int> vect_pixel_index;
+		std::vector<unsigned int> vect_QSO_index;
+
+		for (unsigned int q=0; q<nbQ1__; q++) {
+
+			///// Remove the correlation qso-ownForest
+			if (fabs(ra-v_raQ1__[q])<C_AUTOCORRCRIT && fabs(dec-v_deQ1__[q])<C_AUTOCORRCRIT ) continue;
+
+			///// Angle between the two directions of the qso and the lya
+			const double cosTheta = cosDe*v_CosDeQ1__[q]*cos(ra-v_raQ1__[q]) + sinDe*v_SinDeQ1__[q];
+
+			///// reject QSO with a distance too large
+			const double distTransQsoLyaPow2 = v_rrQ1__[q]*v_rrQ1__[q]*(1.-cosTheta*cosTheta);
+			if (distTransQsoLyaPow2 >= maxPow2) continue;
+
+			///// Parrallel distance between the qso and the lya
+			const double distParalQsoLya = v_rrQ1__[q]*cosTheta;
+
+			///// Distance between the qso and the first pixel
+			const double distParalQsoFirstPixel = firstPixel - distParalQsoLya;
+			if ( distParalQsoFirstPixel >= max) continue;
+
+			///// Distance between the qso and the last pixel
+			const double distParalQsoLastPixel = lastPixel - distParalQsoLya;
+			if ( distParalQsoLastPixel <= -max) continue;
+
+			///// Transvers distance between the qso and the lya
+			const double distTransQsoLya = sqrt(distTransQsoLyaPow2);
+			const unsigned int rPerpBinIdx = int( distTransQsoLya*fromValToIdx );
+
+			///// 'true' if first pixel of forest is further than the QSO
+			const bool infPosBool = (distParalQsoFirstPixel > 0.);
+			///// 'true' if last pixel of forest is lower than the QSO
+			const bool supPosBool = (distParalQsoLastPixel < 0.);
+
+			///// Loops over all pixels of the forest
+			for (unsigned int i=0; i<nbPixel; i++) {
+
+				unsigned int ii = i;
+				if (supPosBool) ii = nbPixel-1-i;
+	
+				const double distP = v_r__[f][ii] - distParalQsoLya;				
+
+				///// Look at the position of the Lya forest regarding the qso
+				if (fabs(distP) >= max) {
+					if (infPosBool || supPosBool) break;
+					else continue;
+				}
+
+				const double w = v_w__[f][ii];
+				///// Fill the histogramm of xi(r_{perp}, r_{paral}
+				const unsigned int globalBin = rPerpBinIdx*nbBinY+int( (distP+max)*fromValToIdx );
+
+				nb[globalBin] ++;
+				weight[globalBin] += w;
+
+				//// For T3
+				vect_pair_bin.push_back(globalBin);
+				vect_pixel_index.push_back(ii);
+				vect_QSO_index.push_back(q);
+			}
+		}
+
+		//// Calculate the covariance
+		const unsigned int nbPairs = vect_pair_bin.size();
+		std::cout << f << " " << nbPairs << std::endl;
+
+		for (unsigned int i=0; i<nbPairs; i++) {
+
+			const unsigned int global_bin_1  = vect_pair_bin[i];
+			const unsigned int pixel_index_1 = vect_pixel_index[i];
+			const unsigned int QSO_index_1   = vect_QSO_index[i];
+			const double www1 = v_w__[f][pixel_index_1];
+			const unsigned int pixel_lObs_index_1 = int(v_lObs__[f][pixel_index_1]-lambdaObsMin__);
+
+			//// Covariance
+			for (unsigned int j=0; j<nbPairs; j++) {
+				
+				const unsigned int pixel_index_2 = vect_pixel_index[j];
+				const unsigned int QSO_index_2   = vect_QSO_index[j];
+				if (pixel_index_1!=pixel_index_2 && QSO_index_1!=QSO_index_2) continue;  // remove T4
+				const unsigned int global_bin_2  = vect_pair_bin[j];
+				const unsigned int pixel_lObs_index_2 = int(v_lObs__[f][pixel_index_2]-lambdaObsMin__);
+				const double www2 = v_w__[f][pixel_index_2];
+				
+				if (pixel_index_1==pixel_index_2) cov[global_bin_1][global_bin_2] += www1*www2*xidd1D[pixel_lObs_index_1+1][pixel_lObs_index_2+1];
+				else {
+					if (v_lObs__[f][pixel_index_1]>v_lObs__[f][pixel_index_2]) {
+						cov[global_bin_1][global_bin_2] += www1*www2*xidd1D[pixel_lObs_index_1+1][pixel_lObs_index_2];
+					}
+					else cov[global_bin_1][global_bin_2] += www1*www2*xidd1D[pixel_lObs_index_2+1][pixel_lObs_index_1];
+				}
+				nb_all[global_bin_1][global_bin_2] ++;
+				we_all[global_bin_1][global_bin_2] += www1*www2;
+			}
+		}
+
+	}
+
+
+	const std::string diagram = "T123_with_wi1D_array";
+
+	std::cout << "\n  Saving\n" << std::endl;
+	std::ofstream fFile;
+
+	///// Save the 2D cross-correlation 
+	std::string pathToSave = pathToSave__;
+	pathToSave += "xi_delta_QSO_2D_Wick";
+	pathToSave += "_";
+	pathToSave += diagram;
+	pathToSave += "_";
+	pathToSave += forest__;
+	pathToSave += "_";
+	pathToSave += QSO__;
+	pathToSave += ".txt";
+	std::cout << "\n  " << pathToSave << std::endl;
+	fFile.open(pathToSave.c_str());
+	fFile << std::scientific;
+	fFile.precision(std::numeric_limits<double>::digits10);
+	
+	///// Set the values of data
+	for (unsigned int i=0; i<nbBin2D; i++) {
+		for (unsigned int j=0; j<nbBin2D; j++) {
+			if (nb[i]>1. && nb[j]>1.) cov[i][j] /= weight[i]*weight[j];
+			fFile << cov[i][j] << " ";
+		}
+		fFile << std::endl;
+	}
+	fFile.close();
+
+	///// Save the number 
+	pathToSave = pathToSave__;
+        pathToSave += "xi_delta_QSO_2D_Wick";
+	pathToSave += "_";
+	pathToSave += diagram;
+	pathToSave += "_number_";
+        pathToSave += forest__;
+        pathToSave += "_";
+        pathToSave += QSO__;
+        pathToSave += ".txt";
+        std::cout << "\n  " << pathToSave << std::endl;
+        fFile.open(pathToSave.c_str());
+        fFile << std::scientific;
+        fFile.precision(std::numeric_limits<double>::digits10);
+
+	for (unsigned int i=0; i<nbBin2D; i++) {
+                for (unsigned int j=0; j<nbBin2D; j++) {
+			if (nb[i]>1. && nb[j]>1.)  nb_all[i][j] /= nb[i]*nb[j];
+                        fFile << nb_all[i][j] << " ";
+                }
+                fFile << std::endl;
+        }
+        fFile.close();
+
+
+	///// Save the weight
+	pathToSave = pathToSave__;
+        pathToSave += "xi_delta_QSO_2D_Wick";
+	pathToSave += "_";
+	pathToSave += diagram;
+	pathToSave += "_weight_";
+        pathToSave += forest__;
+        pathToSave += "_";
+        pathToSave += QSO__;
+        pathToSave += ".txt";
+        std::cout << "\n  " << pathToSave << std::endl;
+        fFile.open(pathToSave.c_str());
+        fFile << std::scientific;
+        fFile.precision(std::numeric_limits<double>::digits10);
+
+        for (unsigned int i=0; i<nbBin2D; i++) {
+                for (unsigned int j=0; j<nbBin2D; j++) {
+			if (nb[i]>1. && nb[j]>1.) we_all[i][j] /= weight[i]*weight[j];
+                        fFile << we_all[i][j] << " ";
+                }
+                fFile << std::endl;
+        }
+        fFile.close();
+
+	
+	///// Save the number for the correlation
+	pathToSave = pathToSave__;
+        pathToSave += "xi_delta_QSO_2D_Wick";
+	pathToSave += "_";
+	pathToSave += diagram;
+	pathToSave += "_numberCorr_";
+        pathToSave += forest__;
+        pathToSave += "_";
+        pathToSave += QSO__;
+        pathToSave += ".txt";
+        std::cout << "\n  " << pathToSave << std::endl;
+        fFile.open(pathToSave.c_str());
+        fFile << std::scientific;
+        fFile.precision(std::numeric_limits<double>::digits10);
+
+	for (unsigned int i=0; i<nbBin2D; i++) {
+                fFile << nb[i] << " ";
+                fFile << std::endl;
+        }
+        fFile.close();
+
+	///// Save the number for the correlation
+	pathToSave = pathToSave__;
+        pathToSave += "xi_delta_QSO_2D_Wick";
+	pathToSave += "_";
+	pathToSave += diagram;
+	pathToSave += "_weightCorr_";
+        pathToSave += forest__;
+        pathToSave += "_";
+        pathToSave += QSO__;
+        pathToSave += ".txt";
+        std::cout << "\n  " << pathToSave << std::endl;
+        fFile.open(pathToSave.c_str());
+        fFile << std::scientific;
+        fFile.precision(std::numeric_limits<double>::digits10);
+
+	for (unsigned int i=0; i<nbBin2D; i++) {
+                fFile << weight[i] << " ";
+                fFile << std::endl;
+        }
+        fFile.close();
+
+
+	return;
+}
+void Correlation::xi_delta_QSO_Wick_T1234_with_wi1D_array(void) {
+
+	std::cout << "\n\n\n\n  ------ xi_delta_QSO_Wick_T1234_with_wi1D_array ------\n" << std::endl;
+
+
+	//// ------------------------------------------------------------------
+	//// Load correlation delta-delta same forest
+	std::string pathToFile = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator_2016_05_26_PlankCosmo/xi_1DlObs_2D_delta_delta_LYA.txt";
+	std::ifstream fileData(pathToFile.c_str());
+
+	const unsigned int nbBins_xi1D  = int(lambdaObsMax__-lambdaObsMin__)+1;
+	double** xidd1D = new double*[nbBins_xi1D];
+	for (unsigned int i=0; i<nbBins_xi1D; i++) {
+		xidd1D[i] = new double[nbBins_xi1D];
+		for (unsigned int j=0; j<nbBins_xi1D; j++) {
+			long double data=0.;
+			fileData>>data;
+			xidd1D[i][j] = data;
+		}
+	}
+	fileData.close();
+
+	///// QSO
+	loadDataQ1();
+	if (nbQ1__==0) return;
+	///// Forest
+	loadDataForest(pathForest__);
+	if (nbForest_==0.) return;
+
+	///// Empty useless vectors
+	v_zz__.clear();
+	v_lRF__.clear();
+	v_nb__.clear();
+
+	//// Constants:
+	const double max                  = 200.;
+	const unsigned int nbBin          = 50;
+	const unsigned int nbBinX         = nbBin;
+	const unsigned int nbBinY         = 2*nbBin;
+	static const unsigned int nbBin2D = nbBinX*nbBinY;
+	const double fromValToIdx         = nbBin/max;
+	const double maxPow2              = max*max;
+
+	//// Array with the covariance
+	double nb[nbBin2D];
+	double weight[nbBin2D];
+	double** cov    = new double*[nbBin2D];
+	double** nb_all = new double*[nbBin2D];
+	double** we_all = new double*[nbBin2D];
+	for (unsigned int i=0; i<nbBin2D; i++) {
+		nb[i]     = 0.;
+		weight[i] = 0.;
+		cov[i]    = new double[nbBin2D];
+		nb_all[i] = new double[nbBin2D];
+		we_all[i] = new double[nbBin2D];
+		for (unsigned int j=0; j<nbBin2D; j++) {
+			cov[i][j]    = 0.;
+			nb_all[i][j] = 0.;
+			we_all[i][j] = 0.;
+		}
+	}
+
+
+	for (unsigned int f=0; f<nbForest_; f++) {
+	
+		///// Get number of pixels in forest
+		const unsigned int nbPixel = v_nbPixelDelta1__[f];
+		const double firstPixel    = v_r__[f][0];
+		const double lastPixel     = v_r__[f][nbPixel-1];
+		const double cosDe         = v_CosDe__[f];
+		const double sinDe         = v_SinDe__[f];
+		const double ra            = v_ra__[f];
+		const double dec           = v_de__[f];
+
+		//// For T1 + T2 + T3 + T4
+		std::vector<unsigned int> vect_pair_bin;
+		std::vector<unsigned int> vect_pixel_index;
+
+		for (unsigned int q=0; q<nbQ1__; q++) {
+
+			///// Remove the correlation qso-ownForest
+			if (fabs(ra-v_raQ1__[q])<C_AUTOCORRCRIT && fabs(dec-v_deQ1__[q])<C_AUTOCORRCRIT ) continue;
+
+			///// Angle between the two directions of the qso and the lya
+			const double cosTheta = cosDe*v_CosDeQ1__[q]*cos(ra-v_raQ1__[q]) + sinDe*v_SinDeQ1__[q];
+
+			///// reject QSO with a distance too large
+			const double distTransQsoLyaPow2 = v_rrQ1__[q]*v_rrQ1__[q]*(1.-cosTheta*cosTheta);
+			if (distTransQsoLyaPow2 >= maxPow2) continue;
+
+			///// Parrallel distance between the qso and the lya
+			const double distParalQsoLya = v_rrQ1__[q]*cosTheta;
+
+			///// Distance between the qso and the first pixel
+			const double distParalQsoFirstPixel = firstPixel - distParalQsoLya;
+			if ( distParalQsoFirstPixel >= max) continue;
+
+			///// Distance between the qso and the last pixel
+			const double distParalQsoLastPixel = lastPixel - distParalQsoLya;
+			if ( distParalQsoLastPixel <= -max) continue;
+
+			///// Transvers distance between the qso and the lya
+			const double distTransQsoLya = sqrt(distTransQsoLyaPow2);
+			const unsigned int rPerpBinIdx = int( distTransQsoLya*fromValToIdx );
+
+			///// 'true' if first pixel of forest is further than the QSO
+			const bool infPosBool = (distParalQsoFirstPixel > 0.);
+			///// 'true' if last pixel of forest is lower than the QSO
+			const bool supPosBool = (distParalQsoLastPixel < 0.);
+
+			///// Loops over all pixels of the forest
+			for (unsigned int i=0; i<nbPixel; i++) {
+
+				unsigned int ii = i;
+				if (supPosBool) ii = nbPixel-1-i;
+	
+				const double distP = v_r__[f][ii] - distParalQsoLya;				
+
+				///// Look at the position of the Lya forest regarding the qso
+				if (fabs(distP) >= max) {
+					if (infPosBool || supPosBool) break;
+					else continue;
+				}
+
+				const double w = v_w__[f][ii];
+				///// Fill the histogramm of xi(r_{perp}, r_{paral}
+				const unsigned int globalBin = rPerpBinIdx*nbBinY+int( (distP+max)*fromValToIdx );
+
+				nb[globalBin] ++;
+				weight[globalBin] += w;
+
+				//// For T3
+				vect_pair_bin.push_back(globalBin);
+				vect_pixel_index.push_back(ii);
+			}
+		}
+
+		//// Calculate the covariance
+		const unsigned int nbPairs = vect_pair_bin.size();
+		std::cout << f << " " << nbPairs << std::endl;
+
+		for (unsigned int i=0; i<nbPairs; i++) {
+
+			const unsigned int global_bin_1  = vect_pair_bin[i];
+			const unsigned int pixel_index_1 = vect_pixel_index[i];
+			const double www1 = v_w__[f][pixel_index_1];
+			const unsigned int pixel_lObs_index_1 = int(v_lObs__[f][pixel_index_1]-lambdaObsMin__);
+
+			//// Covariance
+			for (unsigned int j=0; j<nbPairs; j++) {
+				
+				const unsigned int pixel_index_2 = vect_pixel_index[j];
+				const unsigned int global_bin_2  = vect_pair_bin[j];
+				const unsigned int pixel_lObs_index_2 = int(v_lObs__[f][pixel_index_2]-lambdaObsMin__);
+				const double www2 = v_w__[f][pixel_index_2];
+				
+				if (pixel_index_1==pixel_index_2) cov[global_bin_1][global_bin_2] += www1*www2*xidd1D[pixel_lObs_index_1+1][pixel_lObs_index_2+1];
+				else {
+					if (v_lObs__[f][pixel_index_1]>v_lObs__[f][pixel_index_2]) {
+						cov[global_bin_1][global_bin_2] += www1*www2*xidd1D[pixel_lObs_index_1+1][pixel_lObs_index_2];
+					}
+					else cov[global_bin_1][global_bin_2] += www1*www2*xidd1D[pixel_lObs_index_2+1][pixel_lObs_index_1];
+				}
+				nb_all[global_bin_1][global_bin_2] ++;
+				we_all[global_bin_1][global_bin_2] += www1*www2;
+			}
+		}
+
+	}
+
+
+	const std::string diagram = "T1234_with_wi1D_array";
+
+	std::cout << "\n  Saving\n" << std::endl;
+	std::ofstream fFile;
+
+	///// Save the 2D cross-correlation 
+	std::string pathToSave = pathToSave__;
+	pathToSave += "xi_delta_QSO_2D_Wick";
+	pathToSave += "_";
+	pathToSave += diagram;
+	pathToSave += "_";
+	pathToSave += forest__;
+	pathToSave += "_";
+	pathToSave += QSO__;
+	pathToSave += ".txt";
+	std::cout << "\n  " << pathToSave << std::endl;
+	fFile.open(pathToSave.c_str());
+	fFile << std::scientific;
+	fFile.precision(std::numeric_limits<double>::digits10);
+	
+	///// Set the values of data
+	for (unsigned int i=0; i<nbBin2D; i++) {
+		for (unsigned int j=0; j<nbBin2D; j++) {
+			if (nb[i]>1. && nb[j]>1.) cov[i][j] /= weight[i]*weight[j];
+			fFile << cov[i][j] << " ";
+		}
+		fFile << std::endl;
+	}
+	fFile.close();
+
+	///// Save the number 
+	pathToSave = pathToSave__;
+        pathToSave += "xi_delta_QSO_2D_Wick";
+	pathToSave += "_";
+	pathToSave += diagram;
+	pathToSave += "_number_";
+        pathToSave += forest__;
+        pathToSave += "_";
+        pathToSave += QSO__;
+        pathToSave += ".txt";
+        std::cout << "\n  " << pathToSave << std::endl;
+        fFile.open(pathToSave.c_str());
+        fFile << std::scientific;
+        fFile.precision(std::numeric_limits<double>::digits10);
+
+	for (unsigned int i=0; i<nbBin2D; i++) {
+                for (unsigned int j=0; j<nbBin2D; j++) {
+			if (nb[i]>1. && nb[j]>1.)  nb_all[i][j] /= nb[i]*nb[j];
+                        fFile << nb_all[i][j] << " ";
+                }
+                fFile << std::endl;
+        }
+        fFile.close();
+
+
+	///// Save the weight
+	pathToSave = pathToSave__;
+        pathToSave += "xi_delta_QSO_2D_Wick";
+	pathToSave += "_";
+	pathToSave += diagram;
+	pathToSave += "_weight_";
+        pathToSave += forest__;
+        pathToSave += "_";
+        pathToSave += QSO__;
+        pathToSave += ".txt";
+        std::cout << "\n  " << pathToSave << std::endl;
+        fFile.open(pathToSave.c_str());
+        fFile << std::scientific;
+        fFile.precision(std::numeric_limits<double>::digits10);
+
+        for (unsigned int i=0; i<nbBin2D; i++) {
+                for (unsigned int j=0; j<nbBin2D; j++) {
+			if (nb[i]>1. && nb[j]>1.) we_all[i][j] /= weight[i]*weight[j];
+                        fFile << we_all[i][j] << " ";
+                }
+                fFile << std::endl;
+        }
+        fFile.close();
+
+	
+	///// Save the number for the correlation
+	pathToSave = pathToSave__;
+        pathToSave += "xi_delta_QSO_2D_Wick";
+	pathToSave += "_";
+	pathToSave += diagram;
+	pathToSave += "_numberCorr_";
+        pathToSave += forest__;
+        pathToSave += "_";
+        pathToSave += QSO__;
+        pathToSave += ".txt";
+        std::cout << "\n  " << pathToSave << std::endl;
+        fFile.open(pathToSave.c_str());
+        fFile << std::scientific;
+        fFile.precision(std::numeric_limits<double>::digits10);
+
+	for (unsigned int i=0; i<nbBin2D; i++) {
+                fFile << nb[i] << " ";
+                fFile << std::endl;
+        }
+        fFile.close();
+
+	///// Save the number for the correlation
+	pathToSave = pathToSave__;
+        pathToSave += "xi_delta_QSO_2D_Wick";
+	pathToSave += "_";
+	pathToSave += diagram;
+	pathToSave += "_weightCorr_";
+        pathToSave += forest__;
+        pathToSave += "_";
+        pathToSave += QSO__;
+        pathToSave += ".txt";
+        std::cout << "\n  " << pathToSave << std::endl;
+        fFile.open(pathToSave.c_str());
+        fFile << std::scientific;
+        fFile.precision(std::numeric_limits<double>::digits10);
+
+	for (unsigned int i=0; i<nbBin2D; i++) {
+                fFile << weight[i] << " ";
+                fFile << std::endl;
+        }
+        fFile.close();
+
 
 	return;
 }
@@ -8657,7 +10811,7 @@ void Correlation::loadDataForest_Raw(unsigned int bootIdx/*=0*/) {
 				fits_read_col(fitsptrSpec,TFLOAT, 5,1,1,tmp_nbPixels2,NULL, &FLUX,NULL,&sta);
 			}
 			else if (mock_version==1) fits_read_col(fitsptrSpec,TFLOAT, 6,1,1,tmp_nbPixels2,NULL, &FLUX,NULL,&sta);
-			else if (mock_version==2 || mock_version==4) fits_read_col(fitsptrSpec,TFLOAT, 2,1,1,tmp_nbPixels2,NULL, &FLUX,NULL,&sta);
+			else if (mock_version==2 || mock_version==4 || mock_version==5) fits_read_col(fitsptrSpec,TFLOAT, 2,1,1,tmp_nbPixels2,NULL, &FLUX,NULL,&sta);
 			else if (mock_version==3) {
 				fits_read_col(fitsptrSpec,TFLOAT, 2,1,1,tmp_nbPixels2,NULL, &FLUX,NULL,&sta);
 				fits_read_col(fitsptrSpec,TFLOAT, 5,1,1,tmp_nbPixels2,NULL, &CONTINUUM,NULL,&sta);
@@ -8679,7 +10833,7 @@ void Correlation::loadDataForest_Raw(unsigned int bootIdx/*=0*/) {
 			for (unsigned int p=0; p<tmp_nbPixels2; p++) {
 
 				/// Remove 1/3 of pixels because too heavy
-				if ( (mock_version==4 || mock_version==2) && !meanOver3pixels__ && p%3!=0) continue;
+				//if ( (mock_version==2 || mock_version==4) && !meanOver3pixels__ && p%3!=0) continue;
 
 				/// bad pixels
 				if (LAMBDA_OBS[p]<=0. || std::isnan(FLUX[p]) ) continue;

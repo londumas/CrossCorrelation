@@ -500,7 +500,10 @@ def plotCovar(covList, covNameList,nbBinX=50,nbBinY=100,correlation='q_f'):
 	corList      = [ getCorrelationMatrix(el) for el in covList ]
 	diagList     = [numpy.diagonal(covList[i]) for i in range(0,nbCov)]
 	diagSqrtList = [numpy.sqrt(diagList[i]) for i in range(0,nbCov)]
-	
+	for el in corList:
+		el[ numpy.isnan(el) ] = 0.
+		el[ numpy.isinf(el) ] = 0.
+
 	### Correlation
 	###################################################
 
@@ -571,9 +574,9 @@ def plotCovar(covList, covNameList,nbBinX=50,nbBinY=100,correlation='q_f'):
 		
 			### Plot the results
 			if (nbBin==nbBin1D__):
-				xTitle = '|\Delta \, |s|_{1}-|s|_{2} | \, [$h$^{-1}$Mpc$]'
+				xTitle = '|\Delta \, |s|_{1}-|s|_{2} | \, [h^{-1} \\rm{Mpc}]'
 			else:
-				xTitle = '|\Delta \, s_{\parallel,1}-s_{\parallel,2} | \, [$h$^{-1}$Mpc$], \, $for$ \, |\Delta \, s_{\perp}| = ' + str(i*binSize__)
+				xTitle = '|\Delta \, s_{\parallel,1}-s_{\parallel,2} | \, [h^{-1} \\rm{Mpc}], \, \\rm{for} \, |\Delta \, s_{\perp}| = ' + str(i*binSize__)
 			plt.errorbar(tmp_xxx[c], tmp_yyy[c][i], label=r'$'+covNameList[c]+'$', marker='o', color=color[c])
 			#plt.plot(tmp_xxx[c], minuit_yyy, label=r'$model$', marker='o')
 
@@ -581,7 +584,7 @@ def plotCovar(covList, covNameList,nbBinX=50,nbBinY=100,correlation='q_f'):
 			
 
 		plt.xlabel(r'$'+xTitle+'$', fontsize=40)
-		plt.ylabel(r'$Cor( s_{1}, s_{2})$', fontsize=40)
+		plt.ylabel(r'$\rm{Corr}( s_{1}, s_{2})$', fontsize=40)
 		plt.xlim([ numpy.min(tmp_xxx[0])-10., numpy.max(tmp_xxx[0])+10. ])
 		deal_with_plot(False,False,True)
 		plt.show()

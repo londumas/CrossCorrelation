@@ -1930,7 +1930,7 @@ output-prefix = """ + path_to_BAOFIT + """.
 			### Save .dmat
 			if (dist_matrix):
 				print '  Saving .dmat'
-				if (dic_simu['prefix']=='_raw_from_JeanMarc' or dic_simu['prefix']=='_delta_gaussian'):
+				if (dic_simu['prefix']=='_raw_from_JeanMarc' or dic_simu['prefix']=='_delta_gaussian' or dic_simu['prefix']=='_only_LR' or dic_simu['prefix']=='_only_LR_noRand' or dic_simu['prefix']=='_only_LR_noRand_noRSD'):
 					dmatData = numpy.eye(self._nbBin2D)
 				elif ( (dic_simu is not None) and realisation_type=='Simu_stack' ):
 					print '  LOAD DMAT FROM: ', path_to_distortion_matrix
@@ -2064,10 +2064,10 @@ output-prefix = """ + path_to_BAOFIT + """.
 		if (x_power==0):
 			plt.ylabel(r'$'+self._label+' (|s|)$', fontsize=40)
 		if (x_power==1):
-			plt.ylabel(r'$|s| \cdot '+self._label+' (|s|) \, [\rm{h}^{-1} \, \rm{Mpc}]$', fontsize=40)
+			plt.ylabel(r'$|s| \cdot '+self._label+' (|s|)$', fontsize=40)
 		if (x_power==2):
-			plt.ylabel(r'$|s|^{2} \cdot '+self._label+' (|s|) \, [(\rm{h}^{-1} \, \rm{Mpc})^{2}]$', fontsize=40)
-		plt.xlabel(r'$|s| \, [\rm{h}^{-1} \, \rm{Mpc}]$', fontsize=40)
+			plt.ylabel(r'$|s|^{2} \cdot '+self._label+' (|s|)$', fontsize=40)
+		plt.xlabel(r'$|s| \, [h^{-1} \, \rm{Mpc}]$', fontsize=40)
 		plt.xlim([ numpy.amin(xxx)-10., numpy.amax(xxx)+10. ])
 		myTools.deal_with_plot(False,False,True)
 		plt.legend(fontsize=40, numpoints=1,ncol=1,loc=0)
@@ -2111,10 +2111,10 @@ output-prefix = """ + path_to_BAOFIT + """.
 		if (x_power==0):
 			plt.ylabel(r'$'+self._label+' (|s|)$', fontsize=40)
 		if (x_power==1):
-			plt.ylabel(r'$|s|.'+self._label+' (|s|) \, [\rm{h}^{-1} \, \rm{Mpc}]$', fontsize=40)
+			plt.ylabel(r'$|s|.'+self._label+' (|s|) \, [h^{-1} \, \rm{Mpc}]$', fontsize=40)
 		if (x_power==2):
-			plt.ylabel(r'$|s|^{2}.'+self._label+' (|s|) \, [(\rm{h}^{-1} \, \rm{Mpc})^{2}]$', fontsize=40)
-		plt.xlabel(r'$|s| \, [\rm{h}^{-1} \, \rm{Mpc}]$', fontsize=40)
+			plt.ylabel(r'$|s|^{2}.'+self._label+' (|s|) \, [(h^{-1} \, \rm{Mpc})^{2}]$', fontsize=40)
+		plt.xlabel(r'$|s| \, [h^{-1} \, \rm{Mpc}]$', fontsize=40)
 		plt.xlim([ numpy.amin(xxx)-10., numpy.amax(xxx)+10. ])
 		plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
 		myTools.deal_with_plot(False,False,True)
@@ -2166,14 +2166,14 @@ output-prefix = """ + path_to_BAOFIT + """.
 			plt.ylabel(r'$'+self._label+' (|s|)$', fontsize=40)
 			plt.legend(fontsize=30, numpoints=1,ncol=2, loc=4)
 		if (x_power==1):
-			plt.ylabel(r'$|s|.'+self._label+' (|s|) \, [\rm{h}^{-1} \, \rm{Mpc}]$', fontsize=40)
+			plt.ylabel(r'$|s|.'+self._label+' (|s|) \, [h^{-1} \, \rm{Mpc}]$', fontsize=40)
 			plt.legend(fontsize=30, numpoints=1,ncol=2, loc=4)
 		if (x_power==2):
-			plt.ylabel(r'$|s|^{2}.'+self._label+' (|s|) \, [(\rm{h}^{-1} \, \rm{Mpc})^{2}]$', fontsize=40)
+			plt.ylabel(r'$|s|^{2}.'+self._label+' (|s|) \, [(h^{-1} \, \rm{Mpc})^{2}]$', fontsize=40)
 			plt.legend(fontsize=30, numpoints=1,ncol=2, loc=2)
 		
 		if (title): plt.title(r'$'+self._label_wedge[we_index]+'$', fontsize=40)
-		plt.xlabel(r'$|s| \, [\rm{h}^{-1} \, \rm{Mpc}]$', fontsize=40)
+		plt.xlabel(r'$|s| \, [h^{-1} \, \rm{Mpc}]$', fontsize=40)
 		plt.xlim([ numpy.amin(xxx)-10., numpy.amax(xxx)+10. ])
 		myTools.deal_with_plot(False,False,False)
 		plt.show()
@@ -2199,14 +2199,14 @@ output-prefix = """ + path_to_BAOFIT + """.
 				plt.ylabel(r'$'+self._label+' (|s|)$', fontsize=40)
 				plt.legend(fontsize=30, numpoints=1,ncol=2, loc=4)
 			if (x_power==1):
-				plt.ylabel(r'$|s|.'+self._label+' (|s|) \, [\rm{h}^{-1} \, \rm{Mpc}]$', fontsize=40)
+				plt.ylabel(r'$|s|.'+self._label+' (|s|) \, [h^{-1} \, \rm{Mpc}]$', fontsize=40)
 				plt.legend(fontsize=30, numpoints=1,ncol=2, loc=4)
 			if (x_power==2):
-				plt.ylabel(r'$|s|^{2}.'+self._label+' (|s|) \, [(\rm{h}^{-1} \, \rm{Mpc})^{2}]$', fontsize=40)
+				plt.ylabel(r'$|s|^{2}.'+self._label+' (|s|) \, [(h^{-1} \, \rm{Mpc})^{2}]$', fontsize=40)
 				plt.legend(fontsize=30, numpoints=1,ncol=2, loc=2)
 		
 		if (title): plt.title(r'$'+self._title+'$', fontsize=40)
-		plt.xlabel(r'$|s| \, [\rm{h}^{-1} \, \rm{Mpc}]$', fontsize=40)
+		plt.xlabel(r'$|s| \, [h^{-1} \, \rm{Mpc}]$', fontsize=40)
 		plt.xlim([ numpy.amin(xxx)-10., numpy.amax(xxx)+10. ])
 		myTools.deal_with_plot(False,False,False)
 		plt.show()
@@ -2258,8 +2258,8 @@ output-prefix = """ + path_to_BAOFIT + """.
 		'''
 
 		#plt.title(r'$'+self._title+'$', fontsize=40)
-		plt.xlabel(r'$r_{\perp} \, [\rm{h}^{-1} \, \rm{Mpc}]$', fontsize=40)
-		plt.ylabel(r'$r_{\parallel} \, [\rm{h}^{-1} \, \rm{Mpc}]$', fontsize=40)
+		plt.xlabel(r'$r_{\perp} \, [h^{-1} \, \rm{Mpc}]$', fontsize=40)
+		plt.ylabel(r'$r_{\parallel} \, [h^{-1} \, \rm{Mpc}]$', fontsize=40)
 		plt.grid(True)
 		cbar.formatter.set_powerlimits((0, 0))
 		cbar.update_ticks()
@@ -2295,11 +2295,11 @@ output-prefix = """ + path_to_BAOFIT + """.
 			plt.errorbar(xxx, yyy, yerr=yer,linewidth=2,marker='o',alpha=0.6, label=r'$'+el._name+'$')
 
 		if (sliceX is not None):
-			plt.xlabel(r'$r_{\parallel} \, [\rm{h}^{-1} \, \rm{Mpc}]$', fontsize=40)
-			plt.title(r'$\overline{r}_{\perp} = %.2f \, [\rm{h}^{-1} \, \rm{Mpc}]$' % mean)
+			plt.xlabel(r'$r_{\parallel} \, [h^{-1} \, \rm{Mpc}]$', fontsize=40)
+			plt.title(r'$\overline{r}_{\perp} = %.2f \, [h^{-1} \, \rm{Mpc}]$' % mean)
 		else:
-			plt.xlabel(r'$r_{\perp} \, [\rm{h}^{-1} \, \rm{Mpc}]$', fontsize=40)
-			plt.title(r'$\overline{r}_{\parallel} = %.2f \, [\rm{h}^{-1} \, \rm{Mpc}]$' % mean)
+			plt.xlabel(r'$r_{\perp} \, [h^{-1} \, \rm{Mpc}]$', fontsize=40)
+			plt.title(r'$\overline{r}_{\parallel} = %.2f \, [h^{-1} \, \rm{Mpc}]$' % mean)
 		plt.ylabel(r'$'+self._label+'(r_{\parallel},r_{\perp})$',fontsize=40)
 
                 myTools.deal_with_plot(False,False,True)
@@ -2330,10 +2330,10 @@ output-prefix = """ + path_to_BAOFIT + """.
 			b = ''
 		if (x_power==1):
 			a = '|s|.'
-			b = '[\rm{h}^{-1} \, \rm{Mpc}]'
+			b = '[h^{-1} \, \rm{Mpc}]'
 		if (x_power==2):
 			a = '|s|^{2}.'
-			b = '[(\rm{h}^{-1} \, \rm{Mpc})^{2}]'
+			b = '[(h^{-1} \, \rm{Mpc})^{2}]'
 		
 		
 		plt.imshow(coef*yyy, origin='lower', interpolation='None',extent=extent,aspect='auto')
@@ -2341,7 +2341,7 @@ output-prefix = """ + path_to_BAOFIT + """.
 		cbar.set_label(r'$'+a+self._label+'\, (|s|, \mu) \, '+b+'$',size=40)
 		plt.title(r'$'+self._title+'$', fontsize=40)
 		plt.xlabel(r'$\mu$', fontsize=40)
-		plt.ylabel(r'$|s| \, [\rm{h}^{-1} \, \rm{Mpc}]$', fontsize=40)
+		plt.ylabel(r'$|s| \, [h^{-1} \, \rm{Mpc}]$', fontsize=40)
 		plt.grid(True)
 		cbar.formatter.set_powerlimits((0, 0))
 		cbar.update_ticks()
@@ -2414,11 +2414,11 @@ output-prefix = """ + path_to_BAOFIT + """.
 		if (x_power==0):
 			plt.ylabel(r'$'+self._label+' (|s|)$', fontsize=40)
 		if (x_power==1):
-			plt.ylabel(r'$|s|^{1}.'+self._label+' (|s|) \, [\rm{h}^{-1} \, \rm{Mpc}]$', fontsize=40)
+			plt.ylabel(r'$|s|^{1}.'+self._label+' (|s|) \, [h^{-1} \, \rm{Mpc}]$', fontsize=40)
 		if (x_power==2):
-			plt.ylabel(r'$|s|^{2}.'+self._label+' (|s|) \, [(\rm{h}^{-1} \, \rm{Mpc})^{2}]$', fontsize=40)
+			plt.ylabel(r'$|s|^{2}.'+self._label+' (|s|) \, [(h^{-1} \, \rm{Mpc})^{2}]$', fontsize=40)
 			
-		plt.xlabel(r'$|s| \, [\rm{h}^{-1} \, \rm{Mpc}]$', fontsize=40)
+		plt.xlabel(r'$|s| \, [h^{-1} \, \rm{Mpc}]$', fontsize=40)
 		plt.xlim([ numpy.amin(xxx)-10., numpy.amax(xxx)+10. ])
 		#plt.ylim([ min( min( numpy.amin(coef*yyy)*1.1,numpy.amin(coef*yyy)*0.9),min( numpy.amin(coef2*result_1D_camb[:,1])*1.1,numpy.amin(coef2*result_1D_camb[:,1])*0.9) ) , max( max( numpy.amax(coef*yyy)*1.1,numpy.amax(coef*yyy)*0.9),max( numpy.amax(coef2*result_1D_camb[:,1])*1.1,numpy.amax(coef2*result_1D_camb[:,1])*0.9) ) ])
 		myTools.deal_with_plot(False,False,False)
@@ -2434,7 +2434,7 @@ output-prefix = """ + path_to_BAOFIT + """.
 				el._xiMul = el.get_multipol(el._xiMu)
 	
 		color = ['blue','green','red','orange','black']
-		ylabel = ['\\xi^{qf} (|s|)','|s|.\\xi^{qf} (|s|) \, [\rm{h}^{-1} \, \rm{Mpc}]','|s|^{2}.\\xi^{qf} (|s|) \, [(\rm{h}^{-1} \, \rm{Mpc})^{2}]']
+		ylabel = ['\\xi^{qf} (|s|)','|s|.\\xi^{qf} (|s|) \, [h^{-1} \, \rm{Mpc}]','|s|^{2}.\\xi^{qf} (|s|) \, [(h^{-1} \, \rm{Mpc})^{2}]']
 	
 		### Show the result
 		for i in numpy.arange(0, self._nb_multipole_max ):
@@ -2468,7 +2468,7 @@ output-prefix = """ + path_to_BAOFIT + """.
 			plt.ylabel(r'$|r|.'+self._label+' (|r|)$', fontsize=40)
 		if (x_power==2):
 			plt.ylabel(r'$|r|^{2}.'+self._label+' (|r|)$', fontsize=40)
-		plt.xlabel(r'$|r| \, [\rm{h}^{-1} \, \rm{Mpc}]$', fontsize=40)
+		plt.xlabel(r'$|r| \, [h^{-1} \, \rm{Mpc}]$', fontsize=40)
 		plt.xlim([ numpy.amin(xxx)-10., numpy.amax(xxx)+10. ])
 		myTools.deal_with_plot(False,False,True)
 		plt.show()
@@ -2620,8 +2620,8 @@ output-prefix = """ + path_to_BAOFIT + """.
 		cbar = plt.colorbar()
 	
 		#plt.title(r'$'+self._title+'$', fontsize=40)
-		plt.xlabel(r'$s_{\perp} \, [\rm{h}^{-1} \, \rm{Mpc}]$', fontsize=40)
-		plt.ylabel(r'$s_{\parallel} \, [\rm{h}^{-1} \, \rm{Mpc}]$', fontsize=40)
+		plt.xlabel(r'$s_{\perp} \, [h^{-1} \, \rm{Mpc}]$', fontsize=40)
+		plt.ylabel(r'$s_{\parallel} \, [h^{-1} \, \rm{Mpc}]$', fontsize=40)
 		cbar.set_label(r'$'+z_axis[index]+'$',size=40)
 		plt.grid(True)
 		#cbar.formatter.set_powerlimits((0, 0))
@@ -2654,8 +2654,8 @@ output-prefix = """ + path_to_BAOFIT + """.
 		#plt.ylim([-90.,90.])
 		plt.ticklabel_format(style='sci', axis='z', scilimits=(0,0))
 		if (euclidean):
-			plt.xlabel(r'$x \, [\rm{h}^{-1} \, \rm{Mpc}]$')
-			plt.ylabel(r'$y \, [\rm{h}^{-1} \, \rm{Mpc}]$')
+			plt.xlabel(r'$x \, [h^{-1} \, \rm{Mpc}]$')
+			plt.ylabel(r'$y \, [h^{-1} \, \rm{Mpc}]$')
 		else:
 			plt.xlabel(r'$R.A. \, [\degree]$')
 			plt.ylabel(r'$Dec. \, [\degree]$')
@@ -2671,8 +2671,8 @@ output-prefix = """ + path_to_BAOFIT + """.
 		ax.grid(True,linestyle='-',color='0.75')
 
 		if (euclidean):
-			plt.xlabel(r'$x \, [\rm{h}^{-1} \, \rm{Mpc}]$')
-			plt.ylabel(r'$y \, [\rm{h}^{-1} \, \rm{Mpc}]$')
+			plt.xlabel(r'$x \, [h^{-1} \, \rm{Mpc}]$')
+			plt.ylabel(r'$y \, [h^{-1} \, \rm{Mpc}]$')
 		else:
 			plt.xlabel(r'$R.A. \, [\degree]$')
 			plt.ylabel(r'$Dec. \, [\degree]$')
@@ -2710,8 +2710,8 @@ output-prefix = """ + path_to_BAOFIT + """.
 
 		plt.ticklabel_format(style='sci', axis='z', scilimits=(0,0))
 		if (euclidean):
-			plt.xlabel(r'$x \, [\rm{h}^{-1} \, \rm{Mpc}]$')
-			plt.ylabel(r'$y \, [\rm{h}^{-1} \, \rm{Mpc}]$')
+			plt.xlabel(r'$x \, [h^{-1} \, \rm{Mpc}]$')
+			plt.ylabel(r'$y \, [h^{-1} \, \rm{Mpc}]$')
 		else:
 			plt.xlabel(r'$R.A. \, [\degree]$')
 			plt.ylabel(r'$Dec. \, [\degree]$')
@@ -2727,8 +2727,8 @@ output-prefix = """ + path_to_BAOFIT + """.
 		ax.grid(True,linestyle='-',color='0.75')
 
 		if (euclidean):
-			plt.xlabel(r'$x \, [\rm{h}^{-1} \, \rm{Mpc}]$')
-			plt.ylabel(r'$y \, [\rm{h}^{-1} \, \rm{Mpc}]$')
+			plt.xlabel(r'$x \, [h^{-1} \, \rm{Mpc}]$')
+			plt.ylabel(r'$y \, [h^{-1} \, \rm{Mpc}]$')
 		else:
 			plt.xlabel(r'$R.A. \, [\degree]$')
 			plt.ylabel(r'$Dec. \, [\degree]$')

@@ -462,12 +462,12 @@ class AnnalyseBAOFIT(correlation_3D.Correlation3D):
 		if (x_power==0):
 			plt.ylabel(r'$'+self._label+' (r)$', fontsize=40)
 		if (x_power==1):
-			plt.ylabel(r'$r \cdot '+self._label+' (r) \, [\\rm{h}^{-1} \, \\rm{Mpc}]$', fontsize=40)
+			plt.ylabel(r'$r \cdot '+self._label+' (r) \, [h^{-1} \, \\rm{Mpc}]$', fontsize=40)
 		if (x_power==2):
-			plt.ylabel(r'$r^{2} \cdot '+self._label+' (r) \, [(\\rm{h}^{-1} \, \\rm{Mpc})^{2}]$', fontsize=40)
+			plt.ylabel(r'$r^{2} \cdot '+self._label+' (r) \, [(h^{-1} \, \\rm{Mpc})^{2}]$', fontsize=40)
 		
 		if (title): plt.title(r'$'+self._title+'$', fontsize=40)
-		plt.xlabel(r'$r \, [\rm{h}^{-1} \, \rm{Mpc}]$', fontsize=40)
+		plt.xlabel(r'$r \, [h^{-1} \, \rm{Mpc}]$', fontsize=40)
 		plt.xlim([ numpy.amin(xxx)-10., numpy.amax(xxx)+10. ])
 		myTools.deal_with_plot(False,False,True)
 		plt.legend(fontsize=40, numpoints=1,ncol=1,loc=0)
@@ -499,12 +499,12 @@ class AnnalyseBAOFIT(correlation_3D.Correlation3D):
 		if (x_power==0):
 			plt.ylabel(r'$'+self._label+' (r)$', fontsize=40)
 		if (x_power==1):
-			plt.ylabel(r'$r \cdot '+self._label+' (r) \, [\\rm{h}^{-1} \, \\rm{Mpc}]$', fontsize=40)
+			plt.ylabel(r'$r \cdot '+self._label+' (r) \, [h^{-1} \, \\rm{Mpc}]$', fontsize=40)
 		if (x_power==2):
-			plt.ylabel(r'$r^{2} \cdot '+self._label+' (r) \, [(\\rm{h}^{-1} \, \\rm{Mpc})^{2}]$', fontsize=40)
+			plt.ylabel(r'$r^{2} \cdot '+self._label+' (r) \, [(h^{-1} \, \\rm{Mpc})^{2}]$', fontsize=40)
 		
 		if (title): plt.title(r'$'+self._title+'$', fontsize=40)
-		plt.xlabel(r'$r \, [\rm{h}^{-1} \, \rm{Mpc}]$', fontsize=40)
+		plt.xlabel(r'$r \, [h^{-1} \, \rm{Mpc}]$', fontsize=40)
 		plt.xlim([ numpy.amin(xxx)-10., numpy.amax(xxx)+10. ])
 		myTools.deal_with_plot(False,False,False)
 		plt.legend(fontsize=40, numpoints=1,ncol=1,loc=0)
@@ -634,8 +634,8 @@ class AnnalyseBAOFIT(correlation_3D.Correlation3D):
 		'''
 
 		#plt.title(r'$'+self._title+'$', fontsize=40)
-		plt.xlabel(r'$r_{\perp} \, [\rm{h}^{-1} \, \rm{Mpc}]$', fontsize=40)
-		plt.ylabel(r'$r_{\parallel} \, [\rm{h}^{-1} \, \rm{Mpc}]$', fontsize=40)
+		plt.xlabel(r'$r_{\perp} \, [h^{-1} \, \rm{Mpc}]$', fontsize=40)
+		plt.ylabel(r'$r_{\parallel} \, [h^{-1} \, \rm{Mpc}]$', fontsize=40)
 		plt.grid(True)
 		cbar.formatter.set_powerlimits((0, 0))
 		cbar.update_ticks()
@@ -705,11 +705,11 @@ class AnnalyseBAOFIT(correlation_3D.Correlation3D):
 			i += 1
 		
 		if (sliceX is not None):
-			plt.xlabel(r'$r_{\parallel} \, [\rm{h}^{-1} \, \rm{Mpc}]$', fontsize=40)
-			plt.title(r'$\overline{r}_{\perp} = %.2f \, [\rm{h}^{-1} \, \rm{Mpc}]$' % mean)
+			plt.xlabel(r'$r_{\parallel} \, [h^{-1} \, \rm{Mpc}]$', fontsize=40)
+			plt.title(r'$\overline{r}_{\perp} = %.2f \, [h^{-1} \, \rm{Mpc}]$' % mean)
 		else:
-			plt.xlabel(r'$r_{\perp} \, [\rm{h}^{-1} \, \rm{Mpc}]$', fontsize=40)
-			plt.title(r'$\overline{r}_{\parallel} = %.2f \, [\rm{h}^{-1} \, \rm{Mpc}]$' % mean)
+			plt.xlabel(r'$r_{\perp} \, [h^{-1} \, \rm{Mpc}]$', fontsize=40)
+			plt.title(r'$\overline{r}_{\parallel} = %.2f \, [h^{-1} \, \rm{Mpc}]$' % mean)
 		plt.ylabel(r'$'+self._label+'(r_{\parallel},r_{\perp})$',fontsize=40)	
                 myTools.deal_with_plot(False,False,False)
                 plt.show()

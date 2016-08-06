@@ -49,6 +49,7 @@ skyLines__ = [ (3615,3619),(3932,3937),(3966,3972),(4042,4050),
 	(6977,6982),(9336,9344),(9369,9383),(9435,9449),
 	(9460,9465),(9695,9705) ]
 skyLinesNames__ = numpy.array(['?','Ca absorbtion','Ca absorbtion','Hg line','Hg line','Hg line','0I line Kirkby','?','?','?','?','O lines Kirkby','?','?','?','? Kirkby','?','?','?','?' ])
+skyLinesLinear__ = numpy.array(skyLines__)
 skyLines__ = numpy.log10(skyLines__)
 
 

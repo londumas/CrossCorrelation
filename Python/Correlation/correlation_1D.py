@@ -434,12 +434,12 @@ list_corr = []
 
 '''
 ### Data
-dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/Box_000/Simu_000/Results_delta_gaussian/'
+dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/Box_000/Simu_000/Results_only_LR/'
 dic_class['name'] = "Data"
-dic_class['correlation'] = "f_f_r"
+dic_class['correlation'] = "f_f_lRF_devide"
 corr = Correlation_1D(dic_class)
-corr.save_list_realisation_simulation(dic_class, dic_simu)
-corr.set_values_on_mean_simulation(dic_simu)
+#corr.save_list_realisation_simulation(dic_class, dic_simu)
+#corr.set_values_on_mean_simulation(dic_simu)
 list_corr += [corr]
 
 #corr.plot_distortion_matrix()
@@ -447,7 +447,8 @@ list_corr += [corr]
 #corr.fit_CAMB()
 #corr.fit_CAMB(True,dic_CAMB_corr)
 list_corr[0].plot(False,False)
-
+'''
+'''
 ### Data
 dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator_2016_05_26_PlankCosmo/'
 dic_class['name'] = "Data"

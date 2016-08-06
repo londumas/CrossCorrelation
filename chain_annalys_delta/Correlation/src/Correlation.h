@@ -105,6 +105,7 @@ class Correlation
 		void xi_1D_delta_delta(void);
 		void xi_1DlRF_delta_delta(void);
 		void xi_1DlRFDevide_delta_delta(void);
+		void xi_1DlObs_2D_delta_delta(void);
 		void xi_1D_delta_delta_distortionMatrix(void);
 		void xi_1DlRF_delta_delta_distortionMatrix(void);
 		void xi_1DlRFDevide_delta_delta_distortionMatrix(void);
@@ -124,7 +125,14 @@ class Correlation
 		void xi_delta_QSO_distortionMatrix(void);
 		void xi_delta_QSO_distortionMatrix_1D(void);
 		void xi_delta_QSO_Metals_Models(double lambdaFrMetal, std::string lambdaFrMetalName);
-		void xi_delta_QSO_Wick(unsigned int diagramIdx);
+		void xi_delta_QSO_Wick_T1(void);
+		void xi_delta_QSO_Wick_T12(void);
+		void xi_delta_QSO_Wick_T123(void);
+		void xi_delta_QSO_Wick_T1234(void);
+		void xi_delta_QSO_Wick_T1_with_wi1D_array(void);
+		void xi_delta_QSO_Wick_T12_with_wi1D_array(void);
+		void xi_delta_QSO_Wick_T123_with_wi1D_array(void);
+		void xi_delta_QSO_Wick_T1234_with_wi1D_array(void);
 		void xi_delta_QSO_Wick_1D(unsigned int diagramIdx);
 		//
 		void xi_QSO_QSO(unsigned int bootIdx=0);

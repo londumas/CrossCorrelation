@@ -46,9 +46,10 @@ Tools::Tools(int argc, char** argv) {
 	//get_Ra_Dec_DLA();
 	//look_DLA();
 	//get_delta_nicolas();
-	get_Catalogue();
+	//get_Catalogue();
 	//get_flux_vs_lambdaObs();
 	//get_weigted_covar_matrix();
+	get_template_function_redshift();
 
 }
 Tools::~Tools(void) {	
@@ -1045,7 +1046,15 @@ void Tools::get_weigted_covar_matrix(void) {
 
 
 }
+void Tools::get_template_function_redshift(void) {
 
+	const unsigned int nbPixelTemplate = int(lambdaRFMax__-lambdaRFMin__)+6;
+	TProfile2D* templateFlux = new Trofile2D("templateFlux","",nbPixelTemplate,lambdaRFMin__-3.,lambdaRFMax__+3., C_NBBINZ+2, 2., 4.5);
+
+	
+
+	return
+}
 
 
 
