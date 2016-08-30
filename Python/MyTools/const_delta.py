@@ -25,11 +25,17 @@ bit16__ = 65536
 
 ########################################################################
 ### Lambda_{Obs.}
+#
+# good range for data [3600.,7235.]
+# good range to find corection [3543.,9350.]
+#
+# the data has pixels from [3543.,10412.]
 ########################################################################
+
 
 ### Observed wavelenght range
 lambdaObsMin__ = 3600.
-lambdaObsMax__ = 9350.  ##7235
+lambdaObsMax__ = 7235.
 log10lambdaObsMin__ = numpy.log10(lambdaObsMin__)
 log10lambdaObsMax__ = numpy.log10(lambdaObsMax__)
 
@@ -41,6 +47,8 @@ lambdaObsBinCenter__  = numpy.array([ lambdaObsBinEdges__[i]+(lambdaObsBinEdges_
 
 ### Sky lines
 #############
+"""
+Before reduction of number of lines
 skyLines__ = [ (3615,3619),(3932,3937),(3966,3972),(4042,4050),
 	(4357,4362),(5458,5467),(5573,5585),(5682,5695),
 	(5885,5902),(6235,6241),(6256,6263),(6296,6311),
@@ -49,6 +57,11 @@ skyLines__ = [ (3615,3619),(3932,3937),(3966,3972),(4042,4050),
 	(6977,6982),(9336,9344),(9369,9383),(9435,9449),
 	(9460,9465),(9695,9705) ]
 skyLinesNames__ = numpy.array(['?','Ca absorbtion','Ca absorbtion','Hg line','Hg line','Hg line','0I line Kirkby','?','?','?','?','O lines Kirkby','?','?','?','? Kirkby','?','?','?','?' ])
+"""
+skyLines__ = [ (3932,3937),(3966,3972),(4357,4362),(5573,5585),
+		(5885,5902),(6296,6311),(6320,6334),(9336,9344),
+		(9369,9383),(9435,9449),(9460,9465),(9695,9705)]
+skyLinesNames__ = numpy.zeros( shape=11 ).astype('string')
 skyLinesLinear__ = numpy.array(skyLines__)
 skyLines__ = numpy.log10(skyLines__)
 
@@ -58,9 +71,9 @@ skyLines__ = numpy.log10(skyLines__)
 ########################################################################
 
 ### Correlation lines
-MGII_lines_names  = numpy.array(['MgI',   'MgII_a',  'MgII_b',  'FeII_a',      'FeII_b',      'MnII',   'FeII_c',      'FeII_d',      'FeII_e'])
+MGII_lines_names  = numpy.array(['MgI(2853)',   'MgII(2804)',  'MgII(2797)',  'FeII(2600)',      'FeII(2587)',      'MnII(2577)',   'FeII(2383)',      'FeII(2374)',      'FeII(2344)'])
 MGII_lines        = numpy.array([2852.96, 2803.5324, 2796.3511, 2600.1724835,  2586.6495659,  2576.877, 2382.7641781,  2374.4603294,  2344.2129601])
-lambda_RF_line_MGII = 2803.5324
+lambda_RF_line_MGII = 2796.3511
 ###
 CIV_lines_names   = numpy.append( MGII_lines_names, numpy.array(['AlIII(1863)' ,  'AlIII(1855)' , 'AlII(1671)' ,   'FeII(1609)',  'CIV(1551)' ,   'CIV(1548)',   'SiII(1527)']))
 CIV_lines         = numpy.append( MGII_lines, numpy.array([      1862.79113,  1854.71829, 1670.7886, 1608.4511, 1550.77845, 1548.2049, 1526.70698 ]))
@@ -130,12 +143,12 @@ elif (forest__ == 'CIV'):
 	correlationLinesName = CIV_lines_names
 	alphaStart__         = 1.
 elif (forest__ == 'MGII'):
-	lambdaRFLine__     = 2803.5324
-	lambdaRFMin__      = 1570.
+	lambdaRFLine__     = 2796.3511
+	lambdaRFMin__      = 2100. #1570.
 	lambdaRFMax__      = 2790.
 	lambdaRFNormaMin__ = 2860.
 	lambdaRFNormaMax__ = 2880.
-	nbBinRFMax__       = 2511
+	nbBinRFMax__       = 1240
 	correlationLines     = MGII_lines
 	correlationLinesName = MGII_lines_names
 	alphaStart__         = 1.
@@ -147,6 +160,8 @@ elif (forest__ == 'MGII'):
 lambdaRFMean__ = (lambdaRFMax__+lambdaRFMin__)/2.
 
 ### Rest Frame wavelenght range for template
+log10lambdaRFMin__ = numpy.log10(lambdaRFMin__)
+log10lambdaRFMax__ = numpy.log10(lambdaRFMax__)
 lambdaRFTemplateMin__ = lambdaRFMin__-3.
 lambdaRFTemplateMax__ = lambdaRFMax__+3.
 log10lambdaRFTemplateMin__ = numpy.log10(lambdaRFTemplateMin__)
@@ -179,7 +194,7 @@ strongLines_CIV = [1.00166645,1.00522684,1.01407602,1.01576593,1.02024425,1.0371
 ########################################################################
 
 ### Minimal redshift to get first pixel
-minRedshift__ = lambdaObsMin__/lambdaRFLine__ - 1.
+minRedshift__ = lambdaObsMin__/lambdaRFMax__ - 1.
 maxRedshift__ = lambdaObsMax__/lambdaRFMin__ - 1.
 
 redshiftBinEdges__ = numpy.array( [minRedshift__-0.01, 2.10, 2.15, 2.20, 2.25, 2.30, 2.35, 2.40, 2.45, 2.50,
@@ -302,12 +317,14 @@ def find_range_QSO_redshift():
 	
 	return z_QSO_min,z_QSO_max
 
-'''
+"""
 ### Min and max redshift of the quasar
+print (lambdaObsMin__/lambdaRFLine__)-1.
+print (lambdaObsMax__/lambdaRFLine__)-1.
 minRedshiftQSO__, maxRedshiftQSO__ = find_range_QSO_redshift()
 print minRedshiftQSO__
 print maxRedshiftQSO__
-'''
+"""
 
 ########################################################################
 ### Pixels

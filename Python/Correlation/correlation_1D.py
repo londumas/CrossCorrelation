@@ -316,7 +316,7 @@ class Correlation_1D:
 
 		for el in list_corr_to_plot:
 
-			print el._name, el._xi[0,1]
+			print el._name, el._xi[0,1], numpy.sum(el._xi[:,1])
 
 			if (el._correlation == 'f_f2_lRF_devide'): 
 				TMP_xxx = 1./el._xi[cut_l:cut_h,0]
@@ -349,7 +349,7 @@ class Correlation_1D:
 
 				for j in range(0,nbLines2):
 
-					if ( self._lines1[i]!=1215.67 and self._lines2[j]!=1215.67 ): continue
+					#if ( self._lines1[i]!=1215.67 and self._lines2[j]!=1215.67 ): continue
 
 					if (self._correlation=='f_f_r' or self._correlation=='f_f2_r'):
 						line = numpy.abs( const_delta.find_dist_correlation_lines(self._meanZ,self._lines2[j], self._lines1[i]) )
@@ -412,7 +412,7 @@ dic_class = {
 	'correlation': 'f_f_lRF_devide',
 	'path_to_txt_file_folder': 'NONE',
 	'f1': 'LYA',
-	'f2': 'a',
+	'f2': '',
 	'nb_Sub_Sampling': 80,
 	'name' : 'NAME'
 }
@@ -432,10 +432,10 @@ dic_CAMB_corr = {
 
 list_corr = []
 
-'''
+
 ### Data
-dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/Box_000/Simu_000/Results_only_LR/'
-dic_class['name'] = "Data"
+dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator_2016_05_26_PlankCosmo/'
+dic_class['name'] = "DR12"
 dic_class['correlation'] = "f_f_lRF_devide"
 corr = Correlation_1D(dic_class)
 #corr.save_list_realisation_simulation(dic_class, dic_simu)
@@ -446,12 +446,12 @@ list_corr += [corr]
 #dic_CAMB_corr['z'] = corr._meanZ
 #corr.fit_CAMB()
 #corr.fit_CAMB(True,dic_CAMB_corr)
-list_corr[0].plot(False,False)
-'''
-'''
+#list_corr[0].plot(False,False)
+
+
 ### Data
-dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator_2016_05_26_PlankCosmo/'
-dic_class['name'] = "Data"
+dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/DR14/'
+dic_class['name'] = "DR14"
 dic_class['correlation'] = "f_f_lRF_devide"
 corr = Correlation_1D(dic_class)
 list_corr += [corr]
@@ -460,7 +460,7 @@ list_corr += [corr]
 #corr.fit_CAMB()
 #corr.fit_CAMB(True,dic_CAMB_corr)
 list_corr[0].plot(False,False,list_corr[1:])
-'''
+
 
 '''
 #

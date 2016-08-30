@@ -125,10 +125,6 @@ class Correlation
 		void xi_delta_QSO_distortionMatrix(void);
 		void xi_delta_QSO_distortionMatrix_1D(void);
 		void xi_delta_QSO_Metals_Models(double lambdaFrMetal, std::string lambdaFrMetalName);
-		void xi_delta_QSO_Wick_T1(void);
-		void xi_delta_QSO_Wick_T12(void);
-		void xi_delta_QSO_Wick_T123(void);
-		void xi_delta_QSO_Wick_T1234(void);
 		void xi_delta_QSO_Wick_T1_with_wi1D_array(void);
 		void xi_delta_QSO_Wick_T12_with_wi1D_array(void);
 		void xi_delta_QSO_Wick_T123_with_wi1D_array(void);
@@ -145,6 +141,10 @@ class Correlation
 		void xi_delta_QSO_MockJMc_distortionMatrix( void );
 		void xi_delta_QSO_MockJMc_distortionMatrix_1D( void );
 		void xi_delta_QSO_Metals_Models_MockJMc(double lambdaFrMetal, std::string lambdaFrMetalName);
+		void xi_delta_QSO_MockJMc_Wick_T1_with_wi1D_array(void);
+		void xi_delta_QSO_MockJMc_Wick_T12_with_wi1D_array(void);
+		void xi_delta_QSO_MockJMc_Wick_T123_with_wi1D_array(void);
+		void xi_delta_QSO_MockJMc_Wick_T1234_with_wi1D_array(void);
 		void xi_QSO_QSO_MockJMc(unsigned int bootIdx=0);
 };
 
@@ -198,6 +198,7 @@ const double alphaStart__       = 1.3;
 /*
 /// If SIIV
 const std::string forest__      = "SIIV";
+const std::string forestPath__  = "SIIV";
 const double lambdaRFLine__     = 1393.76018;
 const double lambdaRFMin__      = 1286.;
 const double lambdaRFMax__      = 1380.;
@@ -217,13 +218,13 @@ const double alphaStart__       = 1.;
 /*
 /// If MGII
 const std::string forest__      = "MGII";
-const double lambdaRFLine__  = 2803.5324;
-const double lambdaRFMin__   = 1570.;
+const std::string forestPath__  = "MGII";
+const double lambdaRFLine__  = 2796.3511;
+const double lambdaRFMin__   = 2100.;
 const double lambdaRFMax__   = 2790.;
-const unsigned int nbBinRFMax__ = 2414;
-const double alphaStart__       = 1.;
+const unsigned int nbBinRFMax__ = 1240;
+const double alphaStart__ = 1.;
 */
-
 
 
 
@@ -260,7 +261,7 @@ const unsigned int nbBinRFMaxDelta2__ = 326;
 const std::string pathDelta2__ = "/home/gpfs/manip/mnt/bao/hdumasde/Data/SIIV/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits";
 const double alphaStart2__       = 1.;
 */
-
+/*
 /// For Delta 2 (CIV)
 const std::string forest2__  = "CIV";
 const double lambdaRFLineDelta2__  = 1548.2049;
@@ -269,17 +270,18 @@ const double lambdaRFMaxDelta2__   = 1530.;
 const unsigned int nbBinRFMaxDelta2__ = 373;
 const std::string pathDelta2__ = "/home/gpfs/manip/mnt/bao/hdumasde/Data/CIV/FitsFile_DR14/DR14_primery/DR14_primery.fits";
 const double alphaStart2__       = 1.;
+*/
 
-/*
+
 /// For Delta 2 (MGII)
 const std::string forest2__  = "MGII";
-const double lambdaRFLineDelta2__  = 2804;
-const double lambdaRFMinDelta2__   = 1570.;
+const double lambdaRFLineDelta2__  = 2796.3511;
+const double lambdaRFMinDelta2__   = 2100.;
 const double lambdaRFMaxDelta2__   = 2790.;
-const unsigned int nbBinRFMaxDelta2__ = 2414;
-const std::string pathDelta2__ = "/home/gpfs/manip/mnt/bao/hdumasde/Data/MGII/FitsFile_DR12/DR12_primery/DR12_primery.fits";
+const unsigned int nbBinRFMaxDelta2__ = 1240;
+const std::string pathDelta2__ = "/home/gpfs/manip/mnt/bao/hdumasde/Data/MGII/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits";
 const double alphaStart2__       = 1.;
-*/
+
 
 
 

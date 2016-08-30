@@ -120,20 +120,13 @@ GetDelta::GetDelta(int argc, char** argv) {
 		pathForest__   = "/home/gpfs/manip/mnt/bao/hdumasde/Data/";
 		pathForest__  += forest__;
 		pathToTxt__    = pathForest__;
-//		pathForest__  += "/FitsFile_DR14/DR14_primery/DR14_primery.fits";  //_method1
-		pathForest__  += "/FitsFile_DR12_Guy_Margala/DR12_primery/DR12_primery.fits";
-//		pathForest__  += "/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits";
-//		pathForest__  += "/FitsFile_DR12_Guy_Margala/DR12_coAdd/DR12_coAdd.fits";  //_method1
 
-//		pathToTxt__   += "/FitsFile_DR14/DR14_primery/histos/";  //_method1
-		pathToTxt__   += "/FitsFile_DR12_Guy_Margala/DR12_primery/histos/";
-//		pathToTxt__   += "/FitsFile_eBOSS_Guy/all_eBOSS_primery/histos/";
+//		pathForest__  += "/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits";
+		pathForest__  += "/DR14/DR14_primery/DR14_primery.fits";
 
-//		pathForest__   = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/FitsFile_DR12_reOBS_eBOSS_Guy/DR12_primery/DR12_primery_reOBS_eBOSS.fits";
-//		pathToTxt__    = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/FitsFile_DR12_reOBS_eBOSS_Guy/DR12_primery/histos/";
+//		pathToTxt__   += "/FitsFile_DR12_Guy/DR12_primery/histos/";
+		pathToTxt__   += "/DR14/DR14_primery/histos/";
 
-//		pathForest__   = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/FitsFile_DR12_reOBS_Guy/DR12_primery/DR12_primery_reOBS.fits";
-//		pathToTxt__    = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/FitsFile_DR12_reOBS_Guy/DR12_primery/histos/";
 		std::cout << "  pathToTxt = " << pathToTxt__ << std::endl;
 	}
 	else {
@@ -1208,8 +1201,8 @@ void GetDelta::loadDataForest(std::string fitsnameSpec, unsigned int start, unsi
 			}
 		}
 
-		if (cutNotFittedSpectra==true && (tmp_nb<C_MIN_NB_PIXEL || templateHasNegative ) ) {
-			if (tmp_nb<C_MIN_NB_PIXEL) nbCutted[3] ++;
+		if (cutNotFittedSpectra==true && (tmp_nb<=C_MIN_NB_PIXEL || templateHasNegative ) ) {
+			if (tmp_nb<=C_MIN_NB_PIXEL) nbCutted[3] ++;
 			else if (templateHasNegative) nbCutted[4] ++;
 			continue;
 		}
@@ -1293,16 +1286,16 @@ void GetDelta::updateDLA(std::string fitsnameSpec, unsigned int start, unsigned 
 
 	// list of DLA
 	const unsigned int NbDLACat = nrows2;
-	//unsigned int DLAplate[NbDLACat], DLAmjd[NbDLACat], DLAfiber[NbDLACat];
+	unsigned int DLAplate[NbDLACat], DLAmjd[NbDLACat], DLAfiber[NbDLACat];
 	double raDLACat[NbDLACat], deDLACat[NbDLACat], zabsDLACat[NbDLACat], NHIDLACat[NbDLACat];
 
 	for (unsigned int i=0; i<NbDLACat; i++) {
 		fits_read_col(fitsptrSpec2,TDOUBLE, 1, i+1,1,1,NULL,&raDLACat[i],    NULL,&sta2);
 		fits_read_col(fitsptrSpec2,TDOUBLE, 2, i+1,1,1,NULL,&deDLACat[i],    NULL,&sta2);
 		fits_read_col(fitsptrSpec2,TDOUBLE, 3, i+1,1,1,NULL,&zabsDLACat[i],  NULL,&sta2);
-		//fits_read_col(fitsptrSpec2,TINT,    4, i+1,1,1,NULL,&DLAplate[i],    NULL,&sta2);
-		//fits_read_col(fitsptrSpec2,TINT,    5, i+1,1,1,NULL,&DLAmjd[i],      NULL,&sta2);
-		//fits_read_col(fitsptrSpec2,TINT,    6, i+1,1,1,NULL,&DLAfiber[i],    NULL,&sta2);
+		fits_read_col(fitsptrSpec2,TINT,    4, i+1,1,1,NULL,&DLAplate[i],    NULL,&sta2);
+		fits_read_col(fitsptrSpec2,TINT,    5, i+1,1,1,NULL,&DLAmjd[i],      NULL,&sta2);
+		fits_read_col(fitsptrSpec2,TINT,    6, i+1,1,1,NULL,&DLAfiber[i],    NULL,&sta2);
 		fits_read_col(fitsptrSpec2,TDOUBLE, 7, i+1,1,1,NULL,&NHIDLACat[i],   NULL,&sta2);
 	}
 	fits_close_file(fitsptrSpec2,&sta2);
@@ -1330,17 +1323,17 @@ void GetDelta::updateDLA(std::string fitsnameSpec, unsigned int start, unsigned 
 	for (unsigned int i=start; i<nLines; i++) {
 
 		//// Variables for data in FITS
-		//unsigned int plate = 0;
-		//unsigned int mjd   = 0;
-		//unsigned int fiber = 0;
+		unsigned int plate = 0;
+		unsigned int mjd   = 0;
+		unsigned int fiber = 0;
 		double ra, de;
 
 		double LAMBDA_OBS[nbBinRFMax__];
 		double FluxDLA[nbBinRFMax__];
 		
-		//fits_read_col(fitsptrSpec,TINT, 1, i+1,1,1,NULL,&plate, NULL,&sta);
-		//fits_read_col(fitsptrSpec,TINT, 2, i+1,1,1,NULL,&mjd,   NULL,&sta);
-		//fits_read_col(fitsptrSpec,TINT, 3, i+1,1,1,NULL,&fiber, NULL,&sta);
+		fits_read_col(fitsptrSpec,TINT, 1, i+1,1,1,NULL,&plate, NULL,&sta);
+		fits_read_col(fitsptrSpec,TINT, 2, i+1,1,1,NULL,&mjd,   NULL,&sta);
+		fits_read_col(fitsptrSpec,TINT, 3, i+1,1,1,NULL,&fiber, NULL,&sta);
 		fits_read_col(fitsptrSpec,TDOUBLE, 4,i+1,1,1,NULL,&ra,   NULL,&sta);
 		fits_read_col(fitsptrSpec,TDOUBLE, 5,i+1,1,1,NULL,&de,   NULL,&sta);
 
@@ -1359,12 +1352,12 @@ void GetDelta::updateDLA(std::string fitsnameSpec, unsigned int start, unsigned 
 		}
 		for (unsigned int iii=0; iii<NbDLACat; iii++) {
 
-			/*
-			if (plate != DLAplate[iii]) continue;
-			if (mjd   != DLAmjd[iii])   continue;
-			if (fiber != DLAfiber[iii]) continue;
-			*/
-			if (ra!=raDLACat[iii] || de!=deDLACat[iii]) continue;
+			bool same = false;
+			
+			if (plate == DLAplate[iii] && mjd == DLAmjd[iii] && fiber == DLAfiber[iii]) same = true;
+			else if (ra==raDLACat[iii] && de==deDLACat[iii]) same=true;
+			else if ( fabs(ra-raDLACat[iii])<C_AUTOCORRCRITDEG && fabs(de-deDLACat[iii])<C_AUTOCORRCRITDEG ) same=true;
+			else if (!same) continue;
 
 			zabsDLA[NbDLA]   = zabsDLACat[iii];
 			NHIDLA[NbDLA]    = NHIDLACat[iii];
@@ -1498,7 +1491,7 @@ void GetDelta::updateDelta(std::string fitsnameSpec, unsigned int loopIdx, unsig
 			}
 		}
 
-		if (meanLambda[3]<C_MIN_NB_PIXEL || templateHasNegative || (fabs(alpha)>=maxAlpha__-0.5) || (fabs(beta)>=maxBeta__-0.05) || (stepDefinition>=2 && alpha==alphaStart__ && beta==betaStart__) ) {
+		if (meanLambda[3]<=C_MIN_NB_PIXEL || templateHasNegative || (fabs(alpha)>=maxAlpha__-0.5) || (fabs(beta)>=maxBeta__-0.05) || (stepDefinition>=2 && alpha==alphaStart__ && beta==betaStart__) ) {
 			if (v_fromFitsIndexToVectorIndex__[i]!=-1) {
 				std::cout << "  Not taken for some reason : " << i  << std::endl;
                         	std::cout << "  nb pixel = " << int(meanLambda[3]) << std::endl;

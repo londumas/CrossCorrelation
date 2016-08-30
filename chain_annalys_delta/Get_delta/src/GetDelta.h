@@ -77,10 +77,10 @@ const double alphaStart__ = 1.;
 /*
 /// If MGII
 const std::string forest__  = "MGII";
-const double lambdaRFLine__  = 2804.;
-const double lambdaRFMin__   = 1970.;
-const double lambdaRFMax__   = 2760.;
-const unsigned int nbBinRFMax__ = 1450;
+const double lambdaRFLine__  = 2796.3511;
+const double lambdaRFMin__   = 2100.;
+const double lambdaRFMax__   = 2790.;
+const unsigned int nbBinRFMax__ = 1240;
 const double alphaStart__ = 1.;
 #define C_NBBINZ 9
 #define C_ZEXTREMA0 0.4

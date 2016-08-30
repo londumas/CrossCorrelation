@@ -416,21 +416,21 @@ dic = {
 	'size_bin_calcul_theta': 1.e-04,
 	'correlation': 'q_f',
 	'path_to_txt_file_folder': 'NOTHING',
-	'f1': 'LYA',
-	'f2': 'CIV',
-	'q': 'QSO_DR7_DR12_V5_10_0',
+	'f1': 'MGII',
+	'f2': 'MGII',
+	'q': 'ALL_EVERY_OBJECTS',
 	'name' : 'Data'
 }
 
 
 ### For q_f
-'''
+
 dic['min_l1_over_l2'] = 0.40
 dic['max_l1_over_l2'] = 2.30
 dic['correlation']    = 'q_f'
 dic['min_visual_z'] = -0.04
 dic['max_visual_z'] = 0.04
-'''
+
 ### For f_f
 '''
 dic['min_l1_over_l2'] = 1.
@@ -440,23 +440,19 @@ dic['min_visual_z'] = -0.002
 dic['max_visual_z'] = 0.002
 '''
 ### For f_f2
-
+'''
 dic['min_l1_over_l2'] = 0.89
 dic['max_l1_over_l2'] = 1.11
 dic['correlation']    = 'f_f2'
 dic['min_visual_z'] = -0.002
 dic['max_visual_z'] = 0.002
-
+'''
 
 corr_list = []
 
-dic['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR14/'
+dic['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator_2016_05_26_PlankCosmo/'
 a = CorrelationLambda(dic)
 corr_list += [a]
-
-#dic['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator_coAdd_2016_05_26/'
-#a = CorrelationLambda(dic)
-#corr_list += [a]
 
 a.plot_1d(False,corr_list[1:])
 a.plot_we()

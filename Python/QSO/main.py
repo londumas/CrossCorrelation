@@ -160,6 +160,41 @@ def getQsoCatalogueDR12():
 	plt.show()
 	
 	return
+def get_QSO_cat_DR14():
+
+        path = '/home/gpfs/manip/mnt0607/bao/Spectra/DR14Q_v1_0.fits'
+        cat = pyfits.open(path, memmap=True)[1].data
+
+        print cat.size
+	cat = cat[(cat['RA']!=0.)]
+	cat = cat[(cat['DEC']!=0.)]
+	cat = cat[(cat['Z']>0.)]
+
+	## Map
+        plt.ticklabel_format(style='sci', axis='z', scilimits=(0,0))
+        plt.grid()
+        plt.plot(cat["RA"], cat["DEC"], linestyle="", marker="o")
+        plt.xlabel("Right Ascension (degree)")
+        plt.ylabel("Declination (degree)")
+        plt.title("BOSS DR12")
+        plt.show()
+        ## Distribution redshift
+        plt.ticklabel_format(style='sci', axis='z', scilimits=(0,0))
+        plt.grid()
+        plt.hist(cat['Z'], bins=50)
+        plt.xlabel("Z")
+        plt.ylabel("#")
+        plt.title("BOSS DR14")
+        plt.show()
+
+	### Save        
+        col_ra              = pyfits.Column(name='RA',  format='D', array=cat['RA'], unit='deg')
+        col_de              = pyfits.Column(name='DEC', format='D', array=cat['DEC'], unit='deg')
+        col_zz              = pyfits.Column(name='Z',   format='D', array=cat['Z'])
+        tbhdu = pyfits.BinTableHDU.from_columns([col_ra, col_de, col_zz])
+        tbhdu.writeto('/home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/QSO_DR14_v1_0.fits', clobber=True)
+
+        return
 def getQsoCatalogueEBOSS():
 	'''
 		Get the catalogue of qsos
@@ -371,13 +406,115 @@ def remove_empty_cell_in_cat(cat_path):
 	pyfits.writeto(cat_path, cat, clobber=True)
 	
 	return
+def plot_cat():
+
+	path = '/home/gpfs/manip/mnt0607/bao/Spectra/DR14Q_v1_0.fits'
+	cat = pyfits.open(path, memmap=True)[1].data
+
+	print cat.size
+	print
+	print cat[ (cat['RA']<=0.) ].size
+	print cat[ (cat['RA']>=360.) ].size
+	print cat[ (cat['DEC']<=-90.) ].size
+	print cat[ (cat['DEC']>=90.) ].size
+	print cat[ (cat['RA']==0.) ].size
+	print cat[ (cat['DEC']==0.) ].size
+	print cat[ (cat['Z']<=0.) ].size
+	print
+	cat = cat[ cat['RA']==cat['DEC'] ]
+	print cat.size
+	print cat['Z']
+	print cat['MJD']
+	print cat['PLATE']
+
+	### Geometry
+	plt.errorbar(cat['RA'],cat['DEC'],fmt='o')
+        plt.show()
+	### redshift
+	plt.hist(cat['Z'],bins=100)
+	plt.show()
 
 
-a = "/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Resources/PDF/DF_3e-4.fits"
-cat = pyfits.open(a, memmap=True)[1].data
+	return
+def compare_DR12_DR14():
 
-print cat['DABS'][0]
-myTools.plot2D(numpy.log10(cat['DABS'][0]))
+
+	path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/DR12Q_v2_10.fits'
+	cat_DR12 = pyfits.open(path, memmap=True)[1].data
+	path = '/home/gpfs/manip/mnt0607/bao/Spectra/DR14Q_v1_0.fits'
+	cat_DR14 = pyfits.open(path, memmap=True)[1].data
+	print cat_DR12.size
+	print cat_DR14.size
+
+	#cat_DR12 = cat_DR12[ cat_DR12['BOSS_TARGET1']==1 ]
+	#cat_DR14 = cat_DR14[ cat_DR14['BOSS_TARGET1']==1 ]
+	cat_DR12 = cat_DR12[ cat_DR12['EBOSS_TARGET0']==0 ]
+	cat_DR14 = cat_DR14[ cat_DR14['EBOSS_TARGET0']==0 ]
+	print cat_DR12.size
+	print cat_DR14.size
+
+	
+	#print cat_DR12['PLATE']
+	PLATE = 6173
+	cat_DR12 = cat_DR12[ cat_DR12['PLATE']==PLATE ]
+	cat_DR14 = cat_DR14[ cat_DR14['PLATE']==PLATE ]
+	print cat_DR12.size
+	print cat_DR14.size
+	cat_DR12 = cat_DR12[1]
+	cat_DR14 = cat_DR14[0]
+	print
+	print cat_DR12
+	print
+	print cat_DR14
+	print
+	print cat_DR14['RA']
+	print cat_DR12['RA']
+	print
+	print cat_DR14['DEC']
+	print cat_DR12['DEC']
+	print
+	
+
+	### Geometry
+	plt.errorbar(cat_DR14['RA'],cat_DR14['DEC'],fmt='o')
+	plt.errorbar(cat_DR12['RA'],cat_DR12['DEC'],fmt='o')
+        plt.show()
+	### redshift
+	plt.hist(cat_DR14['Z'],bins=100,histtype='step')
+	plt.hist(cat_DR12['Z_VI'],bins=100,histtype='step')
+	plt.show()
+
+
+
+	return
+def get_DLA():
+
+	path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/DLA_all.fits'
+	cat = pyfits.open(path, memmap=True)[1].data
+
+	print cat.size
+	print
+
+	### Geometry
+	plt.errorbar(cat['RA'],cat['DEC'],fmt='o')
+        plt.show()
+	### redshift
+	plt.hist(cat['Z'],bins=100)
+	plt.show()
+
+	return
+
+
+get_DLA()
+#get_QSO_cat_DR14()
+#plot_cat()
+#compare_DR12_DR14()
+
+#a = "/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Resources/PDF/DF_3e-4.fits"
+#cat = pyfits.open(a, memmap=True)[1].data
+
+#print cat['DABS'][0]
+#myTools.plot2D(numpy.log10(cat['DABS'][0]))
 
 """
 ### Create a catalogue:

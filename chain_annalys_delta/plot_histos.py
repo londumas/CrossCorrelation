@@ -37,15 +37,16 @@ elif (forest__ == 'CIV'):
 	lambdaRFMax__      = 1530.
 	shift__            = 3447.5
 elif (forest__ == 'MGII'):
-	lambdaRFMin__      = 1570.
+	lambdaRFMin__      = 2100.
 	lambdaRFMax__      = 2790.
 	shift__            = 3547.5
 ###
 #path = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/FitsFile_DR12_reOBS_eBOSS_Guy/DR12_primery/histos/"
 #path = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/FitsFile_DR12_reOBS_Guy/DR12_primery/histos/"
-path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest__+'/FitsFile_DR12_Guy_Margala/DR12_primery/histos/' ##_method1
+#path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest__+'/FitsFile_DR12_Guy_Margala/DR12_primery/histos/' ##_method1
 #path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest__+'/FitsFile_DR14/DR14_primery/histos/'
-#path = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_reObs/histos/"
+#path = "/home/gpfs/manip/mnt/bao/hdumasde/Data/MGII/FitsFile_DR12_Guy/DR12_primery/histos/"
+path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Data/'+forest__+'/DR14/DR14_primery/histos/'
 #path = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA//FitsFile_eBOSS_Guy/all_eBOSS_primery/histos/"
 rawPath = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/'
 
@@ -65,8 +66,8 @@ for i in range (0,chunckNb):
 		data = numpy.loadtxt('/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy_Margala/DR12_primery/histos/hDeltaVsLambdaObs_LYA.txt')
                 plt.errorbar(data[:,0]+shift__, data[:,1], label=r'$DR12$')
 
-		data = numpy.loadtxt('/home/gpfs/manip/mnt/bao/hdumasde/Data/CIV/FitsFile_DR14/DR14_primery/histos/hDeltaVsLambdaObs_CIV.txt')
-		plt.errorbar(data[:,0]+shift__, data[:,1], label=r'$DR14: CIV \, forest \, for \, calibration $')
+		data = numpy.loadtxt('/home/gpfs/manip/mnt/bao/hdumasde/Data/CIV/FitsFile_DR12_Guy_Margala/DR12_primery/histos/hDeltaVsLambdaObs_CIV.txt')
+		plt.errorbar(data[:,0]+shift__, data[:,1], label=r'$DR12: CIV \, forest \, for \, calibration $')
 
 		#plt.errorbar(data[:,0]+shift__, data[:,1]/tmp_data-1., label=r'$devided$')
 
@@ -76,19 +77,19 @@ for i in range (0,chunckNb):
 		#plt.errorbar(data[:,1][ data[:,2]!=0. ], data[:,2][ data[:,2]!=0. ], label=r'$v1575$', color='orange')
 
 
-		'''
+		
 		yMin    = numpy.amin(0.)
 		yMax    = numpy.amax(1.)
 		skyLines__ = numpy.power(10.,skyLines__)
-		for i in range(0,skyLinesNames__.size):
-			el = skyLines__[i]
+		for k in range(skyLinesNames__.size):
+			el = skyLines__[k]
 			print numpy.mean(el)
 			line = numpy.mean(el)
 			xLi = [line,line]
 			yLi = [yMin,yMax]
 			plt.plot(xLi,yLi,color='green')
-			plt.text(line, yMax, skyLinesNames__[i], rotation='vertical', fontsize=20)
-		'''
+			#plt.text(line, yMax, skyLinesNames__[k], rotation='vertical', fontsize=20)
+		
 
 #plt.title(r'$hDeltaVsLambdaObs$', fontsize=40)
 plt.xlabel(r'$\lambda_{Obs.} \, [\AA]$', fontsize=40)

@@ -15,9 +15,11 @@ import myTools
 
 #commandProd     = "/home/gpfs/manip/mnt/bao/hdumasde/CrossCorrelation_StartingAgainFrom1347/CrossCorrelation/bin/ReadSpectra"
 #commandProd     = "python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/Python/creatFitsFile.py"
-commandProd     = "python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/chain_annalys_delta/creat_Fits_File.py"
+#commandProd     = "python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/chain_annalys_delta/creat_Fits_File.py"
 #commandProd     = "python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/Python/All_Spectrum/get_all_spectrum.py"
 #commandProd     = "/home/gpfs/manip/mnt0607/bao/hdumasde/Code/chain_annalys_delta/Get_delta/bin/main.exe"
+#commandProd     = "python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Python/All_Spectrum/Iterative_spectrum/iterative_spectrum.py"
+commandProd     = "python /home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/chain_annalys_delta/creat_Fits_File.py "
 
 commandQstatMe  = "qstat | grep echo | wc -l"
 commandQstatAll = "qstat -u '*' | wc -l"
@@ -61,7 +63,7 @@ def main():
 	first = 0
 	while (first <= nbSpectra):
 	
-		myTools.isReadyForNewJobs(150, 430)
+		#myTools.isReadyForNewJobs(150, 430)
 		time.sleep(0.5)
 		
 		tmp_command = "clubatch \"echo ; hostname ; " + commandProd + ' ' + str(first) + " " + str(last) + " 0 0 \""

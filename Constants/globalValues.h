@@ -48,6 +48,8 @@
 #define C_CONVERT_FROM_FLUX_TO_ALPHA 1.154
 
 //// Lines in the sky to veto or not
+/*
+OLD VERSION
 const unsigned int nbVetoLines__ = 21;
 const double vetoLine__[42] = {3615.,3619.,3932.,3937.,3966.,3972.,4042.,4050.,
         4357.,4362.,5458.,5467.,5573.,5585.,5682.,5695.,
@@ -55,6 +57,11 @@ const double vetoLine__[42] = {3615.,3619.,3932.,3937.,3966.,3972.,4042.,4050.,
         6320.,6334.,6362.,6369.,6498.,6502.,6554.,6557.,
         6825.,6840.,6862.,6870.,6922.,6928.,6948.,6954.,
         6977.,6982.};
+*/
+const unsigned int nbVetoLines__ = 7;
+const double vetoLine__[14] = {3932.,3937.,  3966.,3972.,  4357.,4362.,
+				5573.,5585., 5885.,5902.,  6296.,6311.,
+				6320.,6334.};
 
 //// List of absorbers in IGM:
 const double absorber__[29] = {

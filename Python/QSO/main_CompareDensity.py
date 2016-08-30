@@ -658,12 +658,12 @@ def bias_evolution():
 
 	### Data points
 	#data = [2.39685630578, 3.246e+00, 0., 1.863e-01]
-	data = [2.39686216554, 3.407847, 0., 0.182078]
+	#data = [2.39686216554, 3.407847, 0., 0.182078]
 	### Data Pierre
 	dataPierre = numpy.asarray( [ [1.0573106, 1.978919009022121, 0.1326168218002746], [1.3519373, 2.3978591946019843, 0.11460107023841509], [1.651769, 2.613084388995206, 0.12670393048129994], [1.9889176, 2.9103797886104594, 0.15839821556293388] ] )
 	### Simu points
-	simu = numpy.zeros(shape=(4,100))
-	simu[0,:] = 2.40673056001
+	#simu = numpy.zeros(shape=(4,100))
+	#simu[0,:] = 2.40673056001
 	'''
 	param = numpy.load('/home/gpfs/manip/mnt0607/bao/hdumasde/Code/Python/Annalyse_BAOFIT/param.npy')
 	print param[:,0,0]
@@ -681,14 +681,17 @@ def bias_evolution():
 	print '  Croom et al. interpolation : z=2.4 ', croom(2.4)
 
 	plt.plot(xxx,yyy, linestyle='dashed', label=r'$Croom \, et \, al.$')
-	plt.errorbar(simu[0,:],simu[2,:],yerr=simu[3,:],fmt='o',color='green',label=r'$Simu$')
+	#plt.errorbar(simu[0,:],simu[2,:],yerr=simu[3,:],fmt='o',color='green',label=r'$Simu$')
 	#plt.errorbar(meanSimu[0],meanSimu[1],yerr=meanSimu[2], fmt='o',color='blue',label=r'$<Simu>$')
-	plt.errorbar(data[0],data[1],yerr=data[3],fmt='o',color='red', label=r'$Data$')
-	plt.errorbar(dataPierre[:,0],dataPierre[:,1],yerr=dataPierre[:,2],fmt='o',color='black',label=r'$data \, Pierre$')
+	#plt.errorbar(data[0],data[1],yerr=data[3],fmt='o',color='red', label=r'$Data$')
+	plt.errorbar(dataPierre[:,0],dataPierre[:,1],yerr=dataPierre[:,2],fmt='o',color='black',label=r'$P. \, Laurent \, et \, al. \, (2016)$')
+	plt.xlim([0.,4.])
+	plt.ylim([0.,10.])
 	myTools.deal_with_plot(False,False,True)
+	plt.legend(fontsize=40, numpoints=1,ncol=1, loc=0)
 	plt.show()
 
-plot_all_cat_Forest()
+#plot_all_cat_Forest()
 #plot_all_cat()
 
 

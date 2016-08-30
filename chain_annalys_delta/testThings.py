@@ -244,15 +244,15 @@ def meanDelta():
 		lambdaRFMin__      = 1570.
 		lambdaRFMax__      = 2790.
 
-	path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest+'/FitsFile_DR14/DR14_primery/DR14_primery.fits'
+	#path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest+'/FitsFile_DR12_Guy_Margala/DR12_primery/DR12_primery.fits'
+	path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest+'/DR14/DR14_primery/DR14_primery.fits'
 	#path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Data/LYA/DR12_Nicolas/delta.fits'
 	#path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_reObs/DR12_reObs.fits'
 	#path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits'
 
 	#path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v_second_generation/Box_000/Simu_000/Data/delta.fits'
 
-	cat = pyfits.open(path, memmap=True)[1].data
-	cat= cat[(cat['Z']>5.)]
+	cat = pyfits.open(path, memmap=True)[1].data[:1000]
 
 	cat = cat[ numpy.logical_and( numpy.logical_and(  numpy.logical_and( cat['ALPHA']!=alphaStart__, cat['BETA']!=0.),  numpy.abs(cat['ALPHA'])<=99.5 ), numpy.abs(cat['BETA'])<=0.55 ) ]
 	#cat = cat[ numpy.logical_or( numpy.logical_or(  numpy.logical_or( cat['ALPHA']==alphaStart__, cat['BETA']==0.),  numpy.abs(cat['ALPHA'])>=99.5 ), numpy.abs(cat['BETA'])>=0.55 ) ]
@@ -295,6 +295,11 @@ def meanDelta():
 		cat['DELTA_WEIGHT'][ cut ] = 0.
 	'''
 
+	### get nb of pixels in forest
+	#cut_noForestPixel  = (cat['NORM_FLUX_IVAR']>0.).astype(int)
+	#len_forest         = numpy.sum(cut_noForestPixel,axis=1)
+	#cat = cat[len_forest<30]
+
 
 	print cat.size
 	#cut_noForestPixel = numpy.logical_and(cat['DELTA_WEIGHT']>0., numpy.logical_and( (cat['LAMBDA_RF']>=lambdaRFMin__) , (cat['LAMBDA_RF']<lambdaRFMax__) )).astype(int)
@@ -321,9 +326,9 @@ def meanDelta():
 	cat['DELTA_WEIGHT'][ (cat['DELTA_WEIGHT']>0.) ] = 1.
 	meanSNR = numpy.average( cat['NORM_FLUX']*numpy.sqrt(cat['NORM_FLUX_IVAR']), weights=cat['DELTA_WEIGHT'],axis=1)
 
-	#cat = cat[ meanDLA!=1. ]
-	#meanSNR = meanSNR[ meanDLA!=1. ]
-	#meanDelta = meanDelta[ meanDLA!=1. ]
+	cat = cat[ meanDLA!=1. ]
+	meanSNR = meanSNR[ meanDLA!=1. ]
+	meanDelta = meanDelta[ meanDLA!=1. ]
 
 	"""
 	### \alpha vs. <flux>
@@ -451,10 +456,11 @@ def meanDelta():
 	myTools.deal_with_plot(True,True,True)
 	plt.show()
 	"""
+
 	
-	#cat = cat[ meanSNR>60. ]
-	#meanDelta = meanDelta[ meanSNR>60. ]
-	#meanSNR = meanSNR[ meanSNR>60. ]
+	cat = cat[ meanSNR>10. ]
+	meanDelta = meanDelta[ meanSNR>10. ]
+	meanSNR = meanSNR[ meanSNR>10. ]
 	#cat = cat[ numpy.abs(meanDelta)>0.5 ]
 	#meanDelta = meanDelta[ numpy.abs(meanDelta)>0.5 ]
 	#meanSNR = meanSNR[ numpy.abs(meanDelta)>0.5 ]
@@ -475,14 +481,14 @@ def meanDelta():
 		#	continue
 
 		
-		if (template[ numpy.logical_and( lamRF[cut]>=lambdaRFMin__,lamRF[cut]<lambdaRFMax__) ].size<50):
-			continue
+		#if (template[ numpy.logical_and( lamRF[cut]>=lambdaRFMin__,lamRF[cut]<lambdaRFMax__) ].size<50):
+		#	continue
 			
 		print meanSNR[i],meanDelta[i], el['Z'], el['PLATE'], el['MJD'], el['FIBERID'], el['ALPHA'], el['BETA'], el['BIT']
 
 
 		#myTools.plotOnSpectra_plate(el['PLATE'], el['MJD'], el['FIBERID'])
-		myTools.plotOnSpectra_spec(el['PLATE'], el['MJD'], el['FIBERID'],el['Z'], [lamRF[cut],template*el['FLUX_DLA'][cut]])
+		#myTools.plotOnSpectra_spec(el['PLATE'], el['MJD'], el['FIBERID'],el['Z'], [lamRF[cut],template*el['FLUX_DLA'][cut]])
 
 		plt.errorbar(lamRF[cut],el['NORM_FLUX'][cut],yerr=numpy.power(el['NORM_FLUX_IVAR'][cut],-0.5),label=r'$Data$', markersize=8,linewidth=2)
 		#plt.plot(lamRF[cut],numpy.power(el['NORM_FLUX_IVAR'][cut],-0.5),label='flux err')

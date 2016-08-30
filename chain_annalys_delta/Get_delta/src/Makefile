@@ -31,7 +31,8 @@ LDFLAGS       = -O3
 SOFLAGS       = -shared
 
 #CFITSIO (to be defined in .cshrc)
-CFITSIO = /home/nfs/manip/mnt/bao/EXTLibs/cfitsio
+#CFITSIO = /home/nfs/manip/mnt/bao/EXTLibs/cfitsio
+CFITSIO = /home/usr202/mnt/legoff/bao/cfitsio/
 
 CXXFLAGS     += $(ROOTCFLAGS) -I $(CFITSIO)
 LIBS          = $(ROOTLIBS) $(SYSLIBS)

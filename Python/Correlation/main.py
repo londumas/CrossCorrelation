@@ -54,14 +54,14 @@ def plotOne():
 		'size_bin_calcul_m': 0.02,
 		'nb_wedges'               : 4,
 		'index_multipole_max' : 4,
-		'remove_residuales' : 'lambda_OBS',
+		'remove_residuales' : '',#lambda_OBS',
 		'path_to_txt_file_folder': '',
-		'correlation': 'q_f',
-		'f1': 'LYA',
+		'correlation': 'f_f2',
+		'f1': 'MGII',
 		'f2': '',
-		'q1': 'QSO',
+		'q1': 'CMASS',
 		'q2': '',
-		'name' : 'LYA \, forest \, vs. \, CIV \, absorber'
+		'name' : 'no'
 	}
 	dic_simu = {
 		'path_to_simu' : '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/',
@@ -90,7 +90,7 @@ def plotOne():
 	}
 	#dic_class['path_to_txt_file_folder'] = dic_simu['path_to_simu'] + 'Box_00'+str(i)+'/Simu_00'+str(j)+'/Results'+dic_simu['prefix']+'/'
 	#print dic_class['path_to_txt_file_folder']
-	dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator_2016_05_26/' #_PlankCosmo/'
+	dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator_2016_05_26_PlankCosmo/' #_PlankCosmo/'
 	##dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator_coAdd_2016_05_26/'
 	#dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR14/'
 	print dic_class['path_to_txt_file_folder']
@@ -316,9 +316,9 @@ def plotOne():
 	corr.plot_1d(0)
 	corr.plot_1d(1)
 	corr.plot_1d(2)
-	for ii in range(0,4):
-		for jj in range(0,3):
-			corr.plot_we(ii,jj)
+	#for ii in range(0,4):
+	#	for jj in range(0,3):
+	#		corr.plot_we(ii,jj)
 	for ii in range(0,3):
 		corr.plot_we_all(ii)
 	
