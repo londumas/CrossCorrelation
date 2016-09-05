@@ -411,29 +411,93 @@ def plot_cat():
 	path = '/home/gpfs/manip/mnt0607/bao/Spectra/DR14Q_v1_0.fits'
 	cat = pyfits.open(path, memmap=True)[1].data
 
+	print "  The size of the catalogue is           : " + str(cat.size)
+	cat = cat[ cat['RA']!=0. ]
+	#print '  removed ra==0 : size = ', cat.size
+	#cat = cat[ cat["Z"]>minRedshift__]
+	#print "  We keep Z > " + str(minRedshift__) + "  , the size is      : " + str(cat.size)
+	#cat = cat[ cat["Z"]<=maxRedshift__]
+	#print "  We keep Z <= " + str(maxRedshift__) + "  , the size is      : " + str(cat.size)
+	#cat = cat[ cat['MJD']>=55000]
+	#print "  We keep MJD>=55000  , the size is      : " + str(cat.size)
+
+	'''
+	cut = [ [2.,2.5], [2.5,3.], [3.,3.5], [3.5,4.], [4.,4.5], [4.5,5.],[5.,5.96] ]
+	for el in cut:
+		a = cat[ numpy.logical_and( cat['Z']>=el[0],cat['Z']<el[1] ) ]
+		print el[0], el[1], a.size
+	'''
+
 	print cat.size
-	print
-	print cat[ (cat['RA']<=0.) ].size
-	print cat[ (cat['RA']>=360.) ].size
-	print cat[ (cat['DEC']<=-90.) ].size
-	print cat[ (cat['DEC']>=90.) ].size
-	print cat[ (cat['RA']==0.) ].size
-	print cat[ (cat['DEC']==0.) ].size
-	print cat[ (cat['Z']<=0.) ].size
-	print
-	cat = cat[ cat['RA']==cat['DEC'] ]
-	print cat.size
-	print cat['Z']
-	print cat['MJD']
-	print cat['PLATE']
+	gal = cat['GAL_EXT'][:,0]
+	psf = cat['PSFMAG'][:,0]
+
+	
+	### redshift
+	ar1     = cat['RA']
+	ar2     = cat['DEC']
+	ar3     = cat['Z']
+	nbBinsX = numpy.arange(0,360+5,5)
+	nbBinsY = numpy.arange(-90,90+5,5)
+	we      = numpy.ones(ar1.size)
+	mean, err, number = myTools.Get_2DTProfile(ar1, ar2, ar3, nbBinsX, nbBinsY,we)
+	mean[mean==0.] = numpy.float('nan')
+	mean = numpy.transpose(mean)
+	myTools.plot2D(mean)
+	number[number==0.] = numpy.float('nan')
+	number = numpy.transpose(number)
+	myTools.plot2D(number)
+	### gal extinction
+	ar1     = cat['RA'][gal>0.]
+	ar2     = cat['DEC'][gal>0.]
+	ar3     = gal[gal>0.]
+	nbBinsX = numpy.arange(0,360+5,5)
+	nbBinsY = numpy.arange(-90,90+5,5)
+	we      = numpy.ones(ar1.size)
+	mean, err, number = myTools.Get_2DTProfile(ar1, ar2, ar3, nbBinsX, nbBinsY,we)
+	mean[mean==0.] = numpy.float('nan')
+	mean = numpy.transpose(mean)
+	myTools.plot2D(mean)
+	number[number==0.] = numpy.float('nan')
+	number = numpy.transpose(number)
+	myTools.plot2D(number)
+	### psf
+	ar1     = cat['RA'][psf>0.]
+	ar2     = cat['DEC'][psf>0.]
+	ar3     = psf[psf>0.]
+	nbBinsX = numpy.arange(0,360+5,5)
+	nbBinsY = numpy.arange(-90,90+5,5)
+	we      = numpy.ones(ar1.size)
+	mean, err, number = myTools.Get_2DTProfile(ar1, ar2, ar3, nbBinsX, nbBinsY,we)
+	mean[mean==0.] = numpy.float('nan')
+	mean = numpy.transpose(mean)
+	myTools.plot2D(mean)
+	number[number==0.] = numpy.float('nan')
+	number = numpy.transpose(number)
+	myTools.plot2D(number)
+	
 
 	### Geometry
 	plt.errorbar(cat['RA'],cat['DEC'],fmt='o')
+	plt.xlabel('RA')
+	plt.ylabel('DEC')
         plt.show()
 	### redshift
 	plt.hist(cat['Z'],bins=100)
+	plt.xlabel('Z')
 	plt.show()
-
+	### other
+	plt.hist(gal[gal>0.],bins=100)
+	plt.show()
+	### other
+	plt.hist(psf[psf>0.],bins=100)
+	plt.show()
+	### Geometry
+	plt.errorbar(cat['Z'][gal>0.],gal[gal>0.],fmt='o',alpha=0.3)
+	plt.show()
+	### Geometry
+	plt.errorbar(cat['Z'][psf>0.],psf[psf>0.],fmt='o',alpha=0.3)
+	plt.show()
 
 	return
 def compare_DR12_DR14():
@@ -503,13 +567,134 @@ def get_DLA():
 	plt.show()
 
 	return
+def get_random_catalogue(cat, idx=0):
+
+	"""
+	http://stackoverflow.com/questions/17821458/random-number-from-histogram
+	"""
+
+	a = numpy.random.randint(low=100,high=10000000,size=100)
+	print a[idx]
+	numpy.random.seed(a[idx])
+
+	'''
+	path = '/home/gpfs/manip/mnt0607/bao/Spectra/DR14Q_v1_0.fits'
+	cat = pyfits.open(path, memmap=True)[1].data
+	cat = cat[ cat['RA']!=0. ]
+	'''
+
+	print "  The size of the catalogue is           : " + str(cat.size)
+
+	def get_rand_1D( xxx,xbin ):
+
+		xsize = xbin[1]-xbin[0]
+
+		hist, bins = numpy.histogram(xxx, bins=xbin)
+
+		bin_midpoints = bins[:-1] + numpy.diff(bins)/2.
+		
+		cdf = numpy.cumsum(hist)
+		cdf = 1.*cdf / cdf[-1]
+		values = numpy.random.rand(xxx.size)
+		value_bins = numpy.searchsorted(cdf, values)
+		new_x = bin_midpoints[value_bins]
+		new_x += numpy.random.random(xxx.size)*xsize - xsize/2.
+
+		return new_x
+	def get_rand_2D( xxx,yyy,xbin,ybin):
+
+		xsize = xbin[1]-xbin[0]
+		ysize = ybin[1]-ybin[0]
+
+		data = numpy.column_stack((xxx,yyy))
+      		
+		x, y = data.T                        
+		hist, x_bins, y_bins = numpy.histogram2d(x, y, bins=(xbin,ybin))
+		x_bin_midpoints = x_bins[:-1] + numpy.diff(x_bins)/2
+		y_bin_midpoints = y_bins[:-1] + numpy.diff(y_bins)/2
+		cdf = numpy.cumsum(hist.ravel())
+		cdf = cdf / cdf[-1]
+	
+		values = numpy.random.rand(xxx.size)
+		value_bins = numpy.searchsorted(cdf, values)
+		x_idx, y_idx = numpy.unravel_index(value_bins,
+	                                (len(x_bin_midpoints),
+	                                 len(y_bin_midpoints)))
+		random_from_cdf = numpy.column_stack((x_bin_midpoints[x_idx],
+	                                   y_bin_midpoints[y_idx]))
+		### Get random number according to map
+		new_x, new_y = random_from_cdf.T
+
+		index_array = ( 1.*(new_x+xbin[0.])/xsize).astype('int')*(ybin.size-1) + ( 1.*(new_y+ybin[0.])/ysize).astype('int')
+		arr1inds = index_array.argsort()
+		new_x = new_x[arr1inds[::-1]]
+		new_y = new_y[arr1inds[::-1]]
+		### set a random place in cell
+		new_x += numpy.random.random(xxx.size)*xsize - xsize/2.
+		new_y += numpy.random.random(xxx.size)*ysize - ysize/2.
+
+		return new_x, new_y
+
+	zz     = get_rand_1D( cat['Z'],numpy.arange(0.,10.+0.1,0.1))
+	ra, de = get_rand_2D( cat['RA'],cat['DEC'],numpy.arange(0,360+5,5),numpy.arange(-90,90+5,5) )
+
+	'''
+	plt.hist(cat['Z'],numpy.arange(0.,10.+0.1,0.1))
+	plt.hist(zz,numpy.arange(0.,10.+0.1,0.1))
+	plt.show()
+	
+	plt.errorbar(cat['RA'],cat['Z'],fmt='o')
+	plt.errorbar(ra,zz,fmt='o')
+	plt.show()
+	plt.errorbar(cat['DEC'],cat['Z'],fmt='o')
+	plt.errorbar(de,zz,fmt='o')
+	plt.show()
+	
+
+	plt.subplot(121, aspect='equal')
+	plt.hist2d(cat['RA'],cat['DEC'], bins=(numpy.arange(0,360+5,5),numpy.arange(-90,90+5,5)))
+	plt.subplot(122, aspect='equal')
+	plt.hist2d(ra,de, bins=(numpy.arange(0,360+5,5),numpy.arange(-90,90+5,5)))
+	plt.show()
 
 
-get_DLA()
+	plt.errorbar(cat['RA'],cat['DEC'],fmt='o')
+	plt.errorbar(ra,de,fmt='o')
+	plt.show()
+	'''
+	
+	### Save        
+        col_ra              = pyfits.Column(name='RA',  format='D', array=ra, unit='deg')
+        col_de              = pyfits.Column(name='DEC', format='D', array=de, unit='deg')
+        col_zz              = pyfits.Column(name='Z',   format='D', array=zz)
+        tbhdu = pyfits.BinTableHDU.from_columns([col_ra, col_de, col_zz])
+        tbhdu.writeto('/home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/QSO_DR14_v1_0_RAND/cat_'+str(idx)+'.fits', clobber=True)
+	
+
+	return
+
+'''
+for i in range(10):
+	path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/QSO_DR14_v1_0_RAND/cat_'+str(i)+'.fits'
+	#path = '/home/gpfs/manip/mnt0607/bao/Spectra/DR14Q_v1_0.fits'
+	cat = pyfits.open(path, memmap=True)[1].data
+	print cat['Z'][0]
+	plt.errorbar(cat['RA'],cat['DEC'],fmt='o')
+	plt.show()
+'''
+
+
+#get_DLA()
 #get_QSO_cat_DR14()
-#plot_cat()
+plot_cat()
 #compare_DR12_DR14()
-
+'''
+path = '/home/gpfs/manip/mnt0607/bao/Spectra/DR14Q_v1_0.fits'
+cat = pyfits.open(path, memmap=True)[1].data
+cat = cat[ cat['RA']!=0. ]
+for i in range(100):
+	get_random_catalogue(cat,i)
+'''
 #a = "/home/gpfs/manip/mnt0607/bao/hdumasde/Code/CrossCorrelation/Resources/PDF/DF_3e-4.fits"
 #cat = pyfits.open(a, memmap=True)[1].data
 
@@ -597,7 +782,7 @@ cat = cat[ cat['Z']<7. ]
 RA  = cat['RA']
 Dec = cat['DEC']
 RA[ RA>180. ] -= 360.
-ax.scatter(np.radians(RA),np.radians(Dec), label=r'$DR7+DR12: \, QSO$')  # convert degrees to radians
+ax.scatter(numpy.radians(RA),numpy.radians(Dec), label=r'$DR7+DR12: \, QSO$')  # convert degrees to radians
 
 
 cat3 = pyfits.open('/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/DR12_primery/DR12_primery.fits',memmap=True)[1].data
@@ -606,7 +791,7 @@ cat3 = cat3[ cat3['Z_VI']<7. ]
 RA  = cat3['RA']
 Dec = cat3['DEC']
 RA[ RA>180. ] -= 360.
-ax.scatter(np.radians(RA),np.radians(Dec), label=r'$DR12: \, Forest$', color='red')  # convert degrees to radians
+ax.scatter(numpy.radians(RA),numpy.radians(Dec), label=r'$DR12: \, Forest$', color='red')  # convert degrees to radians
 
 
 cat4 = pyfits.open('/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_eBOSS_Guy/all_eBOSS_primery/eBOSS_primery.fits',memmap=True)[1].data
@@ -615,16 +800,16 @@ cat4 = cat4[ cat4['Z_VI']<7. ]
 RA  = cat4['RA']
 Dec = cat4['DEC']
 RA[ RA>180. ] -= 360.
-ax.scatter(np.radians(RA),np.radians(Dec), label=r'$eBOSS \, forest$', color='green')  # convert degrees to radian
+ax.scatter(numpy.radians(RA),numpy.radians(Dec), label=r'$eBOSS \, forest$', color='green')  # convert degrees to radian
 
 
-lon_array = np.arange(0,360)
+lon_array = numpy.arange(0,360)
 lat = 0.
-eq_array = np.zeros((360,2))
+eq_array = numpy.zeros((360,2))
 for lon in lon_array:
-    ga = ephem.Galactic(np.radians(lon), np.radians(lat))
+    ga = ephem.Galactic(numpy.radians(lon), numpy.radians(lat))
     eq = ephem.Equatorial(ga)
-    eq_array[lon] = np.degrees(eq.get())
+    eq_array[lon] = numpy.degrees(eq.get())
 
 RA  = eq_array[:,0]
 Dec = eq_array[:,1]
@@ -633,7 +818,7 @@ coord = numpy.zeros(shape=(RA.size,2))
 sort = RA.argsort()
 RA  = RA[sort]
 Dec = Dec[sort]
-ax.plot(np.radians(RA),np.radians(Dec), color='green', linestyle='dashed', linewidth=5)  # convert degrees to radians
+ax.plot(numpy.radians(RA),numpy.radians(Dec), color='green', linestyle='dashed', linewidth=5)  # convert degrees to radians
 
 plt.xlabel(r'$R.A. (\degree)$')
 plt.ylabel(r'$Dec. (\degree)$')

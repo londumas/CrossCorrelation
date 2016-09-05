@@ -1369,7 +1369,8 @@ class Correlation3D:
 
 		if (with_metals_templates):
 			path_to_BAOFIT += '__withMetalsTemplates'
-		path_to_BAOFIT += '/bao2D_'
+		#path_to_BAOFIT += '/bao2D_'
+		path_to_BAOFIT += '/metTemp_'
 		suffix = ['.0.dat','.2.dat','.4.dat']
 
 
@@ -2056,7 +2057,7 @@ output-prefix = """ + path_to_BAOFIT + """.
 			coef2 = numpy.power(camb[:,0],x_power)
 			plt.errorbar(camb[:,0],-0.6*coef2*camb[:,1],linewidth=2,label=r'$CAMB, \, b=-0.6$')
 
-		###
+		### 
 		xxx = self._xi1D[:,0]
 		xxx = xxx[ self._xi1D[:,2]>0. ]
 

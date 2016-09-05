@@ -102,11 +102,12 @@ std::string pathToRaw__ = "";
 //std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator_coAdd_2016_05_26/";  //_nicolasEstimator   //_method1
 //std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator_primery_sky/";
 //std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator_2016_05_26_PlankCosmo/";
-std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/DR14/";
-//std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_noProjection_2016_05_26_PlankCosmo/";
+//std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/DR14/";
+std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_noProjection_2016_05_26_PlankCosmo/";
 //std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator_2016_05_26_PlankCosmo_with_PDF_nicolas/";
 //std::string pathToSave__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR14/";
 std::string correlation_type__ = "NOTHING";
+std::string path_to_rand_QSO_cat__ = "/home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/QSO_DR14_v1_0_RAND/";
 
 
 ///// Type of data
@@ -124,12 +125,13 @@ const bool withRSD__          = true;
 const bool randomPositionOfQSOInCellNotBeforeCorrelation__ = true;
 unsigned int seed_for_random_position__ = 42;
 //// Flags for covariance matrix estimation
-const bool shuffleQSO     = false;
-const bool shuffleForest  = false;
-const bool randomQSO      = false;
-const bool randomQSOXYZ   = false;
-const bool randomForest   = false;
-const bool doBootstraps__ = false;
+const bool shuffleQSO            = false;
+const bool shuffleForest         = false;
+const bool randomQSO             = false;
+const bool randomQSOXYZ          = false;
+const bool randomQSO_from_file__ = false;
+const bool randomForest          = false;
+const bool doBootstraps__        = false;
 
 
 const bool doVetoLines__          = true;
@@ -140,6 +142,7 @@ const bool replace_data_by_gaussian_random__ = false;
 const bool showRootHistos__      = false;
 const bool saveInRootFile__      = false;
 const bool cutNotFittedSpectra__ = true;
+const bool selectWindowRedshift_bool__ = true;
 
 Correlation::Correlation(int argc, char **argv) {
 
@@ -348,6 +351,7 @@ Correlation::Correlation(int argc, char **argv) {
 	else if (command == 416) xi_delta_QSO_MockJMc_Wick_T12_with_wi1D_array();
 	else if (command == 417) xi_delta_QSO_MockJMc_Wick_T123_with_wi1D_array();
 	else if (command == 418) xi_delta_QSO_MockJMc_Wick_T1234_with_wi1D_array();
+	else if (command == 419) xi_delta_QSO_lambda_same_LOS(idxCommand_[2]);
 	///
 	else if (command == 500) xi_QSO_QSO(idxCommand_[2]);
 	else if (command == 502) xi_QSO_QSO_MockJMc(idxCommand_[2]);
@@ -2829,6 +2833,10 @@ void Correlation::xi_delta_QSO(unsigned int bootIdx/*=0*/) {
 	v_lObs__.clear();
 	v_nb__.clear();
 
+	std::stringstream convert;
+	convert << bootIdx;
+	const std::string strBootIdx = convert.str();
+
 	///// Constants:
 	///// The space between bins is of 10 Mpc.h^-1
 	const double max          = 200.;
@@ -2973,6 +2981,23 @@ void Correlation::xi_delta_QSO(unsigned int bootIdx/*=0*/) {
 		}
 		delete hConvertRedshDist;
 	}
+	if (randomQSO_from_file__) {
+
+		pathQ1__  = path_to_rand_QSO_cat__;
+		pathQ1__ += "cat_";
+		pathQ1__ += strBootIdx;
+		pathQ1__ += ".fits";
+
+		nbQ1__ = 0;
+		v_raQ1__.clear();
+		v_deQ1__.clear();
+		v_zzQ1__.clear();
+		v_rrQ1__.clear();
+		v_CosDeQ1__.clear();
+		v_SinDeQ1__.clear();
+		loadDataQ1();
+		if (nbQ1__ == 0) return;
+	}
 
 	///// get an array for nb of pairs for the forest
 	double a_nbPairs[nbForest_];
@@ -3002,8 +3027,8 @@ void Correlation::xi_delta_QSO(unsigned int bootIdx/*=0*/) {
 	std::cout << "\n  Starting\n" << std::endl;
 
 
-TH1D* h1 = new TH1D("h1","",70,1.70,5.80);
-double sum[3] = {0.};
+//TH1D* h1 = new TH1D("h1","",70,1.70,5.80);
+//double sum[3] = {0.};
 
 	for (unsigned int f=0; f<nbForest_; f++) {
 
@@ -3102,10 +3127,10 @@ double sum[3] = {0.};
 				data2D[rPerpBinIdx][rParralBinIdx][7] += w_res_lRF;
 				data2D[rPerpBinIdx][rParralBinIdx][8] += w_res_lObs;
 
-h1->Fill( (zQSO+v_z__[f][ii])/2., w );
-sum[0] += w*(zQSO+v_z__[f][ii])/2.;
-sum[1] += w;
-sum[2] ++;		
+//h1->Fill( (zQSO+v_z__[f][ii])/2., w );
+//sum[0] += w*(zQSO+v_z__[f][ii])/2.;
+//sum[1] += w;
+//sum[2] ++;		
 				///// Get the number of pairs
 				nbPairs += w;
 			}
@@ -3114,7 +3139,7 @@ sum[2] ++;
 		///// Put the number of pairs comming with this forest
 		a_nbPairs[f] = nbPairs;
 	}
-
+/*
 	//R_plot1D(h1);
 	std::ofstream fFile2;
 	fFile2.open("histo_pairs_lya_qso.txt");
@@ -3128,7 +3153,7 @@ sum[2] ++;
 	fFile2 << 0 << " " << 0 << " " << sum[2] << std::endl;
 	fFile2.close();
 	//return;
-
+*/
 	//// Look if there were some pairs
 	bool empty = true;
 	for (unsigned int i=0; i<nbBinX; i++) {
@@ -3153,17 +3178,14 @@ sum[2] ++;
 	prefix1 += "_";
 	prefix1 += QSO__;
 
-	std::stringstream convert;
-	convert << bootIdx;
-	const std::string strBootIdx = convert.str();
-
 	//// Set the prefix for different type of runs
 	std::string prefix = "_";
-	if (doBootstraps__)  prefix += "subsampling";
-	if (shuffleForest)   prefix += "shuffleForest";
-	if (shuffleQSO)      prefix += "shuffleQSO";
-	if (randomQSO)       prefix += "randomQSO";
-	if (randomQSOXYZ)    prefix += "randomQSOXYZ";
+	if (doBootstraps__)           prefix += "subsampling";
+	if (shuffleForest)            prefix += "shuffleForest";
+	if (shuffleQSO)               prefix += "shuffleQSO";
+	if (randomQSO)                prefix += "randomQSO";
+	if (randomQSOXYZ)             prefix += "randomQSOXYZ";
+	if (randomQSO_from_file__)    prefix += "randomQSOFromFile";
 	prefix += "_";
 	prefix += strBootIdx;
 
@@ -3178,7 +3200,7 @@ sum[2] ++;
 	pathToSave = pathToSave__;
 	pathToSave += "xi_delta_QSO_2D_";
 	pathToSave += prefix1;
-	if (doBootstraps__ || shuffleForest || shuffleQSO || randomQSO || randomQSOXYZ) pathToSave += prefix;
+	if (doBootstraps__ || shuffleForest || shuffleQSO || randomQSO || randomQSOXYZ || randomQSO_from_file__) pathToSave += prefix;
 	pathToSave += ".txt";
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
@@ -3223,7 +3245,7 @@ sum[2] ++;
 	pathToSave = pathToSave__;
 	pathToSave += "xi_delta_QSO_Mu_";
 	pathToSave += prefix1;
-	if (doBootstraps__ || shuffleForest || shuffleQSO || randomQSO || randomQSOXYZ) pathToSave += prefix;
+	if (doBootstraps__ || shuffleForest || shuffleQSO || randomQSO || randomQSOXYZ || randomQSO_from_file__) pathToSave += prefix;
 	pathToSave += ".txt";
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
@@ -3249,7 +3271,7 @@ sum[2] ++;
 	fFile.close();
 
 	
-	if (!doBootstraps__ && !shuffleForest && !shuffleQSO && !randomQSO && !randomQSOXYZ) {
+	if (!doBootstraps__ && !shuffleForest && !shuffleQSO && !randomQSO && !randomQSOXYZ && !randomQSO_from_file__) {
 
 		std::vector< std::vector< double > > forests;
 		std::vector< double > tmp_forests_id;
@@ -3570,6 +3592,147 @@ void Correlation::xi_delta_QSO_lambda(unsigned int bootIdx/*=0*/) {
 			fFile << " " << dataMu[i][j][6];
 			fFile << std::endl;
 		}
+	}
+	fFile.close();
+
+	return;
+}
+void Correlation::xi_delta_QSO_lambda_same_LOS(unsigned int bootIdx /*=0*/) {
+
+	std::cout << "\n\n\n\n  ------ xi_delta_QSO_lambda_same_LOS ------\n" << std::endl;
+
+	///// QSO
+	loadDataQ1();
+	if (nbQ1__==0) return;
+	///// Forest
+	loadDataForest(pathForest__,bootIdx);
+	if (nbForest_==0.) return;
+
+	v_CosDeQ1__.clear();
+	v_SinDeQ1__.clear();
+	v_CosDe__.clear();
+	v_SinDe__.clear();
+	v_zz__.clear();
+	v_r__.clear();
+	v_idx__.clear();
+	v_lRF__.clear();
+	v_nb__.clear();
+
+	///// Set lambda_Obs QSO
+	std::vector<double> v_lObsQSO(nbQ1__,0.);
+	for (unsigned int q=0; q<nbQ1__; q++) {
+		v_lObsQSO[q] = 1./( (v_zzQ1__[q]+1.)*lambdaRFLine__);
+	}
+
+	///// Rapport l1/l2
+	const double minValue = 0.40;
+	const double maxValue = 2.30;
+	double binSize      = 1.e-03;
+	const unsigned int nbBin = int( (maxValue-minValue)/binSize);
+	std::cout << "  nbBin = " << nbBin << std::endl;
+	binSize = (maxValue-minValue)/nbBin;
+	const double inv_binSize = 1./binSize;
+	std::cout << "  nbBin = " << nbBin<<std::endl;
+
+	///// Arrays for data
+	double dataMu[nbBin][6];
+	for (unsigned int i=0; i<nbBin; i++) {
+		for (unsigned int k=0; k<6; k++) {
+			dataMu[i][k] = 0.;
+		}
+	}
+
+	long unsigned int nb_corr = 0;
+	std::cout << "\n  Starting\n" << std::endl;
+
+	for (unsigned int f=0; f<nbForest_; f++) {
+	
+		///// Get number of pixels in forest
+		const unsigned int nbPixel = v_nbPixelDelta1__[f];
+		const double ra            = v_ra__[f];
+		const double de            = v_de__[f];
+		const double firstPixelLambda = v_lObs__[f][0];
+		const double lastPixelLambda  = v_lObs__[f][nbPixel-1];
+			
+		for (unsigned int q=0; q<nbQ1__; q++) {
+
+			///// Remove qso not on the LOS
+			if (fabs(ra-v_raQ1__[q])>=C_AUTOCORRCRIT || fabs(de-v_deQ1__[q])>=C_AUTOCORRCRIT ) continue;
+			nb_corr ++;
+
+			/////
+			const double zQSO = v_zzQ1__[q];
+			const double inv_lObsQSO = v_lObsQSO[q];
+
+			// Tests if pixels are in front of QSO
+			if (firstPixelLambda*inv_lObsQSO>maxValue) {
+				std::cout << firstPixelLambda << " " << inv_lObsQSO << std::endl;
+				return;
+				continue;
+			}
+			else if (lastPixelLambda*inv_lObsQSO<minValue) {
+				std::cout << lastPixelLambda << " " << inv_lObsQSO << std::endl;
+				continue;
+			}
+
+			///// Loops over all pixels of the forest
+			for (unsigned int i=0; i<nbPixel; i++) {
+
+				const double l1Overl2 = v_lObs__[f][i]*inv_lObsQSO;
+				if (l1Overl2<minValue || l1Overl2>maxValue) {
+					std::cout << l1Overl2 << std::endl;
+					continue;
+				}
+				const unsigned int idx  = int( (l1Overl2-minValue)*inv_binSize  );
+			
+				const double w   = v_w__[f][i];
+				const double d   = v_d__[f][i];
+				const double wd  = w*d;
+				const double wdd = wd*d;
+	
+				dataMu[idx][0] += wd;
+				dataMu[idx][1] += wdd;
+				dataMu[idx][2] += w*l1Overl2;
+				dataMu[idx][3] += w*(zQSO+v_z__[f][i]);
+				dataMu[idx][4] += w;
+				dataMu[idx][5] ++;
+			}
+		}
+	}
+
+	std::cout << "\n  Saving\n" << std::endl;
+	std::cout << "  nb corr = " << nb_corr << std::endl;
+
+	long double sumOne = 0.;
+	for (unsigned int i=0; i<nbBin; i++) {
+		sumOne += dataMu[i][5];
+	}
+	if (sumOne==0.) return;
+
+	std::ofstream fFile;
+	std::string pathToSave;
+
+	///// Save the 2D cross-correlation
+	pathToSave = pathToSave__;
+	pathToSave += "xi_delta_QSO_lambda_same_LOS_Mu_";
+	pathToSave += forest__;
+	pathToSave += "_";
+	pathToSave += QSO__;
+	pathToSave += ".txt";
+	std::cout << "\n  " << pathToSave << std::endl;
+	fFile.open(pathToSave.c_str());
+	fFile << std::scientific;
+	fFile.precision(std::numeric_limits<double>::digits10);
+
+	///// Set the values of data
+	for (unsigned int i=0; i<nbBin; i++) {
+		fFile << dataMu[i][0];
+		fFile << " " << dataMu[i][1];
+		fFile << " " << dataMu[i][2];
+		fFile << " " << dataMu[i][3]/2.;
+		fFile << " " << dataMu[i][4];
+		fFile << " " << dataMu[i][5];
+		fFile << std::endl;
 	}
 	fFile.close();
 
@@ -5758,6 +5921,7 @@ void Correlation::xi_QSO_QSO(unsigned int bootIdx/*=0*/) {
 	std::cout << "\n\n\n\n  ------ xi_QSO_QSO ------\n" << std::endl;
 
 	loadDataQ1();
+	if (nbQ1__ == 0) return;
 
 	std::stringstream convert;
 	convert << bootIdx;
@@ -5767,6 +5931,8 @@ void Correlation::xi_QSO_QSO(unsigned int bootIdx/*=0*/) {
 	std::vector<double> dataRa(v_raQ1__);
 	std::vector<double> dataCoDe(v_CosDeQ1__);
 	std::vector<double> dataSiDe(v_SinDeQ1__);
+	std::vector<double> dataZZ(v_zzQ1__);
+	std::vector<double> dataRR(v_rrQ1__);
 
 	///// Needed to randomize the QSO
 	if (randomQSO) {
@@ -5796,10 +5962,28 @@ void Correlation::xi_QSO_QSO(unsigned int bootIdx/*=0*/) {
 			v_SinDeQ1__[i] = sin(de);
 		}
 	}
+	else if (randomQSO_from_file__) {
+
+		pathQ1__  = path_to_rand_QSO_cat__;
+		pathQ1__ += "cat_";
+		pathQ1__ += strBootIdx;
+		pathQ1__ += ".fits";
+
+		v_raQ1__.clear();
+		v_deQ1__.clear();
+		v_zzQ1__.clear();
+		v_rrQ1__.clear();
+		v_CosDeQ1__.clear();
+		v_SinDeQ1__.clear();
+		loadDataQ1();
+		if (nbQ1__ == 0) return;
+	}
 	else {
 		dataRa.clear();
 		dataCoDe.clear();
 		dataSiDe.clear();
+		dataZZ.clear();
+		dataRR.clear();
 	}
 
 
@@ -5884,7 +6068,7 @@ void Correlation::xi_QSO_QSO(unsigned int bootIdx/*=0*/) {
 	std::ofstream fFile;
 	std::string pathToSave;
 	std::string prefix = QSO__;
-	if (randomQSO) {
+	if (randomQSO || randomQSO_from_file__) {
 		prefix += "_RR_";
 		prefix += strBootIdx;
 	}
@@ -5951,7 +6135,7 @@ void Correlation::xi_QSO_QSO(unsigned int bootIdx/*=0*/) {
 
 
 	//// Doing the correlation random - data
-	if (randomQSO) {
+	if (randomQSO || randomQSO_from_file__) {
 	
 		//// Reset values to zero
 		for (unsigned int i=0; i<nbBin; i++) {
@@ -5973,11 +6157,11 @@ void Correlation::xi_QSO_QSO(unsigned int bootIdx/*=0*/) {
 
 		for (unsigned int q1=0; q1<nbQ1__; q1++) {
 
-			const double ra1 = dataRa[q1];
+			const double ra1    = dataRa[q1];
 			const double cosDe1 = dataCoDe[q1];
 			const double sinDe1 = dataSiDe[q1];
-			const double zz1 = v_zzQ1__[q1];
-			const double rr1 = v_rrQ1__[q1];
+			const double zz1    = dataZZ[q1];
+			const double rr1    = dataRR[q1];
 	
 			for (unsigned int q2=0; q2<nbQ1__; q2++) {
 	
@@ -9818,6 +10002,32 @@ void Correlation::xi_delta_QSO_MockJMc_Wick_T1234_with_wi1D_array(void) {
 
 	return;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 void Correlation::xi_QSO_QSO_MockJMc(unsigned int bootIdx/*=0*/) {
 
 	std::cout << "\n\n\n\n  ------ xi_QSO_QSO_MockJMc ------\n" << std::endl;
@@ -10294,11 +10504,15 @@ void Correlation::loadDataQ1(void) {
 		fits_read_col(fitsptrSpec,TDOUBLE, 2,i+1,1,1,NULL,&de, NULL,&sta);
 		fits_read_col(fitsptrSpec,TDOUBLE, 3,i+1,1,1,NULL,&zz, NULL,&sta);
 
+		if (zz<=0.) {
+			//std::cout << "  Correlation::loadDataQ1::  ERROR:  zz<=0. , zz = " << zz << std::endl;
+			continue;
+		}
 		if ( !mockBox__ && ra==0. && de==0. ) {
 			std::cout << "  Correlation::loadDataQ1::  ERROR:  ra==0. && de==0. , RA = " << ra << " , Dec = " << de << " , idx = " << i << std::endl;
 			continue;
 		}
-		if ( selectWindowRedshift && (zz<minRedshiftQSO || zz>maxRedshiftQSO) ) continue;
+		if ( selectWindowRedshift_bool__ && selectWindowRedshift && (zz<minRedshiftQSO || zz>maxRedshiftQSO) ) continue;
 
 		//// If not dealing with Jean-Marc's simulations
 		if (!mockJMC__ && !mockBox__) {
@@ -10498,7 +10712,7 @@ void Correlation::loadDataForest(std::string pathToFits,unsigned int bootIdx/*=0
 		fits_read_col(fitsptrSpec,TDOUBLE, 17,i+1,1,nbBinRFMax__,NULL, &DELTA_WEIGHT,    NULL,&sta);
 
 		if ( ra==0. && de==0. ) {
-			std::cout << "  Correlation::loadDataForest::  ERROR:  ra==0. && de==0." << std::endl;
+			//std::cout << "  Correlation::loadDataForest::  ERROR:  ra==0. && de==0." << std::endl;
 			nbCutted[5] ++;
 			continue;
 		}
@@ -10800,7 +11014,7 @@ void Correlation::loadDataDelta2(int dataNeeded/*=100*/) {
 		fits_read_col(fitsptrSpec,TDOUBLE, 17,i+1,1,nbBinRFMaxDelta2__,NULL, &DELTA_WEIGHT,    NULL,&sta);
 
 		if ( ra==0. && de==0. ) {
-			std::cout << "  Correlation::loadDataForest2::  ERROR:  ra==0. && de==0." << std::endl;
+			//std::cout << "  Correlation::loadDataForest2::  ERROR:  ra==0. && de==0." << std::endl;
 			nbCutted[5] ++;
 			continue;
 		}

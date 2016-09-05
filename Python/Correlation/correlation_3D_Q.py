@@ -154,8 +154,8 @@ class Correlation3DQ(correlation_3D.Correlation3D):
 		coefRR = self._nr*(self._nr-1.)/2.
 	
 		### Path
-		path1D = self._path_to_txt_file_folder+'xi_QSO_QSO_Mu_QSO_'
-		path2D = self._path_to_txt_file_folder+'xi_QSO_QSO_2D_QSO_'
+		path1D = self._path_to_txt_file_folder+'xi_QSO_QSO_Mu_'+self._q1+'_'
+		path2D = self._path_to_txt_file_folder+'xi_QSO_QSO_2D_'+self._q1+'_'
 
 		### DD
 		dd_Mu, dd_We, dd_1D, dd_2D = self.read_data_QSO(path1D+'DD.txt', path2D+'DD.txt', coefDD, True)
@@ -163,7 +163,10 @@ class Correlation3DQ(correlation_3D.Correlation3D):
 		rr_Mu, rr_We, rr_1D, rr_2D = self.read_data_QSO(path1D+'RR_0.txt', path2D+'RR_0.txt', coefRR)
 		### DR
 		if (LS): dr_Mu, dr_We, dr_1D, dr_2D = self.read_data_QSO(path1D+'DR_0.txt', path2D+'DR_0.txt', coefDR)
-		
+
+		plt.plot(dd_1D[:,1])
+
+		nb = 1
 		for i in numpy.arange(1,self._nbRand):
 
 			### RR
@@ -172,6 +175,7 @@ class Correlation3DQ(correlation_3D.Correlation3D):
 			rr_We += tmp_rr_We
 			rr_1D += tmp_rr_1D
 			rr_2D += tmp_rr_2D
+			plt.plot(tmp_rr_1D[:,1])
 
 			### DR
 			if (LS):
@@ -180,9 +184,10 @@ class Correlation3DQ(correlation_3D.Correlation3D):
 				dr_We += tmp_dr_We
 				dr_1D += tmp_dr_1D
 				dr_2D += tmp_dr_2D
-			
+				plt.plot(tmp_dr_1D[:,1])
 		
-	
+		plt.show()
+
 		### RR
 		rr_Mu /= self._nbRand
 		rr_We /= self._nbRand
@@ -199,25 +204,25 @@ class Correlation3DQ(correlation_3D.Correlation3D):
 		if (LS):	
 			### Mu:
 			xiMu = numpy.array(dd_Mu)
-			cut = (xiMu[:,:,1]>0.)
+			cut = numpy.logical_and( (xiMu[:,:,1]>0.), (rr_Mu[:,:,2]>0.) )
 			xiMu[:,:,2][cut] = (dd_Mu[:,:,2][cut] -2.*dr_Mu[:,:,2][cut] + rr_Mu[:,:,2][cut])/rr_Mu[:,:,2][cut]
 			xiMu[:,:,3][cut] = numpy.sqrt(dd_Mu[:,:,2][cut]*coefDD)/(coefDD*rr_Mu[:,:,2][cut])
 
 			### xiWe
 			xiWe = numpy.array(dd_We)
-			cut = (xiWe[:,:,1]>0.)
+			cut = numpy.logical_and( (xiWe[:,:,1]>0.), (rr_We[:,:,1]>0.) )
 			xiWe[:,:,1][cut] = (dd_We[:,:,1][cut] -2.*dr_We[:,:,1][cut] + rr_We[:,:,1][cut])/rr_We[:,:,1][cut]
 			xiWe[:,:,2][cut] = numpy.sqrt(dd_We[:,:,1][cut]*coefDD)/(coefDD*rr_We[:,:,1][cut])
 
 			### 1D:
 			xi1D = numpy.array(dd_1D)
-			cut = (xi1D[:,1]>0.)			
+			cut = numpy.logical_and( (xi1D[:,1]>0.), (rr_1D[:,1]>0.) )		
 			xi1D[:,1][cut] = (dd_1D[:,1][cut]-2.*dr_1D[:,1][cut]+rr_1D[:,1][cut])/rr_1D[:,1][cut]
 			xi1D[:,2][cut] = numpy.sqrt(dd_1D[:,1][cut]*coefDD)/(coefDD*rr_1D[:,1][cut])
 
 			### 2D:
 			xi2D = numpy.array(dd_2D)
-			cut = (xi2D[:,:,1]>0.)
+			cut = numpy.logical_and( (xi2D[:,:,1]>0.), (rr_2D[:,:,1]>0.) )
 			xi2D[:,:,1][cut] = (dd_2D[:,:,1][cut]-2.*dr_2D[:,:,1][cut]+rr_2D[:,:,1][cut])/rr_2D[:,:,1][cut]
 			xi2D[:,:,2][cut] = numpy.sqrt(dd_2D[:,:,1][cut]*coefDD)/(coefDD*rr_2D[:,:,1][cut])
 	
@@ -237,8 +242,8 @@ class Correlation3DQ(correlation_3D.Correlation3D):
 				numpy.save(self._path_to_txt_file_folder+'xi_QSO_QSO_result_Multipol',xiMul)
 		else:
 			### init some objects
-			path1D = self._path_to_txt_file_folder+'xi_QSO_QSO_Mu_QSO_'
-			path2D = self._path_to_txt_file_folder+'xi_QSO_QSO_2D_QSO_'
+			path1D = self._path_to_txt_file_folder+'xi_QSO_QSO_Mu_'+self._q1+'_'
+			path2D = self._path_to_txt_file_folder+'xi_QSO_QSO_2D_'+self._q1+'_'
 			self.read_data_QSO(path1D+'DD.txt', path2D+'DD.txt', 1., True)
 
 			xiMu  = numpy.load(self._path_to_txt_file_folder+'xi_QSO_QSO_result_Mu.npy')

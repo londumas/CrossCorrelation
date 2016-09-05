@@ -54,12 +54,12 @@ def plotOne():
 		'size_bin_calcul_m': 0.02,
 		'nb_wedges'               : 4,
 		'index_multipole_max' : 4,
-		'remove_residuales' : '',#lambda_OBS',
+		'remove_residuales' : '', #'lambda_OBS',
 		'path_to_txt_file_folder': '',
-		'correlation': 'f_f2',
-		'f1': 'MGII',
+		'correlation': 'q_f',
+		'f1': 'LYA',
 		'f2': '',
-		'q1': 'CMASS',
+		'q1': 'QSO',
 		'q2': '',
 		'name' : 'no'
 	}
@@ -90,9 +90,8 @@ def plotOne():
 	}
 	#dic_class['path_to_txt_file_folder'] = dic_simu['path_to_simu'] + 'Box_00'+str(i)+'/Simu_00'+str(j)+'/Results'+dic_simu['prefix']+'/'
 	#print dic_class['path_to_txt_file_folder']
-	dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator_2016_05_26_PlankCosmo/' #_PlankCosmo/'
-	##dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator_coAdd_2016_05_26/'
-	#dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR14/'
+	#dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator_2016_05_26_PlankCosmo/'
+	dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_noProjection_2016_05_26_PlankCosmo/'
 	print dic_class['path_to_txt_file_folder']
 	corr = correlation_3D.Correlation3D(dic_class)
 	#corr.write_metal_model(False)
@@ -242,19 +241,22 @@ def plotOne():
         corr.plot_2d(2)
 	"""
 
-	#corr.save_list_realisation('subsampling', 80)
+	corr.save_list_realisation('subsampling', 80)
 	#corr.save_list_realisation('shuffleQSO', 100)
 	#corr.save_list_realisation('shuffleForest', 100)
 	#corr.save_list_realisation('randomQSO', 1000)
 	#corr.save_list_realisation('randomQSOXYZ', 1000)
+	#corr.save_list_realisation('randomQSOFromFile', 10)
         #corr.set_values_on_mean_simulation_or_realisation_type(None,'shuffleForest')
         #corr.set_values_on_mean_simulation_or_realisation_type(None,'shuffleQSO')
 	#corr.set_values_on_mean_simulation_or_realisation_type(None,'randomQSO')
         #corr.set_values_on_mean_simulation_or_realisation_type(None,'randomQSOXYZ')
+	#corr.set_values_on_mean_simulation_or_realisation_type(None,'randomQSOFromFile')
 
-	#corr.plot_cov_cor_matrix('subsampling','1D')
+	corr.plot_cov_cor_matrix('subsampling','1D')
+	corr.plot_cov_cor_matrix('subsampling','2D')
 	### Fit
-	#corr.set_error_on_covar_matrix('subsampling')
+	corr.set_error_on_covar_matrix('subsampling')
 
 	#corr.send_BAOFIT(dic_send_BAOFIT)
 

@@ -118,6 +118,9 @@ class Correlation
 		void xi_A_delta_delta_Metals_Models(double lambdaRFMetal1, std::string lambdaRFMetalName1,double lambdaRFMetal2, std::string lambdaRFMetalName2);
 		void xi_A_delta_delta2( unsigned int bootIdx=0 );
 		void xi_A_delta_delta2_lambda(void);
+		void xi_A_delta_delta_MockJMc(unsigned int bootIdx=0);
+		void xi_A_delta_delta_MockJMc_distortionMatrix(void);
+		void xi_A_delta_delta_Metals_Models_MockJMc(double lambdaRFMetal1, std::string lambdaRFMetalName1,double lambdaRFMetal2, std::string lambdaRFMetalName2);
 		//
 		void xi_delta_QSO(unsigned int bootIdx=0);
 		void xi_delta_QSO_theta(unsigned int bootIdx=0);
@@ -130,13 +133,6 @@ class Correlation
 		void xi_delta_QSO_Wick_T123_with_wi1D_array(void);
 		void xi_delta_QSO_Wick_T1234_with_wi1D_array(void);
 		void xi_delta_QSO_Wick_1D(unsigned int diagramIdx);
-		//
-		void xi_QSO_QSO(unsigned int bootIdx=0);
-		void xi_Q1_Q2(void);
-		//
-		void xi_A_delta_delta_MockJMc(unsigned int bootIdx=0);
-		void xi_A_delta_delta_MockJMc_distortionMatrix(void);
-		void xi_A_delta_delta_Metals_Models_MockJMc(double lambdaRFMetal1, std::string lambdaRFMetalName1,double lambdaRFMetal2, std::string lambdaRFMetalName2);
 		void xi_delta_QSO_MockJMc(unsigned int bootIdx=0);
 		void xi_delta_QSO_MockJMc_distortionMatrix( void );
 		void xi_delta_QSO_MockJMc_distortionMatrix_1D( void );
@@ -145,7 +141,12 @@ class Correlation
 		void xi_delta_QSO_MockJMc_Wick_T12_with_wi1D_array(void);
 		void xi_delta_QSO_MockJMc_Wick_T123_with_wi1D_array(void);
 		void xi_delta_QSO_MockJMc_Wick_T1234_with_wi1D_array(void);
+		void xi_delta_QSO_lambda_same_LOS(unsigned int bootIdx=0);
+		//
+		void xi_QSO_QSO(unsigned int bootIdx=0);
+		void xi_Q1_Q2(void);
 		void xi_QSO_QSO_MockJMc(unsigned int bootIdx=0);
+		//
 };
 
 const double z0__        = 2.25;

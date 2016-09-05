@@ -43,10 +43,10 @@ elif (forest__ == 'MGII'):
 ###
 #path = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/FitsFile_DR12_reOBS_eBOSS_Guy/DR12_primery/histos/"
 #path = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy/FitsFile_DR12_reOBS_Guy/DR12_primery/histos/"
-#path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest__+'/FitsFile_DR12_Guy_Margala/DR12_primery/histos/' ##_method1
+path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest__+'/FitsFile_DR12_Guy_Margala/DR12_primery/histos/' ##_method1
 #path = '/home/gpfs/manip/mnt/bao/hdumasde/Data/'+forest__+'/FitsFile_DR14/DR14_primery/histos/'
 #path = "/home/gpfs/manip/mnt/bao/hdumasde/Data/MGII/FitsFile_DR12_Guy/DR12_primery/histos/"
-path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Data/'+forest__+'/DR14/DR14_primery/histos/'
+#path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Data/'+forest__+'/DR14/DR14_primery/histos/'
 #path = "/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA//FitsFile_eBOSS_Guy/all_eBOSS_primery/histos/"
 rawPath = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/'
 
@@ -65,6 +65,9 @@ for i in range (0,chunckNb):
 
 		data = numpy.loadtxt('/home/gpfs/manip/mnt/bao/hdumasde/Data/LYA/FitsFile_DR12_Guy_Margala/DR12_primery/histos/hDeltaVsLambdaObs_LYA.txt')
                 plt.errorbar(data[:,0]+shift__, data[:,1], label=r'$DR12$')
+		yyy = data[:,1]
+		lll = data[:,0]+shift__
+		zzz = lll/1215.67-1.
 
 		data = numpy.loadtxt('/home/gpfs/manip/mnt/bao/hdumasde/Data/CIV/FitsFile_DR12_Guy_Margala/DR12_primery/histos/hDeltaVsLambdaObs_CIV.txt')
 		plt.errorbar(data[:,0]+shift__, data[:,1], label=r'$DR12: CIV \, forest \, for \, calibration $')
@@ -76,8 +79,18 @@ for i in range (0,chunckNb):
 		#data = numpy.loadtxt('/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/chain_annalys_delta/v1575_hDeltaVsLambdaObs_LYA_JMC.txt')
 		#plt.errorbar(data[:,1][ data[:,2]!=0. ], data[:,2][ data[:,2]!=0. ], label=r'$v1575$', color='orange')
 
-
 		
+		def chi2(a0,a1):
+			return numpy.sum( numpy.power( yyy-numpy.exp(-a0*numpy.power(1.+zzz,a1) ) ,2.) )
+		m = Minuit(chi2,a0=0.0023,error_a0=1.,a1=3.65,error_a1=1.,print_level=-1, errordef=0.01) 	
+		m.migrad()
+		a0 = m.values['a0']
+		a1 = m.values['a1']
+		print '  parameter = ', a0, a1
+		plt.plot(lll, numpy.exp(-a0*numpy.power(1.+zzz,a1) ) )
+
+
+		'''
 		yMin    = numpy.amin(0.)
 		yMax    = numpy.amax(1.)
 		skyLines__ = numpy.power(10.,skyLines__)
@@ -89,7 +102,7 @@ for i in range (0,chunckNb):
 			yLi = [yMin,yMax]
 			plt.plot(xLi,yLi,color='green')
 			#plt.text(line, yMax, skyLinesNames__[k], rotation='vertical', fontsize=20)
-		
+		'''
 
 #plt.title(r'$hDeltaVsLambdaObs$', fontsize=40)
 plt.xlabel(r'$\lambda_{Obs.} \, [\AA]$', fontsize=40)

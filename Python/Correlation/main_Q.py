@@ -45,10 +45,10 @@ dic_class = {
 	'name' : 'Mean \, simulation'
 }
 dic_Q = {
-	'nb_random' : 100,
+	'nb_random' : 10,
 	'estimator' : 'LS',
 	'path_to_cat' : 'NOTHING',
-	'load_from_txt' : False,
+	'load_from_txt' : True,
 	'sufix' : 'QSO_withRSD'
 }
 dic_CAMB = {
@@ -90,13 +90,14 @@ dic_send_BAOFIT = {
 	'dic_simu'               : dic_simu
 }
 
-if (False):
+if (True):
 
 	
 	
 	i = sys.argv[1]
 	j = sys.argv[2]
 	
+	'''
 	#i = 0
 	#j = 0
 	raw = dic_simu['path_to_simu'] + 'Box_00'+str(i)+'/Simu_00'+str(j)+'/'
@@ -106,6 +107,15 @@ if (False):
 	corr = correlation_3D_Q.Correlation3DQ(dic_class,dic_Q)
 	#corr.save_list_realisation_simulation(dic_class, dic_Q, dic_simu)
 	corr.set_values_on_mean_simulation(dic_simu)
+	'''
+
+	### If data
+	dic_class['q1'] = 'QSO_DR14_v1_0'
+	dic_class['path_to_txt_file_folder'] = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/DR14/'
+	dic_class['name'] = 'aaa'
+	dic_Q['path_to_cat']                 = '/home/gpfs/manip/mnt0607/bao/hdumasde/Data/Catalogue/QSO_DR14_v1_0.fits'
+	corr = correlation_3D_Q.Correlation3DQ(dic_class,dic_Q)
+	print '  mean z = ', corr._meanZ
 
 	'''
 	path_to_cov = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575/Results_q_q__noSameCell_randXYZ_withRSD/xi_QSO_QSO_result_cov_1D.npy'
@@ -251,7 +261,7 @@ if (False):
 	corr.plot_CAMB(corr._xiMul[:,4,:],dic_CAMB_fit,1,False)
 	corr.plot_CAMB(corr._xiMul[:,4,:],dic_CAMB_fit,2,False)
 	
-	
+	'''
 	corr.plot_1d(0)
 	corr.plot_1d(1)
 	corr.plot_1d(2)
@@ -272,8 +282,8 @@ if (False):
 	corr.plot_grid(0,True)
 	corr.plot_grid(1,True)
 	corr.plot_grid(2,True)
-	'''	
-	corr.send_BAOFIT(dic_send_BAOFIT)
+		
+	#corr.send_BAOFIT(dic_send_BAOFIT)
 	
 
 '''
@@ -347,7 +357,7 @@ if (False):
 # ---------------------------------
 ### For Many Fit
 # ---------------------------------
-if (True):
+if (False):
 
 	i = sys.argv[1]
 	j = sys.argv[2]
