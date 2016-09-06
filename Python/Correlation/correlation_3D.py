@@ -2925,7 +2925,17 @@ output-prefix = """ + path_to_BAOFIT + """.
 		myTools.plotCovar(cov, diagram_name)
 
 		return
+	def save_value_xi_in_txt(self):
 
+		### 1D
+		path = self._path_to_txt_file_folder + self._prefix + '_txt_1D_' + self._middlefix + '.txt'
+		numpy.savetxt(path,zip(numpy.arange(self._xi1D[:,0].size),self._xi1D[:,0],self._xi1D[:,1],self._xi1D[:,2]))
+		### 2D
+		path = self._path_to_txt_file_folder + self._prefix + '_txt_2D_' + self._middlefix + '.txt'
+		numpy.savetxt(path,zip(numpy.arange(self._xi2D[:,:,0].flatten().size),self._xi2D[:,:,0].flatten(),self._xi2D[:,:,1].flatten(),self._xi2D[:,:,2].flatten()))
+
+
+		return
 
 
 

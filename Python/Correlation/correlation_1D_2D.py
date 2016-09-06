@@ -2,14 +2,16 @@ import numpy
 import myTools
 import matplotlib.pyplot as plt
 
-path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator_2016_05_26_PlankCosmo/xi_1DlObs_2D_delta_delta_LYA.txt'
-
+path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_Margala__projected_PlanckCosmo_correctedDistance//xi_1DlObs_2D_delta_delta_LYA.txt'
+corr = numpy.loadtxt(path)
+'''
 for i in range(10):
 	for j in range(10):
 		path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Mock_JMLG/v1575_with_good_metals/Box_00'+str(i)+'/Simu_00'+str(j)+'/Results/xi_1DlObs_2D_delta_delta_LYA.txt'
 		if (i==0 and j==0): corr = numpy.loadtxt(path)
 		else: corr += numpy.loadtxt(path)
 corr /= 100.
+'''
 
 ###
 x = numpy.arange(corr[:,0].size)+3600.

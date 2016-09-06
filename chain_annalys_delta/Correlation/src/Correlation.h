@@ -123,7 +123,6 @@ class Correlation
 		void xi_A_delta_delta_Metals_Models_MockJMc(double lambdaRFMetal1, std::string lambdaRFMetalName1,double lambdaRFMetal2, std::string lambdaRFMetalName2);
 		//
 		void xi_delta_QSO(unsigned int bootIdx=0);
-		void xi_delta_QSO_theta(unsigned int bootIdx=0);
 		void xi_delta_QSO_lambda(unsigned int bootIdx=0);
 		void xi_delta_QSO_distortionMatrix(void);
 		void xi_delta_QSO_distortionMatrix_1D(void);

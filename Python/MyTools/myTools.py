@@ -467,7 +467,7 @@ def fit_BAO(dist,obs,cov,arg_fit):
 	return m_BAO.values, m_BAO.errors, [x,y_BAO], m_noise.values, m_noise.errors, [x,y_noise], [x,y_noBAO]
 def plotCovar(covList, covNameList,nbBinX=50,nbBinY=100,correlation='q_f'):
 
-	color = ['blue','red','green','orange','black']
+	color = ['blue','red','green','orange','black','cyan']
 
 	### Diagrams
 	###################################################
