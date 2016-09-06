@@ -3107,8 +3107,8 @@ void Correlation::xi_delta_QSO(unsigned int bootIdx/*=0*/) {
 				}
 
 				///// Fill the histogramm of xi(r_{perp}, r_{paral}
-				unsigned int rPerpBinIdx = int(distT);
-				unsigned int rParralBinIdx = int(distP+max);
+				const unsigned int rPerpBinIdx = int(distT);
+				const unsigned int rParralBinIdx = int(distP+max);
 
 				data2D[rPerpBinIdx][rParralBinIdx][0] += wd;
 				data2D[rPerpBinIdx][rParralBinIdx][1] += wdd;
@@ -3681,7 +3681,8 @@ void Correlation::xi_delta_QSO_distortionMatrix(void) {
 	static const unsigned int nbBin2D = nbBinX*nbBinY;
 	const double maxPow2       = max*max;
 	const double fromValToIdx  = nbBin/max;
-
+	const double dist_diag_max_pow2 = 2*max*max;
+	
 	///// Arrays for distortion matrix
 	double weight2D[nbBin2D];
 	double** data2DMatrix = new double*[nbBin2D];
@@ -3717,23 +3718,27 @@ void Correlation::xi_delta_QSO_distortionMatrix(void) {
 			const double cosTheta = cosDe*v_CosDeQ1__[q]*cos(ra-v_raQ1__[q]) + sinDe*v_SinDeQ1__[q];
 
 			///// reject QSO with a distance too large
-			const double distTransQsoLyaPow2 = v_rrQ1__[q]*v_rrQ1__[q]*(1.-cosTheta*cosTheta);
-			if (distTransQsoLyaPow2 >= maxPow2) continue;
+			if (v_rrQ1__[q]*v_rrQ1__[q]*(1.-cosTheta*cosTheta) >= dist_diag_max_pow2) continue;
+
+			///// Reject QSO with a perpandicular distance too large
+			if ( (firstPixel+v_rrQ1__[q])*(firstPixel+v_rrQ1__[q])*0.5*(1.-cosTheta) >= maxPow2 ) continue;
 
 			///// Parrallel distance between the qso and the lya
-			const double distParalQsoLya = v_rrQ1__[q]*cosTheta;
+			const double cosHalfTheta = sqrt( 0.5*(1.+cosTheta) );
+			const double distParalQsoLya = v_rrQ1__[q]*cosHalfTheta;
 
 			///// Distance between the qso and the first pixel
-			const double distParalQsoFirstPixel = firstPixel - distParalQsoLya;
+			const double distParalQsoFirstPixel = firstPixel*cosHalfTheta - distParalQsoLya;
 			if ( distParalQsoFirstPixel >= max) continue;
 
 			///// Distance between the qso and the last pixel
-			const double distParalQsoLastPixel = lastPixel - distParalQsoLya;
+			const double distParalQsoLastPixel = lastPixel*cosHalfTheta - distParalQsoLya;
 			if ( distParalQsoLastPixel <= -max) continue;
 
-			///// Transvers distance between the qso and the lya
-			const double distTransQsoLya = sqrt(distTransQsoLyaPow2);
-			const unsigned int rPerpBinIdx = int( distTransQsoLya*fromValToIdx );
+			///// Perpandicular distance between the qso and the lya
+			const double sinHalfTheta = sqrt( 0.5*(1.-cosTheta) );
+			const double distPerpQsoLya = v_rrQ1__[q]*sinHalfTheta;
+			const double zQSO = v_zzQ1__[q];
 
 			///// 'true' if first pixel of forest is further than the QSO
 			const bool infPosBool = (distParalQsoFirstPixel > 0.);
@@ -3757,11 +3762,11 @@ void Correlation::xi_delta_QSO_distortionMatrix(void) {
 				unsigned int ii = i;
 				if (supPosBool) ii = nbPixel-1-i;
 	
-				const double distP = v_r__[f][ii] - distParalQsoLya;				
-
-				///// Look at the position of the Lya forest regarding the qso
-				if (fabs(distP) >= max) {
-					if (infPosBool || supPosBool) break;
+				const double distP = v_r__[f][ii]*cosHalfTheta - distParalQsoLya;
+				const double distT = v_r__[f][ii]*sinHalfTheta + distPerpQsoLya;
+				if (fabs(distP) >= max || distT >= max) {
+					if ( fabs(distP) >= max && (infPosBool || supPosBool) ) break;
+					else if ( distT >= max && infPosBool) break;
 					else continue;
 				}
 
@@ -3769,6 +3774,7 @@ void Correlation::xi_delta_QSO_distortionMatrix(void) {
 				const double val0 = w*invSumWeight;
 	
 				///// Fill the histogramm of xi(r_{perp}, r_{paral}
+				const unsigned int rPerpBinIdx = int(distT*fromValToIdx);
 				const unsigned int globalBin = rPerpBinIdx*nbBinY+int( (distP+max)*fromValToIdx );
 				xValue[globalBin]  += val0;
 				xlValue[globalBin] += val0*v_varLambda[f][ii];
@@ -3939,19 +3945,27 @@ void Correlation::xi_delta_QSO_distortionMatrix_1D(void) {
 			const double cosTheta = cosDe*v_CosDeQ1__[q]*cos(ra-v_raQ1__[q]) + sinDe*v_SinDeQ1__[q];
 
 			///// reject QSO with a distance too large
-			const double distTransQsoLyaPow2 = v_rrQ1__[q]*v_rrQ1__[q]*(1.-cosTheta*cosTheta);
-			if (distTransQsoLyaPow2 >= maxPow2) continue;
+			if (v_rrQ1__[q]*v_rrQ1__[q]*(1.-cosTheta*cosTheta) >= maxPow2) continue;
+
+			///// Reject QSO with a perpandicular distance too large
+			if ( (firstPixel+v_rrQ1__[q])*(firstPixel+v_rrQ1__[q])*0.5*(1.-cosTheta) >= maxPow2 ) continue;
 
 			///// Parrallel distance between the qso and the lya
-			const double distParalQsoLya = v_rrQ1__[q]*cosTheta;
+			const double cosHalfTheta = sqrt( 0.5*(1.+cosTheta) );
+			const double distParalQsoLya = v_rrQ1__[q]*cosHalfTheta;
 
 			///// Distance between the qso and the first pixel
-			const double distParalQsoFirstPixel = firstPixel - distParalQsoLya;
+			const double distParalQsoFirstPixel = firstPixel*cosHalfTheta - distParalQsoLya;
 			if ( distParalQsoFirstPixel >= max) continue;
 
 			///// Distance between the qso and the last pixel
-			const double distParalQsoLastPixel = lastPixel - distParalQsoLya;
+			const double distParalQsoLastPixel = lastPixel*cosHalfTheta - distParalQsoLya;
 			if ( distParalQsoLastPixel <= -max) continue;
+
+			///// Perpandicular distance between the qso and the lya
+			const double sinHalfTheta = sqrt( 0.5*(1.-cosTheta) );
+			const double distPerpQsoLya = v_rrQ1__[q]*sinHalfTheta;
+			const double zQSO = v_zzQ1__[q];
 
 			///// 'true' if first pixel of forest is further than the QSO
 			const bool infPosBool = (distParalQsoFirstPixel > 0.);
@@ -3973,15 +3987,15 @@ void Correlation::xi_delta_QSO_distortionMatrix_1D(void) {
 				unsigned int ii = i;
 				if (supPosBool) ii = nbPixel-1-i;
 	
-				const double distP = v_r__[f][ii] - distParalQsoLya;				
-
-				///// Look at the position of the Lya forest regarding the qso
-				if (fabs(distP) >= max) {
-					if (infPosBool || supPosBool) break;
+				const double distP = v_r__[f][ii]*cosHalfTheta - distParalQsoLya;
+				const double distT = v_r__[f][ii]*sinHalfTheta + distPerpQsoLya;
+				if (fabs(distP) >= max || distT >= max) {
+					if ( fabs(distP) >= max && (infPosBool || supPosBool) ) break;
+					else if ( distT >= max && infPosBool) break;
 					else continue;
 				}
 
-				const double distTotPow2 = distTransQsoLyaPow2 + distP*distP;
+				const double distTotPow2 = distT*distT + distP*distP;
 				if (distTotPow2 >= maxPow2) continue;
 
 				const double w    = v_w__[f][ii];
@@ -4095,9 +4109,11 @@ void Correlation::xi_delta_QSO_Metals_Models(double lambdaFrMetal, std::string l
 	
 	//// Get the distance if it was this metal
 	std::vector< std::vector< double > > v_r_metal(v_r__);
+	std::vector< std::vector< double > > v_z_metal(v_r__);	
 	for (unsigned int i=0; i<v_r_metal.size(); i++) {
 		for (unsigned int j=0; j<v_r_metal[i].size(); j++) {
-			v_r_metal[i][j] = hConvertRedshDist->Interpolate( v_lObs__[i][j]/lambdaFrMetal-1. );
+			v_z_metal[i][j] = v_lObs__[i][j]/lambdaFrMetal-1.;
+			v_r_metal[i][j] = hConvertRedshDist->Interpolate( v_z_metal[i][j] );
 		}
 	}
 
@@ -4153,7 +4169,7 @@ void Correlation::xi_delta_QSO_Metals_Models(double lambdaFrMetal, std::string l
 	const unsigned int nbBinM = 100;
 
 	const double maxPow2      = max*max;
-
+	const double dist_diag_max_pow2 = 2*max*max;
 
 	//// Arrays for data
 	double data2D[nbBinX][nbBinY][11];
@@ -4188,31 +4204,34 @@ void Correlation::xi_delta_QSO_Metals_Models(double lambdaFrMetal, std::string l
 		const double dec           = v_de__[f];
 			
 		for (unsigned int q=0; q<nbQ1__; q++) {
+
 			///// Remove the correlation qso-ownForest
-			//if (fabs(ra-v_raQ1__[q])<1.e-9 && fabs(dec-v_deQ1__[q])<1.e-9 ) continue;
-			if (fabs(ra-v_raQ1__[q])<C_AUTOCORRCRIT && fabs(dec-v_deQ1__[q])<C_AUTOCORRCRIT ) continue;  // && fabs(z-v_zzQ1__[q])<0.001
+			if (fabs(ra-v_raQ1__[q])<C_AUTOCORRCRIT && fabs(dec-v_deQ1__[q])<C_AUTOCORRCRIT ) continue;
 
 			///// Angle between the two directions of the qso and the lya
 			const double cosTheta = cosDe*v_CosDeQ1__[q]*cos(ra-v_raQ1__[q]) + sinDe*v_SinDeQ1__[q];
 
 			///// reject QSO with a distance too large
-			const double distTransQsoLyaPow2 = v_rrQ1__[q]*v_rrQ1__[q]*(1.-cosTheta*cosTheta);
-			if (distTransQsoLyaPow2 >= maxPow2) continue;
+			if (v_rrQ1__[q]*v_rrQ1__[q]*(1.-cosTheta*cosTheta) >= dist_diag_max_pow2) continue;
+
+			///// Reject QSO with a perpandicular distance too large
+			if ( (firstPixel+v_rrQ1__[q])*(firstPixel+v_rrQ1__[q])*0.5*(1.-cosTheta) >= maxPow2 ) continue;
 
 			///// Parrallel distance between the qso and the lya
-			const double distParalQsoLya = v_rrQ1__[q]*cosTheta;
+			const double cosHalfTheta = sqrt( 0.5*(1.+cosTheta) );
+			const double distParalQsoLya = v_rrQ1__[q]*cosHalfTheta;
 
 			///// Distance between the qso and the first pixel
-			const double distParalQsoFirstPixel = firstPixel - distParalQsoLya;
+			const double distParalQsoFirstPixel = firstPixel*cosHalfTheta - distParalQsoLya;
 			if ( distParalQsoFirstPixel >= max) continue;
 
 			///// Distance between the qso and the last pixel
-			const double distParalQsoLastPixel = lastPixel - distParalQsoLya;
+			const double distParalQsoLastPixel = lastPixel*cosHalfTheta - distParalQsoLya;
 			if ( distParalQsoLastPixel <= -max) continue;
 
-			///// Transvers distance between the qso and the lya
-			const double distTransQsoLya = sqrt(distTransQsoLyaPow2);
-			const unsigned int rPerpBinIdx = int( distTransQsoLya );
+			///// Perpandicular distance between the qso and the lya
+			const double sinHalfTheta = sqrt( 0.5*(1.-cosTheta) );
+			const double distPerpQsoLya = v_rrQ1__[q]*sinHalfTheta;
 			const double zQSO = v_zzQ1__[q];
 
 			///// 'true' if first pixel of forest is further than the QSO
@@ -4226,28 +4245,31 @@ void Correlation::xi_delta_QSO_Metals_Models(double lambdaFrMetal, std::string l
 				unsigned int ii = i;
 				if (supPosBool) ii = nbPixel-1-i;
 	
-				const double distP = v_r__[f][ii] - distParalQsoLya;				
-
-				///// Look at the position of the Lya forest regarding the qso
-				if (fabs(distP) >= max) {
-					if (infPosBool || supPosBool) break;
+				const double distP = v_r__[f][ii]*cosHalfTheta - distParalQsoLya;
+				const double distT = v_r__[f][ii]*sinHalfTheta + distPerpQsoLya;
+				if (fabs(distP) >= max || distT >= max) {
+					if ( fabs(distP) >= max && (infPosBool || supPosBool) ) break;
+					else if ( distT >= max && infPosBool) break;
 					else continue;
 				}
 
-				const double distTotPow2 = distTransQsoLyaPow2 + distP*distP;
-				const double distTot    = sqrt(distTotPow2);
-				const double distTotMetal = sqrt(distTransQsoLyaPow2 + (v_r_metal[f][ii]-distParalQsoLya)*(v_r_metal[f][ii]-distParalQsoLya) );
+				const double distP_Metal = v_r_metal[f][ii]*cosHalfTheta - distParalQsoLya;
+				const double distT_Metal = v_r_metal[f][ii]*sinHalfTheta + distPerpQsoLya;
+				const double distTotMetal = sqrt( distT_Metal*distT_Metal + distP_Metal*distP_Metal );
 
 				const double w   = v_w__[f][ii];
 				unsigned int idxBinCAMB = nbBinCAMB;
 				if (distTotMetal<maxDistCAMB) idxBinCAMB = int(distTotMetal*inverse_step_size);
-				const double growth_factor_pow_2 = from_z_to_growth_factor_pow_2[ int(0.5*(zQSO+v_z__[f][ii])*inverse_growth_factor_step_size) ];
+				const double growth_factor_pow_2 = from_z_to_growth_factor_pow_2[ int(0.5*(zQSO+v_z_metal[f][ii])*inverse_growth_factor_step_size) ];
 				const double wxi0 = w*growth_factor_pow_2*data_xi0[idxBinCAMB];
 				const double wxi2 = w*growth_factor_pow_2*data_xi2[idxBinCAMB];
 				const double wxi4 = w*growth_factor_pow_2*data_xi4[idxBinCAMB];
-				const double wz   = w*(zQSO+v_z__[f][ii]);
+				const double wz   = w*(zQSO+v_z_metal[f][ii]);
 
+				const double distTotPow2 = distT*distT + distP*distP;
+				
 				if (distTot < max) {
+					const double distTot    = sqrt(distTotPow2);
 					const double mu         = distP/distTot;
 					const unsigned int idx  = int(distTot);
 					const unsigned int idxM = int((mu+1.)*50.);
@@ -4263,11 +4285,12 @@ void Correlation::xi_delta_QSO_Metals_Models(double lambdaFrMetal, std::string l
 				}
 
 				///// Fill the histogramm of xi(r_{perp}, r_{paral}
+				const unsigned int rPerpBinIdx = int(distT);
 				const unsigned int rParralBinIdx = int(distP+max);
 				data2D[rPerpBinIdx][rParralBinIdx][0] += wxi0;
 				data2D[rPerpBinIdx][rParralBinIdx][1] += wxi2;
 				data2D[rPerpBinIdx][rParralBinIdx][2] += wxi4;
-				data2D[rPerpBinIdx][rParralBinIdx][3] += w*distTransQsoLya;
+				data2D[rPerpBinIdx][rParralBinIdx][3] += w*distT;
 				data2D[rPerpBinIdx][rParralBinIdx][4] += w*distP;
 				data2D[rPerpBinIdx][rParralBinIdx][5] += wz;
 				data2D[rPerpBinIdx][rParralBinIdx][6] += w;
