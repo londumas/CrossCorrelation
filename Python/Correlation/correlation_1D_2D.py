@@ -3,6 +3,7 @@ import myTools
 import matplotlib.pyplot as plt
 
 path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_Margala__projected_PlanckCosmo_correctedDistance//xi_1DlObs_2D_delta_delta_LYA.txt'
+#path = '/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_Margala__projected_PlanckCosmo_correctedDistance/xi_1DlObs_2D_delta_delta_CIV.txt'
 corr = numpy.loadtxt(path)
 '''
 for i in range(10):

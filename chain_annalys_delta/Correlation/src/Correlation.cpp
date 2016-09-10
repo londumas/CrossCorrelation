@@ -169,7 +169,7 @@ Correlation::Correlation(int argc, char **argv) {
 	}
 
 	///// Set the number of forest to work on
-	nbForest_   = 0;
+	nbForest_   = 1;
 	nbForest2__ = 0;
 	nbQ1__      = 0;
 	nbQ2__      = 0;
@@ -311,9 +311,9 @@ Correlation::Correlation(int argc, char **argv) {
 	else if (command == 201) xi_A_delta_delta_lambda();
 	else if (command == 202) xi_A_delta_delta_distortionMatrix();
 	else if (command == 203) xi_A_delta_delta_Metals_Models(absorber__[idxCommand_[1]],absorberName__[idxCommand_[1]],absorber__[idxCommand_[2]],absorberName__[idxCommand_[2]]);
-	else if (command == 206) xi_A_delta_delta_MockJMc(idxCommand_[2]);
-	else if (command == 207) xi_A_delta_delta_MockJMc_distortionMatrix();
-	else if (command == 208) xi_A_delta_delta_Metals_Models_MockJMc(absorber__[idxCommand_[1]],absorberName__[idxCommand_[1]],absorber__[idxCommand_[2]],absorberName__[idxCommand_[2]]);
+	else if (command == 204) xi_A_delta_delta_MockJMc(idxCommand_[2]);
+	else if (command == 205) xi_A_delta_delta_MockJMc_distortionMatrix();
+	else if (command == 206) xi_A_delta_delta_Metals_Models_MockJMc(absorber__[idxCommand_[1]],absorberName__[idxCommand_[1]],absorber__[idxCommand_[2]],absorberName__[idxCommand_[2]]);
 	///
 	else if (command == 300) xi_A_delta_delta2( idxCommand_[2] );
 	else if (command == 301) xi_A_delta_delta2_lambda();
@@ -328,16 +328,17 @@ Correlation::Correlation(int argc, char **argv) {
 	else if (command == 407) xi_delta_QSO_Wick_T12_with_wi1D_array();
 	else if (command == 408) xi_delta_QSO_Wick_T123_with_wi1D_array();
 	else if (command == 409) xi_delta_QSO_Wick_T1234_with_wi1D_array();
-	else if (command == 410) xi_delta_QSO_Wick_1D(idxCommand_[3]);
+	else if (command == 410) xi_delta_QSO_Wick_T12345_with_wi1D_array();
+	else if (command == 411) xi_delta_QSO_Wick_T123456_with_wi1D_array();
 
-	else if (command == 411) xi_delta_QSO_MockJMc(idxCommand_[2]);
-	else if (command == 412) xi_delta_QSO_MockJMc_distortionMatrix();
-	else if (command == 413) xi_delta_QSO_MockJMc_distortionMatrix_1D();
-	else if (command == 414) xi_delta_QSO_Metals_Models_MockJMc(absorber__[idxCommand_[2]],absorberName__[idxCommand_[2]]);
-	else if (command == 415) xi_delta_QSO_MockJMc_Wick_T1_with_wi1D_array();
-	else if (command == 416) xi_delta_QSO_MockJMc_Wick_T12_with_wi1D_array();
-	else if (command == 417) xi_delta_QSO_MockJMc_Wick_T123_with_wi1D_array();
-	else if (command == 418) xi_delta_QSO_MockJMc_Wick_T1234_with_wi1D_array();
+	else if (command == 412) xi_delta_QSO_MockJMc(idxCommand_[2]);
+	else if (command == 413) xi_delta_QSO_MockJMc_distortionMatrix();
+	else if (command == 414) xi_delta_QSO_MockJMc_distortionMatrix_1D();
+	else if (command == 415) xi_delta_QSO_Metals_Models_MockJMc(absorber__[idxCommand_[2]],absorberName__[idxCommand_[2]]);
+	else if (command == 416) xi_delta_QSO_MockJMc_Wick_T1_with_wi1D_array();
+	else if (command == 417) xi_delta_QSO_MockJMc_Wick_T12_with_wi1D_array();
+	else if (command == 418) xi_delta_QSO_MockJMc_Wick_T123_with_wi1D_array();
+	else if (command == 419) xi_delta_QSO_MockJMc_Wick_T1234_with_wi1D_array();
 	///
 	else if (command == 500) xi_QSO_QSO(idxCommand_[2]);
 	else if (command == 502) xi_QSO_QSO_MockJMc(idxCommand_[2]);
@@ -1383,12 +1384,11 @@ void Correlation::xi_A_delta_delta(unsigned int bootIdx/*=0*/) {
 	const unsigned int nbBin  = int(max);
 	const unsigned int nbBinM = 50;
 
-	const double maxPow2      = max*max;
-	const double distMax      = sqrt(2.)*max+1.;
-	const double distMaxPow2  = 2.*max*max;
+	const double maxPow2             = max*max;
+	const double dist_diag_max_pow2  = 2.*max*max;
 
 	///// Find the maximal angle of seperation
-	const double maxTheta = 2.*asin( distMax/(distMinPixel__*2.) );
+	const double maxTheta = 2.*asin( max/(2.*distMinPixel__) );
 	const double cosmaxTheta = cos(maxTheta);
 	std::cout << "  maxTheta = " << maxTheta*180./M_PI << " degree" << std::endl;
 
@@ -1425,9 +1425,11 @@ void Correlation::xi_A_delta_delta(unsigned int bootIdx/*=0*/) {
 		if (doBootstraps__ && v_region_Map__[f1]!=bootIdx) continue;
 
 		const unsigned int nb1      = v_nbPixelDelta1__[f1];
-		const double cosDe          = v_CosDe__[f1];
-		const double sinDe          = v_SinDe__[f1];
-		const double firstPixelPow2 = v_r__[f1][0]*v_r__[f1][0];
+		const double cosDe1         = v_CosDe__[f1];
+		const double sinDe1         = v_SinDe__[f1];
+		const double firstPixel1    = v_r__[f1][0];
+		const double lastPixel1     = v_r__[f1][nb1-1];
+		const double firstPixelPow2 = firstPixel1*firstPixel1;
 		const double ra1            = v_ra__[f1];
 		const double de1            = v_de__[f1];
 
@@ -1438,24 +1440,37 @@ void Correlation::xi_A_delta_delta(unsigned int bootIdx/*=0*/) {
 			else if (fabs(ra1-v_ra__[f2])<C_AUTOCORRCRIT && fabs(de1-v_de__[f2])<C_AUTOCORRCRIT ) continue;
 
 			///// Angle between the two directions of the qso and the lya
-			const double cosTheta = cosDe*v_CosDe__[f2]*cos(ra1-v_ra__[f2]) + sinDe*v_SinDe__[f2];
-			if (cosTheta<cosmaxTheta) continue;
+			const double cosTheta = cosDe1*v_CosDe__[f2]*cos(ra1-v_ra__[f2]) + sinDe1*v_SinDe__[f2];
+			if (cosTheta<=cosmaxTheta) continue;
 
+			const unsigned int nb2      = v_nbPixelDelta1__[f2];
+			const double firstPixel2    = v_r__[f2][0];
+			const double lastPixel2     = v_r__[f2][nb2-1];
+
+			const double distMinPow2 = std::max(firstPixelPow2,firstPixel2*firstPixel2)*(1.-cosTheta*cosTheta);
+			if (distMinPow2>=dist_diag_max_pow2) continue;
+
+			///// Reject forests with a too large transverse distance
+			const double dist0 = firstPixel1+firstPixel2;
+			if ( dist0*dist0*0.5*(1.-cosTheta) >= maxPow2 ) continue;
+
+			//// Reject forests with too large parallel distance
+			const double dist1 = lastPixel1-firstPixel2;
+			if ( dist1<=0. ) {
+				if ( dist1*dist1*0.5*(1.+cosTheta) >= maxPow2 ) continue;
+				else if (lastPixel1*lastPixel1 + firstPixel2*firstPixel2 -2.*lastPixel1*firstPixel2*cosTheta >= dist_diag_max_pow2) continue;
+			}
+			const double dist2 = lastPixel2-firstPixel1;
+			if ( dist2<=0. ) {
+				if ( dist2*dist2*0.5*(1.+cosTheta) >= maxPow2 ) continue;
+				else if (firstPixel1*firstPixel1 + lastPixel2*lastPixel2 -2.*firstPixel1*lastPixel2*cosTheta >= dist_diag_max_pow2)  continue;
+			}
+			const double sinHalfTheta = sqrt( 0.5*(1.-cosTheta) );
+			const double cosHalfTheta = sqrt( 0.5*(1.+cosTheta) );
 			
-			const double distMinPow2 = std::min(firstPixelPow2,v_r__[f2][0]*v_r__[f2][0])*(1.-cosTheta*cosTheta);
-			if (distMinPow2>distMaxPow2) continue;
-
-			const double sinTheta = sqrt(1.-cosTheta*cosTheta);
-			const unsigned int nb2 = v_nbPixelDelta1__[f2];
-
 			for (unsigned int i1=0; i1<nb1; i1++) {
-
-				///// Get the r_perp distance
-				const double rPerp = v_r__[f1][i1]*sinTheta;
-				if (rPerp>=max) continue;
-				const unsigned int rPerpBinIdx = int(rPerp);
-				const double tmp_rParral = v_r__[f1][i1]*cosTheta;
-
+				///// Reject forests with a too large transverse distance
+				if ( (v_r__[f1][i1]+firstPixel2)*sinHalfTheta >= max) break;
 				const double w1        = v_w__[f1][i1];
 				const double d1        = v_d__[f1][i1];
 				const double z1        = v_z__[f1][i1];
@@ -1464,23 +1479,25 @@ void Correlation::xi_A_delta_delta(unsigned int bootIdx/*=0*/) {
 
 				for (unsigned int i2=0; i2<nb2; i2++) {
 
-					const double rParral = fabs(v_r__[f2][i2]-tmp_rParral);
-					if (rParral>=max) continue;
-					const double distTotPow2 = rPerp*rPerp + rParral*rParral;
+					const double distT = (v_r__[f1][i1]+v_r__[f2][i2])*sinHalfTheta;
+					const double distP = fabs( (v_r__[f1][i1]-v_r__[f2][i2])*cosHalfTheta);
+					if (distT>=max) break;
+					else if (distP>=max) {
+						continue;
+					}
+					const double distTotPow2 = distT*distT + distP*distP;
 
 					const double w1w2                 = w1*v_w__[f2][i2];
 					const double d1d2                 = d1*v_d__[f2][i2];
 					const double w1w2_d1d2            = w1w2*d1d2;
 					const double w1w2_d1d2_d1d2       = w1w2_d1d2*d1d2;
 					const double w1w2_z1z2            = w1w2*(z1+v_z__[f2][i2]);
-					//const double w1w2_res_lRF1_lRF2   = w1w2*res_lRF1*v_d__[f2][i2];
-					//const double w1w2_res_lObs1_lObs2 = w1w2*res_lObs1*v_d__[f2][i2];
 					const double w1w2_res_lRF1_lRF2   = w1w2*res_lRF1*v_residual_delta_vs_lRF__[f2][i2];
 					const double w1w2_res_lObs1_lObs2 = w1w2*res_lObs1*v_residual_delta_vs_lObs__[f2][i2];
 
 					if (distTotPow2 < maxPow2) {
 						const double distTot    = sqrt(distTotPow2);
-						const double mu         = rParral/distTot;
+						const double mu         = distP/distTot;
 						const unsigned int idx  = int(distTot);
 						const unsigned int idxM = int(mu*50.);
 
@@ -1496,11 +1513,12 @@ void Correlation::xi_A_delta_delta(unsigned int bootIdx/*=0*/) {
 					}
 					
 					///// Fill the histogramm of xi(r_{perp}, r_{paral}
-					const unsigned int rParralBinIdx = int(rParral);
+					const unsigned int rPerpBinIdx   = int(distT);
+					const unsigned int rParralBinIdx = int(distP);
 					data2D[rPerpBinIdx][rParralBinIdx][0] += w1w2_d1d2;
 					data2D[rPerpBinIdx][rParralBinIdx][1] += w1w2_d1d2_d1d2;
-					data2D[rPerpBinIdx][rParralBinIdx][2] += w1w2*rPerp;
-					data2D[rPerpBinIdx][rParralBinIdx][3] += w1w2*rParral;
+					data2D[rPerpBinIdx][rParralBinIdx][2] += w1w2*distT;
+					data2D[rPerpBinIdx][rParralBinIdx][3] += w1w2*distP;
 					data2D[rPerpBinIdx][rParralBinIdx][4] += w1w2_z1z2;
 					data2D[rPerpBinIdx][rParralBinIdx][5] += w1w2;
 					data2D[rPerpBinIdx][rParralBinIdx][6] ++;
@@ -1847,13 +1865,12 @@ void Correlation::xi_A_delta_delta_distortionMatrix(void) {
 	const double binSize     = 4.;
 	const unsigned int nbBin = int(max/binSize);
 	const unsigned int nbBin2D = nbBin*nbBin;
-
-	const double distMax      = sqrt(2.)*max+1.;
-	const double distMaxPow2  = 2.*max*max;
 	const double fromValToIdx  = nbBin/max;
+	const double maxPow2             = max*max;
+	const double dist_diag_max_pow2  = 2.*max*max;
 
 	///// Find the maximal angle of seperation
-	const double maxTheta = 2.*asin( distMax/(distMinPixel__*2.) );
+	const double maxTheta = 2.*asin( max/(2.*distMinPixel__) );
 	const double cosmaxTheta = cos(maxTheta);
 	std::cout << "  maxTheta = " << maxTheta*180./M_PI << " degree" << std::endl;
 
@@ -1875,13 +1892,15 @@ void Correlation::xi_A_delta_delta_distortionMatrix(void) {
 	std::cout << "\n  Starting\n" << std::endl;
 
 	for (unsigned int f1=0; f1<nbForest_; f1++) {
-
+std::cout << f1 << std::endl;
 		const unsigned int nb1      = v_nbPixelDelta1__[f1];
-		const double cosDe          = v_CosDe__[f1];
-		const double sinDe          = v_SinDe__[f1];
-		const double firstPixelPow2 = v_r__[f1][0]*v_r__[f1][0];
+		const double cosDe1          = v_CosDe__[f1];
+		const double sinDe1          = v_SinDe__[f1];
 		const double ra1            = v_ra__[f1];
 		const double de1            = v_de__[f1];
+		const double firstPixel1    = v_r__[f1][0];
+		const double lastPixel1     = v_r__[f1][nb1-1];
+		const double firstPixelPow2 = firstPixel1*firstPixel1;
 		const double invSumWeight1  = v_invSumWeight[f1];
 		const double meanLambda1    = v_meanLambda[f1];
 		const double invVarLambda1  = v_invVarLambda[f1];
@@ -1893,14 +1912,34 @@ void Correlation::xi_A_delta_delta_distortionMatrix(void) {
 			else if (fabs(ra1-v_ra__[f2])<C_AUTOCORRCRIT && fabs(de1-v_de__[f2])<C_AUTOCORRCRIT ) continue;
 
 			///// Angle between the two directions of the qso and the lya
-			const double cosTheta = cosDe*v_CosDe__[f2]*cos(ra1-v_ra__[f2]) + sinDe*v_SinDe__[f2];
-			if (cosTheta<cosmaxTheta) continue;
+			const double cosTheta = cosDe1*v_CosDe__[f2]*cos(ra1-v_ra__[f2]) + sinDe1*v_SinDe__[f2];
+			if (cosTheta<=cosmaxTheta) continue;
 
-			const double distMinPow2 = std::min(firstPixelPow2,v_r__[f2][0]*v_r__[f2][0])*(1.-cosTheta*cosTheta);
-			if (distMinPow2>distMaxPow2) continue;
+			const unsigned int nb2      = v_nbPixelDelta1__[f2];
+			const double firstPixel2    = v_r__[f2][0];
+			const double lastPixel2     = v_r__[f2][nb2-1];
 
-			const double sinTheta = sqrt(1.-cosTheta*cosTheta);
-			const unsigned int nb2 = v_nbPixelDelta1__[f2];
+			const double distMinPow2 = std::max(firstPixelPow2,firstPixel2*firstPixel2)*(1.-cosTheta*cosTheta);
+			if (distMinPow2>=dist_diag_max_pow2) continue;
+
+			///// Reject forests with a too large transverse distance
+			const double dist0 = firstPixel1+firstPixel2;
+			if ( dist0*dist0*0.5*(1.-cosTheta) >= maxPow2 ) continue;
+
+			//// Reject forests with too large parallel distance
+			const double dist1 = lastPixel1-firstPixel2;
+			if ( dist1<=0. ) {
+				if ( dist1*dist1*0.5*(1.+cosTheta) >= maxPow2 ) continue;
+				else if (lastPixel1*lastPixel1 + firstPixel2*firstPixel2 -2.*lastPixel1*firstPixel2*cosTheta >= dist_diag_max_pow2) continue;
+			}
+			const double dist2 = lastPixel2-firstPixel1;
+			if ( dist2<=0. ) {
+				if ( dist2*dist2*0.5*(1.+cosTheta) >= maxPow2 ) continue;
+				else if (firstPixel1*firstPixel1 + lastPixel2*lastPixel2 -2.*firstPixel1*lastPixel2*cosTheta >= dist_diag_max_pow2)  continue;
+			}
+			const double sinHalfTheta = sqrt( 0.5*(1.-cosTheta) );
+			const double cosHalfTheta = sqrt( 0.5*(1.+cosTheta) );
+
 			const double invSumWeight2  = v_invSumWeight[f2];
 			const double meanLambda2    = v_meanLambda[f2];
 			const double invVarLambda2  = v_invVarLambda[f2];
@@ -1927,19 +1966,22 @@ void Correlation::xi_A_delta_delta_distortionMatrix(void) {
 
 			for (unsigned int i1=0; i1<nb1; i1++) {
 
-				///// Get the r_perp distance
-				const double rPerp = v_r__[f1][i1]*sinTheta;
-				if (rPerp>=max) continue;
-				const unsigned int rPerpBinIdx           = int(rPerp*fromValToIdx);
-				const double tmp_rParral                 = v_r__[f1][i1]*cosTheta;
-				const double w1                          = v_w__[f1][i1];
+				///// Reject forests with a too large transverse distance
+				if ( (v_r__[f1][i1]+firstPixel2)*sinHalfTheta >= max) break;
+				const double w1        = v_w__[f1][i1];
 				const double lambda_minus_mean_over_var1 = (v_lRF__[f1][i1] -meanLambda1)*invVarLambda1;
 
 				for (unsigned int i2=0; i2<nb2; i2++) {
 
-					const double rParral = fabs(v_r__[f2][i2]-tmp_rParral);
-					if (rParral>=max) continue;
-					const unsigned int rParralBinIdx = int(rParral*fromValToIdx);
+					const double distT = (v_r__[f1][i1]+v_r__[f2][i2])*sinHalfTheta;
+					const double distP = fabs( (v_r__[f1][i1]-v_r__[f2][i2])*cosHalfTheta);
+					if (distT>=max) break;
+					else if (distP>=max) {
+						continue;
+					}
+
+					const unsigned int rPerpBinIdx   = int(distT*fromValToIdx);
+					const unsigned int rParralBinIdx = int(distP*fromValToIdx);
 					const unsigned int globalBin     = rPerpBinIdx*nbBin +rParralBinIdx;
 
 					const double w2                          = v_w__[f2][i2];
@@ -2035,7 +2077,6 @@ void Correlation::xi_A_delta_delta_distortionMatrix(void) {
 				}
 			}
 		}
-std::cout << f1 << std::endl;
 	}
 
 
@@ -2106,10 +2147,14 @@ void Correlation::xi_A_delta_delta_Metals_Models(double lambdaRFMetal1, std::str
 	//// Get the distance if it was this metal
 	std::vector< std::vector< double > > v_r_metal1(v_r__);
 	std::vector< std::vector< double > > v_r_metal2(v_r__);
+	std::vector< std::vector< double > > v_z_metal1(v_r__);
+	std::vector< std::vector< double > > v_z_metal2(v_r__);
 	for (unsigned int i=0; i<v_r__.size(); i++) {
 		for (unsigned int j=0; j<v_r__[i].size(); j++) {
-			v_r_metal1[i][j] = hConvertRedshDist->Interpolate( v_lObs__[i][j]/lambdaRFMetal1-1. );
-			v_r_metal2[i][j] = hConvertRedshDist->Interpolate( v_lObs__[i][j]/lambdaRFMetal2-1. );
+			v_z_metal1[i][j] = v_lObs__[i][j]/lambdaRFMetal1-1.;
+			v_z_metal2[i][j] = v_lObs__[i][j]/lambdaRFMetal2-1.;
+			v_r_metal1[i][j] = hConvertRedshDist->Interpolate( v_z_metal1[i][j] );
+			v_r_metal2[i][j] = hConvertRedshDist->Interpolate( v_z_metal2[i][j] );
 		}
 	}
 
@@ -2156,16 +2201,15 @@ void Correlation::xi_A_delta_delta_Metals_Models(double lambdaRFMetal1, std::str
 	data_xi4.push_back(0.);
 
 	///// Constants:
-	const double max          = 200.;
+	const double  max         = 200.;
 	const unsigned int nbBin  = int(max);
-	const unsigned int nbBinM = 50.;
+	const unsigned int nbBinM = 50;
 
-	const double maxPow2      = max*max;
-	const double distMax      = sqrt(2.)*max+1.;
-	const double distMaxPow2  = 2.*max*max;
+	const double maxPow2             = max*max;
+	const double dist_diag_max_pow2  = 2.*max*max;
 
 	///// Find the maximal angle of seperation
-	const double maxTheta = 2.*asin( distMax/(distMinPixel__*2.) );
+	const double maxTheta = 2.*asin( max/(2.*distMinPixel__) );
 	const double cosmaxTheta = cos(maxTheta);
 	std::cout << "  maxTheta = " << maxTheta*180./M_PI << " degree" << std::endl;
 
@@ -2189,12 +2233,15 @@ void Correlation::xi_A_delta_delta_Metals_Models(double lambdaRFMetal1, std::str
 	}
 	
 	std::cout << "\n  Starting\n" << std::endl;			
-	
+
 	for (unsigned int f1=0; f1<nbForest_; f1++) {
+
 		const unsigned int nb1      = v_nbPixelDelta1__[f1];
-		const double cosDe          = v_CosDe__[f1];
-		const double sinDe          = v_SinDe__[f1];
-		const double firstPixelPow2 = v_r__[f1][0]*v_r__[f1][0];
+		const double cosDe1         = v_CosDe__[f1];
+		const double sinDe1         = v_SinDe__[f1];
+		const double firstPixel1    = v_r__[f1][0];
+		const double lastPixel1     = v_r__[f1][nb1-1];
+		const double firstPixelPow2 = firstPixel1*firstPixel1;
 		const double ra1            = v_ra__[f1];
 		const double de1            = v_de__[f1];
 
@@ -2205,48 +2252,63 @@ void Correlation::xi_A_delta_delta_Metals_Models(double lambdaRFMetal1, std::str
 			else if (fabs(ra1-v_ra__[f2])<C_AUTOCORRCRIT && fabs(de1-v_de__[f2])<C_AUTOCORRCRIT ) continue;
 
 			///// Angle between the two directions of the qso and the lya
-			const double cosTheta = cosDe*v_CosDe__[f2]*cos(ra1-v_ra__[f2]) + sinDe*v_SinDe__[f2];
-			if (cosTheta<cosmaxTheta) continue;
+			const double cosTheta = cosDe1*v_CosDe__[f2]*cos(ra1-v_ra__[f2]) + sinDe1*v_SinDe__[f2];
+			if (cosTheta<=cosmaxTheta) continue;
 
+			const unsigned int nb2      = v_nbPixelDelta1__[f2];
+			const double firstPixel2    = v_r__[f2][0];
+			const double lastPixel2     = v_r__[f2][nb2-1];
+
+			const double distMinPow2 = std::max(firstPixelPow2,firstPixel2*firstPixel2)*(1.-cosTheta*cosTheta);
+			if (distMinPow2>=dist_diag_max_pow2) continue;
+
+			///// Reject forests with a too large transverse distance
+			const double dist0 = firstPixel1+firstPixel2;
+			if ( dist0*dist0*0.5*(1.-cosTheta) >= maxPow2 ) continue;
+
+			//// Reject forests with too large parallel distance
+			const double dist1 = lastPixel1-firstPixel2;
+			if ( dist1<=0. ) {
+				if ( dist1*dist1*0.5*(1.+cosTheta) >= maxPow2 ) continue;
+				else if (lastPixel1*lastPixel1 + firstPixel2*firstPixel2 -2.*lastPixel1*firstPixel2*cosTheta >= dist_diag_max_pow2) continue;
+			}
+			const double dist2 = lastPixel2-firstPixel1;
+			if ( dist2<=0. ) {
+				if ( dist2*dist2*0.5*(1.+cosTheta) >= maxPow2 ) continue;
+				else if (firstPixel1*firstPixel1 + lastPixel2*lastPixel2 -2.*firstPixel1*lastPixel2*cosTheta >= dist_diag_max_pow2)  continue;
+			}
+			const double sinHalfTheta = sqrt( 0.5*(1.-cosTheta) );
+			const double cosHalfTheta = sqrt( 0.5*(1.+cosTheta) );
 			
-			const double distMinPow2 = std::min(firstPixelPow2,v_r__[f2][0]*v_r__[f2][0])*(1.-cosTheta*cosTheta);
-			if (distMinPow2>distMaxPow2) continue;
-
-			const double sinTheta = sqrt(1.-cosTheta*cosTheta);
-			const unsigned int nb2 = v_nbPixelDelta1__[f2];
-
 			for (unsigned int i1=0; i1<nb1; i1++) {
-
-				///// Get the r_perp distance
-				const double rPerp = v_r__[f1][i1]*sinTheta;
-				if (rPerp>=max) continue;
-				const unsigned int rPerpBinIdx = int(rPerp);
-				const double tmp_rParral = v_r__[f1][i1]*cosTheta;
-
-				const double rm1 = v_r_metal1[f1][i1];
-				const double w1  = v_w__[f1][i1];
-				const double z1  = v_z__[f1][i1];
+				///// Reject forests with a too large transverse distance
+				if ( (v_r__[f1][i1]+firstPixel2)*sinHalfTheta >= max) break;
+				const double w1        = v_w__[f1][i1];
+				const double z1        = v_z_metal1[f1][i1];
 
 				for (unsigned int i2=0; i2<nb2; i2++) {
 
-					const double rParral = fabs(v_r__[f2][i2]-tmp_rParral);
-					if (rParral>=max) continue;
-					const double distTotPow2 = rPerp*rPerp + rParral*rParral;
-					const double distTotMetal = sqrt( rPerp*rPerp + (v_r_metal2[f2][i2]-rm1)*(v_r_metal2[f2][i2]-rm1) );
-
+					const double distT = (v_r__[f1][i1]+v_r__[f2][i2])*sinHalfTheta;
+					const double distP = fabs( (v_r__[f1][i1]-v_r__[f2][i2])*cosHalfTheta);
+					if (distT>=max) break;
+					else if (distP>=max) {
+						continue;
+					}
+					const double distTotPow2 = distT*distT + distP*distP;
+					const double distTotMetal = sqrt(v_r_metal1[f1][i1]*v_r_metal1[f1][i1] + v_r_metal2[f2][i2]*v_r_metal2[f2][i2] -2.*v_r_metal1[f1][i1]*v_r_metal2[f2][i2]*cosTheta );
 					const double w1w2 = w1*v_w__[f2][i2];
-					const double wz   = w1w2*(z1+v_z__[f2][i2]);
+					const double wz   = w1w2*(z1+v_z_metal2[f2][i2]);
 
 					unsigned int idxBinCAMB = nbBinCAMB;
 					if (distTotMetal<maxDistCAMB) idxBinCAMB = int(distTotMetal*inverse_step_size);
-					const double growth_factor_pow_2 = from_z_to_growth_factor_pow_2[ int(0.5*(z1+v_z__[f2][i2])*inverse_growth_factor_step_size) ];
+					const double growth_factor_pow_2 = from_z_to_growth_factor_pow_2[ int(0.5*(z1+v_z_metal2[f2][i2])*inverse_growth_factor_step_size) ];
 					const double wxi0 = w1w2*growth_factor_pow_2*data_xi0[idxBinCAMB];
 					const double wxi2 = w1w2*growth_factor_pow_2*data_xi2[idxBinCAMB];
 					const double wxi4 = w1w2*growth_factor_pow_2*data_xi4[idxBinCAMB];
 
 					if (distTotPow2 < maxPow2) {
 						const double distTot    = sqrt(distTotPow2);
-						const double mu         = rParral/distTot;
+						const double mu         = distP/distTot;
 						const unsigned int idx  = int(distTot);
 						const unsigned int idxM = int(mu*50.);
 
@@ -2261,12 +2323,13 @@ void Correlation::xi_A_delta_delta_Metals_Models(double lambdaRFMetal1, std::str
 					}
 
 					///// Fill the histogramm of xi(r_{perp}, r_{paral}
-					const unsigned int rParralBinIdx = int(rParral);
+					const unsigned int rPerpBinIdx   = int(distT);
+					const unsigned int rParralBinIdx = int(distP);
 					data2D[rPerpBinIdx][rParralBinIdx][0] += wxi0;
 					data2D[rPerpBinIdx][rParralBinIdx][1] += wxi2;
 					data2D[rPerpBinIdx][rParralBinIdx][2] += wxi4;
-					data2D[rPerpBinIdx][rParralBinIdx][3] += w1w2*rPerp;
-					data2D[rPerpBinIdx][rParralBinIdx][4] += w1w2*rParral;
+					data2D[rPerpBinIdx][rParralBinIdx][3] += w1w2*distT;
+					data2D[rPerpBinIdx][rParralBinIdx][4] += w1w2*distP;
 					data2D[rPerpBinIdx][rParralBinIdx][5] += wz;
 					data2D[rPerpBinIdx][rParralBinIdx][6] += w1w2;
 					data2D[rPerpBinIdx][rParralBinIdx][7] ++;
@@ -2369,11 +2432,10 @@ void Correlation::xi_A_delta_delta2( unsigned int bootIdx/*=0*/ ) {
 	const unsigned int nbBinM = 100;
 
 	const double maxPow2      = max*max;
-	const double distMax      = sqrt(2.)*max+1.;
-	const double distMaxPow2  = 2.*max*max;
+	const double dist_diag_max_pow2  = 2.*max*max;
 
 	///// Find the maximal angle of seperation
-	const double maxTheta = 2.*asin( distMax/(distMinPixel__+distMinPixelDelta2__) );
+	const double maxTheta = 2.*asin( max/(distMinPixel__+distMinPixelDelta2__) );
 	const double cosmaxTheta = cos(maxTheta);
 	std::cout << "  maxTheta = " << maxTheta*180./M_PI << " degree" << std::endl;
 
@@ -2409,47 +2471,68 @@ void Correlation::xi_A_delta_delta2( unsigned int bootIdx/*=0*/ ) {
 		double nbPairs = 0.;
 
 		const unsigned int nb1      = v_nbPixelDelta1__[f1];
-		const double cosDe          = v_CosDe__[f1];
-		const double sinDe          = v_SinDe__[f1];
-		const double firstPixelPow2 = v_r__[f1][0]*v_r__[f1][0];
+		const double cosDe1         = v_CosDe__[f1];
+		const double sinDe1         = v_SinDe__[f1];
+		const double firstPixel1    = v_r__[f1][0];
+		const double lastPixel1     = v_r__[f1][nb1-1];
+		const double firstPixelPow2 = firstPixel1*firstPixel1;
 		const double ra1            = v_ra__[f1];
 		const double de1            = v_de__[f1];
-		const double zz1            = v_zz__[f1];
 
 		for (unsigned int f2=0; f2<nbForest2__; f2++) {
 		
-			///// Remove the correlation qso-ownForest
-			if (ra1==v_raDelta2__[f2] && de1==v_deDelta2__[f2] && zz1==v_zzDelta2__[f2]) continue;
+			///// Usefull for eBOSS data because many re-obs.
+			if (ra1==v_raDelta2__[f2] && de1==v_deDelta2__[f2]) continue;
+			else if (fabs(ra1-v_raDelta2__[f2])<C_AUTOCORRCRIT && fabs(de1-v_deDelta2__[f2])<C_AUTOCORRCRIT ) continue;
 
 			///// Angle between the two directions of the qso and the lya
-			const double cosTheta = cosDe*v_CosDeDelta2__[f2]*cos(ra1-v_raDelta2__[f2]) + sinDe*v_SinDeDelta2__[f2];
-			if (cosTheta<cosmaxTheta) continue;
+			const double cosTheta = cosDe1*v_CosDeDelta2__[f2]*cos(ra1-v_raDelta2__[f2]) + sinDe1*v_SinDeDelta2__[f2];
+			if (cosTheta<=cosmaxTheta) continue;
 
-			const double distMinPow2 = std::min(firstPixelPow2,v_rDelta2__[f2][0]*v_rDelta2__[f2][0])*(1.-cosTheta*cosTheta);
-			if (distMinPow2>distMaxPow2) continue;
+			const unsigned int nb2      = v_nbPixelDelta2__[f2];
+			const double firstPixel2    = v_rDelta2__[f2][0];
+			const double lastPixel2     = v_rDelta2__[f2][nb2-1];
 
-			const double sinTheta = sqrt(1.-cosTheta*cosTheta);
-			const unsigned int nb2 = v_nbPixelDelta2__[f2];
+			const double distMinPow2 = std::max(firstPixelPow2,firstPixel2*firstPixel2)*(1.-cosTheta*cosTheta);
+			if (distMinPow2>=dist_diag_max_pow2) continue;
+
+			///// Reject forests with a too large transverse distance
+			const double dist0 = firstPixel1+firstPixel2;
+			if ( dist0*dist0*0.5*(1.-cosTheta) >= maxPow2 ) continue;
+
+			//// Reject forests with too large parallel distance
+			const double dist1 = lastPixel1-firstPixel2;
+			if ( dist1<=0. ) {
+				if ( dist1*dist1*0.5*(1.+cosTheta) >= maxPow2 ) continue;
+				else if (lastPixel1*lastPixel1 + firstPixel2*firstPixel2 -2.*lastPixel1*firstPixel2*cosTheta >= dist_diag_max_pow2) continue;
+			}
+			const double dist2 = lastPixel2-firstPixel1;
+			if ( dist2<=0. ) {
+				if ( dist2*dist2*0.5*(1.+cosTheta) >= maxPow2 ) continue;
+				else if (firstPixel1*firstPixel1 + lastPixel2*lastPixel2 -2.*firstPixel1*lastPixel2*cosTheta >= dist_diag_max_pow2)  continue;
+			}
+			const double sinHalfTheta = sqrt( 0.5*(1.-cosTheta) );
+			const double cosHalfTheta = sqrt( 0.5*(1.+cosTheta) );
 
 			for (unsigned int i1=0; i1<nb1; i1++) {
 
-				///// Get the r_perp distance
-				const double rPerp = v_r__[f1][i1]*sinTheta;
-				if (rPerp>=max) continue;
-				const unsigned int rPerpBinIdx = int(rPerp);
-				const double tmp_rParral = v_r__[f1][i1]*cosTheta;
-
-				const double w1 = v_w__[f1][i1];
-				const double d1 = v_d__[f1][i1];
-				const double z1 = v_z__[f1][i1];
+				///// Reject forests with a too large transverse distance
+				if ( (v_r__[f1][i1]+firstPixel2)*sinHalfTheta >= max) break;
+				const double w1        = v_w__[f1][i1];
+				const double d1        = v_d__[f1][i1];
+				const double z1        = v_z__[f1][i1];
 				const double res_lRF1  = v_residual_delta_vs_lRF__[f1][i1];
 				const double res_lObs1 = v_residual_delta_vs_lObs__[f1][i1];
 
 				for (unsigned int i2=0; i2<nb2; i2++) {
 
-					const double rParral = v_rDelta2__[f2][i2]-tmp_rParral;
-					if (fabs(rParral)>=max) continue;
-					const double distTotPow2 = rPerp*rPerp + rParral*rParral;
+					const double distT = (v_r__[f1][i1]+v_rDelta2__[f2][i2])*sinHalfTheta;
+					const double distP = (v_r__[f1][i1]-v_rDelta2__[f2][i2])*cosHalfTheta;
+					if (distT>=max) break;
+					else if (fabs(distP)>=max) {
+						continue;
+					}
+					const double distTotPow2 = distT*distT + distP*distP;
 
 					const double w1w2                 = w1*v_wDelta2__[f2][i2];
 					const double d1d2                 = d1*v_dDelta2__[f2][i2];
@@ -2461,7 +2544,7 @@ void Correlation::xi_A_delta_delta2( unsigned int bootIdx/*=0*/ ) {
 
 					if (distTotPow2 < maxPow2) {
 						const double distTot    = sqrt(distTotPow2);
-						const double mu         = rParral/distTot;
+						const double mu         = distP/distTot;
 						const unsigned int idx  = int(distTot);
 						const unsigned int idxM = int((1.+mu)*50.);
 
@@ -2477,11 +2560,12 @@ void Correlation::xi_A_delta_delta2( unsigned int bootIdx/*=0*/ ) {
 					}
 					
 					///// Fill the histogramm of xi(r_{perp}, r_{paral}
-					const unsigned int rParralBinIdx = int(max+rParral);
+					const unsigned int rPerpBinIdx   = int(distT);
+					const unsigned int rParralBinIdx = int(max+distP);
 					data2D[rPerpBinIdx][rParralBinIdx][0] += w1w2_d1d2;
 					data2D[rPerpBinIdx][rParralBinIdx][1] += w1w2_d1d2_d1d2;
-					data2D[rPerpBinIdx][rParralBinIdx][2] += w1w2*rPerp;
-					data2D[rPerpBinIdx][rParralBinIdx][3] += w1w2*rParral;
+					data2D[rPerpBinIdx][rParralBinIdx][2] += w1w2*distT;
+					data2D[rPerpBinIdx][rParralBinIdx][3] += w1w2*distP;
 					data2D[rPerpBinIdx][rParralBinIdx][4] += w1w2_z1z2;
 					data2D[rPerpBinIdx][rParralBinIdx][5] += w1w2;
 					data2D[rPerpBinIdx][rParralBinIdx][6] ++;
@@ -2835,6 +2919,12 @@ void Correlation::xi_delta_QSO(unsigned int bootIdx/*=0*/) {
 	const double maxPow2      = max*max;
 	const double dist_diag_max_pow2 = 2*max*max;
 
+	///// Find the maximal angle of seperation
+	const double maxTheta = 2.*asin( max/(distMinPixel__+distMinQ1__) );
+	const double cosmaxTheta = cos(maxTheta);
+	std::cout << "  min pixel = " << distMinPixel__ << " " << "  dist min qso = " << distMinQ1__ << std::endl;
+	std::cout << "  maxTheta = " << maxTheta*180./M_PI << " degree" << std::endl;
+
 	if (shuffleForest || shuffleQSO || randomQSO || randomQSOXYZ) {
 		unsigned int seed = 0;
 		std::srand(42);
@@ -3018,7 +3108,6 @@ void Correlation::xi_delta_QSO(unsigned int bootIdx/*=0*/) {
 //double sum[3] = {0.};
 
 	for (unsigned int f=0; f<nbForest_; f++) {
-
 		double nbPairs = 0.;
 	
 		///// Get number of pixels in forest
@@ -3033,52 +3122,58 @@ void Correlation::xi_delta_QSO(unsigned int bootIdx/*=0*/) {
 		for (unsigned int q=0; q<nbQ1__; q++) {
 
 			///// Remove the correlation qso-ownForest
-			//if (fabs(ra-v_raQ1__[q])<1.e-9 && fabs(dec-v_deQ1__[q])<1.e-9 ) continue;
-			if (fabs(ra-v_raQ1__[q])<C_AUTOCORRCRIT && fabs(dec-v_deQ1__[q])<C_AUTOCORRCRIT ) continue;  // && fabs(z-v_zzQ1__[q])<0.001
+			if (fabs(ra-v_raQ1__[q])<C_AUTOCORRCRIT && fabs(dec-v_deQ1__[q])<C_AUTOCORRCRIT ) continue;
 
 			///// Angle between the two directions of the qso and the lya
 			const double cosTheta = cosDe*v_CosDeQ1__[q]*cos(ra-v_raQ1__[q]) + sinDe*v_SinDeQ1__[q];
+			if (cosTheta<=cosmaxTheta) continue;
 
 			///// reject QSO with a distance too large
 			if (v_rrQ1__[q]*v_rrQ1__[q]*(1.-cosTheta*cosTheta) >= dist_diag_max_pow2) continue;
 
 			///// Reject QSO with a perpandicular distance too large
-			if ( (firstPixel+v_rrQ1__[q])*(firstPixel+v_rrQ1__[q])*0.5*(1.-cosTheta) >= maxPow2 ) continue;
-
-			///// Parrallel distance between the qso and the lya
-			const double cosHalfTheta = sqrt( 0.5*(1.+cosTheta) );
-			const double distParalQsoLya = v_rrQ1__[q]*cosHalfTheta;
-
-			///// Distance between the qso and the first pixel
-			const double distParalQsoFirstPixel = firstPixel*cosHalfTheta - distParalQsoLya;
-			if ( distParalQsoFirstPixel >= max) continue;
-
-			///// Distance between the qso and the last pixel
-			const double distParalQsoLastPixel = lastPixel*cosHalfTheta - distParalQsoLya;
-			if ( distParalQsoLastPixel <= -max) continue;
+			const double dist0 = firstPixel+v_rrQ1__[q];
+			if ( dist0*dist0*0.5*(1.-cosTheta) >= maxPow2 ) continue;
 
 			///// Perpandicular distance between the qso and the lya
 			const double sinHalfTheta = sqrt( 0.5*(1.-cosTheta) );
-			const double distPerpQsoLya = v_rrQ1__[q]*sinHalfTheta;
+			const double cosHalfTheta = sqrt( 0.5*(1.+cosTheta) );
+			const double rQSO = v_rrQ1__[q];
 			const double zQSO = v_zzQ1__[q];
 
+			///// Distance between the qso and the first pixel
+			const double dist1 = firstPixel-v_rrQ1__[q];
+			if ( dist1>=0. ) {
+				//// QSO is closer than the first pixel
+				if (dist1*dist1*0.5*(1.+cosTheta) >= maxPow2 ) continue;
+				else if ( v_rrQ1__[q]*v_rrQ1__[q] + firstPixel*firstPixel -2.*v_rrQ1__[q]*firstPixel*cosTheta >= dist_diag_max_pow2 ) continue;
+			}
+
+			///// Distance between the qso and the last pixel
+			const double dist2 = lastPixel-v_rrQ1__[q];
+			if ( dist2<=0. ) {
+				//// QSO is further than the last pixel
+				if ( dist2*dist2*0.5*(1.+cosTheta) >= maxPow2 ) continue;
+				else if ( v_rrQ1__[q]*v_rrQ1__[q] + lastPixel*lastPixel -2.*v_rrQ1__[q]*lastPixel*cosTheta >= dist_diag_max_pow2 ) continue;
+			}
+
 			///// 'true' if first pixel of forest is further than the QSO
-			const bool infPosBool = (distParalQsoFirstPixel > 0.);
+			const bool infPosBool = (dist1 > 0.);
 			///// 'true' if last pixel of forest is lower than the QSO
-			const bool supPosBool = (distParalQsoLastPixel < 0.);
+			const bool supPosBool = (dist2 < 0.);
 
 			///// Loops over all pixels of the forest
 			for (unsigned int i=0; i<nbPixel; i++) {
 
 				unsigned int ii = i;
 				if (supPosBool) ii = nbPixel-1-i;
-	
-				const double distP = v_r__[f][ii]*cosHalfTheta - distParalQsoLya;
-				const double distT = v_r__[f][ii]*sinHalfTheta + distPerpQsoLya;
+
+				const double distT = (v_r__[f][ii]+rQSO)*sinHalfTheta;
+				const double distP = (v_r__[f][ii]-rQSO)*cosHalfTheta;
 				if (fabs(distP) >= max || distT >= max) {
 					if ( fabs(distP) >= max && (infPosBool || supPosBool) ) break;
 					else if ( distT >= max && infPosBool) break;
-					else continue;
+					continue;
 				}
 				
 				const double distTotPow2 = distP*distP + distT*distT;
@@ -3128,10 +3223,10 @@ void Correlation::xi_delta_QSO(unsigned int bootIdx/*=0*/) {
 				nbPairs += w;
 			}
 		}
-	
 		///// Put the number of pairs comming with this forest
 		a_nbPairs[f] = nbPairs;
 	}
+
 /*
 	//R_plot1D(h1);
 	std::ofstream fFile2;
@@ -3682,6 +3777,11 @@ void Correlation::xi_delta_QSO_distortionMatrix(void) {
 	const double maxPow2       = max*max;
 	const double fromValToIdx  = nbBin/max;
 	const double dist_diag_max_pow2 = 2*max*max;
+
+	const double maxTheta = 2.*asin( max/(distMinPixel__+distMinQ1__) );
+	const double cosmaxTheta = cos(maxTheta);
+	std::cout << "  min pixel = " << distMinPixel__ << " " << "  dist min qso = " << distMinQ1__ << std::endl;
+	std::cout << "  maxTheta = " << maxTheta*180./M_PI << " degree" << std::endl;
 	
 	///// Arrays for distortion matrix
 	double weight2D[nbBin2D];
@@ -3716,34 +3816,40 @@ void Correlation::xi_delta_QSO_distortionMatrix(void) {
 
 			///// Angle between the two directions of the qso and the lya
 			const double cosTheta = cosDe*v_CosDeQ1__[q]*cos(ra-v_raQ1__[q]) + sinDe*v_SinDeQ1__[q];
+			if (cosTheta<=cosmaxTheta) continue;
 
 			///// reject QSO with a distance too large
 			if (v_rrQ1__[q]*v_rrQ1__[q]*(1.-cosTheta*cosTheta) >= dist_diag_max_pow2) continue;
 
 			///// Reject QSO with a perpandicular distance too large
-			if ( (firstPixel+v_rrQ1__[q])*(firstPixel+v_rrQ1__[q])*0.5*(1.-cosTheta) >= maxPow2 ) continue;
-
-			///// Parrallel distance between the qso and the lya
-			const double cosHalfTheta = sqrt( 0.5*(1.+cosTheta) );
-			const double distParalQsoLya = v_rrQ1__[q]*cosHalfTheta;
-
-			///// Distance between the qso and the first pixel
-			const double distParalQsoFirstPixel = firstPixel*cosHalfTheta - distParalQsoLya;
-			if ( distParalQsoFirstPixel >= max) continue;
-
-			///// Distance between the qso and the last pixel
-			const double distParalQsoLastPixel = lastPixel*cosHalfTheta - distParalQsoLya;
-			if ( distParalQsoLastPixel <= -max) continue;
+			const double dist0 = firstPixel+v_rrQ1__[q];
+			if ( dist0*dist0*0.5*(1.-cosTheta) >= maxPow2 ) continue;
 
 			///// Perpandicular distance between the qso and the lya
 			const double sinHalfTheta = sqrt( 0.5*(1.-cosTheta) );
-			const double distPerpQsoLya = v_rrQ1__[q]*sinHalfTheta;
-			const double zQSO = v_zzQ1__[q];
+			const double cosHalfTheta = sqrt( 0.5*(1.+cosTheta) );
+			const double rQSO = v_rrQ1__[q];
+
+			///// Distance between the qso and the first pixel
+			const double dist1 = firstPixel-v_rrQ1__[q];
+			if ( dist1>=0. ) {
+				//// QSO is closer than the first pixel
+				if (dist1*dist1*0.5*(1.+cosTheta) >= maxPow2 ) continue;
+				else if ( v_rrQ1__[q]*v_rrQ1__[q] + firstPixel*firstPixel -2.*v_rrQ1__[q]*firstPixel*cosTheta >= dist_diag_max_pow2 ) continue;
+			}
+
+			///// Distance between the qso and the last pixel
+			const double dist2 = lastPixel-v_rrQ1__[q];
+			if ( dist2<=0. ) {
+				//// QSO is further than the last pixel
+				if ( dist2*dist2*0.5*(1.+cosTheta) >= maxPow2 ) continue;
+				else if ( v_rrQ1__[q]*v_rrQ1__[q] + lastPixel*lastPixel -2.*v_rrQ1__[q]*lastPixel*cosTheta >= dist_diag_max_pow2 ) continue;
+			}
 
 			///// 'true' if first pixel of forest is further than the QSO
-			const bool infPosBool = (distParalQsoFirstPixel > 0.);
+			const bool infPosBool = (dist1 > 0.);
 			///// 'true' if last pixel of forest is lower than the QSO
-			const bool supPosBool = (distParalQsoLastPixel < 0.);
+			const bool supPosBool = (dist2 < 0.);
 
 
 
@@ -3762,8 +3868,8 @@ void Correlation::xi_delta_QSO_distortionMatrix(void) {
 				unsigned int ii = i;
 				if (supPosBool) ii = nbPixel-1-i;
 	
-				const double distP = v_r__[f][ii]*cosHalfTheta - distParalQsoLya;
-				const double distT = v_r__[f][ii]*sinHalfTheta + distPerpQsoLya;
+				const double distT = (v_r__[f][ii]+rQSO)*sinHalfTheta;
+				const double distP = (v_r__[f][ii]-rQSO)*cosHalfTheta;
 				if (fabs(distP) >= max || distT >= max) {
 					if ( fabs(distP) >= max && (infPosBool || supPosBool) ) break;
 					else if ( distT >= max && infPosBool) break;
@@ -3909,6 +4015,12 @@ void Correlation::xi_delta_QSO_distortionMatrix_1D(void) {
 	const unsigned int nbBin   = int(max/binSize);
 	const double maxPow2       = max*max;
 	const double fromValToIdx  = nbBin/max;
+	const double dist_diag_max_pow2 = 2*max*max;
+
+	const double maxTheta = 2.*asin( max/(distMinPixel__+distMinQ1__) );
+	const double cosmaxTheta = cos(maxTheta);
+	std::cout << "  min pixel = " << distMinPixel__ << " " << "  dist min qso = " << distMinQ1__ << std::endl;
+	std::cout << "  maxTheta = " << maxTheta*180./M_PI << " degree" << std::endl;
 
 	///// Arrays for distortion matrix
 	double weight[nbBin];
@@ -3943,34 +4055,40 @@ void Correlation::xi_delta_QSO_distortionMatrix_1D(void) {
 
 			///// Angle between the two directions of the qso and the lya
 			const double cosTheta = cosDe*v_CosDeQ1__[q]*cos(ra-v_raQ1__[q]) + sinDe*v_SinDeQ1__[q];
+			if (cosTheta<=cosmaxTheta) continue;
 
 			///// reject QSO with a distance too large
-			if (v_rrQ1__[q]*v_rrQ1__[q]*(1.-cosTheta*cosTheta) >= maxPow2) continue;
+			if (v_rrQ1__[q]*v_rrQ1__[q]*(1.-cosTheta*cosTheta) >= dist_diag_max_pow2) continue;
 
 			///// Reject QSO with a perpandicular distance too large
-			if ( (firstPixel+v_rrQ1__[q])*(firstPixel+v_rrQ1__[q])*0.5*(1.-cosTheta) >= maxPow2 ) continue;
-
-			///// Parrallel distance between the qso and the lya
-			const double cosHalfTheta = sqrt( 0.5*(1.+cosTheta) );
-			const double distParalQsoLya = v_rrQ1__[q]*cosHalfTheta;
-
-			///// Distance between the qso and the first pixel
-			const double distParalQsoFirstPixel = firstPixel*cosHalfTheta - distParalQsoLya;
-			if ( distParalQsoFirstPixel >= max) continue;
-
-			///// Distance between the qso and the last pixel
-			const double distParalQsoLastPixel = lastPixel*cosHalfTheta - distParalQsoLya;
-			if ( distParalQsoLastPixel <= -max) continue;
+			const double dist0 = firstPixel+v_rrQ1__[q];
+			if ( dist0*dist0*0.5*(1.-cosTheta) >= maxPow2 ) continue;
 
 			///// Perpandicular distance between the qso and the lya
 			const double sinHalfTheta = sqrt( 0.5*(1.-cosTheta) );
-			const double distPerpQsoLya = v_rrQ1__[q]*sinHalfTheta;
-			const double zQSO = v_zzQ1__[q];
+			const double cosHalfTheta = sqrt( 0.5*(1.+cosTheta) );
+			const double rQSO = v_rrQ1__[q];
+
+			///// Distance between the qso and the first pixel
+			const double dist1 = firstPixel-v_rrQ1__[q];
+			if ( dist1>=0. ) {
+				//// QSO is closer than the first pixel
+				if (dist1*dist1*0.5*(1.+cosTheta) >= maxPow2 ) continue;
+				else if ( v_rrQ1__[q]*v_rrQ1__[q] + firstPixel*firstPixel -2.*v_rrQ1__[q]*firstPixel*cosTheta >= dist_diag_max_pow2 ) continue;
+			}
+
+			///// Distance between the qso and the last pixel
+			const double dist2 = lastPixel-v_rrQ1__[q];
+			if ( dist2<=0. ) {
+				//// QSO is further than the last pixel
+				if ( dist2*dist2*0.5*(1.+cosTheta) >= maxPow2 ) continue;
+				else if ( v_rrQ1__[q]*v_rrQ1__[q] + lastPixel*lastPixel -2.*v_rrQ1__[q]*lastPixel*cosTheta >= dist_diag_max_pow2 ) continue;
+			}
 
 			///// 'true' if first pixel of forest is further than the QSO
-			const bool infPosBool = (distParalQsoFirstPixel > 0.);
+			const bool infPosBool = (dist1 > 0.);
 			///// 'true' if last pixel of forest is lower than the QSO
-			const bool supPosBool = (distParalQsoLastPixel < 0.);
+			const bool supPosBool = (dist2 < 0.);
 
 			///// get the weight and mean lambda
 			double xValue[50]  = {0.};
@@ -3987,8 +4105,8 @@ void Correlation::xi_delta_QSO_distortionMatrix_1D(void) {
 				unsigned int ii = i;
 				if (supPosBool) ii = nbPixel-1-i;
 	
-				const double distP = v_r__[f][ii]*cosHalfTheta - distParalQsoLya;
-				const double distT = v_r__[f][ii]*sinHalfTheta + distPerpQsoLya;
+				const double distT = (v_r__[f][ii]+rQSO)*sinHalfTheta;
+				const double distP = (v_r__[f][ii]-rQSO)*cosHalfTheta;
 				if (fabs(distP) >= max || distT >= max) {
 					if ( fabs(distP) >= max && (infPosBool || supPosBool) ) break;
 					else if ( distT >= max && infPosBool) break;
@@ -4171,6 +4289,11 @@ void Correlation::xi_delta_QSO_Metals_Models(double lambdaFrMetal, std::string l
 	const double maxPow2      = max*max;
 	const double dist_diag_max_pow2 = 2*max*max;
 
+	const double maxTheta = 2.*asin( max/(distMinPixel__+distMinQ1__) );
+	const double cosmaxTheta = cos(maxTheta);
+	std::cout << "  min pixel = " << distMinPixel__ << " " << "  dist min qso = " << distMinQ1__ << std::endl;
+	std::cout << "  maxTheta = " << maxTheta*180./M_PI << " degree" << std::endl;
+
 	//// Arrays for data
 	double data2D[nbBinX][nbBinY][11];
 	double dataMu[nbBin][nbBinM][11];
@@ -4210,34 +4333,41 @@ void Correlation::xi_delta_QSO_Metals_Models(double lambdaFrMetal, std::string l
 
 			///// Angle between the two directions of the qso and the lya
 			const double cosTheta = cosDe*v_CosDeQ1__[q]*cos(ra-v_raQ1__[q]) + sinDe*v_SinDeQ1__[q];
+			if (cosTheta<=cosmaxTheta) continue;
 
 			///// reject QSO with a distance too large
 			if (v_rrQ1__[q]*v_rrQ1__[q]*(1.-cosTheta*cosTheta) >= dist_diag_max_pow2) continue;
 
 			///// Reject QSO with a perpandicular distance too large
-			if ( (firstPixel+v_rrQ1__[q])*(firstPixel+v_rrQ1__[q])*0.5*(1.-cosTheta) >= maxPow2 ) continue;
-
-			///// Parrallel distance between the qso and the lya
-			const double cosHalfTheta = sqrt( 0.5*(1.+cosTheta) );
-			const double distParalQsoLya = v_rrQ1__[q]*cosHalfTheta;
-
-			///// Distance between the qso and the first pixel
-			const double distParalQsoFirstPixel = firstPixel*cosHalfTheta - distParalQsoLya;
-			if ( distParalQsoFirstPixel >= max) continue;
-
-			///// Distance between the qso and the last pixel
-			const double distParalQsoLastPixel = lastPixel*cosHalfTheta - distParalQsoLya;
-			if ( distParalQsoLastPixel <= -max) continue;
+			const double dist0 = firstPixel+v_rrQ1__[q];
+			if ( dist0*dist0*0.5*(1.-cosTheta) >= maxPow2 ) continue;
 
 			///// Perpandicular distance between the qso and the lya
 			const double sinHalfTheta = sqrt( 0.5*(1.-cosTheta) );
-			const double distPerpQsoLya = v_rrQ1__[q]*sinHalfTheta;
+			const double cosHalfTheta = sqrt( 0.5*(1.+cosTheta) );
+			const double rQSO = v_rrQ1__[q];
 			const double zQSO = v_zzQ1__[q];
 
+			///// Distance between the qso and the first pixel
+			const double dist1 = firstPixel-v_rrQ1__[q];
+			if ( dist1>=0. ) {
+				//// QSO is closer than the first pixel
+				if (dist1*dist1*0.5*(1.+cosTheta) >= maxPow2 ) continue;
+				else if ( v_rrQ1__[q]*v_rrQ1__[q] + firstPixel*firstPixel -2.*v_rrQ1__[q]*firstPixel*cosTheta >= dist_diag_max_pow2 ) continue;
+			}
+
+			///// Distance between the qso and the last pixel
+			const double dist2 = lastPixel-v_rrQ1__[q];
+			if ( dist2<=0. ) {
+				//// QSO is further than the last pixel
+				if ( dist2*dist2*0.5*(1.+cosTheta) >= maxPow2 ) continue;
+				else if ( v_rrQ1__[q]*v_rrQ1__[q] + lastPixel*lastPixel -2.*v_rrQ1__[q]*lastPixel*cosTheta >= dist_diag_max_pow2 ) continue;
+			}
+
 			///// 'true' if first pixel of forest is further than the QSO
-			const bool infPosBool = (distParalQsoFirstPixel > 0.);
+			const bool infPosBool = (dist1 > 0.);
 			///// 'true' if last pixel of forest is lower than the QSO
-			const bool supPosBool = (distParalQsoLastPixel < 0.);
+			const bool supPosBool = (dist2 < 0.);
 
 			///// Loops over all pixels of the forest
 			for (unsigned int i=0; i<nbPixel; i++) {
@@ -4245,17 +4375,15 @@ void Correlation::xi_delta_QSO_Metals_Models(double lambdaFrMetal, std::string l
 				unsigned int ii = i;
 				if (supPosBool) ii = nbPixel-1-i;
 	
-				const double distP = v_r__[f][ii]*cosHalfTheta - distParalQsoLya;
-				const double distT = v_r__[f][ii]*sinHalfTheta + distPerpQsoLya;
+				const double distT = (v_r__[f][ii]+rQSO)*sinHalfTheta;
+				const double distP = (v_r__[f][ii]-rQSO)*cosHalfTheta;
 				if (fabs(distP) >= max || distT >= max) {
 					if ( fabs(distP) >= max && (infPosBool || supPosBool) ) break;
 					else if ( distT >= max && infPosBool) break;
 					else continue;
 				}
 
-				const double distP_Metal = v_r_metal[f][ii]*cosHalfTheta - distParalQsoLya;
-				const double distT_Metal = v_r_metal[f][ii]*sinHalfTheta + distPerpQsoLya;
-				const double distTotMetal = sqrt( distT_Metal*distT_Metal + distP_Metal*distP_Metal );
+				const double distTotMetal = sqrt( v_r_metal[f][ii]*v_r_metal[f][ii] + rQSO*rQSO - 2.*v_r_metal[f][ii]*rQSO*cosTheta );
 
 				const double w   = v_w__[f][ii];
 				unsigned int idxBinCAMB = nbBinCAMB;
@@ -4266,9 +4394,8 @@ void Correlation::xi_delta_QSO_Metals_Models(double lambdaFrMetal, std::string l
 				const double wxi4 = w*growth_factor_pow_2*data_xi4[idxBinCAMB];
 				const double wz   = w*(zQSO+v_z_metal[f][ii]);
 
-				const double distTotPow2 = distT*distT + distP*distP;
-				
-				if (distTot < max) {
+				const double distTotPow2 = distT*distT + distP*distP;	
+				if ( distTotPow2 < maxPow2  ) {
 					const double distTot    = sqrt(distTotPow2);
 					const double mu         = distP/distTot;
 					const unsigned int idx  = int(distTot);
@@ -4396,6 +4523,11 @@ void Correlation::xi_delta_QSO_Wick_T1_with_wi1D_array(void) {
 	const double maxPow2              = max*max;
 	const double dist_diag_max_pow2 = 2*max*max;
 
+	const double maxTheta = 2.*asin( max/(distMinPixel__+distMinQ1__) );
+	const double cosmaxTheta = cos(maxTheta);
+	std::cout << "  min pixel = " << distMinPixel__ << " " << "  dist min qso = " << distMinQ1__ << std::endl;
+	std::cout << "  maxTheta = " << maxTheta*180./M_PI << " degree" << std::endl;
+
 	//// Array with the covariance
 	double nb[nbBin2D];
 	double weight[nbBin2D];
@@ -4477,37 +4609,44 @@ void Correlation::xi_delta_QSO_Wick_T1_with_wi1D_array(void) {
 		for (unsigned int q=0; q<nbQ1__; q++) {
 
 			///// Remove the correlation qso-ownForest
-			if (fabs(ra-v_raQ1__[q])<C_AUTOCORRCRIT && fabs(dec-v_deQ1__[q])<C_AUTOCORRCRIT ) continue;  // && fabs(z-v_zzQ1__[q])<0.001
+			if (fabs(ra-v_raQ1__[q])<C_AUTOCORRCRIT && fabs(dec-v_deQ1__[q])<C_AUTOCORRCRIT ) continue;
 
 			///// Angle between the two directions of the qso and the lya
 			const double cosTheta = cosDe*v_CosDeQ1__[q]*cos(ra-v_raQ1__[q]) + sinDe*v_SinDeQ1__[q];
+			if (cosTheta<=cosmaxTheta) continue;
 
 			///// reject QSO with a distance too large
 			if (v_rrQ1__[q]*v_rrQ1__[q]*(1.-cosTheta*cosTheta) >= dist_diag_max_pow2) continue;
 
 			///// Reject QSO with a perpandicular distance too large
-			if ( (firstPixel+v_rrQ1__[q])*(firstPixel+v_rrQ1__[q])*0.5*(1.-cosTheta) >= maxPow2 ) continue;
-
-			///// Parrallel distance between the qso and the lya
-			const double cosHalfTheta = sqrt( 0.5*(1.+cosTheta) );
-			const double distParalQsoLya = v_rrQ1__[q]*cosHalfTheta;
-
-			///// Distance between the qso and the first pixel
-			const double distParalQsoFirstPixel = firstPixel*cosHalfTheta - distParalQsoLya;
-			if ( distParalQsoFirstPixel >= max) continue;
-
-			///// Distance between the qso and the last pixel
-			const double distParalQsoLastPixel = lastPixel*cosHalfTheta - distParalQsoLya;
-			if ( distParalQsoLastPixel <= -max) continue;
+			const double dist0 = firstPixel+v_rrQ1__[q];
+			if ( dist0*dist0*0.5*(1.-cosTheta) >= maxPow2 ) continue;
 
 			///// Perpandicular distance between the qso and the lya
 			const double sinHalfTheta = sqrt( 0.5*(1.-cosTheta) );
-			const double distPerpQsoLya = v_rrQ1__[q]*sinHalfTheta;
+			const double cosHalfTheta = sqrt( 0.5*(1.+cosTheta) );
+			const double rQSO = v_rrQ1__[q];
+
+			///// Distance between the qso and the first pixel
+			const double dist1 = firstPixel-v_rrQ1__[q];
+			if ( dist1>=0. ) {
+				//// QSO is closer than the first pixel
+				if (dist1*dist1*0.5*(1.+cosTheta) >= maxPow2 ) continue;
+				else if ( v_rrQ1__[q]*v_rrQ1__[q] + firstPixel*firstPixel -2.*v_rrQ1__[q]*firstPixel*cosTheta >= dist_diag_max_pow2 ) continue;
+			}
+
+			///// Distance between the qso and the last pixel
+			const double dist2 = lastPixel-v_rrQ1__[q];
+			if ( dist2<=0. ) {
+				//// QSO is further than the last pixel
+				if ( dist2*dist2*0.5*(1.+cosTheta) >= maxPow2 ) continue;
+				else if ( v_rrQ1__[q]*v_rrQ1__[q] + lastPixel*lastPixel -2.*v_rrQ1__[q]*lastPixel*cosTheta >= dist_diag_max_pow2 ) continue;
+			}
 
 			///// 'true' if first pixel of forest is further than the QSO
-			const bool infPosBool = (distParalQsoFirstPixel > 0.);
+			const bool infPosBool = (dist1 > 0.);
 			///// 'true' if last pixel of forest is lower than the QSO
-			const bool supPosBool = (distParalQsoLastPixel < 0.);
+			const bool supPosBool = (dist2 < 0.);
 
 			///// Loops over all pixels of the forest
 			for (unsigned int i=0; i<nbPixel; i++) {
@@ -4515,8 +4654,8 @@ void Correlation::xi_delta_QSO_Wick_T1_with_wi1D_array(void) {
 				unsigned int ii = i;
 				if (supPosBool) ii = nbPixel-1-i;
 	
-				const double distP = v_r__[f][ii]*cosHalfTheta - distParalQsoLya;
-				const double distT = v_r__[f][ii]*sinHalfTheta + distPerpQsoLya;
+				const double distT = (v_r__[f][ii]+rQSO)*sinHalfTheta;
+				const double distP = (v_r__[f][ii]-rQSO)*cosHalfTheta;
 				if (fabs(distP) >= max || distT >= max) {
 					if ( fabs(distP) >= max && (infPosBool || supPosBool) ) break;
 					else if ( distT >= max && infPosBool) break;
@@ -4541,6 +4680,11 @@ void Correlation::xi_delta_QSO_Wick_T1_with_wi1D_array(void) {
 		}
 	}
 
+	std::stringstream convert;
+	convert << nbForest_;
+	const std::string nb_forest_string = convert.str();
+
+	const bool diagram_alone = true;
 	const std::string diagram = "T1_with_wi1D_array";
 
 	std::cout << "\n  Saving\n" << std::endl;
@@ -4555,6 +4699,10 @@ void Correlation::xi_delta_QSO_Wick_T1_with_wi1D_array(void) {
 	pathToSave += forest__;
 	pathToSave += "_";
 	pathToSave += QSO__;
+	if (diagram_alone) {
+		pathToSave += "_diagram_alone_";
+		pathToSave += nb_forest_string;
+	}
 	pathToSave += ".txt";
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
@@ -4580,6 +4728,10 @@ void Correlation::xi_delta_QSO_Wick_T1_with_wi1D_array(void) {
 	pathToSave += forest__;
 	pathToSave += "_";
 	pathToSave += QSO__;
+	if (diagram_alone) {
+		pathToSave += "_diagram_alone_";
+		pathToSave += nb_forest_string;
+	}
 	pathToSave += ".txt";
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
@@ -4605,6 +4757,10 @@ void Correlation::xi_delta_QSO_Wick_T1_with_wi1D_array(void) {
         pathToSave += forest__;
         pathToSave += "_";
         pathToSave += QSO__;
+	if (diagram_alone) {
+		pathToSave += "_diagram_alone_";
+		pathToSave += nb_forest_string;
+	}
         pathToSave += ".txt";
         std::cout << "\n  " << pathToSave << std::endl;
         fFile.open(pathToSave.c_str());
@@ -4630,6 +4786,10 @@ void Correlation::xi_delta_QSO_Wick_T1_with_wi1D_array(void) {
         pathToSave += forest__;
         pathToSave += "_";
         pathToSave += QSO__;
+	if (diagram_alone) {
+		pathToSave += "_diagram_alone_";
+		pathToSave += nb_forest_string;
+	}
         pathToSave += ".txt";
         std::cout << "\n  " << pathToSave << std::endl;
         fFile.open(pathToSave.c_str());
@@ -4655,6 +4815,10 @@ void Correlation::xi_delta_QSO_Wick_T1_with_wi1D_array(void) {
         pathToSave += forest__;
         pathToSave += "_";
         pathToSave += QSO__;
+	if (diagram_alone) {
+		pathToSave += "_diagram_alone_";
+		pathToSave += nb_forest_string;
+	}
         pathToSave += ".txt";
         std::cout << "\n  " << pathToSave << std::endl;
         fFile.open(pathToSave.c_str());
@@ -4676,6 +4840,10 @@ void Correlation::xi_delta_QSO_Wick_T1_with_wi1D_array(void) {
         pathToSave += forest__;
         pathToSave += "_";
         pathToSave += QSO__;
+	if (diagram_alone) {
+		pathToSave += "_diagram_alone_";
+		pathToSave += nb_forest_string;
+	}
         pathToSave += ".txt";
         std::cout << "\n  " << pathToSave << std::endl;
         fFile.open(pathToSave.c_str());
@@ -4717,6 +4885,11 @@ void Correlation::xi_delta_QSO_Wick_T12_with_wi1D_array(void) {
 	const double fromValToIdx         = nbBin/max;
 	const double maxPow2              = max*max;
         const double dist_diag_max_pow2 = 2*max*max;
+
+	const double maxTheta = 2.*asin( max/(distMinPixel__+distMinQ1__) );
+	const double cosmaxTheta = cos(maxTheta);
+	std::cout << "  min pixel = " << distMinPixel__ << " " << "  dist min qso = " << distMinQ1__ << std::endl;
+	std::cout << "  maxTheta = " << maxTheta*180./M_PI << " degree" << std::endl;
 
 	//// Array with the covariance
 	double nb[nbBin2D];
@@ -4804,37 +4977,44 @@ void Correlation::xi_delta_QSO_Wick_T12_with_wi1D_array(void) {
 			std::vector<unsigned int> vect_pixel_index;
 
 			///// Remove the correlation qso-ownForest
-			if (fabs(ra-v_raQ1__[q])<C_AUTOCORRCRIT && fabs(dec-v_deQ1__[q])<C_AUTOCORRCRIT ) continue;  // && fabs(z-v_zzQ1__[q])<0.001
+			if (fabs(ra-v_raQ1__[q])<C_AUTOCORRCRIT && fabs(dec-v_deQ1__[q])<C_AUTOCORRCRIT ) continue;
 
 			///// Angle between the two directions of the qso and the lya
 			const double cosTheta = cosDe*v_CosDeQ1__[q]*cos(ra-v_raQ1__[q]) + sinDe*v_SinDeQ1__[q];
+			if (cosTheta<=cosmaxTheta) continue;
 
 			///// reject QSO with a distance too large
 			if (v_rrQ1__[q]*v_rrQ1__[q]*(1.-cosTheta*cosTheta) >= dist_diag_max_pow2) continue;
 
 			///// Reject QSO with a perpandicular distance too large
-			if ( (firstPixel+v_rrQ1__[q])*(firstPixel+v_rrQ1__[q])*0.5*(1.-cosTheta) >= maxPow2 ) continue;
-
-			///// Parrallel distance between the qso and the lya
-			const double cosHalfTheta = sqrt( 0.5*(1.+cosTheta) );
-			const double distParalQsoLya = v_rrQ1__[q]*cosHalfTheta;
-
-			///// Distance between the qso and the first pixel
-			const double distParalQsoFirstPixel = firstPixel*cosHalfTheta - distParalQsoLya;
-			if ( distParalQsoFirstPixel >= max) continue;
-
-			///// Distance between the qso and the last pixel
-			const double distParalQsoLastPixel = lastPixel*cosHalfTheta - distParalQsoLya;
-			if ( distParalQsoLastPixel <= -max) continue;
+			const double dist0 = firstPixel+v_rrQ1__[q];
+			if ( dist0*dist0*0.5*(1.-cosTheta) >= maxPow2 ) continue;
 
 			///// Perpandicular distance between the qso and the lya
 			const double sinHalfTheta = sqrt( 0.5*(1.-cosTheta) );
-			const double distPerpQsoLya = v_rrQ1__[q]*sinHalfTheta;
+			const double cosHalfTheta = sqrt( 0.5*(1.+cosTheta) );
+			const double rQSO = v_rrQ1__[q];
+
+			///// Distance between the qso and the first pixel
+			const double dist1 = firstPixel-v_rrQ1__[q];
+			if ( dist1>=0. ) {
+				//// QSO is closer than the first pixel
+				if (dist1*dist1*0.5*(1.+cosTheta) >= maxPow2 ) continue;
+				else if ( v_rrQ1__[q]*v_rrQ1__[q] + firstPixel*firstPixel -2.*v_rrQ1__[q]*firstPixel*cosTheta >= dist_diag_max_pow2 ) continue;
+			}
+
+			///// Distance between the qso and the last pixel
+			const double dist2 = lastPixel-v_rrQ1__[q];
+			if ( dist2<=0. ) {
+				//// QSO is further than the last pixel
+				if ( dist2*dist2*0.5*(1.+cosTheta) >= maxPow2 ) continue;
+				else if ( v_rrQ1__[q]*v_rrQ1__[q] + lastPixel*lastPixel -2.*v_rrQ1__[q]*lastPixel*cosTheta >= dist_diag_max_pow2 ) continue;
+			}
 
 			///// 'true' if first pixel of forest is further than the QSO
-			const bool infPosBool = (distParalQsoFirstPixel > 0.);
+			const bool infPosBool = (dist1 > 0.);
 			///// 'true' if last pixel of forest is lower than the QSO
-			const bool supPosBool = (distParalQsoLastPixel < 0.);
+			const bool supPosBool = (dist2 < 0.);
 
 			///// Loops over all pixels of the forest
 			for (unsigned int i=0; i<nbPixel; i++) {
@@ -4842,8 +5022,8 @@ void Correlation::xi_delta_QSO_Wick_T12_with_wi1D_array(void) {
 				unsigned int ii = i;
 				if (supPosBool) ii = nbPixel-1-i;
 	
-				const double distP = v_r__[f][ii]*cosHalfTheta - distParalQsoLya;
-				const double distT = v_r__[f][ii]*sinHalfTheta + distPerpQsoLya;
+				const double distT = (v_r__[f][ii]+rQSO)*sinHalfTheta;
+				const double distP = (v_r__[f][ii]-rQSO)*cosHalfTheta;
 				if (fabs(distP) >= max || distT >= max) {
 					if ( fabs(distP) >= max && (infPosBool || supPosBool) ) break;
 					else if ( distT >= max && infPosBool) break;
@@ -4858,11 +5038,11 @@ void Correlation::xi_delta_QSO_Wick_T12_with_wi1D_array(void) {
 				nb[globalBin] ++;
 				weight[globalBin] += w;
 				
-				const unsigned int pixel_lObs_index_1 = 1+int(v_lObs__[f][ii]-lambdaObsMin__);
-				cov[globalBin][globalBin]    += w*w*xidd1D[pixel_lObs_index_1][pixel_lObs_index_1];
-				cross[globalBin][globalBin]  += w*w*xiCross[globalBin]*xiCross[globalBin];
-				nb_all[globalBin][globalBin] ++;
-                        	we_all[globalBin][globalBin] += w*w;
+				//const unsigned int pixel_lObs_index_1 = 1+int(v_lObs__[f][ii]-lambdaObsMin__);
+				//cov[globalBin][globalBin]    += w*w*xidd1D[pixel_lObs_index_1][pixel_lObs_index_1];
+				//cross[globalBin][globalBin]  += w*w*xiCross[globalBin]*xiCross[globalBin];
+				//nb_all[globalBin][globalBin] ++;
+                        	//we_all[globalBin][globalBin] += w*w;
 
 				//// For T2
 				vect_pair_bin.push_back(globalBin);
@@ -4900,7 +5080,11 @@ void Correlation::xi_delta_QSO_Wick_T12_with_wi1D_array(void) {
 		}
 	}
 
+	std::stringstream convert;
+	convert << nbForest_;
+	const std::string nb_forest_string = convert.str();
 
+	const bool diagram_alone = true;
 	const std::string diagram = "T12_with_wi1D_array";
 
 	std::cout << "\n  Saving\n" << std::endl;
@@ -4915,6 +5099,10 @@ void Correlation::xi_delta_QSO_Wick_T12_with_wi1D_array(void) {
 	pathToSave += forest__;
 	pathToSave += "_";
 	pathToSave += QSO__;
+	if (diagram_alone) {
+		pathToSave += "_diagram_alone_";
+		pathToSave += nb_forest_string;
+	}
 	pathToSave += ".txt";
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
@@ -4940,6 +5128,10 @@ void Correlation::xi_delta_QSO_Wick_T12_with_wi1D_array(void) {
 	pathToSave += forest__;
 	pathToSave += "_";
 	pathToSave += QSO__;
+	if (diagram_alone) {
+		pathToSave += "_diagram_alone_";
+		pathToSave += nb_forest_string;
+	}
 	pathToSave += ".txt";
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
@@ -4965,6 +5157,10 @@ void Correlation::xi_delta_QSO_Wick_T12_with_wi1D_array(void) {
         pathToSave += forest__;
         pathToSave += "_";
         pathToSave += QSO__;
+	if (diagram_alone) {
+		pathToSave += "_diagram_alone_";
+		pathToSave += nb_forest_string;
+	}
         pathToSave += ".txt";
         std::cout << "\n  " << pathToSave << std::endl;
         fFile.open(pathToSave.c_str());
@@ -4990,6 +5186,10 @@ void Correlation::xi_delta_QSO_Wick_T12_with_wi1D_array(void) {
         pathToSave += forest__;
         pathToSave += "_";
         pathToSave += QSO__;
+	if (diagram_alone) {
+		pathToSave += "_diagram_alone_";
+		pathToSave += nb_forest_string;
+	}
         pathToSave += ".txt";
         std::cout << "\n  " << pathToSave << std::endl;
         fFile.open(pathToSave.c_str());
@@ -5015,6 +5215,10 @@ void Correlation::xi_delta_QSO_Wick_T12_with_wi1D_array(void) {
         pathToSave += forest__;
         pathToSave += "_";
         pathToSave += QSO__;
+	if (diagram_alone) {
+		pathToSave += "_diagram_alone_";
+		pathToSave += nb_forest_string;
+	}
         pathToSave += ".txt";
         std::cout << "\n  " << pathToSave << std::endl;
         fFile.open(pathToSave.c_str());
@@ -5036,6 +5240,10 @@ void Correlation::xi_delta_QSO_Wick_T12_with_wi1D_array(void) {
         pathToSave += forest__;
         pathToSave += "_";
         pathToSave += QSO__;
+	if (diagram_alone) {
+		pathToSave += "_diagram_alone_";
+		pathToSave += nb_forest_string;
+	}
         pathToSave += ".txt";
         std::cout << "\n  " << pathToSave << std::endl;
         fFile.open(pathToSave.c_str());
@@ -5077,6 +5285,11 @@ void Correlation::xi_delta_QSO_Wick_T123_with_wi1D_array(void) {
 	const double fromValToIdx         = nbBin/max;
 	const double maxPow2              = max*max;
         const double dist_diag_max_pow2 = 2*max*max;
+
+	const double maxTheta = 2.*asin( max/(distMinPixel__+distMinQ1__) );
+	const double cosmaxTheta = cos(maxTheta);
+	std::cout << "  min pixel = " << distMinPixel__ << " " << "  dist min qso = " << distMinQ1__ << std::endl;
+	std::cout << "  maxTheta = " << maxTheta*180./M_PI << " degree" << std::endl;
 
 	//// Array with the covariance
 	double nb[nbBin2D];
@@ -5165,37 +5378,44 @@ void Correlation::xi_delta_QSO_Wick_T123_with_wi1D_array(void) {
 		for (unsigned int q=0; q<nbQ1__; q++) {
 
 			///// Remove the correlation qso-ownForest
-			if (fabs(ra-v_raQ1__[q])<C_AUTOCORRCRIT && fabs(dec-v_deQ1__[q])<C_AUTOCORRCRIT ) continue;  // && fabs(z-v_zzQ1__[q])<0.001
+			if (fabs(ra-v_raQ1__[q])<C_AUTOCORRCRIT && fabs(dec-v_deQ1__[q])<C_AUTOCORRCRIT ) continue;
 
 			///// Angle between the two directions of the qso and the lya
 			const double cosTheta = cosDe*v_CosDeQ1__[q]*cos(ra-v_raQ1__[q]) + sinDe*v_SinDeQ1__[q];
+			if (cosTheta<=cosmaxTheta) continue;
 
 			///// reject QSO with a distance too large
 			if (v_rrQ1__[q]*v_rrQ1__[q]*(1.-cosTheta*cosTheta) >= dist_diag_max_pow2) continue;
 
 			///// Reject QSO with a perpandicular distance too large
-			if ( (firstPixel+v_rrQ1__[q])*(firstPixel+v_rrQ1__[q])*0.5*(1.-cosTheta) >= maxPow2 ) continue;
-
-			///// Parrallel distance between the qso and the lya
-			const double cosHalfTheta = sqrt( 0.5*(1.+cosTheta) );
-			const double distParalQsoLya = v_rrQ1__[q]*cosHalfTheta;
-
-			///// Distance between the qso and the first pixel
-			const double distParalQsoFirstPixel = firstPixel*cosHalfTheta - distParalQsoLya;
-			if ( distParalQsoFirstPixel >= max) continue;
-
-			///// Distance between the qso and the last pixel
-			const double distParalQsoLastPixel = lastPixel*cosHalfTheta - distParalQsoLya;
-			if ( distParalQsoLastPixel <= -max) continue;
+			const double dist0 = firstPixel+v_rrQ1__[q];
+			if ( dist0*dist0*0.5*(1.-cosTheta) >= maxPow2 ) continue;
 
 			///// Perpandicular distance between the qso and the lya
 			const double sinHalfTheta = sqrt( 0.5*(1.-cosTheta) );
-			const double distPerpQsoLya = v_rrQ1__[q]*sinHalfTheta;
+			const double cosHalfTheta = sqrt( 0.5*(1.+cosTheta) );
+			const double rQSO = v_rrQ1__[q];
+
+			///// Distance between the qso and the first pixel
+			const double dist1 = firstPixel-v_rrQ1__[q];
+			if ( dist1>=0. ) {
+				//// QSO is closer than the first pixel
+				if (dist1*dist1*0.5*(1.+cosTheta) >= maxPow2 ) continue;
+				else if ( v_rrQ1__[q]*v_rrQ1__[q] + firstPixel*firstPixel -2.*v_rrQ1__[q]*firstPixel*cosTheta >= dist_diag_max_pow2 ) continue;
+			}
+
+			///// Distance between the qso and the last pixel
+			const double dist2 = lastPixel-v_rrQ1__[q];
+			if ( dist2<=0. ) {
+				//// QSO is further than the last pixel
+				if ( dist2*dist2*0.5*(1.+cosTheta) >= maxPow2 ) continue;
+				else if ( v_rrQ1__[q]*v_rrQ1__[q] + lastPixel*lastPixel -2.*v_rrQ1__[q]*lastPixel*cosTheta >= dist_diag_max_pow2 ) continue;
+			}
 
 			///// 'true' if first pixel of forest is further than the QSO
-			const bool infPosBool = (distParalQsoFirstPixel > 0.);
+			const bool infPosBool = (dist1 > 0.);
 			///// 'true' if last pixel of forest is lower than the QSO
-			const bool supPosBool = (distParalQsoLastPixel < 0.);
+			const bool supPosBool = (dist2 < 0.);
 
 			///// Loops over all pixels of the forest
 			for (unsigned int i=0; i<nbPixel; i++) {
@@ -5203,8 +5423,8 @@ void Correlation::xi_delta_QSO_Wick_T123_with_wi1D_array(void) {
 				unsigned int ii = i;
 				if (supPosBool) ii = nbPixel-1-i;
 	
-				const double distP = v_r__[f][ii]*cosHalfTheta - distParalQsoLya;
-				const double distT = v_r__[f][ii]*sinHalfTheta + distPerpQsoLya;
+				const double distT = (v_r__[f][ii]+rQSO)*sinHalfTheta;
+				const double distP = (v_r__[f][ii]-rQSO)*cosHalfTheta;
 				if (fabs(distP) >= max || distT >= max) {
 					if ( fabs(distP) >= max && (infPosBool || supPosBool) ) break;
 					else if ( distT >= max && infPosBool) break;
@@ -5248,6 +5468,7 @@ void Correlation::xi_delta_QSO_Wick_T123_with_wi1D_array(void) {
 				const unsigned int pixel_lObs_index_2 = int(v_lObs__[f][pixel_index_2]-lambdaObsMin__);
 				const double www2 = v_w__[f][pixel_index_2];
 				
+				/*
 				if (pixel_index_1==pixel_index_2) cov[global_bin_1][global_bin_2] += www1*www2*xidd1D[pixel_lObs_index_1+1][pixel_lObs_index_2+1];
 				else {
 					if (v_lObs__[f][pixel_index_1]>v_lObs__[f][pixel_index_2]) {
@@ -5258,12 +5479,25 @@ void Correlation::xi_delta_QSO_Wick_T123_with_wi1D_array(void) {
 				cross[global_bin_1][global_bin_2] += www1*www2*xiCross[global_bin_1]*xiCross[global_bin_2];
 				nb_all[global_bin_1][global_bin_2] ++;
 				we_all[global_bin_1][global_bin_2] += www1*www2;
+				*/
+
+				/// If only T3
+				if (pixel_index_1==pixel_index_2 && QSO_index_1!=QSO_index_2 ) {
+					cov[global_bin_1][global_bin_2]    += www1*www2*xidd1D[pixel_lObs_index_1+1][pixel_lObs_index_2+1];
+					cross[global_bin_1][global_bin_2]  += www1*www2*xiCross[global_bin_1]*xiCross[global_bin_2];
+					nb_all[global_bin_1][global_bin_2] ++;
+					we_all[global_bin_1][global_bin_2] += www1*www2;
+				}
 			}
 		}
 
 	}
 
+	std::stringstream convert;
+	convert << nbForest_;
+	const std::string nb_forest_string = convert.str();
 
+	const bool diagram_alone = true;
 	const std::string diagram = "T123_with_wi1D_array";
 
 	std::cout << "\n  Saving\n" << std::endl;
@@ -5278,6 +5512,10 @@ void Correlation::xi_delta_QSO_Wick_T123_with_wi1D_array(void) {
 	pathToSave += forest__;
 	pathToSave += "_";
 	pathToSave += QSO__;
+	if (diagram_alone) {
+		pathToSave += "_diagram_alone_";
+		pathToSave += nb_forest_string;
+	}
 	pathToSave += ".txt";
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
@@ -5303,6 +5541,10 @@ void Correlation::xi_delta_QSO_Wick_T123_with_wi1D_array(void) {
 	pathToSave += forest__;
 	pathToSave += "_";
 	pathToSave += QSO__;
+	if (diagram_alone) {
+		pathToSave += "_diagram_alone_";
+		pathToSave += nb_forest_string;
+	}
 	pathToSave += ".txt";
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
@@ -5328,6 +5570,10 @@ void Correlation::xi_delta_QSO_Wick_T123_with_wi1D_array(void) {
         pathToSave += forest__;
         pathToSave += "_";
         pathToSave += QSO__;
+	if (diagram_alone) {
+		pathToSave += "_diagram_alone_";
+		pathToSave += nb_forest_string;
+	}
         pathToSave += ".txt";
         std::cout << "\n  " << pathToSave << std::endl;
         fFile.open(pathToSave.c_str());
@@ -5353,6 +5599,10 @@ void Correlation::xi_delta_QSO_Wick_T123_with_wi1D_array(void) {
         pathToSave += forest__;
         pathToSave += "_";
         pathToSave += QSO__;
+	if (diagram_alone) {
+		pathToSave += "_diagram_alone_";
+		pathToSave += nb_forest_string;
+	}
         pathToSave += ".txt";
         std::cout << "\n  " << pathToSave << std::endl;
         fFile.open(pathToSave.c_str());
@@ -5378,6 +5628,10 @@ void Correlation::xi_delta_QSO_Wick_T123_with_wi1D_array(void) {
         pathToSave += forest__;
         pathToSave += "_";
         pathToSave += QSO__;
+	if (diagram_alone) {
+		pathToSave += "_diagram_alone_";
+		pathToSave += nb_forest_string;
+	}
         pathToSave += ".txt";
         std::cout << "\n  " << pathToSave << std::endl;
         fFile.open(pathToSave.c_str());
@@ -5399,6 +5653,10 @@ void Correlation::xi_delta_QSO_Wick_T123_with_wi1D_array(void) {
         pathToSave += forest__;
         pathToSave += "_";
         pathToSave += QSO__;
+	if (diagram_alone) {
+		pathToSave += "_diagram_alone_";
+		pathToSave += nb_forest_string;
+	}
         pathToSave += ".txt";
         std::cout << "\n  " << pathToSave << std::endl;
         fFile.open(pathToSave.c_str());
@@ -5414,6 +5672,7 @@ void Correlation::xi_delta_QSO_Wick_T123_with_wi1D_array(void) {
 
 	return;
 }
+/*
 void Correlation::xi_delta_QSO_Wick_T1234_with_wi1D_array(void) {
 
 	std::cout << "\n\n\n\n  ------ xi_delta_QSO_Wick_T1234_with_wi1D_array ------\n" << std::endl;
@@ -5440,6 +5699,11 @@ void Correlation::xi_delta_QSO_Wick_T1234_with_wi1D_array(void) {
 	const double fromValToIdx         = nbBin/max;
 	const double maxPow2              = max*max;
         const double dist_diag_max_pow2 = 2*max*max;
+
+	const double maxTheta = 2.*asin( max/(distMinPixel__+distMinQ1__) );
+	const double cosmaxTheta = cos(maxTheta);
+	std::cout << "  min pixel = " << distMinPixel__ << " " << "  dist min qso = " << distMinQ1__ << std::endl;
+	std::cout << "  maxTheta = " << maxTheta*180./M_PI << " degree" << std::endl;
 
 	//// Array with the covariance
 	double nb[nbBin2D];
@@ -5523,41 +5787,49 @@ void Correlation::xi_delta_QSO_Wick_T1234_with_wi1D_array(void) {
 		//// For T1 + T2 + T3 + T4
 		std::vector<unsigned int> vect_pair_bin;
 		std::vector<unsigned int> vect_pixel_index;
-			
+		std::vector<unsigned int> vect_QSO_index;
+		
 		for (unsigned int q=0; q<nbQ1__; q++) {
 
 			///// Remove the correlation qso-ownForest
-			if (fabs(ra-v_raQ1__[q])<C_AUTOCORRCRIT && fabs(dec-v_deQ1__[q])<C_AUTOCORRCRIT ) continue;  // && fabs(z-v_zzQ1__[q])<0.001
+			if (fabs(ra-v_raQ1__[q])<C_AUTOCORRCRIT && fabs(dec-v_deQ1__[q])<C_AUTOCORRCRIT ) continue;
 
 			///// Angle between the two directions of the qso and the lya
 			const double cosTheta = cosDe*v_CosDeQ1__[q]*cos(ra-v_raQ1__[q]) + sinDe*v_SinDeQ1__[q];
+			if (cosTheta<=cosmaxTheta) continue;
 
 			///// reject QSO with a distance too large
 			if (v_rrQ1__[q]*v_rrQ1__[q]*(1.-cosTheta*cosTheta) >= dist_diag_max_pow2) continue;
 
 			///// Reject QSO with a perpandicular distance too large
-			if ( (firstPixel+v_rrQ1__[q])*(firstPixel+v_rrQ1__[q])*0.5*(1.-cosTheta) >= maxPow2 ) continue;
-
-			///// Parrallel distance between the qso and the lya
-			const double cosHalfTheta = sqrt( 0.5*(1.+cosTheta) );
-			const double distParalQsoLya = v_rrQ1__[q]*cosHalfTheta;
-
-			///// Distance between the qso and the first pixel
-			const double distParalQsoFirstPixel = firstPixel*cosHalfTheta - distParalQsoLya;
-			if ( distParalQsoFirstPixel >= max) continue;
-
-			///// Distance between the qso and the last pixel
-			const double distParalQsoLastPixel = lastPixel*cosHalfTheta - distParalQsoLya;
-			if ( distParalQsoLastPixel <= -max) continue;
+			const double dist0 = firstPixel+v_rrQ1__[q];
+			if ( dist0*dist0*0.5*(1.-cosTheta) >= maxPow2 ) continue;
 
 			///// Perpandicular distance between the qso and the lya
 			const double sinHalfTheta = sqrt( 0.5*(1.-cosTheta) );
-			const double distPerpQsoLya = v_rrQ1__[q]*sinHalfTheta;
+			const double cosHalfTheta = sqrt( 0.5*(1.+cosTheta) );
+			const double rQSO = v_rrQ1__[q];
+
+			///// Distance between the qso and the first pixel
+			const double dist1 = firstPixel-v_rrQ1__[q];
+			if ( dist1>=0. ) {
+				//// QSO is closer than the first pixel
+				if (dist1*dist1*0.5*(1.+cosTheta) >= maxPow2 ) continue;
+				else if ( v_rrQ1__[q]*v_rrQ1__[q] + firstPixel*firstPixel -2.*v_rrQ1__[q]*firstPixel*cosTheta >= dist_diag_max_pow2 ) continue;
+			}
+
+			///// Distance between the qso and the last pixel
+			const double dist2 = lastPixel-v_rrQ1__[q];
+			if ( dist2<=0. ) {
+				//// QSO is further than the last pixel
+				if ( dist2*dist2*0.5*(1.+cosTheta) >= maxPow2 ) continue;
+				else if ( v_rrQ1__[q]*v_rrQ1__[q] + lastPixel*lastPixel -2.*v_rrQ1__[q]*lastPixel*cosTheta >= dist_diag_max_pow2 ) continue;
+			}
 
 			///// 'true' if first pixel of forest is further than the QSO
-			const bool infPosBool = (distParalQsoFirstPixel > 0.);
+			const bool infPosBool = (dist1 > 0.);
 			///// 'true' if last pixel of forest is lower than the QSO
-			const bool supPosBool = (distParalQsoLastPixel < 0.);
+			const bool supPosBool = (dist2 < 0.);
 
 			///// Loops over all pixels of the forest
 			for (unsigned int i=0; i<nbPixel; i++) {
@@ -5565,8 +5837,8 @@ void Correlation::xi_delta_QSO_Wick_T1234_with_wi1D_array(void) {
 				unsigned int ii = i;
 				if (supPosBool) ii = nbPixel-1-i;
 	
-				const double distP = v_r__[f][ii]*cosHalfTheta - distParalQsoLya;
-				const double distT = v_r__[f][ii]*sinHalfTheta + distPerpQsoLya;
+				const double distT = (v_r__[f][ii]+rQSO)*sinHalfTheta;
+				const double distP = (v_r__[f][ii]-rQSO)*cosHalfTheta;
 				if (fabs(distP) >= max || distT >= max) {
 					if ( fabs(distP) >= max && (infPosBool || supPosBool) ) break;
 					else if ( distT >= max && infPosBool) break;
@@ -5584,6 +5856,7 @@ void Correlation::xi_delta_QSO_Wick_T1234_with_wi1D_array(void) {
 				//// For T3
 				vect_pair_bin.push_back(globalBin);
 				vect_pixel_index.push_back(ii);
+				vect_QSO_index.push_back(q);
 			}
 		}
 
@@ -5595,6 +5868,7 @@ void Correlation::xi_delta_QSO_Wick_T1234_with_wi1D_array(void) {
 
 			const unsigned int global_bin_1  = vect_pair_bin[i];
 			const unsigned int pixel_index_1 = vect_pixel_index[i];
+			const unsigned int QSO_index_1   = vect_QSO_index[i];
 			const double www1 = v_w__[f][pixel_index_1];
 			const unsigned int pixel_lObs_index_1 = int(v_lObs__[f][pixel_index_1]-lambdaObsMin__);
 
@@ -5602,24 +5876,41 @@ void Correlation::xi_delta_QSO_Wick_T1234_with_wi1D_array(void) {
 			for (unsigned int j=0; j<nbPairs; j++) {
 				
 				const unsigned int pixel_index_2 = vect_pixel_index[j];
+				const unsigned int QSO_index_2   = vect_QSO_index[j];
 				const unsigned int global_bin_2  = vect_pair_bin[j];
 				const unsigned int pixel_lObs_index_2 = int(v_lObs__[f][pixel_index_2]-lambdaObsMin__);
 				const double www2 = v_w__[f][pixel_index_2];
 				
-				if (pixel_index_1==pixel_index_2) cov[global_bin_1][global_bin_2] += www1*www2*xidd1D[pixel_lObs_index_1+1][pixel_lObs_index_2+1];
-				else {
-					if (v_lObs__[f][pixel_index_1]>v_lObs__[f][pixel_index_2]) {
-						cov[global_bin_1][global_bin_2] += www1*www2*xidd1D[pixel_lObs_index_1+1][pixel_lObs_index_2];
-					}
-					else cov[global_bin_1][global_bin_2] += www1*www2*xidd1D[pixel_lObs_index_2+1][pixel_lObs_index_1];
+				
+				//if (pixel_index_1==pixel_index_2) cov[global_bin_1][global_bin_2] += www1*www2*xidd1D[pixel_lObs_index_1+1][pixel_lObs_index_2+1];
+				//else {
+				//	if (v_lObs__[f][pixel_index_1]>v_lObs__[f][pixel_index_2]) {
+				//		cov[global_bin_1][global_bin_2] += www1*www2*xidd1D[pixel_lObs_index_1+1][pixel_lObs_index_2];
+				//	}
+				//	else cov[global_bin_1][global_bin_2] += www1*www2*xidd1D[pixel_lObs_index_2+1][pixel_lObs_index_1];
+				//}
+				//nb_all[global_bin_1][global_bin_2] ++;
+				//we_all[global_bin_1][global_bin_2] += www1*www2;
+				//
+				//if (pixel_index_1!=pixel_index_2 && QSO_index_1!=QSO_index_2 ) continue
+				//else cross[global_bin_1][global_bin_2]  += www1*www2*xiCross[global_bin_1]*xiCross[global_bin_2];
+				//
+
+				/// If only T4
+				if (pixel_index_1!=pixel_index_2 && QSO_index_1!=QSO_index_2 ) {
+					cov[global_bin_1][global_bin_2]    += www1*www2*xidd1D[pixel_lObs_index_1+1][pixel_lObs_index_2+1];
+					nb_all[global_bin_1][global_bin_2] ++;
+					we_all[global_bin_1][global_bin_2] += www1*www2;
 				}
-				nb_all[global_bin_1][global_bin_2] ++;
-				we_all[global_bin_1][global_bin_2] += www1*www2;
 			}
 		}
 	}
 
+	std::stringstream convert;
+	convert << nbForest_;
+	const std::string nb_forest_string = convert.str();
 
+	const bool diagram_alone = true;
 	const std::string diagram = "T1234_with_wi1D_array";
 
 	std::cout << "\n  Saving\n" << std::endl;
@@ -5634,6 +5925,10 @@ void Correlation::xi_delta_QSO_Wick_T1234_with_wi1D_array(void) {
 	pathToSave += forest__;
 	pathToSave += "_";
 	pathToSave += QSO__;
+	if (diagram_alone) {
+		pathToSave += "_diagram_alone_";
+		pathToSave += nb_forest_string;
+	}
 	pathToSave += ".txt";
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
@@ -5659,6 +5954,10 @@ void Correlation::xi_delta_QSO_Wick_T1234_with_wi1D_array(void) {
 	pathToSave += forest__;
 	pathToSave += "_";
 	pathToSave += QSO__;
+	if (diagram_alone) {
+		pathToSave += "_diagram_alone_";
+		pathToSave += nb_forest_string;
+	}
 	pathToSave += ".txt";
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
@@ -5684,6 +5983,10 @@ void Correlation::xi_delta_QSO_Wick_T1234_with_wi1D_array(void) {
         pathToSave += forest__;
         pathToSave += "_";
         pathToSave += QSO__;
+	if (diagram_alone) {
+		pathToSave += "_diagram_alone_";
+		pathToSave += nb_forest_string;
+	}
         pathToSave += ".txt";
         std::cout << "\n  " << pathToSave << std::endl;
         fFile.open(pathToSave.c_str());
@@ -5709,6 +6012,10 @@ void Correlation::xi_delta_QSO_Wick_T1234_with_wi1D_array(void) {
         pathToSave += forest__;
         pathToSave += "_";
         pathToSave += QSO__;
+	if (diagram_alone) {
+		pathToSave += "_diagram_alone_";
+		pathToSave += nb_forest_string;
+	}
         pathToSave += ".txt";
         std::cout << "\n  " << pathToSave << std::endl;
         fFile.open(pathToSave.c_str());
@@ -5734,6 +6041,10 @@ void Correlation::xi_delta_QSO_Wick_T1234_with_wi1D_array(void) {
         pathToSave += forest__;
         pathToSave += "_";
         pathToSave += QSO__;
+	if (diagram_alone) {
+		pathToSave += "_diagram_alone_";
+		pathToSave += nb_forest_string;
+	}
         pathToSave += ".txt";
         std::cout << "\n  " << pathToSave << std::endl;
         fFile.open(pathToSave.c_str());
@@ -5755,6 +6066,526 @@ void Correlation::xi_delta_QSO_Wick_T1234_with_wi1D_array(void) {
         pathToSave += forest__;
         pathToSave += "_";
         pathToSave += QSO__;
+	if (diagram_alone) {
+		pathToSave += "_diagram_alone_";
+		pathToSave += nb_forest_string;
+	}
+        pathToSave += ".txt";
+        std::cout << "\n  " << pathToSave << std::endl;
+        fFile.open(pathToSave.c_str());
+        fFile << std::scientific;
+        fFile.precision(std::numeric_limits<double>::digits10);
+
+	for (unsigned int i=0; i<nbBin2D; i++) {
+                fFile << weight[i] << " ";
+                fFile << std::endl;
+        }
+        fFile.close();
+
+
+	return;
+}*/
+void Correlation::xi_delta_QSO_Wick_T1234_with_wi1D_array(void) {
+
+	std::cout << "\n\n\n\n  ------ xi_delta_QSO_Wick_T1234_with_wi1D_array ------\n" << std::endl;
+
+
+	///// QSO
+	loadDataQ1();
+	if (nbQ1__==0) return;
+	///// Forest
+	loadDataForest(pathForest__);
+	if (nbForest_==0.) return;
+
+	///// Empty useless vectors
+	v_zz__.clear();
+	v_lRF__.clear();
+	v_nb__.clear();
+
+	//// Constants:
+	const double max                  = 200.;
+	const unsigned int nbBin          = 50;
+	const unsigned int nbBinX         = nbBin;
+	const unsigned int nbBinY         = 2*nbBin;
+	static const unsigned int nbBin2D = nbBinX*nbBinY;
+	const double fromValToIdx         = nbBin/max;
+	const double maxPow2              = max*max;
+        const double dist_diag_max_pow2 = 2*max*max;
+
+	const double maxTheta = 2.*asin( max/(distMinPixel__+distMinQ1__) );
+	const double cosmaxTheta = cos(maxTheta);
+	std::cout << "  min pixel = " << distMinPixel__ << " " << "  dist min qso = " << distMinQ1__ << std::endl;
+	std::cout << "  maxTheta = " << maxTheta*180./M_PI << " degree" << std::endl;
+
+	//// Array with the covariance
+	double nb[nbBin2D];
+	double weight[nbBin2D];
+	double** cov    = new double*[nbBin2D];
+	double** cross  = new double*[nbBin2D];
+	double** nb_all = new double*[nbBin2D];
+	double** we_all = new double*[nbBin2D];
+	for (unsigned int i=0; i<nbBin2D; i++) {
+		nb[i]     = 0.;
+		weight[i] = 0.;
+		cov[i]    = new double[nbBin2D];
+		cross[i]  = new double[nbBin2D];
+		nb_all[i] = new double[nbBin2D];
+		we_all[i] = new double[nbBin2D];
+		for (unsigned int j=0; j<nbBin2D; j++) {
+			cov[i][j]    = 0.;
+			cross[i][j]  = 0.;
+			nb_all[i][j] = 0.;
+			we_all[i][j] = 0.;
+		}
+	}
+
+	//// ------------------------------------------------------------------
+	//// Load correlation delta-delta same forest
+	std::string pathToFile = pathToSave__;
+	pathToFile += "xi_1DlObs_2D_delta_delta_";
+	pathToFile += forest__;
+	pathToFile += ".txt";
+	std::ifstream fileData(pathToFile.c_str());
+
+	const unsigned int nbBins_xi1D  = int(lambdaObsMax__-lambdaObsMin__)+1;
+	double** xidd1D = new double*[nbBins_xi1D];
+	for (unsigned int i=0; i<nbBins_xi1D; i++) {
+		xidd1D[i] = new double[nbBins_xi1D];
+		for (unsigned int j=0; j<nbBins_xi1D; j++) {
+			long double data=0.;
+			fileData>>data;
+			xidd1D[i][j] = data;
+		}
+	}
+	fileData.close();
+
+	//// ------------------------------------------------------------------
+	//// Load correlation delta-QSO
+	pathToFile = pathToSave__;
+	pathToFile += "xi_delta_QSO_txt_2D_";
+	pathToFile += forest__;
+	pathToFile += "_";
+	pathToFile += QSO__;
+	pathToFile += ".txt";
+	std::ifstream fileData2(pathToFile.c_str());
+
+	unsigned int nb_lines_in_file = 0;
+	double xiCross[nbBin2D];
+	for (unsigned int i=0; i<nbBin2D; i++) {
+		long double data0,data1,data2,data3;
+		fileData2>>data0>>data1>>data2>>data3;
+		xiCross[i] = data2;
+		nb_lines_in_file ++;
+	}
+	fileData2.close();
+	if (nb_lines_in_file!=nbBin2D) return;
+
+
+
+
+	std::cout << "  Starting " << std::endl;
+
+
+	for (unsigned int f=0; f<nbForest_; f++) {
+	
+		///// Get number of pixels in forest
+		const unsigned int nbPixel = v_nbPixelDelta1__[f];
+		const double firstPixel    = v_r__[f][0];
+		const double lastPixel     = v_r__[f][nbPixel-1];
+		const double cosDe         = v_CosDe__[f];
+		const double sinDe         = v_SinDe__[f];
+		const double ra            = v_ra__[f];
+		const double dec           = v_de__[f];
+			
+		for (unsigned int q=0; q<nbQ1__; q++) {
+
+			///// Remove the correlation qso-ownForest
+			if (fabs(ra-v_raQ1__[q])<C_AUTOCORRCRIT && fabs(dec-v_deQ1__[q])<C_AUTOCORRCRIT ) continue;
+
+			///// Angle between the two directions of the qso and the lya
+			const double cosTheta = cosDe*v_CosDeQ1__[q]*cos(ra-v_raQ1__[q]) + sinDe*v_SinDeQ1__[q];
+			if (cosTheta<=cosmaxTheta) continue;
+
+			///// reject QSO with a distance too large
+			if (v_rrQ1__[q]*v_rrQ1__[q]*(1.-cosTheta*cosTheta) >= dist_diag_max_pow2) continue;
+
+			///// Reject QSO with a perpandicular distance too large
+			const double dist0 = firstPixel+v_rrQ1__[q];
+			if ( dist0*dist0*0.5*(1.-cosTheta) >= maxPow2 ) continue;
+
+			///// Perpandicular distance between the qso and the lya
+			const double sinHalfTheta = sqrt( 0.5*(1.-cosTheta) );
+			const double cosHalfTheta = sqrt( 0.5*(1.+cosTheta) );
+			const double rQSO = v_rrQ1__[q];
+
+			///// Distance between the qso and the first pixel
+			const double dist1 = firstPixel-v_rrQ1__[q];
+			if ( dist1>=0. ) {
+				//// QSO is closer than the first pixel
+				if (dist1*dist1*0.5*(1.+cosTheta) >= maxPow2 ) continue;
+				else if ( v_rrQ1__[q]*v_rrQ1__[q] + firstPixel*firstPixel -2.*v_rrQ1__[q]*firstPixel*cosTheta >= dist_diag_max_pow2 ) continue;
+			}
+
+			///// Distance between the qso and the last pixel
+			const double dist2 = lastPixel-v_rrQ1__[q];
+			if ( dist2<=0. ) {
+				//// QSO is further than the last pixel
+				if ( dist2*dist2*0.5*(1.+cosTheta) >= maxPow2 ) continue;
+				else if ( v_rrQ1__[q]*v_rrQ1__[q] + lastPixel*lastPixel -2.*v_rrQ1__[q]*lastPixel*cosTheta >= dist_diag_max_pow2 ) continue;
+			}
+
+			///// 'true' if first pixel of forest is further than the QSO
+			const bool infPosBool = (dist1 > 0.);
+			///// 'true' if last pixel of forest is lower than the QSO
+			const bool supPosBool = (dist2 < 0.);
+
+			///// Loops over all pixels of the forest
+			for (unsigned int i=0; i<nbPixel; i++) {
+
+				unsigned int ii = i;
+				if (supPosBool) ii = nbPixel-1-i;
+	
+				const double distT = (v_r__[f][ii]+rQSO)*sinHalfTheta;
+				const double distP = (v_r__[f][ii]-rQSO)*cosHalfTheta;
+				if (fabs(distP) >= max || distT >= max) {
+					if ( fabs(distP) >= max && (infPosBool || supPosBool) ) break;
+					else if ( distT >= max && infPosBool) break;
+					continue;
+				}
+
+				///// Fill the histogramm of xi(r_{perp}, r_{paral}
+				const unsigned int rPerpBinIdx = int(distT*fromValToIdx);
+				const unsigned int globalBin = rPerpBinIdx*nbBinY+int( (distP+max)*fromValToIdx );
+
+				const double w = v_w__[f][ii];
+
+				nb[globalBin] ++;
+				weight[globalBin] += w;
+			}
+		}
+	}
+
+
+	std::cout << "  Starting  again" << std::endl;
+
+
+	for (unsigned int f1=0; f1<nbForest_; f1++) {
+
+std::cout << f1 << std::endl;
+		///// Get number of pixels in forest
+		const unsigned int nb1 = v_nbPixelDelta1__[f1];
+		const double firstPixel1    = v_r__[f1][0];
+		const double lastPixel1     = v_r__[f1][nb1-1];
+		const double cosDe1         = v_CosDe__[f1];
+		const double sinDe1         = v_SinDe__[f1];
+		const double ra1            = v_ra__[f1];
+		const double de1           = v_de__[f1];
+		
+		for (unsigned int q1=0; q1<nbQ1__; q1++) {
+
+			///// Remove the correlation qso-ownForest
+			if (fabs(ra1-v_raQ1__[q1])<C_AUTOCORRCRIT && fabs(de1-v_deQ1__[q1])<C_AUTOCORRCRIT ) continue;
+
+			///// Angle between the two directions of the qso and the lya
+			const double cosTheta1 = cosDe1*v_CosDeQ1__[q1]*cos(ra1-v_raQ1__[q1]) + sinDe1*v_SinDeQ1__[q1];
+			if (cosTheta1<=cosmaxTheta) continue;
+
+			///// reject QSO with a distance too large
+			if (v_rrQ1__[q1]*v_rrQ1__[q1]*(1.-cosTheta1*cosTheta1) >= dist_diag_max_pow2) continue;
+
+			///// Reject QSO with a perpandicular distance too large
+			const double dist10 = firstPixel1+v_rrQ1__[q1];
+			if ( dist10*dist10*0.5*(1.-cosTheta1) >= maxPow2 ) continue;
+
+			///// Perpandicular distance between the qso and the lya
+			const double sinHalfTheta1 = sqrt( 0.5*(1.-cosTheta1) );
+			const double cosHalfTheta1 = sqrt( 0.5*(1.+cosTheta1) );
+			const double rQSO1 = v_rrQ1__[q1];
+
+			///// Distance between the qso and the first pixel
+			const double dist11 = firstPixel1-v_rrQ1__[q1];
+			if ( dist11>=0. ) {
+				//// QSO is closer than the first pixel
+				if (dist11*dist11*0.5*(1.+cosTheta1) >= maxPow2 ) continue;
+				else if ( v_rrQ1__[q1]*v_rrQ1__[q1] + firstPixel1*firstPixel1 -2.*v_rrQ1__[q1]*firstPixel1*cosTheta1 >= dist_diag_max_pow2 ) continue;
+			}
+
+			///// Distance between the qso and the last pixel
+			const double dist12 = lastPixel1-v_rrQ1__[q1];
+			if ( dist12<=0. ) {
+				//// QSO is further than the last pixel
+				if ( dist12*dist12*0.5*(1.+cosTheta1) >= maxPow2 ) continue;
+				else if ( v_rrQ1__[q1]*v_rrQ1__[q1] + lastPixel1*lastPixel1 -2.*v_rrQ1__[q1]*lastPixel1*cosTheta1 >= dist_diag_max_pow2 ) continue;
+			}
+
+			//// Get an other QSO
+			for (unsigned int q2=0; q2<nbQ1__; q2++) {
+				if (q1==q2) continue;
+	
+				///// Remove the correlation qso-ownForest
+				if (fabs(ra1-v_raQ1__[q2])<C_AUTOCORRCRIT && fabs(de1-v_deQ1__[q2])<C_AUTOCORRCRIT ) continue;
+	
+				///// Angle between the two directions of the qso and the lya
+				const double cosTheta2 = cosDe1*v_CosDeQ1__[q2]*cos(ra1-v_raQ1__[q2]) + sinDe1*v_SinDeQ1__[q2];
+				if (cosTheta2<=cosmaxTheta) continue;
+	
+				///// reject QSO with a distance too large
+				if (v_rrQ1__[q2]*v_rrQ1__[q2]*(1.-cosTheta2*cosTheta2) >= dist_diag_max_pow2) continue;
+	
+				///// Reject QSO with a perpandicular distance too large
+				const double dist20 = firstPixel1+v_rrQ1__[q2];
+				if ( dist20*dist20*0.5*(1.-cosTheta2) >= maxPow2 ) continue;
+	
+				///// Perpandicular distance between the qso and the lya
+				const double sinHalfTheta2 = sqrt( 0.5*(1.-cosTheta2) );
+				const double cosHalfTheta2 = sqrt( 0.5*(1.+cosTheta2) );
+				const double rQSO2 = v_rrQ1__[q2];
+	
+				///// Distance between the qso and the first pixel
+				const double dist21 = firstPixel1-v_rrQ1__[q2];
+				if ( dist21>=0. ) {
+					//// QSO is closer than the first pixel
+					if (dist21*dist21*0.5*(1.+cosTheta2) >= maxPow2 ) continue;
+					else if ( v_rrQ1__[q2]*v_rrQ1__[q2] + firstPixel1*firstPixel1 -2.*v_rrQ1__[q2]*firstPixel1*cosTheta2 >= dist_diag_max_pow2 ) continue;
+				}
+	
+				///// Distance between the qso and the last pixel
+				const double dist22 = lastPixel1-v_rrQ1__[q2];
+				if ( dist22<=0. ) {
+					//// QSO is further than the last pixel
+					if ( dist22*dist22*0.5*(1.+cosTheta2) >= maxPow2 ) continue;
+					else if ( v_rrQ1__[q2]*v_rrQ1__[q2] + lastPixel1*lastPixel1 -2.*v_rrQ1__[q2]*lastPixel1*cosTheta2 >= dist_diag_max_pow2 ) continue;
+				}
+
+
+
+
+				///// Loops over all pixels of the forest f1
+				for (unsigned int i1=0; i1<nb1; i1++) {
+
+					const double distT1 = (v_r__[f1][i1]+rQSO1)*sinHalfTheta1;
+					const double distP1 = (v_r__[f1][i1]-rQSO1)*cosHalfTheta1;
+					if (fabs(distP1) >= max || distT1 >= max) {
+						if ( distT1 >= max ) break;
+						continue;
+					}
+					const unsigned int globalBin1 = int(distT1*fromValToIdx)*nbBinY + int( (distP1+max)*fromValToIdx );
+					const double w1               = v_w__[f1][i1];
+
+
+					//// Get the cross terms of the cross correlations l-i
+					double cross_li = 0.;
+					const double distT4 = (v_r__[f1][i1]+rQSO2)*sinHalfTheta2;
+					const double distP4 = (v_r__[f1][i1]-rQSO2)*cosHalfTheta2;
+					if (fabs(distP4) < max && distT4 < max) {
+						const unsigned int globalBin4 = int(distT4*fromValToIdx)*nbBin + int( (distP4+max)*fromValToIdx );
+						cross_li = xiCross[globalBin4];
+					}
+					const unsigned int pixel_lObs_index_1 = int(v_lObs__[f1][i1]-lambdaObsMin__);
+
+
+					///// Loops over all pixels of the forest f1
+					for (unsigned int i2=0; i2<nb1; i2++) {
+						if (i1==i2) continue;
+
+						const double distT2 = (v_r__[f1][i2]+rQSO2)*sinHalfTheta2;
+						const double distP2 = (v_r__[f1][i2]-rQSO2)*cosHalfTheta2;
+						if (fabs(distP2) >= max || distT2 >= max) {
+							if ( distT2 >= max ) break;
+							continue;
+						}
+						const unsigned int globalBin2 = int(distT2*fromValToIdx)*nbBinY + int( (distP2+max)*fromValToIdx );
+						const double w2               = v_w__[f1][i2];
+
+						//// Get the cross terms of the cross correlations k-j
+						double cross_kj = 0.;
+						const double distT3 = (v_r__[f1][i2]+rQSO1)*sinHalfTheta1;
+						const double distP3 = (v_r__[f1][i2]-rQSO1)*cosHalfTheta1;
+						if (fabs(distP3) < max && distT3 < max) {
+							const unsigned int globalBin3 = int(distT3*fromValToIdx)*nbBin + int( (distP3+max)*fromValToIdx );
+							cross_kj = xiCross[globalBin3];
+						}
+						const unsigned int pixel_lObs_index_2 = int(v_lObs__[f1][i2]-lambdaObsMin__);
+
+
+						cov[globalBin1][globalBin2]    += w1*w2*xidd1D[pixel_lObs_index_1+1][pixel_lObs_index_2+1];
+						cross[globalBin1][globalBin2]  += w1*w2*cross_kj*cross_li;
+						we_all[globalBin1][globalBin2] += w1*w2;
+						nb_all[globalBin1][globalBin2] ++;
+					}
+				}
+			}
+		}
+	}
+
+	std::stringstream convert;
+	convert << nbForest_;
+	const std::string nb_forest_string = convert.str();
+
+	const bool diagram_alone = true;
+	const std::string diagram = "T1234_with_wi1D_array";
+
+	std::cout << "\n  Saving\n" << std::endl;
+	std::ofstream fFile;
+
+	///// Save the covariance with delta-delta
+	std::string pathToSave = pathToSave__;
+	pathToSave += "xi_delta_QSO_2D_Wick";
+	pathToSave += "_";
+	pathToSave += diagram;
+	pathToSave += "_";
+	pathToSave += forest__;
+	pathToSave += "_";
+	pathToSave += QSO__;
+	if (diagram_alone) {
+		pathToSave += "_diagram_alone_";
+		pathToSave += nb_forest_string;
+	}
+	pathToSave += ".txt";
+	std::cout << "\n  " << pathToSave << std::endl;
+	fFile.open(pathToSave.c_str());
+	fFile << std::scientific;
+	fFile.precision(std::numeric_limits<double>::digits10);
+	
+	///// Set the values of data
+	for (unsigned int i=0; i<nbBin2D; i++) {
+		for (unsigned int j=0; j<nbBin2D; j++) {
+			if (nb[i]>1. && nb[j]>1.) cov[i][j] /= weight[i]*weight[j];
+			else cov[i][j] = 0.;
+			fFile << cov[i][j] << " ";
+		}
+		fFile << std::endl;
+	}
+	fFile.close();
+
+	///// Save the covaraince terms with the cross
+	pathToSave = pathToSave__;
+	pathToSave += "xi_delta_QSO_2D_Wick";
+	pathToSave += "_";
+	pathToSave += diagram;
+	pathToSave += "_crossTerms_";
+	pathToSave += forest__;
+	pathToSave += "_";
+	pathToSave += QSO__;
+	if (diagram_alone) {
+		pathToSave += "_diagram_alone_";
+		pathToSave += nb_forest_string;
+	}
+	pathToSave += ".txt";
+	std::cout << "\n  " << pathToSave << std::endl;
+	fFile.open(pathToSave.c_str());
+	fFile << std::scientific;
+	fFile.precision(std::numeric_limits<double>::digits10);
+	
+	///// Set the values of data
+	for (unsigned int i=0; i<nbBin2D; i++) {
+		for (unsigned int j=0; j<nbBin2D; j++) {
+			if (nb[i]>1. && nb[j]>1.) cross[i][j] /= weight[i]*weight[j];
+			else cross[i][j] = 0.;
+			fFile << cross[i][j] << " ";
+		}
+		fFile << std::endl;
+	}
+	fFile.close();
+
+	///// Save the number 
+	pathToSave = pathToSave__;
+        pathToSave += "xi_delta_QSO_2D_Wick";
+	pathToSave += "_";
+	pathToSave += diagram;
+	pathToSave += "_number_";
+        pathToSave += forest__;
+        pathToSave += "_";
+        pathToSave += QSO__;
+	if (diagram_alone) {
+		pathToSave += "_diagram_alone_";
+		pathToSave += nb_forest_string;
+	}
+        pathToSave += ".txt";
+        std::cout << "\n  " << pathToSave << std::endl;
+        fFile.open(pathToSave.c_str());
+        fFile << std::scientific;
+        fFile.precision(std::numeric_limits<double>::digits10);
+
+	for (unsigned int i=0; i<nbBin2D; i++) {
+                for (unsigned int j=0; j<nbBin2D; j++) {
+			if (nb[i]>1. && nb[j]>1.)  nb_all[i][j] /= nb[i]*nb[j];
+			else nb_all[i][j] = 0.;
+                        fFile << nb_all[i][j] << " ";
+                }
+                fFile << std::endl;
+        }
+        fFile.close();
+
+
+	///// Save the weight
+	pathToSave = pathToSave__;
+        pathToSave += "xi_delta_QSO_2D_Wick";
+	pathToSave += "_";
+	pathToSave += diagram;
+	pathToSave += "_weight_";
+        pathToSave += forest__;
+        pathToSave += "_";
+        pathToSave += QSO__;
+	if (diagram_alone) {
+		pathToSave += "_diagram_alone_";
+		pathToSave += nb_forest_string;
+	}
+        pathToSave += ".txt";
+        std::cout << "\n  " << pathToSave << std::endl;
+        fFile.open(pathToSave.c_str());
+        fFile << std::scientific;
+        fFile.precision(std::numeric_limits<double>::digits10);
+
+        for (unsigned int i=0; i<nbBin2D; i++) {
+                for (unsigned int j=0; j<nbBin2D; j++) {
+			if (nb[i]>1. && nb[j]>1.) we_all[i][j] /= weight[i]*weight[j];
+			else we_all[i][j] = 0.;
+                        fFile << we_all[i][j] << " ";
+                }
+                fFile << std::endl;
+        }
+        fFile.close();
+
+	
+	///// Save the number for the correlation
+	pathToSave = pathToSave__;
+        pathToSave += "xi_delta_QSO_2D_Wick";
+	pathToSave += "_";
+	pathToSave += diagram;
+	pathToSave += "_numberCorr_";
+        pathToSave += forest__;
+        pathToSave += "_";
+        pathToSave += QSO__;
+	if (diagram_alone) {
+		pathToSave += "_diagram_alone_";
+		pathToSave += nb_forest_string;
+	}
+        pathToSave += ".txt";
+        std::cout << "\n  " << pathToSave << std::endl;
+        fFile.open(pathToSave.c_str());
+        fFile << std::scientific;
+        fFile.precision(std::numeric_limits<double>::digits10);
+
+	for (unsigned int i=0; i<nbBin2D; i++) {
+                fFile << nb[i] << " ";
+                fFile << std::endl;
+        }
+        fFile.close();
+
+	///// Save the number for the correlation
+	pathToSave = pathToSave__;
+        pathToSave += "xi_delta_QSO_2D_Wick";
+	pathToSave += "_";
+	pathToSave += diagram;
+	pathToSave += "_weightCorr_";
+        pathToSave += forest__;
+        pathToSave += "_";
+        pathToSave += QSO__;
+	if (diagram_alone) {
+		pathToSave += "_diagram_alone_";
+		pathToSave += nb_forest_string;
+	}
         pathToSave += ".txt";
         std::cout << "\n  " << pathToSave << std::endl;
         fFile.open(pathToSave.c_str());
@@ -5770,47 +6601,10 @@ void Correlation::xi_delta_QSO_Wick_T1234_with_wi1D_array(void) {
 
 	return;
 }
-void Correlation::xi_delta_QSO_Wick_1D(unsigned int diagramIdx) {
+void Correlation::xi_delta_QSO_Wick_T12345_with_wi1D_array(void) {
 
-	
-	//// Convert the diagram index to string
-	std::stringstream convert;
-	convert << diagramIdx;
-	std::string strConvert = convert.str();
+	std::cout << "\n\n\n\n  ------ xi_delta_QSO_Wick_T12345_with_wi1D_array ------\n" << std::endl;
 
-	std::cout << "\n\n\n\n  ------ xi_delta_QSO_Wick_1D ------\n" << std::endl;
-
-
-	//// ------------------------------------------------------------------
-	//// Load correlation delta-delta same forest
-	std::string pathToFile = "/home/gpfs/manip/mnt0607/bao/hdumasde/Results/Txt/FitsFile_DR12_Guy_nicolasEstimator_2016_05_26/xi_1D_delta_delta_LYA.txt";
-	std::ifstream fileData(pathToFile.c_str());
-
-	std::vector<double> tmp_xidd1D;
-
-	long double save0 = 0.;
-	long double save1 = 0.;
-	long double save2 = 0.;
-	long double save3 = 0.;
-	long double save4 = 0.;
-	long double save5 = 0.;
-
-	while (fileData) {
-		fileData>>save0>>save1>>save2>>save3>>save4>>save5;
-		if (fileData==0) break;
-		if (save5==0.) continue;
-		tmp_xidd1D.push_back(save0/save4);
-	}
-	fileData.close();
-
-	std::cout << "  size xi_delta_delta_1D = " << tmp_xidd1D.size() << std::endl;
-	double xidd1D[tmp_xidd1D.size()];
-	for (unsigned int i=0; i<tmp_xidd1D.size(); i++) {
-		xidd1D[i] = tmp_xidd1D[i];
-	}
-	tmp_xidd1D.clear();
-	//// ------------------------------------------------------------------
-	
 
 	///// QSO
 	loadDataQ1();
@@ -5822,35 +6616,89 @@ void Correlation::xi_delta_QSO_Wick_1D(unsigned int diagramIdx) {
 	///// Empty useless vectors
 	v_zz__.clear();
 	v_lRF__.clear();
-	v_lObs__.clear();
 	v_nb__.clear();
 
 	//// Constants:
 	const double max                  = 200.;
 	const unsigned int nbBin          = 50;
+	const unsigned int nbBinX         = nbBin;
+	const unsigned int nbBinY         = 2*nbBin;
+	static const unsigned int nbBin2D = nbBinX*nbBinY;
+	static const unsigned int nbBin2D_auto = nbBin*nbBin;
 	const double fromValToIdx         = nbBin/max;
 	const double maxPow2              = max*max;
+        const double dist_diag_max_pow2 = 2*max*max;
+
+	const double maxTheta = 2.*asin( max/(distMinPixel__+distMinQ1__) );
+	const double cosmaxTheta = cos(maxTheta);
+	std::cout << "  min pixel = " << distMinPixel__ << " " << "  dist min qso = " << distMinQ1__ << std::endl;
+	std::cout << "  maxTheta = " << maxTheta*180./M_PI << " degree" << std::endl;
 
 	//// Array with the covariance
-	double nb[nbBin];
-	double weight[nbBin];
-	double** cov    = new double*[nbBin];
-	double** nb_all = new double*[nbBin];
-	double** we_all = new double*[nbBin];
-	for (unsigned int i=0; i<nbBin; i++) {
+	double nb[nbBin2D];
+	double weight[nbBin2D];
+	double** cov    = new double*[nbBin2D];
+	double** cross  = new double*[nbBin2D];
+	double** nb_all = new double*[nbBin2D];
+	double** we_all = new double*[nbBin2D];
+	for (unsigned int i=0; i<nbBin2D; i++) {
 		nb[i]     = 0.;
 		weight[i] = 0.;
-		cov[i]    = new double[nbBin];
-		nb_all[i] = new double[nbBin];
-		we_all[i] = new double[nbBin];
-		for (unsigned int j=0; j<nbBin; j++) {
+		cov[i]    = new double[nbBin2D];
+		cross[i]  = new double[nbBin2D];
+		nb_all[i] = new double[nbBin2D];
+		we_all[i] = new double[nbBin2D];
+		for (unsigned int j=0; j<nbBin2D; j++) {
 			cov[i][j]    = 0.;
+			cross[i][j]  = 0.;
 			nb_all[i][j] = 0.;
 			we_all[i][j] = 0.;
 		}
 	}
 
-	std::cout << "\n  Starting\n" << std::endl;
+	//// ------------------------------------------------------------------
+	//// Load correlation delta-QSO
+	std::string pathToFile = pathToSave__;
+	pathToFile += "xi_delta_QSO_txt_2D_";
+	pathToFile += forest__;
+	pathToFile += "_";
+	pathToFile += QSO__;
+	pathToFile += ".txt";
+	std::ifstream fileData2(pathToFile.c_str());
+
+	unsigned int nb_lines_in_file = 0;
+	double xiCross[nbBin2D];
+	for (unsigned int i=0; i<nbBin2D; i++) {
+		long double data0,data1,data2,data3;
+		fileData2>>data0>>data1>>data2>>data3;
+		xiCross[i] = data2;
+		nb_lines_in_file ++;
+	}
+	fileData2.close();
+	if (nb_lines_in_file!=nbBin2D) return;
+
+	//// ------------------------------------------------------------------
+	//// Load correlation A_delta_delta
+	pathToFile = pathToSave__;
+	pathToFile += "xi_A_delta_delta_txt_2D_";
+	pathToFile += forest__;
+	pathToFile += ".txt";
+	std::ifstream fileData3(pathToFile.c_str());
+
+	unsigned int nb_lines_in_file_auto = 0;
+	double xiAuto[nbBin2D_auto];
+	for (unsigned int i=0; i<nbBin2D_auto; i++) {
+		long double data0,data1,data2,data3;
+		fileData3>>data0>>data1>>data2>>data3;
+		xiAuto[i] = data2;
+		nb_lines_in_file_auto ++;
+	}
+	fileData3.close();
+	if (nb_lines_in_file_auto != nbBin2D_auto) return;
+
+
+	std::cout << "  Starting " << std::endl;
+
 
 	for (unsigned int f=0; f<nbForest_; f++) {
 	
@@ -5862,38 +6710,48 @@ void Correlation::xi_delta_QSO_Wick_1D(unsigned int diagramIdx) {
 		const double sinDe         = v_SinDe__[f];
 		const double ra            = v_ra__[f];
 		const double dec           = v_de__[f];
-
+			
 		for (unsigned int q=0; q<nbQ1__; q++) {
-
-			//// For T1 + T2 + T3 + T4
-			std::vector<unsigned int> vect_pair_bin;
-			std::vector<unsigned int> vect_pixel_index;
 
 			///// Remove the correlation qso-ownForest
 			if (fabs(ra-v_raQ1__[q])<C_AUTOCORRCRIT && fabs(dec-v_deQ1__[q])<C_AUTOCORRCRIT ) continue;
 
 			///// Angle between the two directions of the qso and the lya
 			const double cosTheta = cosDe*v_CosDeQ1__[q]*cos(ra-v_raQ1__[q]) + sinDe*v_SinDeQ1__[q];
+			if (cosTheta<=cosmaxTheta) continue;
 
 			///// reject QSO with a distance too large
-			const double distTransQsoLyaPow2 = v_rrQ1__[q]*v_rrQ1__[q]*(1.-cosTheta*cosTheta);
-			if (distTransQsoLyaPow2 >= maxPow2) continue;
+			if (v_rrQ1__[q]*v_rrQ1__[q]*(1.-cosTheta*cosTheta) >= dist_diag_max_pow2) continue;
 
-			///// Parrallel distance between the qso and the lya
-			const double distParalQsoLya = v_rrQ1__[q]*cosTheta;
+			///// Reject QSO with a perpandicular distance too large
+			const double dist0 = firstPixel+v_rrQ1__[q];
+			if ( dist0*dist0*0.5*(1.-cosTheta) >= maxPow2 ) continue;
+
+			///// Perpandicular distance between the qso and the lya
+			const double sinHalfTheta = sqrt( 0.5*(1.-cosTheta) );
+			const double cosHalfTheta = sqrt( 0.5*(1.+cosTheta) );
+			const double rQSO = v_rrQ1__[q];
 
 			///// Distance between the qso and the first pixel
-			const double distParalQsoFirstPixel = firstPixel - distParalQsoLya;
-			if ( distParalQsoFirstPixel >= max) continue;
+			const double dist1 = firstPixel-v_rrQ1__[q];
+			if ( dist1>=0. ) {
+				//// QSO is closer than the first pixel
+				if (dist1*dist1*0.5*(1.+cosTheta) >= maxPow2 ) continue;
+				else if ( v_rrQ1__[q]*v_rrQ1__[q] + firstPixel*firstPixel -2.*v_rrQ1__[q]*firstPixel*cosTheta >= dist_diag_max_pow2 ) continue;
+			}
 
 			///// Distance between the qso and the last pixel
-			const double distParalQsoLastPixel = lastPixel - distParalQsoLya;
-			if ( distParalQsoLastPixel <= -max) continue;
+			const double dist2 = lastPixel-v_rrQ1__[q];
+			if ( dist2<=0. ) {
+				//// QSO is further than the last pixel
+				if ( dist2*dist2*0.5*(1.+cosTheta) >= maxPow2 ) continue;
+				else if ( v_rrQ1__[q]*v_rrQ1__[q] + lastPixel*lastPixel -2.*v_rrQ1__[q]*lastPixel*cosTheta >= dist_diag_max_pow2 ) continue;
+			}
 
 			///// 'true' if first pixel of forest is further than the QSO
-			const bool infPosBool = (distParalQsoFirstPixel > 0.);
+			const bool infPosBool = (dist1 > 0.);
 			///// 'true' if last pixel of forest is lower than the QSO
-			const bool supPosBool = (distParalQsoLastPixel < 0.);
+			const bool supPosBool = (dist2 < 0.);
 
 			///// Loops over all pixels of the forest
 			for (unsigned int i=0; i<nbPixel; i++) {
@@ -5901,79 +6759,233 @@ void Correlation::xi_delta_QSO_Wick_1D(unsigned int diagramIdx) {
 				unsigned int ii = i;
 				if (supPosBool) ii = nbPixel-1-i;
 	
-				const double distP = v_r__[f][ii] - distParalQsoLya;				
-
-				///// Look at the position of the Lya forest regarding the qso
-				if (fabs(distP) >= max) {
-					if (infPosBool || supPosBool) break;
-					else continue;
+				const double distT = (v_r__[f][ii]+rQSO)*sinHalfTheta;
+				const double distP = (v_r__[f][ii]-rQSO)*cosHalfTheta;
+				if (fabs(distP) >= max || distT >= max) {
+					if ( fabs(distP) >= max && (infPosBool || supPosBool) ) break;
+					else if ( distT >= max && infPosBool) break;
+					continue;
 				}
-				const double distTotPow2 = distTransQsoLyaPow2 + distP*distP;
-				if (distTotPow2 >= maxPow2) continue;
 
-				const unsigned int globalBin = int(sqrt(distTotPow2)*fromValToIdx);
+				///// Fill the histogramm of xi(r_{perp}, r_{paral}
+				const unsigned int rPerpBinIdx = int(distT*fromValToIdx);
+				const unsigned int globalBin = rPerpBinIdx*nbBinY+int( (distP+max)*fromValToIdx );
+
 				const double w = v_w__[f][ii];
 
-				//cov[globalBin][globalBin] += w*w*xidd1D[0];
-				cov[globalBin][globalBin] += w*w*v_d__[f][ii]*v_d__[f][ii];
 				nb[globalBin] ++;
 				weight[globalBin] += w;
-				nb_all[globalBin][globalBin] ++;
-                        	we_all[globalBin][globalBin] += w*w;
-
-				//// For T1 + T2
-				//vect_pair_bin.push_back(globalBin);
-				//vect_pixel_index.push_back(ii);
 			}
-
-			/*
-			//// Calculate the covariance
-			const unsigned int nbPairs = vect_pair_bin.size();
-			
-			for (unsigned int i=0; i<nbPairs; i++) {
-
-				const unsigned int global_bin_1  = vect_pair_bin[i];
-				const unsigned int pixel_index_1 = vect_pixel_index[i];
-				const double www1 = v_w__[f][pixel_index_1];
-				//const double rrr1 = v_w__[f][pixel_index_1];
-				const double ddd1 = v_d__[f][pixel_index_1];
-
-				//// Covariance
-				for (unsigned int j=0; j<nbPairs; j++) {
-					if (i==j) continue;
-
-					const unsigned int global_bin_2  = vect_pair_bin[j];
-					const unsigned int pixel_index_2 = vect_pixel_index[j];
-					const double www2 = v_w__[f][pixel_index_2];
-					//const double rrr2 = v_w__[f][pixel_index_2];
-					const double ddd2 = v_d__[f][pixel_index_2];
-					//const unsigned int idx_corr_1D = 1 + int(fabs(rrr1-rrr2));
-					
-					//cov[global_bin_1][global_bin_2] += www1*www2*xidd1D[idx_corr_1D];
-					cov[global_bin_1][global_bin_2] += www1*www2*ddd1*ddd2;
-					nb_all[global_bin_1][global_bin_2] ++;
-					we_all[global_bin_1][global_bin_2] += www1*www2;
-				}
-			}*/
 		}
 	}
 
 
+	std::cout << "  Starting  again" << std::endl;
+
+
+	for (unsigned int f1=0; f1<nbForest_; f1++) {
+		std::cout << f1 << std::endl;
+		///// Get number of pixels in forest
+		const unsigned int nb1       = v_nbPixelDelta1__[f1];
+		const double firstPixel1     = v_r__[f1][0];
+		const double lastPixel1      = v_r__[f1][nb1-1];
+		const double firstPixelPow21 = firstPixel1*firstPixel1;
+		const double cosDe1          = v_CosDe__[f1];
+		const double sinDe1          = v_SinDe__[f1];
+		const double ra1             = v_ra__[f1];
+		const double de1             = v_de__[f1];
+		
+		for (unsigned int q=0; q<nbQ1__; q++) {
+
+			///// Remove the correlation qso-ownForest
+			if (fabs(ra1-v_raQ1__[q])<C_AUTOCORRCRIT && fabs(de1-v_deQ1__[q])<C_AUTOCORRCRIT ) continue;
+
+			///// Angle between the two directions of the qso and the lya
+			const double cosTheta1 = cosDe1*v_CosDeQ1__[q]*cos(ra1-v_raQ1__[q]) + sinDe1*v_SinDeQ1__[q];
+			if (cosTheta1<=cosmaxTheta) continue;
+
+			///// reject QSO with a distance too large
+			if (v_rrQ1__[q]*v_rrQ1__[q]*(1.-cosTheta1*cosTheta1) >= dist_diag_max_pow2) continue;
+
+			///// Reject QSO with a perpandicular distance too large
+			const double dist10 = firstPixel1+v_rrQ1__[q];
+			if ( dist10*dist10*0.5*(1.-cosTheta1) >= maxPow2 ) continue;
+
+			///// Perpandicular distance between the qso and the lya
+			const double sinHalfTheta1 = sqrt( 0.5*(1.-cosTheta1) );
+			const double cosHalfTheta1 = sqrt( 0.5*(1.+cosTheta1) );
+			const double rQSO = v_rrQ1__[q];
+
+			///// Distance between the qso and the first pixel
+			const double dist11 = firstPixel1-v_rrQ1__[q];
+			if ( dist11>=0. ) {
+				//// QSO is closer than the first pixel
+				if (dist11*dist11*0.5*(1.+cosTheta1) >= maxPow2 ) continue;
+				else if ( v_rrQ1__[q]*v_rrQ1__[q] + firstPixel1*firstPixel1 -2.*v_rrQ1__[q]*firstPixel1*cosTheta1 >= dist_diag_max_pow2 ) continue;
+			}
+
+			///// Distance between the qso and the last pixel
+			const double dist12 = lastPixel1-v_rrQ1__[q];
+			if ( dist12<=0. ) {
+				//// QSO is further than the last pixel
+				if ( dist12*dist12*0.5*(1.+cosTheta1) >= maxPow2 ) continue;
+				else if ( v_rrQ1__[q]*v_rrQ1__[q] + lastPixel1*lastPixel1 -2.*v_rrQ1__[q]*lastPixel1*cosTheta1 >= dist_diag_max_pow2 ) continue;
+			}
+
+			//// Get an other forest
+			for (unsigned int f2=0; f2<f1; f2++) {
+			
+
+
+				///// Get number of pixels in forest
+				const unsigned int nb2      = v_nbPixelDelta1__[f2];
+				const double firstPixel2    = v_r__[f2][0];
+				const double lastPixel2     = v_r__[f2][nb2-1];
+				const double cosDe2         = v_CosDe__[f2];
+				const double sinDe2         = v_SinDe__[f2];
+				const double ra2            = v_ra__[f2];
+				const double de2            = v_de__[f2];
+		
+				///// Remove the correlation qso-ownForest
+				if (fabs(ra2-v_raQ1__[q])<C_AUTOCORRCRIT && fabs(de2-v_deQ1__[q])<C_AUTOCORRCRIT ) continue;
+	
+				///// Angle between the two directions of the qso and the lya
+				const double cosTheta2 = cosDe2*v_CosDeQ1__[q]*cos(ra2-v_raQ1__[q]) + sinDe2*v_SinDeQ1__[q];
+				if (cosTheta2<=cosmaxTheta) continue;
+	
+				///// reject QSO with a distance too large
+				if (v_rrQ1__[q]*v_rrQ1__[q]*(1.-cosTheta2*cosTheta2) >= dist_diag_max_pow2) continue;
+	
+				///// Reject QSO with a perpandicular distance too large
+				const double dist20 = firstPixel2+v_rrQ1__[q];
+				if ( dist20*dist20*0.5*(1.-cosTheta2) >= maxPow2 ) continue;
+	
+				///// Perpandicular distance between the qso and the lya
+				const double sinHalfTheta2 = sqrt( 0.5*(1.-cosTheta2) );
+				const double cosHalfTheta2 = sqrt( 0.5*(1.+cosTheta2) );
+	
+				///// Distance between the qso and the first pixel
+				const double dist21 = firstPixel2-v_rrQ1__[q];
+				if ( dist21>=0. ) {
+					//// QSO is closer than the first pixel
+					if (dist21*dist21*0.5*(1.+cosTheta2) >= maxPow2 ) continue;
+					else if ( v_rrQ1__[q]*v_rrQ1__[q] + firstPixel2*firstPixel2 -2.*v_rrQ1__[q]*firstPixel2*cosTheta2 >= dist_diag_max_pow2 ) continue;
+				}
+	
+				///// Distance between the qso and the last pixel
+				const double dist22 = lastPixel2-v_rrQ1__[q];
+				if ( dist22<=0. ) {
+					//// QSO is further than the last pixel
+					if ( dist22*dist22*0.5*(1.+cosTheta2) >= maxPow2 ) continue;
+					else if ( v_rrQ1__[q]*v_rrQ1__[q] + lastPixel2*lastPixel2 -2.*v_rrQ1__[q]*lastPixel2*cosTheta2 >= dist_diag_max_pow2 ) continue;
+				}
 
 
 
-	std::cout << "\n  Saving\n" << std::endl;	
+				
+				///// Usefull for eBOSS data because many re-obs.
+				if (ra1==ra2 && de1==de2) continue;
+				else if (fabs(ra1-ra2)<C_AUTOCORRCRIT && fabs(de1-de2)<C_AUTOCORRCRIT ) continue;
 
+				///// Angle between the two directions of the qso and the lya
+				const double cosTheta3 = cosDe1*cosDe2*cos(ra1-ra2) + sinDe1*sinDe2;
+				if (cosTheta3<=cosmaxTheta) continue;
+
+				const double distMinPow23 = std::max(firstPixelPow21,firstPixel2*firstPixel2)*(1.-cosTheta3*cosTheta3);
+				if (distMinPow23>=dist_diag_max_pow2) continue;
+
+				///// Reject forests with a too large transverse distance
+				const double dist30 = firstPixel1+firstPixel2;
+				if ( dist30*dist30*0.5*(1.-cosTheta3) >= maxPow2 ) continue;
+
+				//// Reject forests with too large parallel distance
+				const double dist31 = lastPixel1-firstPixel2;
+				if ( dist31<=0. ) {
+					if ( dist31*dist31*0.5*(1.+cosTheta3) >= maxPow2 ) continue;
+					else if (lastPixel1*lastPixel1 + firstPixel2*firstPixel2 -2.*lastPixel1*firstPixel2*cosTheta3 >= dist_diag_max_pow2) continue;
+				}
+				const double dist32 = lastPixel2-firstPixel1;
+				if ( dist32<=0. ) {
+					if ( dist32*dist32*0.5*(1.+cosTheta3) >= maxPow2 ) continue;
+					else if (firstPixel1*firstPixel1 + lastPixel2*lastPixel2 -2.*firstPixel1*lastPixel2*cosTheta3 >= dist_diag_max_pow2)  continue;
+				}
+				const double sinHalfTheta3 = sqrt( 0.5*(1.-cosTheta3) );
+				const double cosHalfTheta3 = sqrt( 0.5*(1.+cosTheta3) );
+				
+
+
+
+				///// Loops over all pixels of the forest f1
+				for (unsigned int i1=0; i1<nb1; i1++) {
+
+					if ( (v_r__[f1][i1]+firstPixel2)*sinHalfTheta3 >= max) break;
+					const double distT1 = (v_r__[f1][i1]+rQSO)*sinHalfTheta1;
+					const double distP1 = (v_r__[f1][i1]-rQSO)*cosHalfTheta1;
+					if (fabs(distP1) >= max || distT1 >= max) {
+						if ( distT1 >= max ) break;
+						continue;
+					}
+					const unsigned int globalBin1 = int(distT1*fromValToIdx)*nbBinY + int( (distP1+max)*fromValToIdx );
+                                        const double w1               = v_w__[f1][i1];
+
+					///// Loops over all pixels of the forest f2
+					for (unsigned int i2=0; i2<nb2; i2++) {
+
+						const double distT2 = (v_r__[f2][i2]+rQSO)*sinHalfTheta2;
+						const double distP2 = (v_r__[f2][i2]-rQSO)*cosHalfTheta2;
+						if (fabs(distP2) >= max || distT2 >= max) {
+							if ( distT2 >= max ) break;
+							continue;
+						}
+
+						const double distT3 = (v_r__[f1][i1]+v_r__[f2][i2])*sinHalfTheta3;
+						const double distP3 = fabs( (v_r__[f1][i1]-v_r__[f2][i2])*cosHalfTheta3);
+						if (distP3 >= max || distT3 >= max) {
+							if ( distT3 >= max ) break;
+							continue;
+						}
+						
+						const unsigned int globalBin2 = int(distT2*fromValToIdx)*nbBinY + int( (distP2+max)*fromValToIdx );
+						const double w2               = v_w__[f2][i2];
+						const unsigned int globalBin3 = int(distT3*fromValToIdx)*nbBin + int( distP3*fromValToIdx );
+
+						cov[globalBin1][globalBin2]    += w1*w2*xiAuto[globalBin3];
+						cross[globalBin1][globalBin2]  += w1*w2*xiCross[globalBin1]*xiCross[globalBin2];
+						we_all[globalBin1][globalBin2] += w1*w2;
+						nb_all[globalBin1][globalBin2] ++;
+						cov[globalBin2][globalBin1]    += w1*w2*xiAuto[globalBin3];
+						cross[globalBin2][globalBin1]  += w1*w2*xiCross[globalBin1]*xiCross[globalBin2];
+						we_all[globalBin2][globalBin1] += w1*w2;
+						nb_all[globalBin2][globalBin1] ++;
+					}
+				}
+			}
+		}
+	}
+
+	std::stringstream convert;
+	convert << nbForest_;
+	const std::string nb_forest_string = convert.str();
+
+	const bool diagram_alone = true;
+	const std::string diagram = "T12345_with_wi1D_array";
+
+	std::cout << "\n  Saving\n" << std::endl;
 	std::ofstream fFile;
 
-	///// Save the 2D cross-correlation 
+	///// Save the covariance with delta-delta
 	std::string pathToSave = pathToSave__;
-	pathToSave += "xi_delta_QSO_1D_Wick";
-	pathToSave += "_T1"; // T12  // T1234  // T124 //withDelta
-	pathToSave += "_withDelta_";
+	pathToSave += "xi_delta_QSO_2D_Wick";
+	pathToSave += "_";
+	pathToSave += diagram;
+	pathToSave += "_";
 	pathToSave += forest__;
 	pathToSave += "_";
 	pathToSave += QSO__;
+	if (diagram_alone) {
+		pathToSave += "_diagram_alone_";
+		pathToSave += nb_forest_string;
+	}
 	pathToSave += ".txt";
 	std::cout << "\n  " << pathToSave << std::endl;
 	fFile.open(pathToSave.c_str());
@@ -5981,10 +6993,41 @@ void Correlation::xi_delta_QSO_Wick_1D(unsigned int diagramIdx) {
 	fFile.precision(std::numeric_limits<double>::digits10);
 	
 	///// Set the values of data
-	for (unsigned int i=0; i<nbBin; i++) {
-		for (unsigned int j=0; j<nbBin; j++) {
+	for (unsigned int i=0; i<nbBin2D; i++) {
+		for (unsigned int j=0; j<nbBin2D; j++) {
 			if (nb[i]>1. && nb[j]>1.) cov[i][j] /= weight[i]*weight[j];
+			else cov[i][j] = 0.;
 			fFile << cov[i][j] << " ";
+		}
+		fFile << std::endl;
+	}
+	fFile.close();
+
+	///// Save the covaraince terms with the cross
+	pathToSave = pathToSave__;
+	pathToSave += "xi_delta_QSO_2D_Wick";
+	pathToSave += "_";
+	pathToSave += diagram;
+	pathToSave += "_crossTerms_";
+	pathToSave += forest__;
+	pathToSave += "_";
+	pathToSave += QSO__;
+	if (diagram_alone) {
+		pathToSave += "_diagram_alone_";
+		pathToSave += nb_forest_string;
+	}
+	pathToSave += ".txt";
+	std::cout << "\n  " << pathToSave << std::endl;
+	fFile.open(pathToSave.c_str());
+	fFile << std::scientific;
+	fFile.precision(std::numeric_limits<double>::digits10);
+	
+	///// Set the values of data
+	for (unsigned int i=0; i<nbBin2D; i++) {
+		for (unsigned int j=0; j<nbBin2D; j++) {
+			if (nb[i]>1. && nb[j]>1.) cross[i][j] /= weight[i]*weight[j];
+			else cross[i][j] = 0.;
+			fFile << cross[i][j] << " ";
 		}
 		fFile << std::endl;
 	}
@@ -5992,22 +7035,27 @@ void Correlation::xi_delta_QSO_Wick_1D(unsigned int diagramIdx) {
 
 	///// Save the number 
 	pathToSave = pathToSave__;
-        pathToSave += "xi_delta_QSO_1D_Wick";
-        pathToSave += "_T1"; // T12  // T1234  // T124
-	pathToSave += "_withDelta";
-	pathToSave += "_number_"; 
-	pathToSave += forest__;
+        pathToSave += "xi_delta_QSO_2D_Wick";
+	pathToSave += "_";
+	pathToSave += diagram;
+	pathToSave += "_number_";
+        pathToSave += forest__;
         pathToSave += "_";
         pathToSave += QSO__;
+	if (diagram_alone) {
+		pathToSave += "_diagram_alone_";
+		pathToSave += nb_forest_string;
+	}
         pathToSave += ".txt";
         std::cout << "\n  " << pathToSave << std::endl;
         fFile.open(pathToSave.c_str());
         fFile << std::scientific;
         fFile.precision(std::numeric_limits<double>::digits10);
 
-	for (unsigned int i=0; i<nbBin; i++) {
-                for (unsigned int j=0; j<nbBin; j++) {
+	for (unsigned int i=0; i<nbBin2D; i++) {
+                for (unsigned int j=0; j<nbBin2D; j++) {
 			if (nb[i]>1. && nb[j]>1.)  nb_all[i][j] /= nb[i]*nb[j];
+			else nb_all[i][j] = 0.;
                         fFile << nb_all[i][j] << " ";
                 }
                 fFile << std::endl;
@@ -6017,30 +7065,636 @@ void Correlation::xi_delta_QSO_Wick_1D(unsigned int diagramIdx) {
 
 	///// Save the weight
 	pathToSave = pathToSave__;
-        pathToSave += "xi_delta_QSO_1D_Wick";
-        pathToSave += "_T1"; // T12  // T1234  // T124
-	pathToSave += "_withDelta";
-	pathToSave += "_weight_"; // T12  // T1234  // T124
+        pathToSave += "xi_delta_QSO_2D_Wick";
+	pathToSave += "_";
+	pathToSave += diagram;
+	pathToSave += "_weight_";
         pathToSave += forest__;
         pathToSave += "_";
         pathToSave += QSO__;
+	if (diagram_alone) {
+		pathToSave += "_diagram_alone_";
+		pathToSave += nb_forest_string;
+	}
         pathToSave += ".txt";
         std::cout << "\n  " << pathToSave << std::endl;
         fFile.open(pathToSave.c_str());
         fFile << std::scientific;
         fFile.precision(std::numeric_limits<double>::digits10);
 
-        for (unsigned int i=0; i<nbBin; i++) {
-                for (unsigned int j=0; j<nbBin; j++) {
+        for (unsigned int i=0; i<nbBin2D; i++) {
+                for (unsigned int j=0; j<nbBin2D; j++) {
 			if (nb[i]>1. && nb[j]>1.) we_all[i][j] /= weight[i]*weight[j];
+			else we_all[i][j] = 0.;
                         fFile << we_all[i][j] << " ";
                 }
                 fFile << std::endl;
         }
         fFile.close();
 
+	
+	///// Save the number for the correlation
+	pathToSave = pathToSave__;
+        pathToSave += "xi_delta_QSO_2D_Wick";
+	pathToSave += "_";
+	pathToSave += diagram;
+	pathToSave += "_numberCorr_";
+        pathToSave += forest__;
+        pathToSave += "_";
+        pathToSave += QSO__;
+	if (diagram_alone) {
+		pathToSave += "_diagram_alone_";
+		pathToSave += nb_forest_string;
+	}
+        pathToSave += ".txt";
+        std::cout << "\n  " << pathToSave << std::endl;
+        fFile.open(pathToSave.c_str());
+        fFile << std::scientific;
+        fFile.precision(std::numeric_limits<double>::digits10);
+
+	for (unsigned int i=0; i<nbBin2D; i++) {
+                fFile << nb[i] << " ";
+                fFile << std::endl;
+        }
+        fFile.close();
+
+	///// Save the number for the correlation
+	pathToSave = pathToSave__;
+        pathToSave += "xi_delta_QSO_2D_Wick";
+	pathToSave += "_";
+	pathToSave += diagram;
+	pathToSave += "_weightCorr_";
+        pathToSave += forest__;
+        pathToSave += "_";
+        pathToSave += QSO__;
+	if (diagram_alone) {
+		pathToSave += "_diagram_alone_";
+		pathToSave += nb_forest_string;
+	}
+        pathToSave += ".txt";
+        std::cout << "\n  " << pathToSave << std::endl;
+        fFile.open(pathToSave.c_str());
+        fFile << std::scientific;
+        fFile.precision(std::numeric_limits<double>::digits10);
+
+	for (unsigned int i=0; i<nbBin2D; i++) {
+                fFile << weight[i] << " ";
+                fFile << std::endl;
+        }
+        fFile.close();
+
+
 	return;
 }
+void Correlation::xi_delta_QSO_Wick_T123456_with_wi1D_array(void) {
+
+	std::cout << "\n\n\n\n  ------ xi_delta_QSO_Wick_T123456_with_wi1D_array ------\n" << std::endl;
+
+
+	///// QSO
+	loadDataQ1();
+	if (nbQ1__==0) return;
+	///// Forest
+	loadDataForest(pathForest__);
+	if (nbForest_==0.) return;
+
+	///// Empty useless vectors
+	v_zz__.clear();
+	v_lRF__.clear();
+	v_nb__.clear();
+
+	//// Constants:
+	const double max                  = 200.;
+	const unsigned int nbBin          = 50;
+	const unsigned int nbBinX         = nbBin;
+	const unsigned int nbBinY         = 2*nbBin;
+	static const unsigned int nbBin2D = nbBinX*nbBinY;
+	static const unsigned int nbBin2D_auto = nbBin*nbBin;
+	const double fromValToIdx         = nbBin/max;
+	const double maxPow2              = max*max;
+        const double dist_diag_max_pow2 = 2*max*max;
+
+	const double maxTheta = 2.*asin( max/(distMinPixel__+distMinQ1__) );
+	const double cosmaxTheta = cos(maxTheta);
+	std::cout << "  min pixel = " << distMinPixel__ << " " << "  dist min qso = " << distMinQ1__ << std::endl;
+	std::cout << "  maxTheta = " << maxTheta*180./M_PI << " degree" << std::endl;
+
+	//// Array with the covariance
+	double nb[nbBin2D];
+	double weight[nbBin2D];
+	double** cov    = new double*[nbBin2D];
+	double** cross  = new double*[nbBin2D];
+	double** nb_all = new double*[nbBin2D];
+	double** we_all = new double*[nbBin2D];
+	for (unsigned int i=0; i<nbBin2D; i++) {
+		nb[i]     = 0.;
+		weight[i] = 0.;
+		cov[i]    = new double[nbBin2D];
+		cross[i]  = new double[nbBin2D];
+		nb_all[i] = new double[nbBin2D];
+		we_all[i] = new double[nbBin2D];
+		for (unsigned int j=0; j<nbBin2D; j++) {
+			cov[i][j]    = 0.;
+			cross[i][j]  = 0.;
+			nb_all[i][j] = 0.;
+			we_all[i][j] = 0.;
+		}
+	}
+
+	//// ------------------------------------------------------------------
+	//// Load correlation delta-QSO
+	std::string pathToFile = pathToSave__;
+	pathToFile += "xi_delta_QSO_txt_2D_";
+	pathToFile += forest__;
+	pathToFile += "_";
+	pathToFile += QSO__;
+	pathToFile += ".txt";
+	std::ifstream fileData2(pathToFile.c_str());
+
+	unsigned int nb_lines_in_file = 0;
+	double xiCross[nbBin2D];
+	for (unsigned int i=0; i<nbBin2D; i++) {
+		long double data0,data1,data2,data3;
+		fileData2>>data0>>data1>>data2>>data3;
+		xiCross[i] = data2;
+		nb_lines_in_file ++;
+	}
+	fileData2.close();
+	if (nb_lines_in_file!=nbBin2D) return;
+
+	//// ------------------------------------------------------------------
+	//// Load correlation A_delta_delta
+	pathToFile = pathToSave__;
+	pathToFile += "xi_A_delta_delta_txt_2D_";
+	pathToFile += forest__;
+	pathToFile += ".txt";
+	std::ifstream fileData3(pathToFile.c_str());
+
+	unsigned int nb_lines_in_file_auto = 0;
+	double xiAuto[nbBin2D_auto];
+	for (unsigned int i=0; i<nbBin2D_auto; i++) {
+		long double data0,data1,data2,data3;
+		fileData3>>data0>>data1>>data2>>data3;
+		xiAuto[i] = data2;
+		nb_lines_in_file_auto ++;
+	}
+	fileData3.close();
+	if (nb_lines_in_file_auto != nbBin2D_auto) return;
+
+
+	std::cout << "  Starting " << std::endl;
+
+
+	for (unsigned int f=0; f<nbForest_; f++) {
+	
+		///// Get number of pixels in forest
+		const unsigned int nbPixel = v_nbPixelDelta1__[f];
+		const double firstPixel    = v_r__[f][0];
+		const double lastPixel     = v_r__[f][nbPixel-1];
+		const double cosDe         = v_CosDe__[f];
+		const double sinDe         = v_SinDe__[f];
+		const double ra            = v_ra__[f];
+		const double dec           = v_de__[f];
+			
+		for (unsigned int q=0; q<nbQ1__; q++) {
+
+			///// Remove the correlation qso-ownForest
+			if (fabs(ra-v_raQ1__[q])<C_AUTOCORRCRIT && fabs(dec-v_deQ1__[q])<C_AUTOCORRCRIT ) continue;
+
+			///// Angle between the two directions of the qso and the lya
+			const double cosTheta = cosDe*v_CosDeQ1__[q]*cos(ra-v_raQ1__[q]) + sinDe*v_SinDeQ1__[q];
+			if (cosTheta<=cosmaxTheta) continue;
+
+			///// reject QSO with a distance too large
+			if (v_rrQ1__[q]*v_rrQ1__[q]*(1.-cosTheta*cosTheta) >= dist_diag_max_pow2) continue;
+
+			///// Reject QSO with a perpandicular distance too large
+			const double dist0 = firstPixel+v_rrQ1__[q];
+			if ( dist0*dist0*0.5*(1.-cosTheta) >= maxPow2 ) continue;
+
+			///// Perpandicular distance between the qso and the lya
+			const double sinHalfTheta = sqrt( 0.5*(1.-cosTheta) );
+			const double cosHalfTheta = sqrt( 0.5*(1.+cosTheta) );
+			const double rQSO = v_rrQ1__[q];
+
+			///// Distance between the qso and the first pixel
+			const double dist1 = firstPixel-v_rrQ1__[q];
+			if ( dist1>=0. ) {
+				//// QSO is closer than the first pixel
+				if (dist1*dist1*0.5*(1.+cosTheta) >= maxPow2 ) continue;
+				else if ( v_rrQ1__[q]*v_rrQ1__[q] + firstPixel*firstPixel -2.*v_rrQ1__[q]*firstPixel*cosTheta >= dist_diag_max_pow2 ) continue;
+			}
+
+			///// Distance between the qso and the last pixel
+			const double dist2 = lastPixel-v_rrQ1__[q];
+			if ( dist2<=0. ) {
+				//// QSO is further than the last pixel
+				if ( dist2*dist2*0.5*(1.+cosTheta) >= maxPow2 ) continue;
+				else if ( v_rrQ1__[q]*v_rrQ1__[q] + lastPixel*lastPixel -2.*v_rrQ1__[q]*lastPixel*cosTheta >= dist_diag_max_pow2 ) continue;
+			}
+
+			///// 'true' if first pixel of forest is further than the QSO
+			const bool infPosBool = (dist1 > 0.);
+			///// 'true' if last pixel of forest is lower than the QSO
+			const bool supPosBool = (dist2 < 0.);
+
+			///// Loops over all pixels of the forest
+			for (unsigned int i=0; i<nbPixel; i++) {
+
+				unsigned int ii = i;
+				if (supPosBool) ii = nbPixel-1-i;
+	
+				const double distT = (v_r__[f][ii]+rQSO)*sinHalfTheta;
+				const double distP = (v_r__[f][ii]-rQSO)*cosHalfTheta;
+				if (fabs(distP) >= max || distT >= max) {
+					if ( fabs(distP) >= max && (infPosBool || supPosBool) ) break;
+					else if ( distT >= max && infPosBool) break;
+					continue;
+				}
+
+				///// Fill the histogramm of xi(r_{perp}, r_{paral}
+				const unsigned int rPerpBinIdx = int(distT*fromValToIdx);
+				const unsigned int globalBin = rPerpBinIdx*nbBinY+int( (distP+max)*fromValToIdx );
+
+				const double w = v_w__[f][ii];
+
+				nb[globalBin] ++;
+				weight[globalBin] += w;
+			}
+		}
+	}
+
+
+	std::cout << "  Starting  again" << std::endl;
+
+
+	for (unsigned int f1=0; f1<nbForest_; f1++) {
+		std::cout << f1 << std::endl;
+		///// Get number of pixels in forest
+		const unsigned int nb1       = v_nbPixelDelta1__[f1];
+		const double firstPixel1     = v_r__[f1][0];
+		const double lastPixel1      = v_r__[f1][nb1-1];
+		const double firstPixelPow21 = firstPixel1*firstPixel1;
+		const double cosDe1          = v_CosDe__[f1];
+		const double sinDe1          = v_SinDe__[f1];
+		const double ra1             = v_ra__[f1];
+		const double de1             = v_de__[f1];
+
+		//// Get an other forest
+		for (unsigned int f2=0; f2<f1; f2++) {
+			
+			///// Get number of pixels in forest
+			const unsigned int nb2      = v_nbPixelDelta1__[f2];
+			const double firstPixel2    = v_r__[f2][0];
+			const double lastPixel2     = v_r__[f2][nb2-1];
+			const double cosDe2         = v_CosDe__[f2];
+			const double sinDe2         = v_SinDe__[f2];
+			const double ra2            = v_ra__[f2];
+			const double de2            = v_de__[f2];
+
+			///// Usefull for eBOSS data because many re-obs.
+			if (ra1==ra2 && de1==de2) continue;
+			else if (fabs(ra1-ra2)<C_AUTOCORRCRIT && fabs(de1-de2)<C_AUTOCORRCRIT ) continue;
+
+			///// Angle between the two directions of the qso and the lya
+			const double cosTheta3 = cosDe1*cosDe2*cos(ra1-ra2) + sinDe1*sinDe2;
+			if (cosTheta3<=cosmaxTheta) continue;
+
+			const double distMinPow23 = std::max(firstPixelPow21,firstPixel2*firstPixel2)*(1.-cosTheta3*cosTheta3);
+			if (distMinPow23>=dist_diag_max_pow2) continue;
+
+			///// Reject forests with a too large transverse distance
+			const double dist30 = firstPixel1+firstPixel2;
+			if ( dist30*dist30*0.5*(1.-cosTheta3) >= maxPow2 ) continue;
+
+			//// Reject forests with too large parallel distance
+			const double dist31 = lastPixel1-firstPixel2;
+			if ( dist31<=0. ) {
+				if ( dist31*dist31*0.5*(1.+cosTheta3) >= maxPow2 ) continue;
+				else if (lastPixel1*lastPixel1 + firstPixel2*firstPixel2 -2.*lastPixel1*firstPixel2*cosTheta3 >= dist_diag_max_pow2) continue;
+			}
+			const double dist32 = lastPixel2-firstPixel1;
+			if ( dist32<=0. ) {
+				if ( dist32*dist32*0.5*(1.+cosTheta3) >= maxPow2 ) continue;
+				else if (firstPixel1*firstPixel1 + lastPixel2*lastPixel2 -2.*firstPixel1*lastPixel2*cosTheta3 >= dist_diag_max_pow2)  continue;
+			}
+			const double sinHalfTheta3 = sqrt( 0.5*(1.-cosTheta3) );
+			const double cosHalfTheta3 = sqrt( 0.5*(1.+cosTheta3) );
+
+
+
+			for (unsigned int q1=0; q1<nbQ1__; q1++) {
+	
+				///// Remove the correlation qso-ownForest
+				if (fabs(ra1-v_raQ1__[q1])<C_AUTOCORRCRIT && fabs(de1-v_deQ1__[q1])<C_AUTOCORRCRIT ) continue;
+	
+				///// Angle between the two directions of the qso and the lya
+				const double cosTheta1 = cosDe1*v_CosDeQ1__[q1]*cos(ra1-v_raQ1__[q1]) + sinDe1*v_SinDeQ1__[q1];
+				if (cosTheta1<=cosmaxTheta) continue;
+	
+				///// reject QSO with a distance too large
+				if (v_rrQ1__[q1]*v_rrQ1__[q1]*(1.-cosTheta1*cosTheta1) >= dist_diag_max_pow2) continue;
+	
+				///// Reject QSO with a perpandicular distance too large
+				const double dist10 = firstPixel1+v_rrQ1__[q1];
+				if ( dist10*dist10*0.5*(1.-cosTheta1) >= maxPow2 ) continue;
+	
+				///// Perpandicular distance between the qso and the lya
+				const double sinHalfTheta1 = sqrt( 0.5*(1.-cosTheta1) );
+				const double cosHalfTheta1 = sqrt( 0.5*(1.+cosTheta1) );
+				const double rQSO1 = v_rrQ1__[q1];
+	
+				///// Distance between the qso and the first pixel
+				const double dist11 = firstPixel1-v_rrQ1__[q1];
+				if ( dist11>=0. ) {
+					//// QSO is closer than the first pixel
+					if (dist11*dist11*0.5*(1.+cosTheta1) >= maxPow2 ) continue;
+					else if ( v_rrQ1__[q1]*v_rrQ1__[q1] + firstPixel1*firstPixel1 -2.*v_rrQ1__[q1]*firstPixel1*cosTheta1 >= dist_diag_max_pow2 ) continue;
+				}
+	
+				///// Distance between the qso and the last pixel
+				const double dist12 = lastPixel1-v_rrQ1__[q1];
+				if ( dist12<=0. ) {
+					//// QSO is further than the last pixel
+					if ( dist12*dist12*0.5*(1.+cosTheta1) >= maxPow2 ) continue;
+					else if ( v_rrQ1__[q1]*v_rrQ1__[q1] + lastPixel1*lastPixel1 -2.*v_rrQ1__[q1]*lastPixel1*cosTheta1 >= dist_diag_max_pow2 ) continue;
+				}
+				
+
+
+				for (unsigned int q2=0; q2<nbQ1__; q2++) {
+					if (q1==q2) continue;
+			
+					///// Remove the correlation qso-ownForest
+					if (fabs(ra2-v_raQ1__[q2])<C_AUTOCORRCRIT && fabs(de2-v_deQ1__[q2])<C_AUTOCORRCRIT ) continue;
+		
+					///// Angle between the two directions of the qso and the lya
+					const double cosTheta2 = cosDe2*v_CosDeQ1__[q2]*cos(ra2-v_raQ1__[q2]) + sinDe2*v_SinDeQ1__[q2];
+					if (cosTheta2<=cosmaxTheta) continue;
+		
+					///// reject QSO with a distance too large
+					if (v_rrQ1__[q2]*v_rrQ1__[q2]*(1.-cosTheta2*cosTheta2) >= dist_diag_max_pow2) continue;
+		
+					///// Reject QSO with a perpandicular distance too large
+					const double dist20 = firstPixel2+v_rrQ1__[q2];
+					if ( dist20*dist20*0.5*(1.-cosTheta2) >= maxPow2 ) continue;
+		
+					///// Perpandicular distance between the qso and the lya
+					const double sinHalfTheta2 = sqrt( 0.5*(1.-cosTheta2) );
+					const double cosHalfTheta2 = sqrt( 0.5*(1.+cosTheta2) );
+					const double rQSO2 = v_rrQ1__[q2];
+		
+					///// Distance between the qso and the first pixel
+					const double dist21 = firstPixel2-v_rrQ1__[q2];
+					if ( dist21>=0. ) {
+						//// QSO is closer than the first pixel
+						if (dist21*dist21*0.5*(1.+cosTheta2) >= maxPow2 ) continue;
+						else if ( v_rrQ1__[q2]*v_rrQ1__[q2] + firstPixel2*firstPixel2 -2.*v_rrQ1__[q2]*firstPixel2*cosTheta2 >= dist_diag_max_pow2 ) continue;
+					}
+		
+					///// Distance between the qso and the last pixel
+					const double dist22 = lastPixel2-v_rrQ1__[q2];
+					if ( dist22<=0. ) {
+						//// QSO is further than the last pixel
+						if ( dist22*dist22*0.5*(1.+cosTheta2) >= maxPow2 ) continue;
+						else if ( v_rrQ1__[q2]*v_rrQ1__[q2] + lastPixel2*lastPixel2 -2.*v_rrQ1__[q2]*lastPixel2*cosTheta2 >= dist_diag_max_pow2 ) continue;
+					}
+
+
+					///// Loops over all pixels of the forest f1
+					for (unsigned int i1=0; i1<nb1; i1++) {
+
+						if ( (v_r__[f1][i1]+firstPixel2)*sinHalfTheta3 >= max) break;
+						const double distT1 = (v_r__[f1][i1]+rQSO1)*sinHalfTheta1;
+						const double distP1 = (v_r__[f1][i1]-rQSO1)*cosHalfTheta1;
+						if (fabs(distP1) >= max || distT1 >= max) {
+							if ( distT1 >= max ) break;
+							continue;
+						}
+						const unsigned int globalBin1 = int(distT1*fromValToIdx)*nbBinY + int( (distP1+max)*fromValToIdx );
+	                                        const double w1               = v_w__[f1][i1];
+	
+						///// Loops over all pixels of the forest f2
+						for (unsigned int i2=0; i2<nb2; i2++) {
+	
+							const double distT2 = (v_r__[f2][i2]+rQSO2)*sinHalfTheta2;
+							const double distP2 = (v_r__[f2][i2]-rQSO2)*cosHalfTheta2;
+							if (fabs(distP2) >= max || distT2 >= max) {
+								if ( distT2 >= max ) break;
+								continue;
+							}
+	
+							const double distT3 = (v_r__[f1][i1]+v_r__[f2][i2])*sinHalfTheta3;
+							const double distP3 = fabs( (v_r__[f1][i1]-v_r__[f2][i2])*cosHalfTheta3);
+							if (distP3 >= max || distT3 >= max) {
+								if ( distT3 >= max ) break;
+								continue;
+							}
+							
+							const unsigned int globalBin2 = int(distT2*fromValToIdx)*nbBinY + int( (distP2+max)*fromValToIdx );
+							const double w2               = v_w__[f2][i2];
+							const unsigned int globalBin3 = int(distT3*fromValToIdx)*nbBin + int( distP3*fromValToIdx );
+	
+							cov[globalBin1][globalBin2]    += w1*w2*xiAuto[globalBin3];
+							cross[globalBin1][globalBin2]  += 0.;
+							we_all[globalBin1][globalBin2] += w1*w2;
+							nb_all[globalBin1][globalBin2] ++;
+							cov[globalBin2][globalBin1]    += w1*w2*xiAuto[globalBin3];
+							cross[globalBin2][globalBin1]  += 0.;
+							we_all[globalBin2][globalBin1] += w1*w2;
+							nb_all[globalBin2][globalBin1] ++;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	std::stringstream convert;
+	convert << nbForest_;
+	const std::string nb_forest_string = convert.str();
+
+	const bool diagram_alone = true;
+	const std::string diagram = "T123456_with_wi1D_array";
+
+	std::cout << "\n  Saving\n" << std::endl;
+	std::ofstream fFile;
+
+	///// Save the covariance with delta-delta
+	std::string pathToSave = pathToSave__;
+	pathToSave += "xi_delta_QSO_2D_Wick";
+	pathToSave += "_";
+	pathToSave += diagram;
+	pathToSave += "_";
+	pathToSave += forest__;
+	pathToSave += "_";
+	pathToSave += QSO__;
+	if (diagram_alone) {
+		pathToSave += "_diagram_alone_";
+		pathToSave += nb_forest_string;
+	}
+	pathToSave += ".txt";
+	std::cout << "\n  " << pathToSave << std::endl;
+	fFile.open(pathToSave.c_str());
+	fFile << std::scientific;
+	fFile.precision(std::numeric_limits<double>::digits10);
+	
+	///// Set the values of data
+	for (unsigned int i=0; i<nbBin2D; i++) {
+		for (unsigned int j=0; j<nbBin2D; j++) {
+			if (nb[i]>1. && nb[j]>1.) cov[i][j] /= weight[i]*weight[j];
+			else cov[i][j] = 0.;
+			fFile << cov[i][j] << " ";
+		}
+		fFile << std::endl;
+	}
+	fFile.close();
+
+	///// Save the covaraince terms with the cross
+	pathToSave = pathToSave__;
+	pathToSave += "xi_delta_QSO_2D_Wick";
+	pathToSave += "_";
+	pathToSave += diagram;
+	pathToSave += "_crossTerms_";
+	pathToSave += forest__;
+	pathToSave += "_";
+	pathToSave += QSO__;
+	if (diagram_alone) {
+		pathToSave += "_diagram_alone_";
+		pathToSave += nb_forest_string;
+	}
+	pathToSave += ".txt";
+	std::cout << "\n  " << pathToSave << std::endl;
+	fFile.open(pathToSave.c_str());
+	fFile << std::scientific;
+	fFile.precision(std::numeric_limits<double>::digits10);
+	
+	///// Set the values of data
+	for (unsigned int i=0; i<nbBin2D; i++) {
+		for (unsigned int j=0; j<nbBin2D; j++) {
+			if (nb[i]>1. && nb[j]>1.) cross[i][j] /= weight[i]*weight[j];
+			else cross[i][j] = 0.;
+			fFile << cross[i][j] << " ";
+		}
+		fFile << std::endl;
+	}
+	fFile.close();
+
+	///// Save the number 
+	pathToSave = pathToSave__;
+        pathToSave += "xi_delta_QSO_2D_Wick";
+	pathToSave += "_";
+	pathToSave += diagram;
+	pathToSave += "_number_";
+        pathToSave += forest__;
+        pathToSave += "_";
+        pathToSave += QSO__;
+	if (diagram_alone) {
+		pathToSave += "_diagram_alone_";
+		pathToSave += nb_forest_string;
+	}
+        pathToSave += ".txt";
+        std::cout << "\n  " << pathToSave << std::endl;
+        fFile.open(pathToSave.c_str());
+        fFile << std::scientific;
+        fFile.precision(std::numeric_limits<double>::digits10);
+
+	for (unsigned int i=0; i<nbBin2D; i++) {
+                for (unsigned int j=0; j<nbBin2D; j++) {
+			if (nb[i]>1. && nb[j]>1.)  nb_all[i][j] /= nb[i]*nb[j];
+			else nb_all[i][j] = 0.;
+                        fFile << nb_all[i][j] << " ";
+                }
+                fFile << std::endl;
+        }
+        fFile.close();
+
+
+	///// Save the weight
+	pathToSave = pathToSave__;
+        pathToSave += "xi_delta_QSO_2D_Wick";
+	pathToSave += "_";
+	pathToSave += diagram;
+	pathToSave += "_weight_";
+        pathToSave += forest__;
+        pathToSave += "_";
+        pathToSave += QSO__;
+	if (diagram_alone) {
+		pathToSave += "_diagram_alone_";
+		pathToSave += nb_forest_string;
+	}
+        pathToSave += ".txt";
+        std::cout << "\n  " << pathToSave << std::endl;
+        fFile.open(pathToSave.c_str());
+        fFile << std::scientific;
+        fFile.precision(std::numeric_limits<double>::digits10);
+
+        for (unsigned int i=0; i<nbBin2D; i++) {
+                for (unsigned int j=0; j<nbBin2D; j++) {
+			if (nb[i]>1. && nb[j]>1.) we_all[i][j] /= weight[i]*weight[j];
+			else we_all[i][j] = 0.;
+                        fFile << we_all[i][j] << " ";
+                }
+                fFile << std::endl;
+        }
+        fFile.close();
+
+	
+	///// Save the number for the correlation
+	pathToSave = pathToSave__;
+        pathToSave += "xi_delta_QSO_2D_Wick";
+	pathToSave += "_";
+	pathToSave += diagram;
+	pathToSave += "_numberCorr_";
+        pathToSave += forest__;
+        pathToSave += "_";
+        pathToSave += QSO__;
+	if (diagram_alone) {
+		pathToSave += "_diagram_alone_";
+		pathToSave += nb_forest_string;
+	}
+        pathToSave += ".txt";
+        std::cout << "\n  " << pathToSave << std::endl;
+        fFile.open(pathToSave.c_str());
+        fFile << std::scientific;
+        fFile.precision(std::numeric_limits<double>::digits10);
+
+	for (unsigned int i=0; i<nbBin2D; i++) {
+                fFile << nb[i] << " ";
+                fFile << std::endl;
+        }
+        fFile.close();
+
+	///// Save the number for the correlation
+	pathToSave = pathToSave__;
+        pathToSave += "xi_delta_QSO_2D_Wick";
+	pathToSave += "_";
+	pathToSave += diagram;
+	pathToSave += "_weightCorr_";
+        pathToSave += forest__;
+        pathToSave += "_";
+        pathToSave += QSO__;
+	if (diagram_alone) {
+		pathToSave += "_diagram_alone_";
+		pathToSave += nb_forest_string;
+	}
+        pathToSave += ".txt";
+        std::cout << "\n  " << pathToSave << std::endl;
+        fFile.open(pathToSave.c_str());
+        fFile << std::scientific;
+        fFile.precision(std::numeric_limits<double>::digits10);
+
+	for (unsigned int i=0; i<nbBin2D; i++) {
+                fFile << weight[i] << " ";
+                fFile << std::endl;
+        }
+        fFile.close();
+
+
+	return;
+}
+
+
 
 
 
@@ -10655,7 +12309,8 @@ void Correlation::loadDataQ1(void) {
 		v_zzQ1__.push_back(zz);
 		if (mockBox__) v_rrQ1__.push_back( zz );
 		else v_rrQ1__.push_back( hConvertRedshDist->Interpolate(zz) );
-		distMinQ1__ = std::min(distMinQ1__,hConvertRedshDist->Interpolate(zz));
+		if (v_raQ1__.size()==1) distMinQ1__ = hConvertRedshDist->Interpolate(zz);
+		else distMinQ1__ = std::min(distMinQ1__,hConvertRedshDist->Interpolate(zz));
 	}
 
 	nbQ1__ = v_raQ1__.size();
@@ -10711,7 +12366,8 @@ void Correlation::loadDataQ2(void) {
 		v_SinDeQ2__.push_back(sin(de));
 		v_zzQ2__.push_back(zz);
 		v_rrQ2__.push_back( hConvertRedshDist->Interpolate(zz) );
-		distMinQ2__ = std::min(distMinQ2__,hConvertRedshDist->Interpolate(zz));
+		if (v_raQ2__.size()==1) distMinQ2__ = hConvertRedshDist->Interpolate(zz);
+		else distMinQ2__ = std::min(distMinQ2__,hConvertRedshDist->Interpolate(zz));
 	}
 
 	nbQ2__ = v_raQ2__.size();

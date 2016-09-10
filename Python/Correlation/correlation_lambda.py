@@ -417,8 +417,8 @@ dic = {
 	'correlation': 'q_f',
 	'path_to_txt_file_folder': 'NOTHING',
 	'f1': 'MGII',
-	'f2': 'MGII',
-	'q': 'ALL_EVERY_OBJECTS',
+	'f2': '',
+	'q': 'CMASSLOWZ',
 	'name' : 'Data'
 }
 

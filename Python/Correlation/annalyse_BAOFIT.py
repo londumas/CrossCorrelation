@@ -94,8 +94,11 @@ raw_index_parameter_pyLyA_cross = {
         'a' : 13,
         'a' : 14,
         'a' : 15,
+        'a' : 16,
+        'a' : 17,
+        'a' : 18,
 }
-raw_name_parameter_pyLyA_cross = numpy.asarray(['b_{f} \cdot (1+\\beta_{f})','\\beta_{f}','\\alpha_{\parallel}','\\alpha_{\perp}','\\alpha','b_{q}','g_{q}','drp','Lpar-auto','a','a','a','a','a','a','a'])
+raw_name_parameter_pyLyA_cross = numpy.asarray(['b_{f} \cdot (1+\\beta_{f})','\\beta_{f}','\\alpha_{\parallel}','\\alpha_{\perp}','\\alpha','b_{q}','g_{q}','drp','Lpar-auto','a','a','a','a','a','a','a','a','a','a'])
 '''
 raw_name_parameter_pyLyA_auto = {
 	'bias'         : 'b_{f}',
@@ -186,7 +189,7 @@ class AnnalyseBAOFIT(correlation_3D.Correlation3D):
 			i = int(el[0])
 			ix = i%self._nbBinX2D
 			iy = i/self._nbBinX2D
-			self._xi2D_fit[ix,iy,:] = el[1:]
+			self._xi2D_fit[ix,iy,:] = el[1:-2]
 
 		
 		### Get the parameters of the fit

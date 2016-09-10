@@ -839,6 +839,19 @@ class Correlation3D:
 		if (distortion_matrix): numpy.save(pathToSave+'dist_2D',dist)
 
 		return
+	def save_fited_cor_from_cov(self, dim='1D',realisation_type=None):
+		"""
+			Save the correlation fitted on the data to smooth for the fit
+		"""
+
+		raw_path = self._path_to_txt_file_folder + self._prefix + '_'+ self._middlefix + '_' + realisation_type + '_'
+		path_to_load = raw_path + 'cov_'+dim+'.npy'
+		path_to_save = raw_path + 'cor_'+dim+'_from_fit'
+		print path_to_load
+		print path_to_save
+		myTools.save_fited_cor_from_cov(path_to_load, path_to_save,self._nbBinX2D,self._nbBinY2D,self._correlation)
+
+		return
 	def save_mean_realisation_simulation_correlation_matrix(self, dic_simu):
 
 		### Where to save the resulted mean
@@ -1381,7 +1394,7 @@ class Correlation3D:
 			for j in numpy.arange(len(name_metal_2)):
 				xiMu, xiWe, xi1D, xi2D = self.read_metal_model( name_metal_1[i]+name_metal_2[j] )
 
-				#myTools.plot_2d_correlation(xi2D[:,:,:,0],0)
+				myTools.plot_2d_correlation(xi2D[:,:,:,0],0)
 
 				for k in range(0,nb_multipol_calculated_templates):
 
@@ -1492,33 +1505,43 @@ class Correlation3D:
 		free         = 'None'
 		metals       = 'None'
 		if (self._correlation=='q_q'):
-			data = self._path_to_txt_file_folder + 'BaoFit_'+self._correlation+'__'+self._q1 +'/bao2D'
-			data_autoQSO = data+'-exp.fits'
+			data = self._path_to_txt_file_folder + 'BaoFit_'+self._correlation+'__'+self._q1
+			data_metal = ''
+			data_autoQSO = data+'/bao2D-exp.fits'
 			prefix += 'autoQSO_alone.'
 		elif (self._correlation=='q_f'):
-			data= self._path_to_txt_file_folder + 'BaoFit_'+self._correlation+'__'+self._f1+'__'+self._q1 +'/bao2D'
-			data_cross = data+'-exp.fits'
+			data= self._path_to_txt_file_folder + 'BaoFit_'+self._correlation+'__'+self._f1+'__'+self._q1
+			data_metal = data+'/metTemp'
+			data_cross = data+'/bao2D-exp.fits'
 			fix = "growth_factor_qso Lpar_cross bias_lya*(1+beta_lya) qso_metal_boost"
 			free = "bias_qso drp"
 			if (with_metals_templates): metals = "Si3 Si2a Si2b Si2c"
 			prefix += 'cross_alone.'
 		elif (self._correlation=='f_f'):
-			data = self._path_to_txt_file_folder + 'BaoFit_'+self._correlation+'__'+self._f1 +'/bao2D'
-			data_auto = data+'-exp.fits'
+			data = self._path_to_txt_file_folder + 'BaoFit_'+self._correlation+'__'+self._f1
+			data_metal = data+'/metTemp'
+			data_auto = data+'/bao2D-exp.fits'
 			fix = "alpha SigmaNL_perp 1+f Lpar_auto"
 			if (with_metals_templates): metals = "Si3 Si2a Si2b Si2c"
 			free = "Lpar_auto"
 			prefix += 'auto_alone.'
 
+		#CAMB = '/home/gpfs/manip/mnt0607/bao/hdumasde/Program/pyLyA/fit/models/DR9LyaMocks/DR9LyaMocks.fits'
+		CAMB = '/home/gpfs/manip/mnt0607/bao/hdumasde/Program/pyLyA/fit/models/PlanckDR12/PlanckDR12.fits'
+
 		string_ini = """
+
+### /home/gpfs/manip/mnt0607/bao/hdumasde/Program/pyLyA/fit/bin/fit -c cross_alone.ini --verbose
+
 [PARAMETER]
 
 ### String
-model         = /home/gpfs/manip/mnt0607/bao/hdumasde/Program/pyLyA/models/DR9LyaMocks/DR9LyaMocks.fits
-metal_prefix  = """ +data+"""
+model         = """ +CAMB+"""
+metal_prefix  = """ +data_metal+"""
 data_auto     = """ +data_auto+"""
 data_cross    = """ +data_cross+"""
 output_prefix = """ +prefix+"""
+QSO_evolution = croom
 
 ### String list
 metals        = """ +metals+"""
@@ -1544,7 +1567,10 @@ SigmaNL_perp      = 0.
 bias_qso          = 3.125
 growth_factor_qso = 0.962524
 drp               = 0.
-Lpar_cross        = 9.
+Lpar_cross        = 4.
+Lper_cross        = 4.
+qso_evol_1        = 0.289
+qso_evol_0        = 0.53
 
 ### LLS
 bias_lls          = -0.01
@@ -1583,14 +1609,14 @@ qso_metal_boost   = 1.
 		command = 'rm ' + data + '-exp.fits'
 		print command
 		subprocess.call(command, shell=True)
-		command = '/home/gpfs/manip/mnt0607/bao/hdumasde/Program/pyLyA/bin/export2fits ' + data
+		command = '/home/gpfs/manip/mnt0607/bao/hdumasde/Program/pyLyA/bin/export2fits ' + data +'/bao2D'
 		print command
 		subprocess.call(command, shell=True)
 		'''
 
 		### Send the fit
-		command = '/home/gpfs/manip/mnt0607/bao/hdumasde/Program/pyLyA/bin/fit -c ' + config_file+'ini --verbose --ap 1. --at 1.'
-		#command = '/home/gpfs/manip/mnt0607/bao/hdumasde/Program/pyLyA/bin/fit -c ' + config_file+'fit.config --verbose --ap 1. --at 1.'
+		command = '/home/gpfs/manip/mnt0607/bao/hdumasde/Program/pyLyA/fit/bin/fit -c ' + config_file+'ini --verbose --ap 1. --at 1.'
+		#command = '/home/gpfs/manip/mnt0607/bao/hdumasde/Program/pyLyA/fit/bin/fit -c ' + config_file+'fit.config --verbose --ap 1. --at 1.'
 		print command
 		subprocess.call(command, shell=True)
 
@@ -1792,12 +1818,12 @@ output-prefix = """ + path_to_BAOFIT + """.
 		get_param_from_file     = dic_send_BAOFIT['get_param_from_file']
 		dic_simu                = dic_send_BAOFIT['dic_simu']
 		fit_prefix              = dic_send_BAOFIT['prefix']
-
+		'''
 		pathToSave = dic_simu['path_to_simu'] + 'Results'
 		pathToSave += dic_simu['prefix']
 		pathToSave += '/'
 		pathToSave += self._prefix + '_' + self._middlefix + '_result_'
-
+		'''
 		if ( (dic_simu is not None) and realisation_type=='Simu_stack' ):
 			path_to_distortion_matrix = dic_simu['path_to_simu'] + 'Results' + dic_simu['prefix'] + '/' + self._prefix + '_'+ self._middlefix + '_result_dist_2D.npy'
 		else:
@@ -1931,11 +1957,12 @@ output-prefix = """ + path_to_BAOFIT + """.
 			### Save .dmat
 			if (dist_matrix):
 				print '  Saving .dmat'
-				if (dic_simu['prefix']=='_raw_from_JeanMarc' or dic_simu['prefix']=='_delta_gaussian' or dic_simu['prefix']=='_only_LR' or dic_simu['prefix']=='_only_LR_noRand' or dic_simu['prefix']=='_only_LR_noRand_noRSD'):
-					dmatData = numpy.eye(self._nbBin2D)
-				elif ( (dic_simu is not None) and realisation_type=='Simu_stack' ):
-					print '  LOAD DMAT FROM: ', path_to_distortion_matrix
-					dmatData = numpy.load(path_to_distortion_matrix)
+				if (dic_simu is not None):
+					if (dic_simu['prefix']=='_raw_from_JeanMarc' or dic_simu['prefix']=='_delta_gaussian' or dic_simu['prefix']=='_only_LR' or dic_simu['prefix']=='_only_LR_noRand' or dic_simu['prefix']=='_only_LR_noRand_noRSD'):
+						dmatData = numpy.eye(self._nbBin2D)
+					elif ( realisation_type=='Simu_stack' ):
+						print '  LOAD DMAT FROM: ', path_to_distortion_matrix
+						dmatData = numpy.load(path_to_distortion_matrix)
 				else:
 					dmatData = numpy.loadtxt(path_to_distortion_matrix)
 				indexMatrix1 = numpy.arange(self._nbBin2D*self._nbBin2D).reshape(self._nbBin2D,self._nbBin2D)/self._nbBin2D
@@ -1967,7 +1994,7 @@ output-prefix = """ + path_to_BAOFIT + """.
 	def get_mapping_2D_to_1D(self):
 
 		### Constants
-		nb_random = 1000000
+		nb_random = 100000
 
 		### to return
 		mapping_2D_to_1D = numpy.zeros( shape=(self._nbBinX2D,self._nbBinY2D,self._nbBin1D) )
@@ -1996,7 +2023,7 @@ output-prefix = """ + path_to_BAOFIT + """.
 	def get_mapping_2D_to_we(self):
 
 		### Constants
-		nb_random = 1000000
+		nb_random = 100000
 
 		### Usefull values
 		mu_bin_size = 1./self._nbBinM
@@ -2936,7 +2963,147 @@ output-prefix = """ + path_to_BAOFIT + """.
 
 
 		return
+	def study_wick(self,realisation_type):
 
+		raw_path = self._path_to_txt_file_folder + self._prefix + '_'+ self._middlefix + '_' + realisation_type + '_'
+		path_to_load = raw_path + 'cov_2D.npy'
+		cov_data = numpy.load(path_to_load)
+		name_cov_data = realisation_type
+
+		### Constants
+		### numbers : 10, 99, 985, 9824, 168889
+		nb_diagram = 6
+
+		### Raw path
+		first_path = self._path_to_txt_file_folder + self._prefix + '_2D_Wick_T'
+		last_path  = self._middlefix + '_diagram_alone_10.txt'
+
+		### list of arrays
+		diagram_name = []
+		num_final = []
+		cov       = []
+		cross     = []
+		nb_all    = []
+
+		### Load the number of diagrams
+		for i in [1]:
+			diagram = ''
+			for j in range(1,i+1):
+				diagram += str(j)
+			tmp_first_path = first_path+diagram+'_with_wi1D_array'
+			print i, tmp_first_path
+
+			path     = tmp_first_path +'_numberCorr_'+ last_path
+			nb_corr = [numpy.loadtxt(path)]
+
+
+		### Load data
+		for i in range(1,nb_diagram+1):
+			#if (i==2 or i==3 or i==4 or i==5): continue
+			diagram = ''
+			for j in range(1,i+1):
+				diagram += str(j)
+			diagram_name += ['T'+str(i)]
+			tmp_first_path = first_path+diagram+'_with_wi1D_array'
+			print i, tmp_first_path
+
+			
+			path     = tmp_first_path + '_' + last_path
+			cov     += [numpy.loadtxt(path)]
+
+			path     = tmp_first_path + '_crossTerms_' + last_path
+			cross   += [numpy.loadtxt(path)]
+
+			num_final += [(cov[-1]+cross[-1])*numpy.sqrt(numpy.outer(nb_corr,nb_corr))]
+			
+
+			path     = tmp_first_path +'_number_'+ last_path
+			nb_all  += [numpy.loadtxt(path)*numpy.sqrt(numpy.outer(nb_corr,nb_corr))]
+
+		nb_diagram = len(cov)
+
+		### Plot the diagonal
+		#plt.plot( numpy.diag(cov_data), linewidth=4, label=name_cov_data )
+		for i in range(nb_diagram):
+			plt.plot( numpy.diag(num_final[i]), linewidth=4, label='T'+str(i+1) )
+		plt.xlabel(r'$\rm{bin} \, \rm{index}}$')
+		plt.ylabel(r'$C^{Ti}_{AA} \times N_{A}$')
+		myTools.deal_with_plot(False,False,True)
+		plt.legend(fontsize=30, numpoints=1,ncol=1, loc=0)
+		plt.show()
+
+		### Plot the ratio of the diagonal over T1
+		for i in range(nb_diagram):
+			plt.plot( numpy.diag(num_final[i]/num_final[0]), linewidth=4, label='T'+str(i+1)+'/T1' )
+		plt.xlabel(r'$\rm{bin} \, \rm{index}}$')
+		plt.ylabel(r'$C^{Ti}_{AA}/C^{T1}_{AA}$')
+		myTools.deal_with_plot(False,False,True)
+		plt.legend(fontsize=30, numpoints=1,ncol=1, loc=0)
+		plt.show()
+		'''
+		### Plot the matrix
+		a = numpy.diag( (cov[0]+cross[0])+(cov[1]+cross[1]) )
+		denominator = numpy.sqrt( numpy.outer(a,a) )
+		myTools.plot2D(denominator)
+		for i in range(1,nb_diagram):
+			a = (cov[i]+cross[i])/denominator
+			a[ (a==0.) ] = numpy.float('nan')
+			myTools.plot2D(a)
+		'''
+
+		### Plot the ratio of the diagonal over T1 of number
+		for i in range(nb_diagram):
+			plt.plot( numpy.diag(nb_all[i]/nb_all[0]), linewidth=4, label='T'+str(i+1)+'/T1' )
+		plt.xlabel(r'$\rm{bin} \, \rm{index}}$')
+		plt.ylabel(r'$N^{Ti}_{AA}/N^{T1}_{AA}$')
+		myTools.deal_with_plot(False,False,True)
+		plt.legend(fontsize=30, numpoints=1,ncol=1, loc=0)
+		plt.show()		
+
+		### Look at the covariance
+		tmp_cov = []
+		for i in range(nb_diagram):
+			tmp_cov += [cov[i] + cross[i]]
+			for j in range(0,i):
+				#tmp_cov[i] += numpy.diag(numpy.diag(cov[j] + cross[j]))
+				tmp_cov[i] += cov[j] + cross[j]
+			a = copy.deepcopy(tmp_cov[i])
+			a = myTools.getCorrelationMatrix(a)
+			a[ (a==0.) ] = numpy.float('nan')
+			a[ (a>=0.9) ] = numpy.float('nan')
+			myTools.plot2D(a)
+
+		
+		### Plot the matrix for T3
+		'''
+		formuleT3 = nb_all[2] / numpy.sqrt( numpy.outer(numpy.diag(nb_all[0]),numpy.diag(nb_all[0])) ) / (1.+1.9)
+		a = formuleT3
+		a *= numpy.sqrt( numpy.outer(numpy.diag(tmp_cov[1]),numpy.diag(tmp_cov[1])) )
+		a += numpy.diag(numpy.diag(cov[0] + cross[0]))
+		a += numpy.diag(numpy.diag(cov[1] + cross[1]))
+		tmp_cov += [a]
+		diagram_name += ['Formule T3']
+		a = copy.deepcopy(a)
+		a = myTools.getCorrelationMatrix(a)
+		a[ (a==0.) ] = numpy.float('nan')
+		a[ (a==1.) ] = numpy.float('nan')
+		myTools.plot2D(a)
+		'''
+
+		tmp_cov += [cov_data]
+		diagram_name += [name_cov_data]
+		myTools.plotCovar(tmp_cov[1:], diagram_name[1:])
+		
+
+		"""
+		### Plot the correlation matrix
+		for i in range(1,nb_diagram):
+			cor = myTools.getCorrelationMatrix(cov[i]+cross[i])
+			cor[ (cor==0.) ] = numpy.float('nan')
+			myTools.plot2D(cor)
+		"""
+
+		return
 
 
 
